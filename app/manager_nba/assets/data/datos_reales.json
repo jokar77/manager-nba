@@ -1,0 +1,2502 @@
+{
+  "A.J. Green": {
+    "anios_contrato": 4,
+    "dorsal": 20,
+    "equipo": "MIL",
+    "salario": 10044644
+  },
+  "AJ Johnson": {
+    "anios_contrato": 2,
+    "salario": 3237120
+  },
+  "Aaron Gordon": {
+    "anios_contrato": 3,
+    "dorsal": 32,
+    "equipo": "DEN",
+    "salario": 33658037
+  },
+  "Aaron Nesmith": {
+    "anios_contrato": 3,
+    "dorsal": 23,
+    "equipo": "IND",
+    "salario": 11000000
+  },
+  "Aaron Wiggins": {
+    "anios_contrato": 3,
+    "equipo": "ATL",
+    "salario": 9224300
+  },
+  "Ace Bailey": {
+    "anios_contrato": 3,
+    "dorsal": 19,
+    "equipo": "UTA",
+    "salario": 9523080
+  },
+  "Adem Bona": {
+    "anios_contrato": 2,
+    "dorsal": 30,
+    "equipo": "PHI",
+    "salario": 2296271
+  },
+  "Adou Thiero": {
+    "anios_contrato": 2,
+    "dorsal": 1,
+    "equipo": "LAL",
+    "salario": 2150917
+  },
+  "Ajay Mitchell": {
+    "anios_contrato": 2,
+    "dorsal": 25,
+    "equipo": "OKC",
+    "salario": 2850000
+  },
+  "Al Horford": {
+    "anios_contrato": 2,
+    "dorsal": 20,
+    "equipo": "GSW",
+    "salario": 6822000
+  },
+  "Alex Caruso": {
+    "anios_contrato": 3,
+    "dorsal": 9,
+    "equipo": "OKC",
+    "salario": 19550160
+  },
+  "Alex Morales": {
+    "dorsal": 30,
+    "equipo": "ORL"
+  },
+  "Alex Sarr": {
+    "anios_contrato": 2,
+    "dorsal": 20,
+    "equipo": "WAS",
+    "salario": 12370680
+  },
+  "Alijah Martin": {
+    "anios_contrato": 2,
+    "dorsal": 55,
+    "equipo": "TOR",
+    "salario": 2185116
+  },
+  "Alperen Şengün": {
+    "anios_contrato": 4,
+    "dorsal": 28,
+    "equipo": "HOU",
+    "salario": 35642202
+  },
+  "Amari Williams": {
+    "dorsal": 77,
+    "equipo": "BOS"
+  },
+  "Amen Thompson": {
+    "anios_contrato": 1,
+    "dorsal": 1,
+    "equipo": "HOU",
+    "salario": 12258609
+  },
+  "Andre Drummond": {
+    "anios_contrato": 1,
+    "dorsal": 0,
+    "equipo": "NYK",
+    "salario": 2449421
+  },
+  "Andre Jackson Jr.": {
+    "anios_contrato": 1,
+    "salario": 2406205
+  },
+  "Andrew Nembhard": {
+    "anios_contrato": 2,
+    "dorsal": 2,
+    "equipo": "IND",
+    "salario": 19550160
+  },
+  "Andrew Wiggins": {
+    "anios_contrato": 3,
+    "dorsal": 22,
+    "equipo": "MIA",
+    "salario": 30169644
+  },
+  "Anfernee Simons": {
+    "anios_contrato": 2,
+    "dorsal": 5,
+    "equipo": "PHI",
+    "salario": 6000000
+  },
+  "Anthony Black": {
+    "anios_contrato": 1,
+    "dorsal": 0,
+    "equipo": "ORL",
+    "salario": 10106316
+  },
+  "Anthony Davis": {
+    "anios_contrato": 2,
+    "dorsal": 23,
+    "equipo": "WAS",
+    "salario": 58456566
+  },
+  "Anthony Edwards": {
+    "anios_contrato": 3,
+    "dorsal": 5,
+    "equipo": "MIN",
+    "salario": 48924624
+  },
+  "Ariel Hukporti": {
+    "anios_contrato": 1,
+    "dorsal": 55,
+    "equipo": "PHI",
+    "salario": 3400000
+  },
+  "Asa Newell": {
+    "anios_contrato": 3,
+    "dorsal": 14,
+    "equipo": "ATL",
+    "salario": 3399480
+  },
+  "Ausar Thompson": {
+    "anios_contrato": 1,
+    "dorsal": 9,
+    "equipo": "DET",
+    "salario": 11117925
+  },
+  "Austin Reaves": {
+    "anios_contrato": 4,
+    "dorsal": 15,
+    "equipo": "LAL",
+    "salario": 41240250
+  },
+  "Ayo Dosunmu": {
+    "anios_contrato": 5,
+    "dorsal": 13,
+    "equipo": "MIN",
+    "salario": 19310345
+  },
+  "Bam Adebayo": {
+    "anios_contrato": 3,
+    "dorsal": 13,
+    "equipo": "MIA",
+    "salario": 49800000
+  },
+  "Baylor Scheierman": {
+    "anios_contrato": 2,
+    "dorsal": 55,
+    "equipo": "BOS",
+    "salario": 2744040
+  },
+  "Ben Saraf": {
+    "anios_contrato": 3,
+    "dorsal": 77,
+    "equipo": "BRK",
+    "salario": 3028560
+  },
+  "Ben Sheppard": {
+    "anios_contrato": 1,
+    "dorsal": 26,
+    "equipo": "IND",
+    "salario": 5031669
+  },
+  "Bilal Coulibaly": {
+    "anios_contrato": 1,
+    "dorsal": 0,
+    "equipo": "WAS",
+    "salario": 9240012
+  },
+  "Blake Hinson": {
+    "dorsal": 25,
+    "equipo": "UTA"
+  },
+  "Bobby Portis": {
+    "anios_contrato": 2,
+    "equipo": "MIA",
+    "salario": 14521414
+  },
+  "Bogdan Bogdanović": {
+    "anios_contrato": 1,
+    "dorsal": 31,
+    "equipo": "HOU",
+    "salario": 2449421
+  },
+  "Bones Hyland": {
+    "anios_contrato": 1,
+    "dorsal": 8,
+    "equipo": "MIN",
+    "salario": 2845883
+  },
+  "Bradley Beal": {
+    "anios_contrato": 4,
+    "salario": 25004710
+  },
+  "Branden Carlson": {
+    "anios_contrato": 1,
+    "dorsal": 10,
+    "equipo": "POR",
+    "salario": 2449421
+  },
+  "Brandin Podziemski": {
+    "anios_contrato": 1,
+    "dorsal": 2,
+    "equipo": "GSW",
+    "salario": 5679459
+  },
+  "Brandon Clarke": {
+    "anios_contrato": 1,
+    "salario": 12500000
+  },
+  "Brandon Ingram": {
+    "anios_contrato": 2,
+    "dorsal": 3,
+    "equipo": "LAC",
+    "salario": 40000000
+  },
+  "Brandon Miller": {
+    "anios_contrato": 1,
+    "dorsal": 24,
+    "equipo": "CHO",
+    "salario": 15104626
+  },
+  "Brice Sensabaugh": {
+    "anios_contrato": 1,
+    "dorsal": 28,
+    "equipo": "UTA",
+    "salario": 4862237
+  },
+  "Bronny James": {
+    "anios_contrato": 2,
+    "dorsal": 9,
+    "equipo": "LAL",
+    "salario": 2296271
+  },
+  "Brook Lopez": {
+    "anios_contrato": 1,
+    "dorsal": 11,
+    "equipo": "LAC",
+    "salario": 9187500
+  },
+  "Brooks Barnhizer": {
+    "dorsal": 23,
+    "equipo": "OKC"
+  },
+  "Bryce McGowens": {
+    "anios_contrato": 2,
+    "dorsal": 11,
+    "equipo": "NOP",
+    "salario": 2584539
+  },
+  "Bub Carrington": {
+    "anios_contrato": 2,
+    "dorsal": 7,
+    "equipo": "WAS",
+    "salario": 4900560
+  },
+  "Buddy Hield": {
+    "anios_contrato": 2,
+    "dorsal": 8,
+    "equipo": "ATL",
+    "salario": 9658536
+  },
+  "CJ McCollum": {
+    "anios_contrato": 1,
+    "salario": 21000000
+  },
+  "Cade Cunningham": {
+    "anios_contrato": 4,
+    "dorsal": 2,
+    "equipo": "DET",
+    "salario": 50105628
+  },
+  "Caleb Love": {
+    "dorsal": 9,
+    "equipo": "PHI"
+  },
+  "Caleb Martin": {
+    "anios_contrato": 2,
+    "dorsal": 16,
+    "equipo": "DAL",
+    "salario": 10001493
+  },
+  "Cam Christie": {
+    "anios_contrato": 2,
+    "salario": 2296271
+  },
+  "Cam Spencer": {
+    "anios_contrato": 3,
+    "dorsal": 24,
+    "equipo": "MEM",
+    "salario": 2411090
+  },
+  "Cam Whitmore": {
+    "anios_contrato": 1,
+    "dorsal": 1,
+    "equipo": "WAS",
+    "salario": 5458310
+  },
+  "Cameron Johnson": {
+    "anios_contrato": 1,
+    "dorsal": 23,
+    "equipo": "DEN",
+    "salario": 23062500
+  },
+  "Caris LeVert": {
+    "anios_contrato": 1,
+    "dorsal": 12,
+    "equipo": "MIL",
+    "salario": 14809200
+  },
+  "Carter Bryant": {
+    "anios_contrato": 3,
+    "dorsal": 11,
+    "equipo": "SAS",
+    "salario": 5145360
+  },
+  "Cason Wallace": {
+    "anios_contrato": 1,
+    "dorsal": 22,
+    "equipo": "OKC",
+    "salario": 7420806
+  },
+  "Cedric Coward": {
+    "anios_contrato": 3,
+    "dorsal": 23,
+    "equipo": "MEM",
+    "salario": 6001080
+  },
+  "Chaney Johnson": {
+    "dorsal": 31,
+    "equipo": "BRK"
+  },
+  "Charles Bassey": {
+    "anios_contrato": 1,
+    "dorsal": 28,
+    "equipo": "GSW",
+    "salario": 2449421
+  },
+  "Chaz Lanier": {
+    "anios_contrato": 3,
+    "dorsal": 20,
+    "equipo": "DET",
+    "salario": 2150917
+  },
+  "Chet Holmgren": {
+    "anios_contrato": 5,
+    "dorsal": 7,
+    "equipo": "OKC",
+    "salario": 41500000
+  },
+  "Chris Mañon": {
+    "dorsal": 30,
+    "equipo": "LAL"
+  },
+  "Chris Youngblood": {
+    "dorsal": 11,
+    "equipo": "POR"
+  },
+  "Christian Braun": {
+    "anios_contrato": 5,
+    "dorsal": 0,
+    "equipo": "DEN",
+    "salario": 21551726
+  },
+  "Christian Koloko": {
+    "anios_contrato": 1,
+    "equipo": "NOP",
+    "salario": 2625627
+  },
+  "Chucky Hepburn": {
+    "dorsal": 24,
+    "equipo": "TOR"
+  },
+  "Clint Capela": {
+    "anios_contrato": 2,
+    "dorsal": 30,
+    "equipo": "HOU",
+    "salario": 7035000
+  },
+  "Coby White": {
+    "anios_contrato": 3,
+    "dorsal": 3,
+    "equipo": "CHO",
+    "salario": 22839506
+  },
+  "Cody Williams": {
+    "anios_contrato": 2,
+    "dorsal": 5,
+    "equipo": "UTA",
+    "salario": 6015600
+  },
+  "Cole Anthony": {
+    "anios_contrato": 2,
+    "salario": 3700000
+  },
+  "Colin Castleton": {
+    "dorsal": 14,
+    "equipo": "ORL"
+  },
+  "Collin Gillespie": {
+    "anios_contrato": 4,
+    "dorsal": 12,
+    "equipo": "PHO",
+    "salario": 10714286
+  },
+  "Collin Murray-Boyles": {
+    "anios_contrato": 3,
+    "dorsal": 30,
+    "equipo": "TOR",
+    "salario": 6649560
+  },
+  "Collin Sexton": {
+    "anios_contrato": 2,
+    "dorsal": 10,
+    "equipo": "LAL",
+    "salario": 9366000
+  },
+  "Cooper Flagg": {
+    "anios_contrato": 3,
+    "dorsal": 32,
+    "equipo": "DAL",
+    "salario": 14517480
+  },
+  "Corey Kispert": {
+    "anios_contrato": 3,
+    "dorsal": 24,
+    "equipo": "ATL",
+    "salario": 13975000
+  },
+  "Cormac Ryan": {
+    "dorsal": 30,
+    "equipo": "MIL"
+  },
+  "Craig Porter Jr.": {
+    "anios_contrato": 1,
+    "dorsal": 9,
+    "equipo": "CLE",
+    "salario": 2406205
+  },
+  "D'Angelo Russell": {
+    "anios_contrato": 1,
+    "equipo": "MEM",
+    "salario": 5969250
+  },
+  "DaRon Holmes": {
+    "anios_contrato": 2,
+    "dorsal": 14,
+    "equipo": "DEN",
+    "salario": 3372120
+  },
+  "Daeqwon Plowden": {
+    "anios_contrato": 2,
+    "dorsal": 29,
+    "equipo": "SAC",
+    "salario": 2449421
+  },
+  "Dalton Knecht": {
+    "anios_contrato": 2,
+    "dorsal": 4,
+    "equipo": "LAL",
+    "salario": 4201080
+  },
+  "Daniel Gafford": {
+    "anios_contrato": 3,
+    "dorsal": 21,
+    "equipo": "DAL",
+    "salario": 17263584
+  },
+  "Daniss Jenkins": {
+    "anios_contrato": 1,
+    "dorsal": 24,
+    "equipo": "DET",
+    "salario": 4000000
+  },
+  "Danny Wolf": {
+    "anios_contrato": 3,
+    "dorsal": 2,
+    "equipo": "BRK",
+    "salario": 2941440
+  },
+  "Darius Garland": {
+    "anios_contrato": 2,
+    "dorsal": 10,
+    "equipo": "LAC",
+    "salario": 42166510
+  },
+  "David Jones García": {
+    "dorsal": 25,
+    "equipo": "SAS"
+  },
+  "Davion Mitchell": {
+    "anios_contrato": 1,
+    "dorsal": 2,
+    "equipo": "MIA",
+    "salario": 12400000
+  },
+  "Day'Ron Sharpe": {
+    "anios_contrato": 2,
+    "dorsal": 20,
+    "equipo": "BRK",
+    "salario": 10000000
+  },
+  "De'Aaron Fox": {
+    "anios_contrato": 4,
+    "dorsal": 4,
+    "equipo": "SAS",
+    "salario": 49800000
+  },
+  "De'Andre Hunter": {
+    "anios_contrato": 1,
+    "dorsal": 15,
+    "equipo": "SAC",
+    "salario": 24910714
+  },
+  "De'Anthony Melton": {
+    "anios_contrato": 1,
+    "salario": 3451779
+  },
+  "DeAndre Jordan": {
+    "anios_contrato": 2,
+    "dorsal": 6,
+    "equipo": "NOP",
+    "salario": 3876529
+  },
+  "Dean Wade": {
+    "anios_contrato": 4,
+    "dorsal": 45,
+    "equipo": "PHI",
+    "salario": 9000000
+  },
+  "Deandre Ayton": {
+    "anios_contrato": 1,
+    "dorsal": 8,
+    "equipo": "WAS",
+    "salario": 8104000
+  },
+  "Dejounte Murray": {
+    "anios_contrato": 2,
+    "dorsal": 5,
+    "equipo": "NOP",
+    "salario": 32785071
+  },
+  "Deni Avdija": {
+    "anios_contrato": 2,
+    "dorsal": 8,
+    "equipo": "POR",
+    "salario": 13125000
+  },
+  "Dennis Schröder": {
+    "anios_contrato": 2,
+    "dorsal": 8,
+    "equipo": "CLE",
+    "salario": 14809200
+  },
+  "Dereck Lively II": {
+    "anios_contrato": 1,
+    "dorsal": 2,
+    "equipo": "DAL",
+    "salario": 7239131
+  },
+  "Derik Queen": {
+    "anios_contrato": 3,
+    "dorsal": 22,
+    "equipo": "NOP",
+    "salario": 5416080
+  },
+  "Derrick Jones Jr.": {
+    "anios_contrato": 1,
+    "dorsal": 5,
+    "equipo": "LAC",
+    "salario": 10476190
+  },
+  "Derrick White": {
+    "anios_contrato": 3,
+    "dorsal": 9,
+    "equipo": "BOS",
+    "salario": 30348000
+  },
+  "Desmond Bane": {
+    "anios_contrato": 3,
+    "dorsal": 3,
+    "equipo": "ORL",
+    "salario": 39446090
+  },
+  "Devin Booker": {
+    "anios_contrato": 4,
+    "dorsal": 15,
+    "equipo": "PHO",
+    "salario": 57078728
+  },
+  "Devin Carter": {
+    "anios_contrato": 2,
+    "equipo": "ATL",
+    "salario": 5158080
+  },
+  "Devin Vassell": {
+    "anios_contrato": 3,
+    "dorsal": 24,
+    "equipo": "SAS",
+    "salario": 27000000
+  },
+  "Dillon Brooks": {
+    "anios_contrato": 1,
+    "dorsal": 3,
+    "equipo": "PHO",
+    "salario": 19992727
+  },
+  "Domantas Sabonis": {
+    "anios_contrato": 2,
+    "dorsal": 11,
+    "equipo": "SAC",
+    "salario": 45472000
+  },
+  "Dominick Barlow": {
+    "anios_contrato": 1,
+    "dorsal": 25,
+    "equipo": "PHI",
+    "salario": 3415000
+  },
+  "Donovan Clingan": {
+    "anios_contrato": 2,
+    "dorsal": 23,
+    "equipo": "POR",
+    "salario": 7519920
+  },
+  "Donovan Mitchell": {
+    "anios_contrato": 5,
+    "dorsal": 45,
+    "equipo": "CLE",
+    "salario": 50105628
+  },
+  "Donte DiVincenzo": {
+    "anios_contrato": 1,
+    "dorsal": 0,
+    "equipo": "MIN",
+    "salario": 12535000
+  },
+  "Dorian Finney-Smith": {
+    "anios_contrato": 3,
+    "dorsal": 17,
+    "equipo": "CHO",
+    "salario": 13335000
+  },
+  "Drake Powell": {
+    "anios_contrato": 3,
+    "dorsal": 4,
+    "equipo": "BRK",
+    "salario": 3540600
+  },
+  "Draymond Green": {
+    "anios_contrato": 1,
+    "dorsal": 23,
+    "equipo": "GSW",
+    "salario": 27678571
+  },
+  "Dru Smith": {
+    "anios_contrato": 2,
+    "dorsal": 12,
+    "equipo": "MIA",
+    "salario": 2584539
+  },
+  "Duncan Robinson": {
+    "anios_contrato": 2,
+    "dorsal": 55,
+    "equipo": "DET",
+    "salario": 15992957
+  },
+  "Dylan Cardwell": {
+    "dorsal": 32,
+    "equipo": "SAC"
+  },
+  "Dylan Harper": {
+    "anios_contrato": 3,
+    "dorsal": 2,
+    "equipo": "SAS",
+    "salario": 12989040
+  },
+  "Dyson Daniels": {
+    "anios_contrato": 4,
+    "dorsal": 5,
+    "equipo": "ATL",
+    "salario": 25000000
+  },
+  "E.J. Liddell": {
+    "anios_contrato": 1,
+    "salario": 706898
+  },
+  "Egor Dёmin": {
+    "anios_contrato": 3,
+    "salario": 7233720
+  },
+  "Enrique Freeman": {
+    "dorsal": 25,
+    "equipo": "MIN"
+  },
+  "Ethan Thompson": {
+    "dorsal": 55,
+    "equipo": "IND"
+  },
+  "Evan Mobley": {
+    "anios_contrato": 4,
+    "dorsal": 4,
+    "equipo": "CLE",
+    "salario": 50105628
+  },
+  "Franz Wagner": {
+    "anios_contrato": 4,
+    "dorsal": 22,
+    "equipo": "ORL",
+    "salario": 41754690
+  },
+  "GG Jackson II": {
+    "anios_contrato": 1,
+    "salario": 2406205
+  },
+  "Gary Harris": {
+    "anios_contrato": 1,
+    "dorsal": 13,
+    "equipo": "DET",
+    "salario": 3815861
+  },
+  "Gary Trent Jr.": {
+    "anios_contrato": 4,
+    "dorsal": 5,
+    "equipo": "MIL",
+    "salario": 15200000
+  },
+  "Giannis Antetokounmpo": {
+    "anios_contrato": 2,
+    "dorsal": 7,
+    "equipo": "MIA",
+    "salario": 58456566
+  },
+  "Goga Bitadze": {
+    "anios_contrato": 1,
+    "dorsal": 35,
+    "equipo": "ORL",
+    "salario": 7608696
+  },
+  "Gradey Dick": {
+    "anios_contrato": 1,
+    "dorsal": 1,
+    "equipo": "LAC",
+    "salario": 7131511
+  },
+  "Grant Williams": {
+    "anios_contrato": 1,
+    "dorsal": 2,
+    "equipo": "CHO",
+    "salario": 14265750
+  },
+  "Grayson Allen": {
+    "anios_contrato": 2,
+    "dorsal": 8,
+    "equipo": "CHO",
+    "salario": 18125000
+  },
+  "Gui Santos": {
+    "anios_contrato": 3,
+    "dorsal": 15,
+    "equipo": "GSW",
+    "salario": 4629630
+  },
+  "Harrison Barnes": {
+    "anios_contrato": 1,
+    "dorsal": 40,
+    "equipo": "SAS",
+    "salario": 8000000
+  },
+  "Harrison Ingram": {
+    "anios_contrato": 1,
+    "equipo": "UTA",
+    "salario": 2449421
+  },
+  "Haywood Highsmith": {
+    "anios_contrato": 1,
+    "dorsal": 19,
+    "equipo": "PHO",
+    "salario": 3018158
+  },
+  "Herbert Jones": {
+    "anios_contrato": 4,
+    "salario": 14898786
+  },
+  "Hugo González": {
+    "anios_contrato": 3,
+    "dorsal": 28,
+    "equipo": "BOS",
+    "salario": 2923560
+  },
+  "Hunter Dickinson": {
+    "dorsal": 4,
+    "equipo": "NOP"
+  },
+  "Immanuel Quickley": {
+    "anios_contrato": 3,
+    "dorsal": 5,
+    "equipo": "TOR",
+    "salario": 32500000
+  },
+  "Isaac Jones": {
+    "dorsal": 3,
+    "equipo": "DET"
+  },
+  "Isaac Okoro": {
+    "anios_contrato": 1,
+    "dorsal": 35,
+    "equipo": "CHI",
+    "salario": 11814814
+  },
+  "Isaiah Collier": {
+    "anios_contrato": 2,
+    "dorsal": 8,
+    "equipo": "UTA",
+    "salario": 2763960
+  },
+  "Isaiah Crawford": {
+    "anios_contrato": 2,
+    "dorsal": 27,
+    "equipo": "HOU",
+    "salario": 2449421
+  },
+  "Isaiah Hartenstein": {
+    "anios_contrato": 3,
+    "dorsal": 55,
+    "equipo": "OKC",
+    "salario": 23148148
+  },
+  "Isaiah Jackson": {
+    "anios_contrato": 2,
+    "dorsal": 23,
+    "equipo": "LAC",
+    "salario": 7000000
+  },
+  "Isaiah Joe": {
+    "anios_contrato": 2,
+    "dorsal": 17,
+    "equipo": "DET",
+    "salario": 11323006
+  },
+  "Isaiah Stewart": {
+    "anios_contrato": 2,
+    "dorsal": 28,
+    "equipo": "MEM",
+    "salario": 15000000
+  },
+  "Ivica Zubac": {
+    "anios_contrato": 2,
+    "dorsal": 40,
+    "equipo": "IND",
+    "salario": 20342140
+  },
+  "JD Davison": {
+    "anios_contrato": 1,
+    "salario": 2584539
+  },
+  "Ja Morant": {
+    "anios_contrato": 2,
+    "dorsal": 1,
+    "equipo": "POR",
+    "salario": 42166510
+  },
+  "Ja'Kobe Walter": {
+    "anios_contrato": 2,
+    "dorsal": 14,
+    "equipo": "TOR",
+    "salario": 3811800
+  },
+  "Jabari Smith Jr.": {
+    "anios_contrato": 5,
+    "dorsal": 10,
+    "equipo": "HOU",
+    "salario": 23643411
+  },
+  "Jabari Walker": {
+    "anios_contrato": 1,
+    "dorsal": 33,
+    "equipo": "PHI",
+    "salario": 2584539
+  },
+  "Jaden Hardy": {
+    "anios_contrato": 2,
+    "dorsal": 7,
+    "equipo": "LAL",
+    "salario": 6000000
+  },
+  "Jaden McDaniels": {
+    "anios_contrato": 3,
+    "dorsal": 3,
+    "equipo": "MIN",
+    "salario": 26200001
+  },
+  "Jae'Sean Tate": {
+    "anios_contrato": 1,
+    "dorsal": 8,
+    "equipo": "HOU",
+    "salario": 2449421
+  },
+  "Jahmai Mashack": {
+    "dorsal": 21,
+    "equipo": "MEM"
+  },
+  "Jaime Jaquez Jr.": {
+    "anios_contrato": 1,
+    "dorsal": 24,
+    "equipo": "MIL",
+    "salario": 5939141
+  },
+  "Jake LaRavia": {
+    "anios_contrato": 1,
+    "dorsal": 12,
+    "equipo": "LAL",
+    "salario": 6000000
+  },
+  "Jakob Poeltl": {
+    "anios_contrato": 4,
+    "dorsal": 19,
+    "equipo": "TOR",
+    "salario": 19500000
+  },
+  "Jalen Brunson": {
+    "anios_contrato": 3,
+    "dorsal": 11,
+    "equipo": "NYK",
+    "salario": 37739521
+  },
+  "Jalen Green": {
+    "anios_contrato": 2,
+    "dorsal": 4,
+    "equipo": "PHO",
+    "salario": 36251166
+  },
+  "Jalen Johnson": {
+    "anios_contrato": 4,
+    "dorsal": 1,
+    "equipo": "ATL",
+    "salario": 30000000
+  },
+  "Jalen Pickett": {
+    "anios_contrato": 1,
+    "salario": 2406205
+  },
+  "Jalen Slawson": {
+    "dorsal": 18,
+    "equipo": "IND"
+  },
+  "Jalen Smith": {
+    "anios_contrato": 1,
+    "dorsal": 25,
+    "equipo": "CHI",
+    "salario": 9428571
+  },
+  "Jalen Suggs": {
+    "anios_contrato": 4,
+    "dorsal": 4,
+    "equipo": "ORL",
+    "salario": 32400000
+  },
+  "Jalen Williams": {
+    "anios_contrato": 5,
+    "dorsal": 8,
+    "equipo": "OKC",
+    "salario": 41500000
+  },
+  "Jalen Wilson": {
+    "equipo": "ATL"
+  },
+  "Jamal Cain": {
+    "anios_contrato": 1,
+    "dorsal": 8,
+    "equipo": "ORL",
+    "salario": 2584539
+  },
+  "Jamal Murray": {
+    "anios_contrato": 3,
+    "dorsal": 27,
+    "equipo": "DEN",
+    "salario": 50105628
+  },
+  "Jamal Shead": {
+    "anios_contrato": 1,
+    "dorsal": 23,
+    "equipo": "TOR",
+    "salario": 2296271
+  },
+  "Jamaree Bouyea": {
+    "anios_contrato": 1,
+    "dorsal": 17,
+    "equipo": "PHO",
+    "salario": 2584539
+  },
+  "James Harden": {
+    "anios_contrato": 1,
+    "salario": 42317307
+  },
+  "Jamir Watkins": {
+    "dorsal": 5,
+    "equipo": "WAS"
+  },
+  "Jamison Battle": {
+    "anios_contrato": 1,
+    "dorsal": 77,
+    "equipo": "TOR",
+    "salario": 2296271
+  },
+  "Jarace Walker": {
+    "anios_contrato": 1,
+    "dorsal": 5,
+    "equipo": "IND",
+    "salario": 8478542
+  },
+  "Jared McCain": {
+    "anios_contrato": 2,
+    "dorsal": 3,
+    "equipo": "OKC",
+    "salario": 4422600
+  },
+  "Jaren Jackson Jr.": {
+    "anios_contrato": 4,
+    "dorsal": 20,
+    "equipo": "UTA",
+    "salario": 49000000
+  },
+  "Jarred Vanderbilt": {
+    "anios_contrato": 2,
+    "dorsal": 2,
+    "equipo": "LAL",
+    "salario": 12428571
+  },
+  "Jarrett Allen": {
+    "anios_contrato": 3,
+    "dorsal": 31,
+    "equipo": "CLE",
+    "salario": 28000000
+  },
+  "Jase Richardson": {
+    "anios_contrato": 3,
+    "dorsal": 11,
+    "equipo": "ORL",
+    "salario": 3132360
+  },
+  "Javon Small": {
+    "dorsal": 10,
+    "equipo": "MEM"
+  },
+  "Javonte Green": {
+    "anios_contrato": 1,
+    "dorsal": 31,
+    "equipo": "DET",
+    "salario": 3943679
+  },
+  "Jaxson Hayes": {
+    "anios_contrato": 2,
+    "dorsal": 11,
+    "equipo": "UTA",
+    "salario": 6000000
+  },
+  "Jay Huff": {
+    "anios_contrato": 2,
+    "salario": 2667944
+  },
+  "Jaylen Brown": {
+    "anios_contrato": 3,
+    "dorsal": 7,
+    "equipo": "PHI",
+    "salario": 57078728
+  },
+  "Jaylen Clark": {
+    "anios_contrato": 3,
+    "dorsal": 7,
+    "equipo": "MIN",
+    "salario": 3086420
+  },
+  "Jaylen Wells": {
+    "anios_contrato": 2,
+    "dorsal": 0,
+    "equipo": "MEM",
+    "salario": 2296271
+  },
+  "Jaylin Williams": {
+    "anios_contrato": 2,
+    "dorsal": 6,
+    "equipo": "OKC",
+    "salario": 7774648
+  },
+  "Jaylon Tyson": {
+    "anios_contrato": 2,
+    "dorsal": 20,
+    "equipo": "CLE",
+    "salario": 3658560
+  },
+  "Jayson Kent": {
+    "dorsal": 29,
+    "equipo": "POR"
+  },
+  "Jayson Tatum": {
+    "anios_contrato": 4,
+    "dorsal": 0,
+    "equipo": "BOS",
+    "salario": 58456566
+  },
+  "Jerami Grant": {
+    "anios_contrato": 2,
+    "equipo": "MEM",
+    "salario": 34206898
+  },
+  "Jeremiah Fears": {
+    "anios_contrato": 3,
+    "dorsal": 0,
+    "equipo": "NOP",
+    "salario": 7896240
+  },
+  "Jericho Sims": {
+    "anios_contrato": 1,
+    "dorsal": 0,
+    "equipo": "MIL",
+    "salario": 2801346
+  },
+  "Jett Howard": {
+    "dorsal": 9,
+    "equipo": "DAL"
+  },
+  "Jevon Carter": {
+    "anios_contrato": 1,
+    "dorsal": 2,
+    "equipo": "ORL",
+    "salario": 2449421
+  },
+  "Jimmy Butler": {
+    "anios_contrato": 1,
+    "dorsal": 10,
+    "equipo": "GSW",
+    "salario": 56832773
+  },
+  "Joan Beringer": {
+    "anios_contrato": 3,
+    "dorsal": 19,
+    "equipo": "MIN",
+    "salario": 4411200
+  },
+  "Jock Landale": {
+    "anios_contrato": 1,
+    "dorsal": 31,
+    "equipo": "ATL",
+    "salario": 14100000
+  },
+  "Joel Embiid": {
+    "anios_contrato": 3,
+    "dorsal": 21,
+    "equipo": "PHI",
+    "salario": 58100000
+  },
+  "John Collins": {
+    "anios_contrato": 3,
+    "equipo": "DET",
+    "salario": 17000000
+  },
+  "John Konchar": {
+    "anios_contrato": 1,
+    "dorsal": 55,
+    "equipo": "UTA",
+    "salario": 6165000
+  },
+  "John Poulakidas": {
+    "dorsal": 1,
+    "equipo": "DAL"
+  },
+  "John Tonje": {
+    "dorsal": 2,
+    "equipo": "POR"
+  },
+  "Johni Broome": {
+    "anios_contrato": 3,
+    "equipo": "LAC",
+    "salario": 2150917
+  },
+  "Johnny Furphy": {
+    "anios_contrato": 2,
+    "dorsal": 12,
+    "equipo": "IND",
+    "salario": 2296271
+  },
+  "Jonathan Isaac": {
+    "anios_contrato": 1,
+    "dorsal": 1,
+    "equipo": "ORL",
+    "salario": 10449421
+  },
+  "Jonathan Kuminga": {
+    "anios_contrato": 1,
+    "salario": 24300000
+  },
+  "Jonathan Mogbo": {
+    "dorsal": 22,
+    "equipo": "SAC"
+  },
+  "Jordan Clarkson": {
+    "anios_contrato": 1,
+    "dorsal": 0,
+    "equipo": "NYK",
+    "salario": 2449421
+  },
+  "Jordan Goodwin": {
+    "anios_contrato": 3,
+    "dorsal": 23,
+    "equipo": "PHO",
+    "salario": 5864198
+  },
+  "Jordan Hawkins": {
+    "anios_contrato": 1,
+    "dorsal": 24,
+    "equipo": "NOP",
+    "salario": 7021895
+  },
+  "Jordan McLaughlin": {
+    "anios_contrato": 1,
+    "dorsal": 0,
+    "equipo": "SAS",
+    "salario": 2449421
+  },
+  "Jordan Miller": {
+    "anios_contrato": 3,
+    "dorsal": 22,
+    "equipo": "LAC",
+    "salario": 5300000
+  },
+  "Jordan Poole": {
+    "anios_contrato": 1,
+    "dorsal": 3,
+    "equipo": "NOP",
+    "salario": 34044642
+  },
+  "Jordan Walsh": {
+    "anios_contrato": 4,
+    "dorsal": 27,
+    "equipo": "BOS",
+    "salario": 2406205
+  },
+  "Jose Alvarado": {
+    "anios_contrato": 3,
+    "dorsal": 5,
+    "equipo": "NYK",
+    "salario": 4500000
+  },
+  "Josh Giddey": {
+    "anios_contrato": 3,
+    "dorsal": 3,
+    "equipo": "CHI",
+    "salario": 25000000
+  },
+  "Josh Green": {
+    "anios_contrato": 1,
+    "dorsal": 10,
+    "equipo": "MIN",
+    "salario": 14679012
+  },
+  "Josh Hart": {
+    "anios_contrato": 2,
+    "dorsal": 3,
+    "equipo": "NYK",
+    "salario": 20923760
+  },
+  "Josh Minott": {
+    "anios_contrato": 2,
+    "dorsal": 0,
+    "equipo": "BRK",
+    "salario": 4500000
+  },
+  "Josh Okogie": {
+    "anios_contrato": 2,
+    "dorsal": 21,
+    "equipo": "UTA",
+    "salario": 6000000
+  },
+  "Jrue Holiday": {
+    "anios_contrato": 2,
+    "dorsal": 5,
+    "equipo": "POR",
+    "salario": 34800000
+  },
+  "Julian Champagnie": {
+    "anios_contrato": 3,
+    "dorsal": 30,
+    "equipo": "SAS",
+    "salario": 13888889
+  },
+  "Julian Phillips": {
+    "anios_contrato": 1,
+    "equipo": "HOU",
+    "salario": 2537526
+  },
+  "Julian Reese": {
+    "dorsal": 15,
+    "equipo": "WAS"
+  },
+  "Julian Strawther": {
+    "anios_contrato": 1,
+    "dorsal": 1,
+    "equipo": "DEN",
+    "salario": 4826931
+  },
+  "Julius Randle": {
+    "anios_contrato": 2,
+    "dorsal": 30,
+    "equipo": "BRK",
+    "salario": 33333334
+  },
+  "Justin Champagnie": {
+    "anios_contrato": 2,
+    "dorsal": 9,
+    "equipo": "WAS",
+    "salario": 2667944
+  },
+  "Justin Edwards": {
+    "anios_contrato": 2,
+    "dorsal": 11,
+    "equipo": "PHI",
+    "salario": 2411090
+  },
+  "Jusuf Nurkić": {
+    "anios_contrato": 2,
+    "dorsal": 30,
+    "equipo": "UTA",
+    "salario": 10576923
+  },
+  "Kam Jones": {
+    "equipo": "MIL"
+  },
+  "Karl-Anthony Towns": {
+    "anios_contrato": 2,
+    "dorsal": 32,
+    "equipo": "NYK",
+    "salario": 57078728
+  },
+  "Karlo Matković": {
+    "anios_contrato": 1,
+    "dorsal": 17,
+    "equipo": "NOP",
+    "salario": 2296271
+  },
+  "Kasparas Jakučionis": {
+    "anios_contrato": 3,
+    "dorsal": 25,
+    "equipo": "MIL",
+    "salario": 3841680
+  },
+  "Kawhi Leonard": {
+    "anios_contrato": 1,
+    "dorsal": 2,
+    "equipo": "TOR",
+    "salario": 50300000
+  },
+  "Keegan Murray": {
+    "anios_contrato": 5,
+    "dorsal": 13,
+    "equipo": "SAC",
+    "salario": 24137936
+  },
+  "Kel'el Ware": {
+    "anios_contrato": 2,
+    "dorsal": 9,
+    "equipo": "MIL",
+    "salario": 4654920
+  },
+  "Keldon Johnson": {
+    "anios_contrato": 1,
+    "dorsal": 3,
+    "equipo": "SAS",
+    "salario": 17500000
+  },
+  "Kelly Oubre Jr.": {
+    "anios_contrato": 2,
+    "dorsal": 10,
+    "equipo": "IND",
+    "salario": 8050000
+  },
+  "Kenrich Williams": {
+    "anios_contrato": 1,
+    "dorsal": 34,
+    "equipo": "OKC",
+    "salario": 5000000
+  },
+  "Kentavious Caldwell-Pope": {
+    "anios_contrato": 1,
+    "salario": 21621500
+  },
+  "Keon Ellis": {
+    "anios_contrato": 2,
+    "dorsal": 1,
+    "equipo": "BRK",
+    "salario": 8780488
+  },
+  "Keshon Gilbert": {
+    "dorsal": 51,
+    "equipo": "ATL"
+  },
+  "Kevin Durant": {
+    "anios_contrato": 2,
+    "dorsal": 7,
+    "equipo": "HOU",
+    "salario": 43902439
+  },
+  "Kevin Huerter": {
+    "anios_contrato": 3,
+    "dorsal": 27,
+    "equipo": "DET",
+    "salario": 8333333
+  },
+  "Kevin Porter Jr.": {
+    "anios_contrato": 1,
+    "dorsal": 7,
+    "equipo": "MIL",
+    "salario": 5390700
+  },
+  "Kevon Looney": {
+    "anios_contrato": 1,
+    "equipo": "LAL",
+    "salario": 2449421
+  },
+  "Keyonte George": {
+    "anios_contrato": 1,
+    "dorsal": 3,
+    "equipo": "UTA",
+    "salario": 6563925
+  },
+  "Khaman Maluach": {
+    "anios_contrato": 3,
+    "dorsal": 10,
+    "equipo": "PHO",
+    "salario": 6316680
+  },
+  "Khris Middleton": {
+    "anios_contrato": 3,
+    "dorsal": 22,
+    "equipo": "WAS",
+    "salario": 5591122
+  },
+  "Klay Thompson": {
+    "anios_contrato": 1,
+    "dorsal": 31,
+    "equipo": "DAL",
+    "salario": 17460317
+  },
+  "Kobe Brown": {
+    "dorsal": 24,
+    "equipo": "IND"
+  },
+  "Kobe Bufkin": {
+    "anios_contrato": 1,
+    "equipo": "FA",
+    "salario": 2449421
+  },
+  "Kobe Sanders": {
+    "anios_contrato": 4,
+    "dorsal": 4,
+    "equipo": "LAC",
+    "salario": 2622139
+  },
+  "Koby Brea": {
+    "dorsal": 14,
+    "equipo": "PHO"
+  },
+  "Kon Knueppel": {
+    "anios_contrato": 3,
+    "dorsal": 7,
+    "equipo": "CHO",
+    "salario": 10516560
+  },
+  "Kris Dunn": {
+    "anios_contrato": 1,
+    "dorsal": 8,
+    "equipo": "LAC",
+    "salario": 5684800
+  },
+  "Kris Murray": {
+    "anios_contrato": 1,
+    "equipo": "MEM",
+    "salario": 5315004
+  },
+  "Kristaps Porziņģis": {
+    "anios_contrato": 2,
+    "dorsal": 7,
+    "equipo": "GSW",
+    "salario": 19512195
+  },
+  "Kyle Anderson": {
+    "anios_contrato": 1,
+    "dorsal": 13,
+    "equipo": "TOR",
+    "salario": 2449421
+  },
+  "Kyle Filipowski": {
+    "anios_contrato": 2,
+    "dorsal": 2,
+    "equipo": "UTA",
+    "salario": 3000000
+  },
+  "Kyle Kuzma": {
+    "anios_contrato": 1,
+    "dorsal": 18,
+    "equipo": "MIL",
+    "salario": 20345152
+  },
+  "Kyshawn George": {
+    "anios_contrato": 2,
+    "dorsal": 18,
+    "equipo": "WAS",
+    "salario": 3108000
+  },
+  "LaMelo Ball": {
+    "anios_contrato": 3,
+    "dorsal": 1,
+    "equipo": "MIN",
+    "salario": 40770520
+  },
+  "Landry Shamet": {
+    "anios_contrato": 4,
+    "dorsal": 44,
+    "equipo": "NYK",
+    "salario": 5357143
+  },
+  "Larry Nance Jr.": {
+    "anios_contrato": 1,
+    "dorsal": 22,
+    "equipo": "IND",
+    "salario": 2449421
+  },
+  "Lauri Markkanen": {
+    "anios_contrato": 3,
+    "dorsal": 23,
+    "equipo": "UTA",
+    "salario": 46113154
+  },
+  "LeBron James": {
+    "anios_contrato": 2,
+    "dorsal": 23,
+    "equipo": "PHI",
+    "salario": 3876529
+  },
+  "Leonard Miller": {
+    "anios_contrato": 1,
+    "dorsal": 11,
+    "equipo": "CHI",
+    "salario": 2406205
+  },
+  "Liam McNeeley": {
+    "anios_contrato": 3,
+    "dorsal": 33,
+    "equipo": "CHO",
+    "salario": 2902080
+  },
+  "Luguentz Dort": {
+    "anios_contrato": 1,
+    "equipo": "ATL",
+    "salario": 18222222
+  },
+  "Luka Dončić": {
+    "anios_contrato": 3,
+    "dorsal": 77,
+    "equipo": "LAL",
+    "salario": 49800000
+  },
+  "Luka Garza": {
+    "anios_contrato": 1,
+    "dorsal": 52,
+    "equipo": "BOS",
+    "salario": 2801346
+  },
+  "Luke Kennard": {
+    "anios_contrato": 2,
+    "dorsal": 8,
+    "equipo": "PHO",
+    "salario": 6064000
+  },
+  "Luke Kornet": {
+    "anios_contrato": 3,
+    "dorsal": 7,
+    "equipo": "SAS",
+    "salario": 10450000
+  },
+  "Malevy Leons": {
+    "dorsal": 33,
+    "equipo": "GSW"
+  },
+  "Malik Monk": {
+    "anios_contrato": 2,
+    "dorsal": 0,
+    "equipo": "SAC",
+    "salario": 20190035
+  },
+  "Marcus Sasser": {
+    "anios_contrato": 1,
+    "dorsal": 8,
+    "equipo": "DAL",
+    "salario": 5198983
+  },
+  "Marcus Smart": {
+    "anios_contrato": 2,
+    "dorsal": 36,
+    "equipo": "HOU",
+    "salario": 6064000
+  },
+  "Mark Williams": {
+    "anios_contrato": 3,
+    "dorsal": 25,
+    "equipo": "PHO",
+    "salario": 11728395
+  },
+  "Marvin Bagley III": {
+    "anios_contrato": 1,
+    "dorsal": 3,
+    "equipo": "DEN",
+    "salario": 2449421
+  },
+  "Matas Buzelis": {
+    "anios_contrato": 2,
+    "dorsal": 14,
+    "equipo": "CHI",
+    "salario": 5715360
+  },
+  "Matisse Thybulle": {
+    "anios_contrato": 1,
+    "dorsal": 26,
+    "equipo": "LAL",
+    "salario": 2449421
+  },
+  "Max Christie": {
+    "anios_contrato": 2,
+    "dorsal": 0,
+    "equipo": "DAL",
+    "salario": 8285714
+  },
+  "Max Strus": {
+    "anios_contrato": 1,
+    "dorsal": 2,
+    "equipo": "CLE",
+    "salario": 16660836
+  },
+  "Maxime Raynaud": {
+    "anios_contrato": 2,
+    "dorsal": 42,
+    "equipo": "SAC",
+    "salario": 2150917
+  },
+  "Micah Peavy": {
+    "anios_contrato": 3,
+    "dorsal": 14,
+    "equipo": "NOP",
+    "salario": 2150917
+  },
+  "Micah Potter": {
+    "anios_contrato": 1,
+    "dorsal": 9,
+    "equipo": "POR",
+    "salario": 2801346
+  },
+  "Michael Porter Jr.": {
+    "anios_contrato": 1,
+    "dorsal": 17,
+    "equipo": "BRK",
+    "salario": 40806150
+  },
+  "Mikal Bridges": {
+    "anios_contrato": 4,
+    "dorsal": 25,
+    "equipo": "NYK",
+    "salario": 33482145
+  },
+  "Mike Conley": {
+    "anios_contrato": 1,
+    "dorsal": 44,
+    "equipo": "BOS",
+    "salario": 2449421
+  },
+  "Miles Bridges": {
+    "anios_contrato": 1,
+    "equipo": "PHO",
+    "salario": 22826087
+  },
+  "Miles McBride": {
+    "anios_contrato": 1,
+    "dorsal": 2,
+    "equipo": "NYK",
+    "salario": 3956523
+  },
+  "Mitchell Robinson": {
+    "anios_contrato": 3,
+    "dorsal": 4,
+    "equipo": "BOS",
+    "salario": 15044000
+  },
+  "Mo Bamba": {
+    "anios_contrato": 2,
+    "dorsal": 11,
+    "equipo": "UTA",
+    "salario": 3286399
+  },
+  "Mohamed Diawara": {
+    "anios_contrato": 4,
+    "dorsal": 51,
+    "equipo": "NYK",
+    "salario": 2232143
+  },
+  "Moses Moody": {
+    "anios_contrato": 2,
+    "dorsal": 4,
+    "equipo": "GSW",
+    "salario": 12500000
+  },
+  "Mouhamadou Gueye": {
+    "anios_contrato": 1,
+    "salario": 2411090
+  },
+  "Mouhamed Gueye": {
+    "anios_contrato": 1,
+    "dorsal": 18,
+    "equipo": "ATL",
+    "salario": 2406205
+  },
+  "Moussa Cisse": {
+    "anios_contrato": 2,
+    "dorsal": 30,
+    "equipo": "DAL",
+    "salario": 2185116
+  },
+  "Moussa Diabaté": {
+    "anios_contrato": 1,
+    "dorsal": 14,
+    "equipo": "CHO",
+    "salario": 2461462
+  },
+  "Myles Turner": {
+    "anios_contrato": 3,
+    "dorsal": 3,
+    "equipo": "MIL",
+    "salario": 26584164
+  },
+  "Myron Gardner": {
+    "anios_contrato": 2,
+    "dorsal": 15,
+    "equipo": "MIA",
+    "salario": 2150917
+  },
+  "Nae'Qwan Tomlin": {
+    "anios_contrato": 1,
+    "dorsal": 35,
+    "equipo": "CLE",
+    "salario": 2411090
+  },
+  "Naji Marshall": {
+    "anios_contrato": 1,
+    "dorsal": 3,
+    "equipo": "DAL",
+    "salario": 9428571
+  },
+  "Naz Reid": {
+    "anios_contrato": 4,
+    "dorsal": 0,
+    "equipo": "CHO",
+    "salario": 23275862
+  },
+  "Neemias Queta": {
+    "anios_contrato": 5,
+    "dorsal": 88,
+    "equipo": "BOS",
+    "salario": 2667944
+  },
+  "Nic Claxton": {
+    "anios_contrato": 2,
+    "salario": 23147727
+  },
+  "Nickeil Alexander-Walker": {
+    "anios_contrato": 3,
+    "dorsal": 7,
+    "equipo": "ATL",
+    "salario": 14403710
+  },
+  "Nicolas Batum": {
+    "anios_contrato": 1,
+    "salario": 5881680
+  },
+  "Nikola Jokić": {
+    "anios_contrato": 2,
+    "dorsal": 15,
+    "equipo": "DEN",
+    "salario": 59033114
+  },
+  "Nikola Jović": {
+    "anios_contrato": 4,
+    "dorsal": 5,
+    "equipo": "MIA",
+    "salario": 16200000
+  },
+  "Nikola Topić": {
+    "anios_contrato": 2,
+    "dorsal": 44,
+    "equipo": "OKC",
+    "salario": 5429760
+  },
+  "Nikola Vučević": {
+    "anios_contrato": 1,
+    "dorsal": 9,
+    "equipo": "ORL",
+    "salario": 2449421
+  },
+  "Nique Clifford": {
+    "anios_contrato": 3,
+    "dorsal": 5,
+    "equipo": "SAC",
+    "salario": 3263400
+  },
+  "Noa Essengue": {
+    "anios_contrato": 3,
+    "dorsal": 2,
+    "equipo": "CHI",
+    "salario": 5701200
+  },
+  "Noah Clowney": {
+    "anios_contrato": 1,
+    "dorsal": 21,
+    "equipo": "BRK",
+    "salario": 5414034
+  },
+  "Noah Penda": {
+    "anios_contrato": 3,
+    "dorsal": 93,
+    "equipo": "ORL",
+    "salario": 2150917
+  },
+  "Nolan Traoré": {
+    "anios_contrato": 3,
+    "dorsal": 10,
+    "equipo": "BRK",
+    "salario": 4002000
+  },
+  "Norman Powell": {
+    "anios_contrato": 2,
+    "dorsal": 24,
+    "equipo": "CHI",
+    "salario": 21500000
+  },
+  "OG Anunoby": {
+    "anios_contrato": 3,
+    "dorsal": 8,
+    "equipo": "NYK",
+    "salario": 42500000
+  },
+  "Obi Toppin": {
+    "anios_contrato": 2,
+    "dorsal": 1,
+    "equipo": "IND",
+    "salario": 15000000
+  },
+  "Olivier-Maxence Prosper": {
+    "anios_contrato": 2,
+    "dorsal": 18,
+    "equipo": "MEM",
+    "salario": 3500172
+  },
+  "Onyeka Okongwu": {
+    "anios_contrato": 2,
+    "dorsal": 17,
+    "equipo": "ATL",
+    "salario": 16120000
+  },
+  "Oscar Tshiebwe": {
+    "anios_contrato": 1,
+    "equipo": "HOU",
+    "salario": 2537526
+  },
+  "Oso Ighodaro": {
+    "anios_contrato": 2,
+    "dorsal": 11,
+    "equipo": "PHO",
+    "salario": 2296271
+  },
+  "Ousmane Dieng": {
+    "anios_contrato": 3,
+    "dorsal": 21,
+    "equipo": "MIL",
+    "salario": 5750000
+  },
+  "P.J. Washington": {
+    "anios_contrato": 4,
+    "dorsal": 25,
+    "equipo": "DAL",
+    "salario": 19813044
+  },
+  "Pacôme Dadiet": {
+    "anios_contrato": 2,
+    "dorsal": 4,
+    "equipo": "NYK",
+    "salario": 2983680
+  },
+  "Paolo Banchero": {
+    "anios_contrato": 5,
+    "dorsal": 5,
+    "equipo": "ORL",
+    "salario": 41500000
+  },
+  "Pascal Siakam": {
+    "anios_contrato": 2,
+    "dorsal": 43,
+    "equipo": "IND",
+    "salario": 48924624
+  },
+  "Pat Connaughton": {
+    "anios_contrato": 1,
+    "dorsal": 21,
+    "equipo": "CHO",
+    "salario": 3815861
+  },
+  "Pat Spencer": {
+    "equipo": "PHO"
+  },
+  "Patrick Williams": {
+    "anios_contrato": 3,
+    "dorsal": 44,
+    "equipo": "CHI",
+    "salario": 18000000
+  },
+  "Paul George": {
+    "anios_contrato": 2,
+    "dorsal": 13,
+    "equipo": "BOS",
+    "salario": 54126380
+  },
+  "Paul Reed": {
+    "anios_contrato": 1,
+    "dorsal": 7,
+    "equipo": "DET",
+    "salario": 5602689
+  },
+  "Payton Pritchard": {
+    "anios_contrato": 2,
+    "dorsal": 11,
+    "equipo": "BOS",
+    "salario": 7767857
+  },
+  "Pelle Larsson": {
+    "anios_contrato": 1,
+    "dorsal": 9,
+    "equipo": "MIA",
+    "salario": 2296271
+  },
+  "Pete Nance": {
+    "anios_contrato": 2,
+    "dorsal": 35,
+    "equipo": "MIL",
+    "salario": 2537526
+  },
+  "Precious Achiuwa": {
+    "anios_contrato": 2,
+    "dorsal": 9,
+    "equipo": "SAC",
+    "salario": 5477000
+  },
+  "Quentin Grimes": {
+    "anios_contrato": 4,
+    "dorsal": 5,
+    "equipo": "LAL",
+    "salario": 13953489
+  },
+  "Quenton Jackson": {
+    "dorsal": 29,
+    "equipo": "IND"
+  },
+  "Quinten Post": {
+    "anios_contrato": 3,
+    "equipo": "MEM",
+    "salario": 8285714
+  },
+  "RJ Barrett": {
+    "anios_contrato": 1,
+    "salario": 29616071
+  },
+  "Rasheer Fleming": {
+    "anios_contrato": 3,
+    "dorsal": 20,
+    "equipo": "PHO",
+    "salario": 2150917
+  },
+  "RayJ Dennis": {
+    "dorsal": 0,
+    "equipo": "ATL"
+  },
+  "Rayan Rupert": {
+    "dorsal": 12,
+    "equipo": "PHI"
+  },
+  "Reed Sheppard": {
+    "anios_contrato": 2,
+    "dorsal": 15,
+    "equipo": "HOU",
+    "salario": 11108880
+  },
+  "Riley Minix": {
+    "dorsal": 12,
+    "equipo": "CLE"
+  },
+  "Rob Dillingham": {
+    "anios_contrato": 2,
+    "dorsal": 7,
+    "equipo": "CHI",
+    "salario": 6889320
+  },
+  "Robert Williams": {
+    "anios_contrato": 3,
+    "dorsal": 35,
+    "equipo": "POR",
+    "salario": 13968254
+  },
+  "Rocco Zikarsky": {
+    "dorsal": 44,
+    "equipo": "MIN"
+  },
+  "Ron Harper Jr.": {
+    "anios_contrato": 4,
+    "dorsal": 8,
+    "equipo": "BOS",
+    "salario": 3150752
+  },
+  "Ron Holland": {
+    "anios_contrato": 2,
+    "dorsal": 5,
+    "equipo": "DET",
+    "salario": 9069600
+  },
+  "Royce O'Neale": {
+    "anios_contrato": 2,
+    "dorsal": 0,
+    "equipo": "CHO",
+    "salario": 10875000
+  },
+  "Rudy Gobert": {
+    "anios_contrato": 2,
+    "dorsal": 27,
+    "equipo": "MIN",
+    "salario": 36500000
+  },
+  "Rui Hachimura": {
+    "anios_contrato": 2,
+    "dorsal": 28,
+    "equipo": "LAC",
+    "salario": 14000000
+  },
+  "Ryan Dunn": {
+    "anios_contrato": 2,
+    "dorsal": 0,
+    "equipo": "PHO",
+    "salario": 2784240
+  },
+  "Ryan Kalkbrenner": {
+    "anios_contrato": 3,
+    "dorsal": 11,
+    "equipo": "CHO",
+    "salario": 2411090
+  },
+  "Ryan Nembhard": {
+    "anios_contrato": 1,
+    "equipo": "ATL",
+    "salario": 2150917
+  },
+  "Ryan Rollins": {
+    "anios_contrato": 2,
+    "dorsal": 13,
+    "equipo": "MIL",
+    "salario": 4000000
+  },
+  "Saddiq Bey": {
+    "anios_contrato": 1,
+    "dorsal": 41,
+    "equipo": "NOP",
+    "salario": 6440678
+  },
+  "Sam Hauser": {
+    "anios_contrato": 3,
+    "dorsal": 30,
+    "equipo": "BOS",
+    "salario": 10848215
+  },
+  "Sam Merrill": {
+    "anios_contrato": 3,
+    "dorsal": 5,
+    "equipo": "CLE",
+    "salario": 9160715
+  },
+  "Sandro Mamukelashvili": {
+    "anios_contrato": 4,
+    "dorsal": 54,
+    "equipo": "LAL",
+    "salario": 13000000
+  },
+  "Santi Aldama": {
+    "anios_contrato": 2,
+    "dorsal": 34,
+    "equipo": "DAL",
+    "salario": 17007043
+  },
+  "Scoot Henderson": {
+    "anios_contrato": 1,
+    "dorsal": 0,
+    "equipo": "POR",
+    "salario": 13585523
+  },
+  "Scottie Barnes": {
+    "anios_contrato": 4,
+    "dorsal": 4,
+    "equipo": "TOR",
+    "salario": 41754690
+  },
+  "Scotty Pippen Jr.": {
+    "anios_contrato": 2,
+    "dorsal": 1,
+    "equipo": "MEM",
+    "salario": 2461462
+  },
+  "Sean Pedulla": {
+    "dorsal": 0,
+    "equipo": "LAC"
+  },
+  "Shaedon Sharpe": {
+    "anios_contrato": 4,
+    "dorsal": 17,
+    "equipo": "POR",
+    "salario": 20089287
+  },
+  "Shai Gilgeous-Alexander": {
+    "anios_contrato": 5,
+    "dorsal": 2,
+    "equipo": "OKC",
+    "salario": 40806150
+  },
+  "Sidy Cissoko": {
+    "anios_contrato": 1,
+    "dorsal": 91,
+    "equipo": "POR",
+    "salario": 2497812
+  },
+  "Simone Fontecchio": {
+    "anios_contrato": 1,
+    "dorsal": 0,
+    "equipo": "MIA",
+    "salario": 2449421
+  },
+  "Sion James": {
+    "anios_contrato": 3,
+    "dorsal": 4,
+    "equipo": "CHO",
+    "salario": 2411090
+  },
+  "Spencer Jones": {
+    "anios_contrato": 2,
+    "dorsal": 21,
+    "equipo": "DEN",
+    "salario": 5853659
+  },
+  "Stephen Curry": {
+    "anios_contrato": 1,
+    "dorsal": 30,
+    "equipo": "GSW",
+    "salario": 62587158
+  },
+  "Stephon Castle": {
+    "anios_contrato": 2,
+    "dorsal": 5,
+    "equipo": "SAS",
+    "salario": 10015920
+  },
+  "Steven Adams": {
+    "anios_contrato": 2,
+    "dorsal": 12,
+    "equipo": "HOU",
+    "salario": 13000000
+  },
+  "Svi Mykhailiuk": {
+    "anios_contrato": 2,
+    "dorsal": 10,
+    "equipo": "UTA",
+    "salario": 3850000
+  },
+  "T.J. McConnell": {
+    "anios_contrato": 3,
+    "dorsal": 9,
+    "equipo": "IND",
+    "salario": 11000000
+  },
+  "Taj Gibson": {
+    "dorsal": 67,
+    "equipo": "MEM"
+  },
+  "Tari Eason": {
+    "anios_contrato": 5,
+    "dorsal": 17,
+    "equipo": "HOU",
+    "salario": 14051724
+  },
+  "Taurean Prince": {
+    "anios_contrato": 1,
+    "dorsal": 12,
+    "equipo": "DET",
+    "salario": 3815861
+  },
+  "Taylor Hendricks": {
+    "anios_contrato": 1,
+    "dorsal": 22,
+    "equipo": "MEM",
+    "salario": 7805900
+  },
+  "Terance Mann": {
+    "anios_contrato": 2,
+    "dorsal": 14,
+    "equipo": "BRK",
+    "salario": 15500000
+  },
+  "Terrence Shannon Jr.": {
+    "anios_contrato": 2,
+    "dorsal": 4,
+    "equipo": "MIN",
+    "salario": 2801640
+  },
+  "Thomas Bryant": {
+    "anios_contrato": 1,
+    "dorsal": 3,
+    "equipo": "CLE",
+    "salario": 2449421
+  },
+  "Tidjane Salaün": {
+    "anios_contrato": 2,
+    "dorsal": 31,
+    "equipo": "CHO",
+    "salario": 8237880
+  },
+  "Tim Hardaway Jr.": {
+    "anios_contrato": 1,
+    "dorsal": 10,
+    "equipo": "DEN",
+    "salario": 6500000
+  },
+  "Tobias Harris": {
+    "anios_contrato": 2,
+    "dorsal": 23,
+    "equipo": "SAS",
+    "salario": 15044000
+  },
+  "Tolu Smith": {
+    "anios_contrato": 1,
+    "dorsal": 35,
+    "equipo": "DET",
+    "salario": 2411090
+  },
+  "Toumani Camara": {
+    "anios_contrato": 4,
+    "dorsal": 33,
+    "equipo": "POR",
+    "salario": 18080358
+  },
+  "Trae Young": {
+    "anios_contrato": 4,
+    "dorsal": 3,
+    "equipo": "WAS",
+    "salario": 49488300
+  },
+  "Trayce Jackson-Davis": {
+    "anios_contrato": 1,
+    "dorsal": 32,
+    "equipo": "TOR",
+    "salario": 2406205
+  },
+  "Tre Johnson": {
+    "anios_contrato": 3,
+    "dorsal": 12,
+    "equipo": "WAS",
+    "salario": 8649600
+  },
+  "Tre Jones": {
+    "anios_contrato": 2,
+    "dorsal": 30,
+    "equipo": "CHI",
+    "salario": 8000000
+  },
+  "Tre Mann": {
+    "anios_contrato": 2,
+    "dorsal": 23,
+    "equipo": "CHO",
+    "salario": 8000000
+  },
+  "Trendon Watford": {
+    "anios_contrato": 1,
+    "salario": 2801346
+  },
+  "Trey Alexander": {
+    "dorsal": 15,
+    "equipo": "UTA"
+  },
+  "Trey Murphy III": {
+    "anios_contrato": 3,
+    "dorsal": 25,
+    "equipo": "NOP",
+    "salario": 27000000
+  },
+  "Tristan Da Silva": {
+    "anios_contrato": 2,
+    "dorsal": 23,
+    "equipo": "ORL",
+    "salario": 3991200
+  },
+  "Tristan Enaruna": {
+    "dorsal": 21,
+    "equipo": "CLE"
+  },
+  "Tristan Vukcevic": {
+    "dorsal": 0,
+    "equipo": "WAS"
+  },
+  "Tristen Newton": {
+    "dorsal": 13,
+    "equipo": "HOU"
+  },
+  "Ty Jerome": {
+    "anios_contrato": 2,
+    "dorsal": 2,
+    "equipo": "MEM",
+    "salario": 9220050
+  },
+  "Tyler Herro": {
+    "anios_contrato": 1,
+    "dorsal": 11,
+    "equipo": "MIL",
+    "salario": 33000000
+  },
+  "Tyler Kolek": {
+    "anios_contrato": 2,
+    "dorsal": 13,
+    "equipo": "NYK",
+    "salario": 2296271
+  },
+  "Tyrese Maxey": {
+    "anios_contrato": 3,
+    "dorsal": 0,
+    "equipo": "PHI",
+    "salario": 40770520
+  },
+  "Tyrese Proctor": {
+    "anios_contrato": 3,
+    "dorsal": 24,
+    "equipo": "CLE",
+    "salario": 2150917
+  },
+  "Tyus Jones": {
+    "anios_contrato": 1,
+    "dorsal": 5,
+    "equipo": "DEN",
+    "salario": 2449421
+  },
+  "VJ Edgecombe": {
+    "anios_contrato": 3,
+    "salario": 11663880
+  },
+  "Victor Wembanyama": {
+    "anios_contrato": 6,
+    "dorsal": 1,
+    "equipo": "SAS",
+    "salario": 16868246
+  },
+  "Vladislav Goldin": {
+    "dorsal": 50,
+    "equipo": "MIA"
+  },
+  "Vít Krejčí": {
+    "anios_contrato": 2,
+    "dorsal": 27,
+    "equipo": "POR",
+    "salario": 2667944
+  },
+  "Walker Kessler": {
+    "anios_contrato": 4,
+    "dorsal": 14,
+    "equipo": "LAL",
+    "salario": 30232558
+  },
+  "Walter Clayton": {
+    "anios_contrato": 3,
+    "dorsal": 4,
+    "equipo": "MEM",
+    "salario": 4190520
+  },
+  "Wendell Carter Jr.": {
+    "anios_contrato": 3,
+    "dorsal": 34,
+    "equipo": "ORL",
+    "salario": 18102000
+  },
+  "Will Richard": {
+    "anios_contrato": 3,
+    "dorsal": 3,
+    "equipo": "GSW",
+    "salario": 2150917
+  },
+  "Will Riley": {
+    "anios_contrato": 3,
+    "dorsal": 27,
+    "equipo": "WAS",
+    "salario": 3688320
+  },
+  "Yang Hansen": {
+    "anios_contrato": 3,
+    "dorsal": 16,
+    "equipo": "POR",
+    "salario": 4643520
+  },
+  "Yanic Konan Niederhäuser": {
+    "anios_contrato": 3,
+    "dorsal": 14,
+    "equipo": "LAC",
+    "salario": 2880960
+  },
+  "Yves Missi": {
+    "anios_contrato": 2,
+    "dorsal": 21,
+    "equipo": "NOP",
+    "salario": 3512760
+  },
+  "Zaccharie Risacher": {
+    "anios_contrato": 2,
+    "equipo": "DAL",
+    "salario": 13826040
+  },
+  "Zach Collins": {
+    "anios_contrato": 2,
+    "dorsal": 12,
+    "equipo": "CHI",
+    "salario": 8292683
+  },
+  "Zach Edey": {
+    "anios_contrato": 2,
+    "dorsal": 14,
+    "equipo": "MEM",
+    "salario": 6332760
+  },
+  "Zach LaVine": {
+    "anios_contrato": 1,
+    "dorsal": 8,
+    "equipo": "SAC",
+    "salario": 48967380
+  },
+  "Zeke Nnaji": {
+    "anios_contrato": 2,
+    "dorsal": 22,
+    "equipo": "DEN",
+    "salario": 7466667
+  },
+  "Ziaire Williams": {
+    "anios_contrato": 1,
+    "dorsal": 11,
+    "equipo": "LAL",
+    "salario": 2449421
+  },
+  "Zion Williamson": {
+    "anios_contrato": 2,
+    "dorsal": 1,
+    "equipo": "NOP",
+    "salario": 42166510
+  },
+  "Zyon Pullin": {
+    "dorsal": 15,
+    "equipo": "MIN"
+  }
+}

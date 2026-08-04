@@ -1,0 +1,254 @@
+[
+  {
+    "team": "Cleveland Cavaliers",
+    "number": "23",
+    "name": "LeBron James",
+    "status": "candidato_futuro",
+    "probability": "muy_alta"
+  },
+  {
+    "team": "Miami Heat",
+    "number": "6",
+    "name": "LeBron James",
+    "status": "candidato_futuro",
+    "probability": "muy_alta"
+  },
+  {
+    "team": "Los Angeles Lakers",
+    "number": "23",
+    "name": "LeBron James",
+    "status": "candidato_futuro",
+    "probability": "muy_alta"
+  },
+  {
+    "team": "Golden State Warriors",
+    "number": "35",
+    "name": "Kevin Durant",
+    "status": "candidato_futuro",
+    "probability": "muy_alta"
+  },
+  {
+    "team": "Oklahoma City Thunder",
+    "number": "35",
+    "name": "Kevin Durant",
+    "status": "candidato_futuro",
+    "probability": "alta"
+  },
+  {
+    "team": "Phoenix Suns",
+    "number": "35",
+    "name": "Kevin Durant",
+    "status": "candidato_futuro",
+    "probability": "media"
+  },
+  {
+    "team": "Los Angeles Clippers",
+    "number": "3",
+    "name": "Chris Paul",
+    "status": "candidato_futuro",
+    "probability": "muy_alta"
+  },
+  {
+    "team": "New Orleans Pelicans",
+    "number": "3",
+    "name": "Chris Paul",
+    "status": "candidato_futuro",
+    "probability": "media"
+  },
+  {
+    "team": "Golden State Warriors",
+    "number": "30",
+    "name": "Stephen Curry",
+    "status": "candidato_futuro",
+    "probability": "muy_alta"
+  },
+  {
+    "team": "Toronto Raptors",
+    "number": "7",
+    "name": "Kyle Lowry",
+    "status": "candidato_futuro",
+    "probability": "confirmada"
+  },
+  {
+    "team": "Milwaukee Bucks",
+    "number": "34",
+    "name": "Giannis Antetokounmpo",
+    "status": "candidato_futuro",
+    "probability": "muy_alta"
+  },
+  {
+    "team": "Denver Nuggets",
+    "number": "15",
+    "name": "Nikola Jokic",
+    "status": "candidato_futuro",
+    "probability": "muy_alta"
+  },
+  {
+    "team": "Golden State Warriors",
+    "number": "11",
+    "name": "Klay Thompson",
+    "status": "candidato_futuro",
+    "probability": "alta"
+  },
+  {
+    "team": "Golden State Warriors",
+    "number": "23",
+    "name": "Draymond Green",
+    "status": "candidato_futuro",
+    "probability": "alta"
+  },
+  {
+    "team": "Portland Trail Blazers",
+    "number": "0",
+    "name": "Damian Lillard",
+    "status": "candidato_futuro",
+    "probability": "alta"
+  },
+  {
+    "team": "Oklahoma City Thunder",
+    "number": "0",
+    "name": "Russell Westbrook",
+    "status": "candidato_futuro",
+    "probability": "alta"
+  },
+  {
+    "team": "Houston Rockets",
+    "number": "13",
+    "name": "James Harden",
+    "status": "candidato_futuro",
+    "probability": "alta"
+  },
+  {
+    "team": "Toronto Raptors",
+    "number": "15",
+    "name": "Vince Carter",
+    "status": "candidato_futuro",
+    "probability": "confirmada"
+  },
+  {
+    "team": "Orlando Magic",
+    "number": "12",
+    "name": "Dwight Howard",
+    "status": "candidato_futuro",
+    "probability": "alta"
+  },
+  {
+    "team": "Toronto Raptors",
+    "number": "2",
+    "name": "Kawhi Leonard",
+    "status": "candidato_futuro",
+    "probability": "alta"
+  },
+  {
+    "team": "Memphis Grizzlies",
+    "number": "11",
+    "name": "Mike Conley",
+    "status": "candidato_futuro",
+    "probability": "alta"
+  },
+  {
+    "team": "Memphis Grizzlies",
+    "number": "33",
+    "name": "Marc Gasol",
+    "status": "candidato_futuro",
+    "probability": "alta"
+  },
+  {
+    "team": "Charlotte Hornets",
+    "number": "15",
+    "name": "Kemba Walker",
+    "status": "candidato_futuro",
+    "probability": "alta"
+  },
+  {
+    "team": "Dallas Mavericks",
+    "number": "77",
+    "name": "Luka Doncic",
+    "status": "candidato_futuro",
+    "probability": "media"
+  },
+  {
+    "team": "Atlanta Hawks",
+    "number": "15",
+    "name": "Al Horford",
+    "status": "candidato_futuro",
+    "probability": "media"
+  },
+  {
+    "team": "Boston Celtics",
+    "number": "42",
+    "name": "Al Horford",
+    "status": "candidato_futuro",
+    "probability": "media"
+  },
+  {
+    "team": "Cleveland Cavaliers",
+    "number": "2",
+    "name": "Kyrie Irving",
+    "status": "candidato_futuro",
+    "probability": "media"
+  },
+  {
+    "team": "Dallas Mavericks",
+    "number": "11",
+    "name": "Kyrie Irving",
+    "status": "candidato_futuro",
+    "probability": "media"
+  },
+  {
+    "team": "Minnesota Timberwolves",
+    "number": "32",
+    "name": "Karl-Anthony Towns",
+    "status": "candidato_futuro",
+    "probability": "media"
+  },
+  {
+    "team": "Toronto Raptors",
+    "number": "43",
+    "name": "Pascal Siakam",
+    "status": "candidato_futuro",
+    "probability": "media"
+  },
+  {
+    "team": "Sacramento Kings",
+    "number": "10",
+    "name": "Domantas Sabonis",
+    "status": "candidato_futuro",
+    "probability": "baja"
+  },
+  {
+    "team": "Indiana Pacers",
+    "number": "11",
+    "name": "Domantas Sabonis",
+    "status": "candidato_futuro",
+    "probability": "baja"
+  },
+  {
+    "team": "Los Angeles Clippers",
+    "number": "3",
+    "name": "Chris Paul",
+    "status": "candidato_futuro",
+    "probability": "alta"
+  },
+  {
+    "team": "New Orleans Hornets",
+    "number": "3",
+    "name": "Chris Paul",
+    "status": "candidato_futuro",
+    "probability": "alta"
+  },
+  {
+    "team": "New Orleans Pelicans",
+    "number": "3",
+    "name": "Chris Paul",
+    "status": "candidato_futuro",
+    "probability": "alta"
+  },
+  {
+    "team": "Phoenix Suns",
+    "number": "3",
+    "name": "Chris Paul",
+    "status": "candidato_futuro",
+    "probability": "media"
+  }
+]

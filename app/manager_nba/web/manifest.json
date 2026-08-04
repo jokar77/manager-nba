@@ -1,0 +1,37 @@
+{
+    "name": "Manager NBA",
+    "short_name": "Manager NBA",
+    "start_url": ".",
+    "scope": ".",
+    "display": "standalone",
+    "background_color": "#101418",
+    "theme_color": "#101418",
+    "description": "Dirige tu franquicia de la NBA: alineaciones, traspasos, draft y temporada tras temporada. Funciona sin conexión.",
+    "lang": "es",
+    "orientation": "any",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

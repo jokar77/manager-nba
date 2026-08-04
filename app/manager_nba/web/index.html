@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Manager NBA: dirige tu franquicia temporada tras temporada.">
+
+  <!--
+    viewport-fit=cover + las variables safe-area de más abajo: sin esto, en
+    un iPhone con notch la app se queda con franjas blancas arriba y abajo
+    al abrirla desde la pantalla de inicio.
+    user-scalable=no porque el juego ya se adapta al ancho; el zoom del
+    navegador aquí solo estorba al tocar botones.
+  -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+  <!-- Añadida a la pantalla de inicio del iPhone se abre como una app: sin
+       barra de Safari, a pantalla completa y con su propio icono. -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Manager NBA">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <meta name="theme-color" content="#101418">
+
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>Manager NBA</title>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: #101418;
+      overflow: hidden;
+      /* Nada de "tirar para recargar" ni rebote elástico: en un juego que
+         se maneja a base de listas, arrastrar hacia abajo recargaba la
+         página entera en mitad de una partida. */
+      overscroll-behavior: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
+</head>
+<body>
+  <script src="flutter_bootstrap.js" async></script>
+
+  <script>
+    // Service worker propio (web/sw.js). Es lo que permite jugar sin
+    // conexión: `flutter build web` deja el suyo vacío en esta versión, así
+    // que sin este registro la app no guardaría nada y en el metro no
+    // arrancaría.
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').catch(function (e) {
+          console.warn('No se pudo registrar el service worker:', e);
+        });
+      });
+    }
+  </script>
+</body>
+</html>

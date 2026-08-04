@@ -1,0 +1,76 @@
+# Compila el juego y lo publica en GitHub Pages en cada push a main.
+#
+# La gracia es no tener que compilar a mano nunca más: subes un cambio y en
+# unos minutos tus amigos lo tienen. El service worker se encarga de que la
+# próxima vez que abran el juego se traigan la versión nueva.
+name: Publicar el juego
+
+on:
+  push:
+    branches: [main]
+  # Y también a mano, desde la pestaña Actions, sin tener que tocar código.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Si subes dos cambios seguidos, se publica el último y se cancela el
+# anterior en vez de pelearse por quién despliega.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  construir:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          # Fijada a la misma con la que está hecho el juego: que una
+          # actualización de Flutter no rompa la publicación por sorpresa.
+          flutter-version: 3.44.8
+
+      - name: Dependencias
+        working-directory: app/manager_nba
+        run: flutter pub get
+
+      # Si los tests fallan NO se publica. Es a propósito: más vale que tus
+      # amigos sigan con la versión de ayer que darles una rota.
+      - name: Tests
+        working-directory: app/manager_nba
+        run: flutter test
+
+      # Los dos flags importan:
+      #   --no-web-resources-cdn  CanvasKit (7 MB) va en el propio sitio en
+      #     vez de descargarse de gstatic.com, que es lo que permite jugar
+      #     sin conexión.
+      #   --pwa-strategy=none     Flutter genera un service worker VACÍO en
+      #     esta versión; el bueno es web/sw.js, escrito a mano.
+      # Y el base-href tiene que ser el nombre del repositorio, porque
+      # Pages sirve el sitio en usuario.github.io/NOMBRE/ y no en la raíz.
+      - name: Compilar para web
+        working-directory: app/manager_nba
+        run: >
+          flutter build web --release
+          --no-web-resources-cdn
+          --pwa-strategy=none
+          --base-href "/${{ github.event.repository.name }}/"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: app/manager_nba/build/web
+
+  desplegar:
+    needs: construir
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.despliegue.outputs.page_url }}
+    steps:
+      - id: despliegue
+        uses: actions/deploy-pages@v4

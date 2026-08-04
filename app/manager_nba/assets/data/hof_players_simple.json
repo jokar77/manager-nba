@@ -1,0 +1,1242 @@
+[
+  {
+    "Year": "2026",
+    "Name": "Amar'e Stoudemire",
+    "G": "846",
+    "PTS": "18.9",
+    "TRB": "7.8",
+    "AST": "1.2"
+  },
+  {
+    "Year": "2025",
+    "Name": "Dwight Howard",
+    "G": "1242",
+    "PTS": "15.7",
+    "TRB": "11.8",
+    "AST": "1.3"
+  },
+  {
+    "Year": "2025",
+    "Name": "Carmelo Anthony",
+    "G": "1260",
+    "PTS": "22.5",
+    "TRB": "6.2",
+    "AST": "2.7"
+  },
+  {
+    "Year": "2024",
+    "Name": "Dick Barnett",
+    "G": "971",
+    "PTS": "15.8",
+    "TRB": "2.9",
+    "AST": "2.8"
+  },
+  {
+    "Year": "2024",
+    "Name": "Walter Davis",
+    "G": "1033",
+    "PTS": "18.9",
+    "TRB": "3.0",
+    "AST": "3.8"
+  },
+  {
+    "Year": "2024",
+    "Name": "Chauncey Billups",
+    "G": "1043",
+    "PTS": "15.2",
+    "TRB": "2.9",
+    "AST": "5.4"
+  },
+  {
+    "Year": "2024",
+    "Name": "Vince Carter",
+    "G": "1541",
+    "PTS": "16.7",
+    "TRB": "4.3",
+    "AST": "3.1"
+  },
+  {
+    "Year": "2023",
+    "Name": "Pau Gasol",
+    "G": "1226",
+    "PTS": "17.0",
+    "TRB": "9.2",
+    "AST": "3.2"
+  },
+  {
+    "Year": "2023",
+    "Name": "Dirk Nowitzki",
+    "G": "1522",
+    "PTS": "20.7",
+    "TRB": "7.5",
+    "AST": "2.4"
+  },
+  {
+    "Year": "2023",
+    "Name": "Tony Parker",
+    "G": "1254",
+    "PTS": "15.5",
+    "TRB": "2.7",
+    "AST": "5.6"
+  },
+  {
+    "Year": "2023",
+    "Name": "Dwyane Wade",
+    "G": "1054",
+    "PTS": "22.0",
+    "TRB": "4.7",
+    "AST": "5.4"
+  },
+  {
+    "Year": "2022",
+    "Name": "Manu Ginobili",
+    "G": "1057",
+    "PTS": "13.3",
+    "TRB": "3.5",
+    "AST": "3.8"
+  },
+  {
+    "Year": "2022",
+    "Name": "Lou Hudson",
+    "G": "890",
+    "PTS": "20.2",
+    "TRB": "4.4",
+    "AST": "2.7"
+  },
+  {
+    "Year": "2022",
+    "Name": "Tim Hardaway",
+    "G": "867",
+    "PTS": "17.7",
+    "TRB": "3.3",
+    "AST": "8.2"
+  },
+  {
+    "Year": "2021",
+    "Name": "Chris Bosh",
+    "G": "893",
+    "PTS": "19.2",
+    "TRB": "8.5",
+    "AST": "2.0"
+  },
+  {
+    "Year": "2021",
+    "Name": "Bob Dandridge",
+    "G": "839",
+    "PTS": "18.5",
+    "TRB": "6.8",
+    "AST": "3.4"
+  },
+  {
+    "Year": "2021",
+    "Name": "Toni Kukoc",
+    "G": "846",
+    "PTS": "11.6",
+    "TRB": "4.2",
+    "AST": "3.7"
+  },
+  {
+    "Year": "2021",
+    "Name": "Paul Pierce",
+    "G": "1343",
+    "PTS": "19.7",
+    "TRB": "5.6",
+    "AST": "3.5"
+  },
+  {
+    "Year": "2021",
+    "Name": "Ben Wallace",
+    "G": "1088",
+    "PTS": "5.7",
+    "TRB": "9.6",
+    "AST": "1.3"
+  },
+  {
+    "Year": "2021",
+    "Name": "Chris Webber",
+    "G": "831",
+    "PTS": "20.7",
+    "TRB": "9.8",
+    "AST": "4.2"
+  },
+  {
+    "Year": "2020",
+    "Name": "Kevin Garnett",
+    "G": "1462",
+    "PTS": "17.8",
+    "TRB": "10.0",
+    "AST": "3.7"
+  },
+  {
+    "Year": "2020",
+    "Name": "Kobe Bryant",
+    "G": "1346",
+    "PTS": "25.0",
+    "TRB": "5.2",
+    "AST": "4.7"
+  },
+  {
+    "Year": "2020",
+    "Name": "Tim Duncan",
+    "G": "1392",
+    "PTS": "19.0",
+    "TRB": "10.8",
+    "AST": "3.0"
+  },
+  {
+    "Year": "2019",
+    "Name": "Carl Braun",
+    "G": "788",
+    "PTS": "13.5",
+    "TRB": "3.4",
+    "AST": "3.7"
+  },
+  {
+    "Year": "2019",
+    "Name": "Charles âChuckâ Cooper",
+    "G": "409",
+    "PTS": "6.7",
+    "TRB": "5.9",
+    "AST": "1.8"
+  },
+  {
+    "Year": "2019",
+    "Name": "Vlade Divac",
+    "G": "1134",
+    "PTS": "11.8",
+    "TRB": "8.2",
+    "AST": "3.1"
+  },
+  {
+    "Year": "2019",
+    "Name": "Bobby Jones",
+    "G": "941",
+    "PTS": "12.1",
+    "TRB": "6.1",
+    "AST": "2.7"
+  },
+  {
+    "Year": "2019",
+    "Name": "Sidney Moncrief",
+    "G": "767",
+    "PTS": "15.6",
+    "TRB": "4.7",
+    "AST": "3.6"
+  },
+  {
+    "Year": "2019",
+    "Name": "Jack Sikma",
+    "G": "1107",
+    "PTS": "15.6",
+    "TRB": "9.8",
+    "AST": "3.2"
+  },
+  {
+    "Year": "2019",
+    "Name": "Paul Westphal",
+    "G": "823",
+    "PTS": "15.6",
+    "TRB": "1.9",
+    "AST": "4.4"
+  },
+  {
+    "Year": "2018",
+    "Name": "Ray Allen",
+    "G": "1300",
+    "PTS": "18.9",
+    "TRB": "4.1",
+    "AST": "3.4"
+  },
+  {
+    "Year": "2018",
+    "Name": "Maurice Cheeks",
+    "G": "1101",
+    "PTS": "11.1",
+    "TRB": "2.8",
+    "AST": "6.7"
+  },
+  {
+    "Year": "2018",
+    "Name": "Grant Hill",
+    "G": "1026",
+    "PTS": "16.7",
+    "TRB": "6.0",
+    "AST": "4.1"
+  },
+  {
+    "Year": "2018",
+    "Name": "Jason Kidd",
+    "G": "1391",
+    "PTS": "12.6",
+    "TRB": "6.3",
+    "AST": "8.7"
+  },
+  {
+    "Year": "2018",
+    "Name": "Steve Nash",
+    "G": "1217",
+    "PTS": "14.3",
+    "TRB": "3.0",
+    "AST": "8.5"
+  },
+  {
+    "Year": "2018",
+    "Name": "Dino Radja",
+    "G": "224",
+    "PTS": "16.7",
+    "TRB": "8.4",
+    "AST": "1.6"
+  },
+  {
+    "Year": "2018",
+    "Name": "Charlie Scott",
+    "G": "717",
+    "PTS": "20.7",
+    "TRB": "4.0",
+    "AST": "4.9"
+  },
+  {
+    "Year": "2017",
+    "Name": "Tracy McGrady",
+    "G": "938",
+    "PTS": "19.6",
+    "TRB": "5.6",
+    "AST": "4.4"
+  },
+  {
+    "Year": "2017",
+    "Name": "George McGinnis",
+    "G": "842",
+    "PTS": "20.2",
+    "TRB": "11.0",
+    "AST": "3.7"
+  },
+  {
+    "Year": "2016",
+    "Name": "Yao Ming",
+    "G": "486",
+    "PTS": "19.0",
+    "TRB": "9.2",
+    "AST": "1.6"
+  },
+  {
+    "Year": "2016",
+    "Name": "Shaquille O'Neal",
+    "G": "1207",
+    "PTS": "23.7",
+    "TRB": "10.9",
+    "AST": "2.5"
+  },
+  {
+    "Year": "2016",
+    "Name": "Zelmo Beaty",
+    "G": "889",
+    "PTS": "17.1",
+    "TRB": "10.9",
+    "AST": "1.5"
+  },
+  {
+    "Year": "2016",
+    "Name": "Allen Iverson",
+    "G": "914",
+    "PTS": "26.7",
+    "TRB": "3.7",
+    "AST": "6.2"
+  },
+  {
+    "Year": "2015",
+    "Name": "Louie Dampier",
+    "G": "960",
+    "PTS": "15.9",
+    "TRB": "2.6",
+    "AST": "4.9"
+  },
+  {
+    "Year": "2015",
+    "Name": "Spencer Haywood",
+    "G": "844",
+    "PTS": "20.3",
+    "TRB": "10.3",
+    "AST": "1.8"
+  },
+  {
+    "Year": "2015",
+    "Name": "Dikembe Mutombo",
+    "G": "1196",
+    "PTS": "9.8",
+    "TRB": "10.3",
+    "AST": "1.0"
+  },
+  {
+    "Year": "2015",
+    "Name": "Jo Jo White",
+    "G": "837",
+    "PTS": "17.2",
+    "TRB": "4.0",
+    "AST": "4.9"
+  },
+  {
+    "Year": "2014",
+    "Name": "Nathaniel Clifton",
+    "G": "544",
+    "PTS": "10.0",
+    "TRB": "8.2",
+    "AST": "2.5"
+  },
+  {
+    "Year": "2014",
+    "Name": "Alonzo Mourning",
+    "G": "838",
+    "PTS": "17.1",
+    "TRB": "8.5",
+    "AST": "1.1"
+  },
+  {
+    "Year": "2014",
+    "Name": "Mitch Richmond",
+    "G": "976",
+    "PTS": "21.0",
+    "TRB": "3.9",
+    "AST": "3.5"
+  },
+  {
+    "Year": "2014",
+    "Name": "Guy Rodgers",
+    "G": "892",
+    "PTS": "11.7",
+    "TRB": "4.3",
+    "AST": "7.8"
+  },
+  {
+    "Year": "2014",
+    "Name": "Sarunas Marciulionis",
+    "G": "363",
+    "PTS": "12.8",
+    "TRB": "2.3",
+    "AST": "2.2"
+  },
+  {
+    "Year": "2013",
+    "Name": "Roger Brown",
+    "G": "605",
+    "PTS": "17.4",
+    "TRB": "6.2",
+    "AST": "3.8"
+  },
+  {
+    "Year": "2013",
+    "Name": "Richie Guerin",
+    "G": "848",
+    "PTS": "17.3",
+    "TRB": "5.0",
+    "AST": "5.0"
+  },
+  {
+    "Year": "2013",
+    "Name": "Bernard King",
+    "G": "874",
+    "PTS": "22.5",
+    "TRB": "5.8",
+    "AST": "3.3"
+  },
+  {
+    "Year": "2013",
+    "Name": "Gary Payton",
+    "G": "1335",
+    "PTS": "16.3",
+    "TRB": "3.9",
+    "AST": "6.7"
+  },
+  {
+    "Year": "2012",
+    "Name": "Chet Walker",
+    "G": "1032",
+    "PTS": "18.2",
+    "TRB": "7.1",
+    "AST": "2.1"
+  },
+  {
+    "Year": "2012",
+    "Name": "Jamaal Wilkes",
+    "G": "828",
+    "PTS": "17.7",
+    "TRB": "6.2",
+    "AST": "2.5"
+  },
+  {
+    "Year": "2012",
+    "Name": "Reggie Miller",
+    "G": "1389",
+    "PTS": "18.2",
+    "TRB": "3.0",
+    "AST": "3.0"
+  },
+  {
+    "Year": "2012",
+    "Name": "Ralph Sampson",
+    "G": "456",
+    "PTS": "15.4",
+    "TRB": "8.8",
+    "AST": "2.3"
+  },
+  {
+    "Year": "2012",
+    "Name": "Mel Daniels",
+    "G": "639",
+    "PTS": "18.4",
+    "TRB": "14.9",
+    "AST": "1.8"
+  },
+  {
+    "Year": "2011",
+    "Name": "Artis Gilmore",
+    "G": "1329",
+    "PTS": "18.8",
+    "TRB": "12.3",
+    "AST": "2.3"
+  },
+  {
+    "Year": "2011",
+    "Name": "Chris Mullin",
+    "G": "986",
+    "PTS": "18.2",
+    "TRB": "4.1",
+    "AST": "3.5"
+  },
+  {
+    "Year": "2011",
+    "Name": "Dennis Rodman",
+    "G": "911",
+    "PTS": "7.3",
+    "TRB": "13.1",
+    "AST": "1.8"
+  },
+  {
+    "Year": "2011",
+    "Name": "Arvydas Sabonis",
+    "G": "470",
+    "PTS": "12.0",
+    "TRB": "7.3",
+    "AST": "2.1"
+  },
+  {
+    "Year": "2010",
+    "Name": "Scottie Pippen",
+    "G": "1178",
+    "PTS": "16.1",
+    "TRB": "6.4",
+    "AST": "5.2"
+  },
+  {
+    "Year": "2010",
+    "Name": "Karl Malone",
+    "G": "1476",
+    "PTS": "25.0",
+    "TRB": "10.1",
+    "AST": "3.6"
+  },
+  {
+    "Year": "2010",
+    "Name": "Gus Johnson",
+    "G": "631",
+    "PTS": "16.2",
+    "TRB": "12.1",
+    "AST": "2.5"
+  },
+  {
+    "Year": "2010",
+    "Name": "Dennis Johnson",
+    "G": "1100",
+    "PTS": "14.1",
+    "TRB": "3.9",
+    "AST": "5.0"
+  },
+  {
+    "Year": "2009",
+    "Name": "Michael Jordan",
+    "G": "1072",
+    "PTS": "30.1",
+    "TRB": "6.2",
+    "AST": "5.3"
+  },
+  {
+    "Year": "2009",
+    "Name": "David Robinson",
+    "G": "987",
+    "PTS": "21.1",
+    "TRB": "10.6",
+    "AST": "2.5"
+  },
+  {
+    "Year": "2009",
+    "Name": "John Stockton",
+    "G": "1504",
+    "PTS": "13.1",
+    "TRB": "2.7",
+    "AST": "10.5"
+  },
+  {
+    "Year": "2008",
+    "Name": "Adrian Dantley",
+    "G": "955",
+    "PTS": "24.3",
+    "TRB": "5.7",
+    "AST": "3.0"
+  },
+  {
+    "Year": "2008",
+    "Name": "Patrick Ewing",
+    "G": "1183",
+    "PTS": "21.0",
+    "TRB": "9.8",
+    "AST": "1.9"
+  },
+  {
+    "Year": "2008",
+    "Name": "Hakeem Olajuwon",
+    "G": "1238",
+    "PTS": "21.8",
+    "TRB": "11.1",
+    "AST": "2.5"
+  },
+  {
+    "Year": "2006",
+    "Name": "Joe Dumars",
+    "G": "1018",
+    "PTS": "16.1",
+    "TRB": "2.2",
+    "AST": "4.5"
+  },
+  {
+    "Year": "2006",
+    "Name": "Dominique Wilkins",
+    "G": "1074",
+    "PTS": "24.8",
+    "TRB": "6.7",
+    "AST": "2.5"
+  },
+  {
+    "Year": "2006",
+    "Name": "Charles Barkley",
+    "G": "1073",
+    "PTS": "22.1",
+    "TRB": "11.7",
+    "AST": "3.9"
+  },
+  {
+    "Year": "2004",
+    "Name": "Maurice Stokes",
+    "G": "202",
+    "PTS": "16.4",
+    "TRB": "17.3",
+    "AST": "5.3"
+  },
+  {
+    "Year": "2004",
+    "Name": "Clyde Drexler",
+    "G": "1086",
+    "PTS": "20.4",
+    "TRB": "6.1",
+    "AST": "5.6"
+  },
+  {
+    "Year": "2003",
+    "Name": "Robert Parish",
+    "G": "1611",
+    "PTS": "14.5",
+    "TRB": "9.1",
+    "AST": "1.4"
+  },
+  {
+    "Year": "2003",
+    "Name": "James Worthy",
+    "G": "926",
+    "PTS": "17.6",
+    "TRB": "5.1",
+    "AST": "3.0"
+  },
+  {
+    "Year": "2002",
+    "Name": "Magic Johnson",
+    "G": "906",
+    "PTS": "19.5",
+    "TRB": "7.2",
+    "AST": "11.2"
+  },
+  {
+    "Year": "2002",
+    "Name": "Drazen Petrovic",
+    "G": "290",
+    "PTS": "15.4",
+    "TRB": "2.3",
+    "AST": "2.4"
+  },
+  {
+    "Year": "2001",
+    "Name": "Moses Malone",
+    "G": "1455",
+    "PTS": "20.3",
+    "TRB": "12.3",
+    "AST": "1.3"
+  },
+  {
+    "Year": "2000",
+    "Name": "Bob McAdoo",
+    "G": "852",
+    "PTS": "22.1",
+    "TRB": "9.4",
+    "AST": "2.3"
+  },
+  {
+    "Year": "2000",
+    "Name": "Isiah Thomas",
+    "G": "979",
+    "PTS": "19.2",
+    "TRB": "3.6",
+    "AST": "9.3"
+  },
+  {
+    "Year": "1999",
+    "Name": "Kevin McHale",
+    "G": "971",
+    "PTS": "17.9",
+    "TRB": "7.3",
+    "AST": "1.7"
+  },
+  {
+    "Year": "1998",
+    "Name": "Larry Bird",
+    "G": "897",
+    "PTS": "24.3",
+    "TRB": "10.0",
+    "AST": "6.3"
+  },
+  {
+    "Year": "1998",
+    "Name": "Arnie Risen",
+    "G": "637",
+    "PTS": "12.0",
+    "TRB": "9.7",
+    "AST": "1.7"
+  },
+  {
+    "Year": "1997",
+    "Name": "Alex English",
+    "G": "1193",
+    "PTS": "21.5",
+    "TRB": "5.5",
+    "AST": "3.6"
+  },
+  {
+    "Year": "1997",
+    "Name": "Bailey Howell",
+    "G": "950",
+    "PTS": "18.7",
+    "TRB": "9.9",
+    "AST": "2.0"
+  },
+  {
+    "Year": "1996",
+    "Name": "George Gervin",
+    "G": "1060",
+    "PTS": "25.1",
+    "TRB": "5.3",
+    "AST": "2.6"
+  },
+  {
+    "Year": "1996",
+    "Name": "Gail Goodrich",
+    "G": "1031",
+    "PTS": "18.6",
+    "TRB": "3.2",
+    "AST": "4.7"
+  },
+  {
+    "Year": "1996",
+    "Name": "David Thompson",
+    "G": "592",
+    "PTS": "22.7",
+    "TRB": "4.1",
+    "AST": "3.3"
+  },
+  {
+    "Year": "1996",
+    "Name": "George Yardley",
+    "G": "472",
+    "PTS": "19.2",
+    "TRB": "8.9",
+    "AST": "1.7"
+  },
+  {
+    "Year": "1995",
+    "Name": "Vern Mikkelsen",
+    "G": "699",
+    "PTS": "14.4",
+    "TRB": "9.4",
+    "AST": "2.2"
+  },
+  {
+    "Year": "1995",
+    "Name": "Kareem Abdul-Jabbar",
+    "G": "1560",
+    "PTS": "24.6",
+    "TRB": "11.2",
+    "AST": "3.6"
+  },
+  {
+    "Year": "1994",
+    "Name": "Buddy Jeannette",
+    "G": "139",
+    "PTS": "7.2",
+    "TRB": null,
+    "AST": "2.1"
+  },
+  {
+    "Year": "1993",
+    "Name": "Walt Bellamy",
+    "G": "1043",
+    "PTS": "20.1",
+    "TRB": "13.7",
+    "AST": "2.4"
+  },
+  {
+    "Year": "1993",
+    "Name": "Julius Erving",
+    "G": "1243",
+    "PTS": "24.2",
+    "TRB": "8.5",
+    "AST": "4.2"
+  },
+  {
+    "Year": "1993",
+    "Name": "Dan Issel",
+    "G": "1218",
+    "PTS": "22.6",
+    "TRB": "9.1",
+    "AST": "2.4"
+  },
+  {
+    "Year": "1993",
+    "Name": "Dick McGuire",
+    "G": "738",
+    "PTS": "8.0",
+    "TRB": "4.2",
+    "AST": "5.7"
+  },
+  {
+    "Year": "1993",
+    "Name": "Calvin Murphy",
+    "G": "1002",
+    "PTS": "17.9",
+    "TRB": "2.1",
+    "AST": "4.4"
+  },
+  {
+    "Year": "1993",
+    "Name": "Bill Walton",
+    "G": "468",
+    "PTS": "13.3",
+    "TRB": "10.5",
+    "AST": "3.4"
+  },
+  {
+    "Year": "1992",
+    "Name": "Connie Hawkins",
+    "G": "616",
+    "PTS": "18.7",
+    "TRB": "8.8",
+    "AST": "4.1"
+  },
+  {
+    "Year": "1992",
+    "Name": "Bob Lanier",
+    "G": "959",
+    "PTS": "20.1",
+    "TRB": "10.1",
+    "AST": "3.1"
+  },
+  {
+    "Year": "1991",
+    "Name": "Harry Gallatin",
+    "G": "682",
+    "PTS": "13.0",
+    "TRB": "11.9",
+    "AST": "1.8"
+  },
+  {
+    "Year": "1991",
+    "Name": "Tiny Archibald",
+    "G": "876",
+    "PTS": "18.8",
+    "TRB": "2.3",
+    "AST": "7.4"
+  },
+  {
+    "Year": "1991",
+    "Name": "Dave Cowens",
+    "G": "766",
+    "PTS": "17.6",
+    "TRB": "13.6",
+    "AST": "3.8"
+  },
+  {
+    "Year": "1990",
+    "Name": "Dave Bing",
+    "G": "901",
+    "PTS": "20.3",
+    "TRB": "3.8",
+    "AST": "6.0"
+  },
+  {
+    "Year": "1990",
+    "Name": "Elvin Hayes",
+    "G": "1303",
+    "PTS": "21.0",
+    "TRB": "12.5",
+    "AST": "1.8"
+  },
+  {
+    "Year": "1990",
+    "Name": "Neil Johnston",
+    "G": "516",
+    "PTS": "19.4",
+    "TRB": "11.3",
+    "AST": "2.5"
+  },
+  {
+    "Year": "1990",
+    "Name": "Earl Monroe",
+    "G": "926",
+    "PTS": "18.8",
+    "TRB": "3.0",
+    "AST": "3.9"
+  },
+  {
+    "Year": "1989",
+    "Name": "K.C. Jones",
+    "G": "676",
+    "PTS": "7.4",
+    "TRB": "3.5",
+    "AST": "4.3"
+  },
+  {
+    "Year": "1989",
+    "Name": "Lenny Wilkens",
+    "G": "1077",
+    "PTS": "16.5",
+    "TRB": "4.7",
+    "AST": "6.7"
+  },
+  {
+    "Year": "1988",
+    "Name": "Wes Unseld",
+    "G": "984",
+    "PTS": "10.8",
+    "TRB": "14.0",
+    "AST": "3.9"
+  },
+  {
+    "Year": "1988",
+    "Name": "Clyde Lovellette",
+    "G": "704",
+    "PTS": "17.0",
+    "TRB": "9.5",
+    "AST": "1.6"
+  },
+  {
+    "Year": "1987",
+    "Name": "Rick Barry",
+    "G": "1020",
+    "PTS": "24.8",
+    "TRB": "6.7",
+    "AST": "4.9"
+  },
+  {
+    "Year": "1987",
+    "Name": "Pete Maravich",
+    "G": "658",
+    "PTS": "24.2",
+    "TRB": "4.2",
+    "AST": "5.4"
+  },
+  {
+    "Year": "1987",
+    "Name": "Bobby Wanzer",
+    "G": "570",
+    "PTS": "12.1",
+    "TRB": "4.5",
+    "AST": "3.2"
+  },
+  {
+    "Year": "1987",
+    "Name": "Walt Frazier",
+    "G": "825",
+    "PTS": "18.9",
+    "TRB": "5.9",
+    "AST": "6.1"
+  },
+  {
+    "Year": "1987",
+    "Name": "Bob Houbregs",
+    "G": "281",
+    "PTS": "9.3",
+    "TRB": "5.5",
+    "AST": "1.8"
+  },
+  {
+    "Year": "1986",
+    "Name": "Billy Cunningham",
+    "G": "770",
+    "PTS": "21.2",
+    "TRB": "10.4",
+    "AST": "4.3"
+  },
+  {
+    "Year": "1986",
+    "Name": "Tom Heinsohn",
+    "G": "654",
+    "PTS": "18.6",
+    "TRB": "8.8",
+    "AST": "2.0"
+  },
+  {
+    "Year": "1985",
+    "Name": "Al Cervi",
+    "G": "202",
+    "PTS": "7.9",
+    "TRB": "1.8",
+    "AST": "3.2"
+  },
+  {
+    "Year": "1985",
+    "Name": "Nate Thurmond",
+    "G": "964",
+    "PTS": "15.0",
+    "TRB": "15.0",
+    "AST": "2.7"
+  },
+  {
+    "Year": "1984",
+    "Name": "Sam Jones",
+    "G": "871",
+    "PTS": "17.7",
+    "TRB": "4.9",
+    "AST": "2.5"
+  },
+  {
+    "Year": "1984",
+    "Name": "John Havlicek",
+    "G": "1270",
+    "PTS": "20.8",
+    "TRB": "6.3",
+    "AST": "4.8"
+  },
+  {
+    "Year": "1983",
+    "Name": "Bill Bradley",
+    "G": "742",
+    "PTS": "12.4",
+    "TRB": "3.2",
+    "AST": "3.4"
+  },
+  {
+    "Year": "1983",
+    "Name": "Dave DeBusschere",
+    "G": "875",
+    "PTS": "16.1",
+    "TRB": "11.0",
+    "AST": "2.9"
+  },
+  {
+    "Year": "1983",
+    "Name": "Jack Twyman",
+    "G": "823",
+    "PTS": "19.2",
+    "TRB": "6.6",
+    "AST": "2.3"
+  },
+  {
+    "Year": "1982",
+    "Name": "Hal Greer",
+    "G": "1122",
+    "PTS": "19.2",
+    "TRB": "5.0",
+    "AST": "4.0"
+  },
+  {
+    "Year": "1982",
+    "Name": "Slater Martin",
+    "G": "745",
+    "PTS": "9.8",
+    "TRB": "3.4",
+    "AST": "4.2"
+  },
+  {
+    "Year": "1982",
+    "Name": "Frank Ramsey",
+    "G": "623",
+    "PTS": "13.4",
+    "TRB": "5.5",
+    "AST": "1.8"
+  },
+  {
+    "Year": "1982",
+    "Name": "Willis Reed",
+    "G": "650",
+    "PTS": "18.7",
+    "TRB": "12.9",
+    "AST": "1.8"
+  },
+  {
+    "Year": "1980",
+    "Name": "Jerry West",
+    "G": "932",
+    "PTS": "27.0",
+    "TRB": "5.8",
+    "AST": "6.7"
+  },
+  {
+    "Year": "1980",
+    "Name": "Jerry Lucas",
+    "G": "829",
+    "PTS": "17.0",
+    "TRB": "15.6",
+    "AST": "3.3"
+  },
+  {
+    "Year": "1980",
+    "Name": "Oscar Robertson",
+    "G": "1040",
+    "PTS": "25.7",
+    "TRB": "7.5",
+    "AST": "9.5"
+  },
+  {
+    "Year": "1979",
+    "Name": "Wilt Chamberlain",
+    "G": "1045",
+    "PTS": "30.1",
+    "TRB": "22.9",
+    "AST": "4.4"
+  },
+  {
+    "Year": "1978",
+    "Name": "Paul Arizin",
+    "G": "713",
+    "PTS": "22.8",
+    "TRB": "8.6",
+    "AST": "2.3"
+  },
+  {
+    "Year": "1978",
+    "Name": "Joe Fulks",
+    "G": "489",
+    "PTS": "16.4",
+    "TRB": "5.3",
+    "AST": "1.2"
+  },
+  {
+    "Year": "1978",
+    "Name": "Cliff Hagan",
+    "G": "839",
+    "PTS": "17.7",
+    "TRB": "6.6",
+    "AST": "3.2"
+  },
+  {
+    "Year": "1978",
+    "Name": "Jim Pollard",
+    "G": "438",
+    "PTS": "13.2",
+    "TRB": "7.8",
+    "AST": "3.2"
+  },
+  {
+    "Year": "1977",
+    "Name": "Elgin Baylor",
+    "G": "846",
+    "PTS": "27.4",
+    "TRB": "13.5",
+    "AST": "4.3"
+  },
+  {
+    "Year": "1976",
+    "Name": "Bill Sharman",
+    "G": "711",
+    "PTS": "17.8",
+    "TRB": "3.9",
+    "AST": "3.0"
+  },
+  {
+    "Year": "1976",
+    "Name": "Tom Gola",
+    "G": "698",
+    "PTS": "11.3",
+    "TRB": "8.0",
+    "AST": "4.2"
+  },
+  {
+    "Year": "1975",
+    "Name": "Bill Russell",
+    "G": "963",
+    "PTS": "15.1",
+    "TRB": "22.5",
+    "AST": "4.3"
+  },
+  {
+    "Year": "1973",
+    "Name": "Dolph Schayes",
+    "G": "996",
+    "PTS": "18.5",
+    "TRB": "12.1",
+    "AST": "3.1"
+  },
+  {
+    "Year": "1971",
+    "Name": "Bob Cousy",
+    "G": "924",
+    "PTS": "18.4",
+    "TRB": "5.2",
+    "AST": "7.5"
+  },
+  {
+    "Year": "1971",
+    "Name": "Bob Pettit",
+    "G": "792",
+    "PTS": "26.4",
+    "TRB": "16.2",
+    "AST": "3.0"
+  },
+  {
+    "Year": "1970",
+    "Name": "Bob Davies",
+    "G": "462",
+    "PTS": "14.3",
+    "TRB": "2.9",
+    "AST": "4.9"
+  },
+  {
+    "Year": "1961",
+    "Name": "Andy Phillip",
+    "G": "701",
+    "PTS": "9.1",
+    "TRB": "4.4",
+    "AST": "5.4"
+  },
+  {
+    "Year": "1960",
+    "Name": "Ed Macauley",
+    "G": "641",
+    "PTS": "17.5",
+    "TRB": "7.5",
+    "AST": "3.2"
+  },
+  {
+    "Year": "1959",
+    "Name": "George Mikan",
+    "G": "439",
+    "PTS": "23.1",
+    "TRB": "13.4",
+    "AST": "2.8"
+  }
+]

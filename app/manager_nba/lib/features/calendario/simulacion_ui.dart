@@ -1,0 +1,447 @@
+import 'package:flutter/material.dart';
+
+import '../../data/database/app_database.dart';
+import '../../domain/allstar_repository.dart';
+import '../../domain/calendario_repository.dart';
+import '../../domain/lesiones_repository.dart';
+import '../../domain/nueva_temporada_repository.dart';
+import '../../domain/ofertas_repository.dart';
+import '../../domain/tipo_evento_temporada.dart';
+import '../../domain/tipo_premio.dart';
+import '../../shared/campeon_dialog.dart';
+import '../allstar/allstar_screen.dart';
+import '../mercado/agencia_libre_screen.dart';
+import '../mercado/ofertas_screen.dart';
+import '../mercado/traspasos_screen.dart';
+import '../partido/serie_boxscores_screen.dart';
+
+/// Una lesión que sigue activa al terminar el lote simulado (a diferencia
+/// de `NuevaLesion`, que incluye también a quien ya se recuperó a mitad).
+class LesionActivaInfo {
+  final String nombreJugador;
+  final String motivo;
+  final int partidosEstimados;
+  final DateTime vuelve;
+
+  const LesionActivaInfo({
+    required this.nombreJugador,
+    required this.motivo,
+    required this.partidosEstimados,
+    required this.vuelve,
+  });
+}
+
+class ResultadoLoteSimulado {
+  final List<PartidoSimuladoInfo> partidos;
+  final List<LesionActivaInfo> lesionesActivas;
+  final bool temporadaTerminada;
+
+  const ResultadoLoteSimulado({
+    required this.partidos,
+    required this.lesionesActivas,
+    required this.temporadaTerminada,
+  });
+}
+
+/// El primer partido pendiente (para el botón "Simular 1 partido").
+DateTime? proximaFechaPendiente(List<PartidosCalendarioData> partidos) {
+  final pendientes = partidos.where((p) => !p.jugado).toList()
+    ..sort((a, b) => a.fecha.compareTo(b.fecha));
+  return pendientes.isEmpty ? null : pendientes.first.fecha;
+}
+
+/// La fecha "actual" de tu temporada: el último partido jugado, o el
+/// primero programado si todavía no has jugado ninguno.
+DateTime fechaActualDeLaTemporada(List<PartidosCalendarioData> partidos) {
+  final jugados = partidos.where((p) => p.jugado).toList();
+  if (jugados.isEmpty) return partidos.first.fecha;
+  return jugados.map((p) => p.fecha).reduce((a, b) => a.isAfter(b) ? a : b);
+}
+
+/// Simula hasta [diaObjetivo] (pausando en fechas límite sin resolver, con
+/// opción de ir a Traspasos) y arma un resumen listo para pintar. Lo usan
+/// tanto `CalendarioScreen` como `ResumenSimulacionScreen`, para no
+/// duplicar esta lógica.
+Future<ResultadoLoteSimulado> simularHastaConDialogo(
+  BuildContext context,
+  AppDatabase db,
+  String equipoUsuario,
+  DateTime diaObjetivo,
+) async {
+  final acumulados = <PartidoSimuladoInfo>[];
+  final lesionesAcumuladas = <NuevaLesion>[];
+  var temporadaTerminada = false;
+  var finalDeCopaYaAvisada = false;
+  var campeonDeCopaYaAvisado = false;
+  var allStarYaAvisado = false;
+  int? ignorar;
+  DateTime? ultimaFechaSimulada;
+
+  // La simulación no se come el tramo entero de una tacada: avanza por
+  // etapas de una semana. Es lo que permite que una oferta que llega en
+  // noviembre te pare en noviembre —y no al final de todo, cuando ya no
+  // puedes hacer nada con ella— sin dejar de ser un único "simular hasta".
+  const pasoDeParada = Duration(days: 7);
+  DateTime? cursor;
+  var interrumpidoPorOferta = false;
+
+  while (true) {
+    // Meta de esta etapa: como mucho una semana más allá de donde íbamos,
+    // y nunca más allá del día que pediste.
+    final metaParcial = cursor == null || !cursor.add(pasoDeParada).isBefore(diaObjetivo)
+        ? diaObjetivo
+        : cursor.add(pasoDeParada);
+
+    final tramo = await simularTramo(
+      db,
+      equipoUsuario,
+      metaParcial,
+      eventoIdAIgnorar: ignorar,
+    );
+    acumulados.addAll(tramo.simulados);
+    lesionesAcumuladas.addAll(tramo.lesionesNuevas);
+    if (tramo.temporadaRegularTerminada) temporadaTerminada = true;
+
+    // Se avisa en la misma etapa en la que ocurre (como con las ofertas más
+    // abajo), no al final de todo el lote: si simulas "hasta fin de mes" y
+    // la Cup se decide en la primera semana, antes te enterabas tres
+    // semanas tarde, cuando ya no quedaba nada que hacer con el aviso.
+    final finalDeCopaProgramada = tramo.novedadesCopa.finalDelUsuario;
+    if (finalDeCopaProgramada != null && !finalDeCopaYaAvisada) {
+      finalDeCopaYaAvisada = true;
+      if (context.mounted) {
+        await _avisarFinalDeCopaProgramada(context, finalDeCopaProgramada);
+      }
+    }
+    final campeonDeCopa = tramo.novedadesCopa.campeon;
+    if (campeonDeCopa != null && !campeonDeCopaYaAvisado) {
+      campeonDeCopaYaAvisado = true;
+      if (context.mounted) {
+        await _avisarCampeonDeCopa(context, db, campeonDeCopa,
+            tramo.novedadesCopa.serieIdFinal, equipoUsuario);
+      }
+    }
+    // El fin de semana de las estrellas, en la etapa en la que cae. Antes
+    // se miraba al final del lote entero, así que simulando "hasta el final
+    // de la temporada" el All-Star de febrero te saltaba en abril, pegado a
+    // los premios y sin nada que ver ya.
+    if (context.mounted && !allStarYaAvisado) {
+      allStarYaAvisado =
+          await _avisarSiHuboAllStar(context, db, tramo.simulados);
+    }
+
+    if (tramo.simulados.isNotEmpty) {
+      final maxFecha = tramo.simulados
+          .map((p) => p.fecha)
+          .reduce((a, b) => a.isAfter(b) ? a : b);
+      if (ultimaFechaSimulada == null || maxFecha.isAfter(ultimaFechaSimulada)) {
+        ultimaFechaSimulada = maxFecha;
+      }
+    }
+    cursor = ultimaFechaSimulada ?? metaParcial;
+
+    // Los rivales se mueven mientras juegas: se generan aquí, etapa a
+    // etapa, y no al final del lote.
+    if (tramo.simulados.isNotEmpty) {
+      await generarOfertasEntrantes(
+        db,
+        equipoUsuario: equipoUsuario,
+        partidosSimulados: tramo.simulados.length,
+        fecha: cursor,
+      );
+      if (await ofertasSinVer(db) > 0) {
+        if (!context.mounted) break;
+        // Una oferta encima de la mesa para la simulación: se decide y
+        // después se sigue desde donde estábamos.
+        await _avisarDeOfertasEntrantes(context, db, equipoUsuario);
+        if (!context.mounted) break;
+        interrumpidoPorOferta = true;
+      }
+    }
+
+    if (tramo.eventoBloqueante == null) {
+      // Si la etapa se quedó corta porque tocaba parar a mirar una oferta,
+      // o simplemente porque era una semana intermedia, se sigue.
+      final quedaCamino = cursor.isBefore(diaObjetivo);
+      if (quedaCamino && tramo.simulados.isNotEmpty) continue;
+      break;
+    }
+    if (!context.mounted) break;
+    final eventoBloqueante = tramo.eventoBloqueante!;
+    final esAgenciaLibre = esFechaLimiteDeAgenciaLibre(eventoBloqueante);
+    final seguir = await _mostrarDialogoDeadline(context, eventoBloqueante);
+    if (seguir != true) {
+      if (context.mounted) {
+        await Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => esAgenciaLibre
+              ? AgenciaLibreScreen(db: db, equipoUsuario: equipoUsuario)
+              : TraspasosScreen(db: db, equipoUsuario: equipoUsuario),
+        ));
+      }
+      break;
+    }
+    ignorar = eventoBloqueante.id;
+  }
+
+  // El All-Star, la Final de la Cup y el campeón ya se han avisado etapa a
+  // etapa dentro del bucle, igual que las ofertas.
+  // Las ofertas ya se han ido generando y avisando etapa a etapa dentro del
+  // bucle; aquí solo se repesca lo que hubiera quedado sin mirar (por
+  // ejemplo si el tramo terminó justo con una recién llegada).
+  if (context.mounted && !interrumpidoPorOferta) {
+    await _avisarDeOfertasEntrantes(context, db, equipoUsuario);
+  }
+
+  // No hace falta avisar aquí de que la temporada regular terminó: quien
+  // llama a esta función (CalendarioScreen, ResumenSimulacionScreen)
+  // encadena directamente a PremiosScreen usando el flag `temporadaTerminada`
+  // del resultado devuelto.
+
+  final lesionesActivas = <LesionActivaInfo>[];
+  if (lesionesAcumuladas.isNotEmpty && ultimaFechaSimulada != null) {
+    final activasEnDb = await lesionesActivasEn(db, ultimaFechaSimulada);
+    final idsNuevosYActivos = lesionesAcumuladas
+        .map((l) => l.jugadorId)
+        .toSet()
+        .intersection(activasEnDb.keys.toSet());
+    if (idsNuevosYActivos.isNotEmpty) {
+      final jugadores = await (db.select(db.jugadores)
+            ..where((t) => t.id.isIn(idsNuevosYActivos)))
+          .get();
+      final nombresPorId = {for (final j in jugadores) j.id: j.nombreFicticio};
+      for (final id in idsNuevosYActivos) {
+        final lesion = activasEnDb[id]!;
+        lesionesActivas.add(LesionActivaInfo(
+          nombreJugador: nombresPorId[id] ?? '?',
+          motivo: lesion.motivo,
+          partidosEstimados: lesion.partidosEstimados,
+          vuelve: lesion.fechaFin,
+        ));
+      }
+    }
+  }
+
+  return ResultadoLoteSimulado(
+    partidos: acumulados,
+    lesionesActivas: lesionesActivas,
+    temporadaTerminada: temporadaTerminada,
+  );
+}
+
+/// Si hay ofertas sin mirar, te lo dice y te lleva a verlas. Igual que con
+/// el campeón de la Cup, no hay que salir del calendario para nada.
+Future<void> _avisarDeOfertasEntrantes(
+  BuildContext context,
+  AppDatabase db,
+  String equipoUsuario,
+) async {
+  final sinVer = await ofertasSinVer(db);
+  if (sinVer == 0 || !context.mounted) return;
+
+  final verlas = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(sinVer == 1 ? 'Te ha llegado una oferta' : 'Tienes ofertas'),
+      content: Text(sinVer == 1
+          ? 'Un equipo ha preguntado por uno de tus jugadores y te ha '
+              'puesto una propuesta sobre la mesa.'
+          : 'Hay $sinVer equipos que han preguntado por jugadores tuyos.'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Más tarde'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: Text(sinVer == 1 ? 'Ver la oferta' : 'Ver las ofertas'),
+        ),
+      ],
+    ),
+  );
+
+  // Ya te hemos avisado: se marcan como vistas pase lo que pase, también si
+  // dices "más tarde". La oferta NO se descarta —sigue en la bandeja hasta
+  // que la aceptes o la rechaces—, solo deja de interrumpir.
+  //
+  // Sin esto, aplazar una oferta significaba que el aviso volvía a saltar en
+  // cada tramo que simulabas, con las mismas tres propuestas de siempre, y
+  // además cortaba la simulación cada vez. Desde fuera se ve exactamente
+  // como "me llegan ofertas sin parar", aunque el tope de 3 por temporada
+  // esté funcionando (medido: 3, 3 y 3 en las tres primeras temporadas).
+  await marcarOfertasComoVistas(db);
+
+  if (verlas == true && context.mounted) {
+    await Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (context) =>
+          OfertasScreen(db: db, equipoUsuario: equipoUsuario),
+    ));
+  }
+}
+
+/// ¿Es esta fecha límite la de la agencia libre? Es lo que decide, tanto
+/// en el título del diálogo como en a qué pantalla lleva "no sigo
+/// simulando": antes ese botón llevaba siempre a Traspasos, aunque la
+/// fecha límite cruzada fuera la de agencia libre.
+bool esFechaLimiteDeAgenciaLibre(EventosTemporadaData evento) =>
+    TipoEventoTemporada.desdeNombre(evento.tipo) ==
+    TipoEventoTemporada.finAgenciaLibre;
+
+Future<bool?> _mostrarDialogoDeadline(
+  BuildContext context,
+  EventosTemporadaData evento,
+) {
+  final esAgenciaLibre = esFechaLimiteDeAgenciaLibre(evento);
+  final titulo =
+      esAgenciaLibre ? 'Fin de la agencia libre' : 'Fecha límite de traspasos';
+  return showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => AlertDialog(
+      title: Text(titulo),
+      content: const Text(
+        'Has llegado a esta fecha límite de la temporada. ¿Sigues '
+        'simulando o paras para hacer movimientos?',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Text(esAgenciaLibre ? 'Ir a Agencia libre' : 'Ir a Traspasos'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: const Text('Seguir simulando'),
+        ),
+      ],
+    ),
+  );
+}
+
+/// Si el tramo simulado se ha cruzado con el fin de semana de las
+/// estrellas, se juega el All-Star (Este vs Oeste con los 10 mejores de
+/// cada conferencia según lo que están haciendo esta temporada) y se avisa,
+/// dando a elegir entre ver el partido o seguir a lo tuyo.
+///
+/// Devuelve true si el fin de semana ya ha pasado en este tramo, para que
+/// quien llama no vuelva a mirarlo en las etapas siguientes.
+Future<bool> _avisarSiHuboAllStar(
+  BuildContext context,
+  AppDatabase db,
+  List<PartidoSimuladoInfo> simulados,
+) async {
+  if (simulados.isEmpty) return false;
+  final desde = simulados.map((p) => p.fecha).reduce((a, b) => a.isBefore(b) ? a : b);
+  final hasta = simulados.map((p) => p.fecha).reduce((a, b) => a.isAfter(b) ? a : b);
+  final eventos = await leerEventos(db);
+  final huboAllStar = eventos.any((e) =>
+      e.tipo == TipoEventoTemporada.allStar.name &&
+      !e.fecha.isBefore(desde) &&
+      !e.fecha.isAfter(hasta));
+  if (!huboAllStar) return false;
+
+  // El fin de semana entero: primero los jóvenes, luego las estrellas.
+  await jugarRisingStarsSiHaceFalta(db);
+  final boxscore = await jugarAllStarSiHaceFalta(db);
+  if (!context.mounted) return true;
+
+  if (boxscore == null) {
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('ALL STAR WEEKEND'),
+    ));
+    return true;
+  }
+
+  final mvp = await mvpDeLaTemporada(db, TipoPremio.mvpAllStar);
+  if (!context.mounted) return true;
+
+  final ganaEste = boxscore.marcadorLocal > boxscore.marcadorVisitante;
+  final verPartido = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('ALL STAR WEEKEND'),
+      content: Text(
+        'Se ha jugado el All-Star. ${ganaEste ? "El Este" : "El Oeste"} se '
+        'lleva el partido por ${boxscore.marcadorLocal}-'
+        '${boxscore.marcadorVisitante}.'
+        '${mvp == null ? "" : "\n\nMVP del partido: ${mvp.nombreFicticio}."}',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Seguir simulando'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: const Text('Ver el fin de semana'),
+        ),
+      ],
+    ),
+  );
+
+  if (verPartido == true && context.mounted) {
+    await Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (context) => AllStarScreen(db: db),
+    ));
+  }
+  return true;
+}
+
+/// Has llegado a la Final de la NBA Cup: se te programa como un día más de
+/// tu calendario, así que no hay que ir a ningún menú aparte.
+Future<void> _avisarFinalDeCopaProgramada(
+  BuildContext context,
+  DateTime fecha,
+) {
+  return showDialog<void>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('¡A la Final de la NBA Cup!'),
+      content: Text(
+        'Los cuartos y la semifinal ya se han jugado (cuentan para tu '
+        'récord, como cualquier otro partido) y has llegado a la Final. '
+        'La tienes marcada en el calendario el ${_fechaCorta(fecha)}: '
+        'simula hasta ese día para jugarla. Es un partido extra, no suma '
+        'ni victoria ni derrota a tu temporada.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Vale'),
+        ),
+      ],
+    ),
+  );
+}
+
+/// Ya hay campeón de la NBA Cup (lo hayas ganado tú o no): se anuncia y se
+/// puede abrir el boxscore de esa Final sin salir del calendario.
+Future<void> _avisarCampeonDeCopa(
+  BuildContext context,
+  AppDatabase db,
+  String campeon,
+  int? serieId,
+  String equipoUsuario,
+) async {
+  final temporada = await leerTemporada(db);
+  if (!context.mounted) return;
+  final verEstadisticas = await mostrarCampeonDecidido(
+    context,
+    'la NBA Cup',
+    campeon,
+    esTuEquipo: campeon == equipoUsuario,
+    temporada: etiquetaDeTemporada(temporada.anioInicio),
+    etiquetaAccionExtra: serieId == null ? null : 'Ver estadísticas',
+  );
+
+  if (verEstadisticas && serieId != null && context.mounted) {
+    await abrirEstadisticasDeSerie(context, db,
+        origen: 'torneo', serieId: serieId);
+  }
+}
+
+const _mesesCortos = [
+  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+];
+
+String _fechaCorta(DateTime f) => '${f.day} de ${_mesesCortos[f.month - 1]}';
+

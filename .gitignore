@@ -1,0 +1,39 @@
+# Datos crudos de Kaggle: 4,4 GB entre el volcado SQLite y los CSV. No se
+# suben a GitHub (hay un límite de 100 MB por fichero) y además no hacen
+# falta para jugar ni para compilar: de ahí salieron una vez los JSON que
+# están en app/manager_nba/assets/data, y esos sí van al repositorio.
+data/draft/
+data/stats/
+output/
+*.xlsx
+*.bak
+
+# Artefactos de compilación: se regeneran con `flutter build`.
+build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+**/generated_plugin_registrant.dart
+
+# Cada plataforma se trae su SDK y sus dependencias al compilar (el de
+# Windows solo son ya 309 MB).
+app/manager_nba/windows/flutter/ephemeral/
+app/manager_nba/linux/flutter/ephemeral/
+app/manager_nba/macos/Flutter/ephemeral/
+app/manager_nba/ios/Flutter/ephemeral/
+app/manager_nba/ios/Pods/
+app/manager_nba/macos/Pods/
+app/manager_nba/android/.gradle/
+app/manager_nba/android/local.properties
+app/manager_nba/.gradle/
+
+# Entorno de desarrollo
+.idea/
+.vscode/
+*.iml
+*.log
+
+# Windows / OneDrive
+Thumbs.db
+desktop.ini
+.DS_Store
