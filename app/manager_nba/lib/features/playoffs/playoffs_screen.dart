@@ -225,7 +225,11 @@ class _PlayoffsScreenState extends State<PlayoffsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (playIn.isNotEmpty) ...[
+                      // El Play-In desaparece en cuanto se resuelve: cumplida
+                      // su función (decidir el 7 y el 8), lo único que hacía
+                      // era empujar el cuadro hacia abajo cada vez que
+                      // entrabas a mirar cómo iban tus playoffs.
+                      if (playIn.isNotEmpty && playInSinResolver) ...[
                         _PanelPlayIn(
                           db: widget.db,
                           series: playIn,
@@ -540,11 +544,19 @@ class _FilaPlayIn extends StatelessWidget {
   }
 }
 
-/// Bracket visual real: Ronda 1 -> Semifinales -> Final de conferencia,
-/// una conferencia a cada lado con la Final NBA en el centro, cajas
-/// conectadas por líneas — igual que un bracket de eliminatorias real.
-/// El Play-In (que decide los seeds 7/8) se muestra aparte, encima de
-/// esto, porque no encaja en una eliminatoria directa de potencias de 2.
+/// Bracket visual real, de arriba abajo: el Oeste baja desde la primera
+/// ronda hasta su final de conferencia, el Este sube desde abajo, y las dos
+/// mitades se encuentran en la Final NBA del centro. Cajas conectadas por
+/// líneas, igual que un cuadro de eliminatorias de verdad.
+///
+/// Va en vertical y no en horizontal por una razón de medida: en horizontal
+/// el cuadro necesitaba 1400 píxeles de ancho, y en un móvil de 390 eso lo
+/// dejaba al 28% —ilegible sin pellizcar—. Girado, lo ancho pasa a ser lo
+/// alto: cuatro cajas de ancho en vez de ocho columnas, y el scroll
+/// vertical que ya tenía la pantalla se encarga del resto.
+///
+/// El Play-In no cabe aquí (no es una eliminatoria de potencias de dos) y
+/// se muestra aparte, encima, solo mientras esté sin resolver.
 class _BracketVisual extends StatelessWidget {
   final AppDatabase db;
   final List<Serie> series;
@@ -562,37 +574,50 @@ class _BracketVisual extends StatelessWidget {
     required this.onSimular,
   });
 
-  static const _boxWidth = 176.0;
+  static const _boxWidth = 152.0;
   // Tiene que caber siempre el caso más alto: dos filas de equipo + el
   // botón "Simular" cuando la serie es la tuya (antes desbordaba ~10px).
   static const _boxHeight = 78.0;
-  static const _slot = 100.0;
-  static const _connector = 28.0;
-  static const _colWidth = _boxWidth + _connector;
+
+  /// Hueco horizontal entre dos cajas hermanas de la primera ronda.
+  static const _slot = 162.0;
+
+  /// Hueco vertical entre una ronda y la siguiente: donde van las líneas.
+  static const _connector = 30.0;
+  static const _filaAlto = _boxHeight + _connector;
+
+  /// Columna de la izquierda con el nombre de cada ronda. En vertical no
+  /// hay sitio encima de las cajas (la primera ronda ocupa todo el ancho),
+  /// así que las etiquetas van al lado.
+  static const _anchoEtiquetas = 66.0;
 
   Serie? _buscar(String conferencia, String etapa) =>
       series.where((s) => s.conferencia == conferencia && s.etapa == etapa).firstOrNull;
 
-  /// Centro vertical (Y) de la caja `indice` de `ronda` (0=Ronda1 con 4
+  /// Centro horizontal (X) de la caja `indice` de `ronda` (0=Ronda1 con 4
   /// cajas, 1=Semis con 2, 2=Final de conferencia con 1): el centro de una
   /// ronda es siempre el punto medio de sus dos cajas hijas.
-  double _centroY(int ronda, int indice) {
+  double _centroX(int ronda, int indice) {
     if (ronda == 0) return indice * _slot + _slot / 2;
-    final a = _centroY(ronda - 1, indice * 2);
-    final b = _centroY(ronda - 1, indice * 2 + 1);
+    final a = _centroX(ronda - 1, indice * 2);
+    final b = _centroX(ronda - 1, indice * 2 + 1);
     return (a + b) / 2;
   }
 
-  /// Lo que ocupa la cabecera del cuadro (franjas de conferencia + nombres
-  /// de ronda). Se necesita como número para poder escalar el conjunto.
-  static const _altoCabecera = 52.0;
+  /// Centro vertical de cada una de las siete filas, de arriba abajo:
+  /// 0 Oeste R1 · 1 Oeste semis · 2 Final Oeste · 3 FINAL NBA ·
+  /// 4 Final Este · 5 Este semis · 6 Este R1.
+  double _centroY(int fila) => fila * _filaAlto + _boxHeight / 2;
+
+  /// La franja de conferencia que va arriba del todo y abajo del todo.
+  static const _altoBanda = 24.0;
 
   @override
   Widget build(BuildContext context) {
-    final altura = 4 * _slot;
-    final finalsX = 3 * _colWidth;
-    final anchoTotal = finalsX + 3 * _colWidth + _boxWidth;
-    final centroFinales = _centroY(2, 0);
+    final anchoCuadro = 4 * _slot;
+    final anchoTotal = _anchoEtiquetas + anchoCuadro;
+    final alturaCuadro = 7 * _filaAlto - _connector;
+    final centroFinales = _centroX(2, 0);
 
     // Orden vertical de la primera ronda: tiene que ser el del cruce real
     // (el ganador del 1-8 se mide al del 4-5, y el del 2-7 al del 3-6), no
@@ -615,10 +640,11 @@ class _BracketVisual extends StatelessWidget {
 
     final lineColor = Theme.of(context).colorScheme.outlineVariant;
 
-    Widget caja(Serie? serie, double x, double y, {required String etiquetaVacia}) {
+    Widget caja(Serie? serie, double centroEnX, double centroEnY,
+        {required String etiquetaVacia}) {
       return Positioned(
-        left: x,
-        top: y - _boxHeight / 2,
+        left: centroEnX - _boxWidth / 2,
+        top: centroEnY - _boxHeight / 2,
         width: _boxWidth,
         height: _boxHeight,
         child: _CajaSerie(
@@ -637,121 +663,126 @@ class _BracketVisual extends StatelessWidget {
       );
     }
 
+    // El Oeste baja (filas 0,1,2), la Final NBA en medio (3) y el Este sube
+    // (4,5,6): el mismo cuadro de siempre girado un cuarto de vuelta.
     final cajas = <Widget>[
-      // Oeste: Ronda1 (col 0) -> Semis (col 1) -> Final Conf (col 2).
       for (var i = 0; i < 4; i++)
-        caja(oeste[i], 0, _centroY(0, i), etiquetaVacia: 'Primera ronda'),
+        caja(oeste[i], _centroX(0, i), _centroY(0),
+            etiquetaVacia: 'Primera ronda'),
       for (var i = 0; i < 2; i++)
-        caja(semisOeste[i], _colWidth, _centroY(1, i),
+        caja(semisOeste[i], _centroX(1, i), _centroY(1),
             etiquetaVacia: 'Semifinal de conferencia'),
-      caja(finalOeste, 2 * _colWidth, centroFinales,
+      caja(finalOeste, centroFinales, _centroY(2),
           etiquetaVacia: 'Final de conferencia'),
-      // Final NBA, centrada.
-      caja(finalNba, finalsX, centroFinales, etiquetaVacia: 'Final NBA'),
-      // Este (espejo): Final Conf pegada al centro, Ronda1 en el borde.
-      // colWidth ya incluye boxWidth+connector, así que cada columna hacia
-      // fuera del centro es sencillamente un colWidth más allá de finalsX.
-      caja(finalEste, finalsX + _boxWidth + _connector, centroFinales,
+      caja(finalNba, centroFinales, _centroY(3), etiquetaVacia: 'Final NBA'),
+      caja(finalEste, centroFinales, _centroY(4),
           etiquetaVacia: 'Final de conferencia'),
       for (var i = 0; i < 2; i++)
-        caja(semisEste[i], finalsX + 2 * _colWidth, _centroY(1, i),
+        caja(semisEste[i], _centroX(1, i), _centroY(5),
             etiquetaVacia: 'Semifinal de conferencia'),
       for (var i = 0; i < 4; i++)
-        caja(este[i], finalsX + 3 * _colWidth, _centroY(0, i),
+        caja(este[i], _centroX(0, i), _centroY(6),
             etiquetaVacia: 'Primera ronda'),
     ];
 
-    // Cabecera: a qué conferencia pertenece cada mitad y qué ronda es cada
-    // columna. Sin esto el bracket era simétrico y no había forma de saber
-    // qué lado era el Este.
-    const rondasOeste = [
-      'Primera ronda',
+    // El nombre de cada ronda, a la izquierda y a la altura de su fila. En
+    // horizontal esto era una cabecera de columnas; girado el cuadro, la
+    // primera ronda ocupa todo el ancho y no queda hueco arriba.
+    const nombresDeFila = [
+      'Primera\nronda',
       'Semifinales',
-      'Final de conferencia',
+      'Final\nOeste',
+      'FINAL\nNBA',
+      'Final\nEste',
+      'Semifinales',
+      'Primera\nronda',
     ];
-    final cabecera = SizedBox(
-      width: anchoTotal,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              _TituloConferencia(
-                  conferencia: 'Oeste', ancho: 3 * _colWidth),
-              // Justo el ancho de la caja de la Final: sumado a las dos
-              // mitades da el ancho exacto del cuadro.
-              const SizedBox(width: _boxWidth, child: _TituloCentro()),
-              _TituloConferencia(
-                  conferencia: 'Este', ancho: 3 * _colWidth),
-            ],
+    final etiquetas = <Widget>[
+      for (var fila = 0; fila < 7; fila++)
+        Positioned(
+          left: 0,
+          top: _centroY(fila) - _boxHeight / 2,
+          width: _anchoEtiquetas - 8,
+          height: _boxHeight,
+          child: Center(
+            child: _Ronda(
+                texto: nombresDeFila[fila], destacado: fila == 3),
           ),
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              for (final ronda in rondasOeste)
-                SizedBox(width: _colWidth, child: _Ronda(texto: ronda)),
-              const SizedBox(
-                  width: _boxWidth, child: _Ronda(texto: 'Final NBA')),
-              for (final ronda in rondasOeste.reversed)
-                SizedBox(width: _colWidth, child: _Ronda(texto: ronda)),
-            ],
-          ),
-        ],
-      ),
-    );
+        ),
+    ];
 
     final cuadro = SizedBox(
       width: anchoTotal,
-      height: _altoCabecera + 6 + altura,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: _altoCabecera, child: cabecera),
-          const SizedBox(height: 6),
+          _TituloConferencia(conferencia: 'Oeste', ancho: anchoTotal),
+          const SizedBox(height: 4),
           SizedBox(
             width: anchoTotal,
-            height: altura,
+            height: alturaCuadro,
             child: Stack(
               children: [
-                CustomPaint(
-                  size: Size(anchoTotal, altura),
-                  painter: _ConectorBracket(
-                    boxWidth: _boxWidth,
-                    connector: _connector,
-                    colWidth: _colWidth,
-                    finalsX: finalsX,
-                    centroFinales: centroFinales,
-                    centroY: _centroY,
-                    color: lineColor,
+                Positioned(
+                  left: _anchoEtiquetas,
+                  top: 0,
+                  width: anchoCuadro,
+                  height: alturaCuadro,
+                  child: CustomPaint(
+                    size: Size(anchoCuadro, alturaCuadro),
+                    painter: _ConectorBracket(
+                      boxHeight: _boxHeight,
+                      centroX: _centroX,
+                      centroY: _centroY,
+                      centroFinales: centroFinales,
+                      color: lineColor,
+                    ),
                   ),
                 ),
-                ...cajas,
+                ...etiquetas,
+                // Las cajas se colocan en coordenadas del cuadro, así que
+                // van desplazadas por la columna de etiquetas.
+                Positioned(
+                  left: _anchoEtiquetas,
+                  top: 0,
+                  width: anchoCuadro,
+                  height: alturaCuadro,
+                  child: Stack(children: cajas),
+                ),
               ],
             ),
           ),
+          const SizedBox(height: 4),
+          _TituloConferencia(conferencia: 'Este', ancho: anchoTotal),
         ],
       ),
     );
 
-    // Las dos conferencias enfrentadas con la Final NBA en el centro, que es
-    // la disposición de un cuadro de playoffs de verdad. Mide 1400 píxeles,
-    // así que se encoge hasta caber en el ancho que haya: en un teléfono se
-    // ve el cuadro ENTERO de un vistazo, en vez de tener que arrastrar el
-    // dedo a ciegas de una conferencia a otra.
+    // Se encoge hasta caber en el ancho que haya, para que el cuadro se vea
+    // ENTERO sin arrastrar el dedo a ciegas. En vertical la penalización es
+    // mucho menor que antes: 714 píxeles de ancho en vez de 1400, o sea que
+    // en un móvil de 390 se queda al 55% en lugar del 28%.
     //
-    // Encogido no se leen los nombres, claro, y por eso va dentro de un
-    // InteractiveViewer: se pellizca para acercarse a la zona que interese.
+    // Aun así, encogido los nombres se leen justos, y por eso va dentro de
+    // un InteractiveViewer: se pellizca para acercarse a lo que interese.
     // Los botones de simular siguen funcionando con el zoom puesto.
+    final alturaTotal = alturaCuadro + 2 * _altoBanda + 8;
     return LayoutBuilder(builder: (context, constraints) {
-      final escala =
-          constraints.maxWidth >= anchoTotal ? 1.0 : constraints.maxWidth / anchoTotal;
+      final escala = constraints.maxWidth >= anchoTotal
+          ? 1.0
+          : constraints.maxWidth / anchoTotal;
       final encogido = SizedBox(
+        // Clave estable para medir el cuadro desde los tests: si cabe sin
+        // encoger no hay InteractiveViewer, así que buscar ese widget no
+        // sirve para saber cuánto ocupa.
+        key: const ValueKey('cuadro-playoffs'),
         width: anchoTotal * escala,
-        height: (_altoCabecera + 6 + altura) * escala,
+        height: alturaTotal * escala,
         child: FittedBox(
           fit: BoxFit.contain,
           alignment: Alignment.topLeft,
-          child: cuadro,
+          child: SizedBox(
+              width: anchoTotal, height: alturaTotal, child: cuadro),
         ),
       );
       if (escala == 1.0) return encogido;
@@ -765,7 +796,8 @@ class _BracketVisual extends StatelessWidget {
 }
 
 
-/// La franja de color que dice de qué conferencia es cada mitad del cuadro.
+/// La franja de color que dice de qué conferencia es cada mitad del cuadro:
+/// una arriba del todo (Oeste) y otra abajo del todo (Este).
 class _TituloConferencia extends StatelessWidget {
   final String conferencia;
   final double ancho;
@@ -778,7 +810,8 @@ class _TituloConferencia extends StatelessWidget {
     final info = infoDe(conferencia);
     return Container(
       width: ancho,
-      padding: const EdgeInsets.symmetric(vertical: 5),
+      height: _BracketVisual._altoBanda,
+      alignment: Alignment.center,
       decoration: BoxDecoration(
         color: info.colorPrimario,
         borderRadius: BorderRadius.circular(4),
@@ -797,61 +830,56 @@ class _TituloConferencia extends StatelessWidget {
   }
 }
 
-class _TituloCentro extends StatelessWidget {
-  const _TituloCentro();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 5),
-      child: Icon(Icons.emoji_events, size: 18, color: Color(0xFFD4A017)),
-    );
-  }
-}
-
 class _Ronda extends StatelessWidget {
   final String texto;
+  final bool destacado;
 
-  const _Ronda({required this.texto});
+  const _Ronda({required this.texto, this.destacado = false});
 
   @override
   Widget build(BuildContext context) {
     return Text(
       texto,
       textAlign: TextAlign.center,
-      overflow: TextOverflow.ellipsis,
       style: TextStyle(
-          fontSize: 10, color: Theme.of(context).colorScheme.outline),
+        fontSize: 10,
+        fontWeight: destacado ? FontWeight.bold : FontWeight.normal,
+        color: destacado
+            ? const Color(0xFFD4A017)
+            : Theme.of(context).colorScheme.outline,
+      ),
     );
   }
 }
 
+/// Las líneas del cuadro, ahora de arriba abajo: dos hermanas confluyen en
+/// la caja de la ronda siguiente, que está una fila más adentro.
 class _ConectorBracket extends CustomPainter {
-  final double boxWidth;
-  final double connector;
-  final double colWidth;
-  final double finalsX;
+  final double boxHeight;
+  final double Function(int ronda, int indice) centroX;
+  final double Function(int fila) centroY;
   final double centroFinales;
-  final double Function(int ronda, int indice) centroY;
   final Color color;
 
   const _ConectorBracket({
-    required this.boxWidth,
-    required this.connector,
-    required this.colWidth,
-    required this.finalsX,
-    required this.centroFinales,
+    required this.boxHeight,
+    required this.centroX,
     required this.centroY,
+    required this.centroFinales,
     required this.color,
   });
 
-  void _tramo(Canvas canvas, Paint paint, double xIzq, double yA, double yB, double xDer) {
-    final xMid = (xIzq + xDer) / 2;
-    canvas.drawLine(Offset(xIzq, yA), Offset(xMid, yA), paint);
-    canvas.drawLine(Offset(xIzq, yB), Offset(xMid, yB), paint);
-    canvas.drawLine(Offset(xMid, yA), Offset(xMid, yB), paint);
-    final yMid = (yA + yB) / 2;
-    canvas.drawLine(Offset(xMid, yMid), Offset(xDer, yMid), paint);
+  /// Une dos cajas hermanas (en `xA` y `xB`, con su borde en `yDesde`) con
+  /// la caja padre (borde en `yHasta`, centrada entre las dos). Funciona en
+  /// los dos sentidos: si `yHasta` está por encima, el trazo sube.
+  void _tramo(Canvas canvas, Paint paint, double yDesde, double xA, double xB,
+      double yHasta) {
+    final yMid = (yDesde + yHasta) / 2;
+    canvas.drawLine(Offset(xA, yDesde), Offset(xA, yMid), paint);
+    canvas.drawLine(Offset(xB, yDesde), Offset(xB, yMid), paint);
+    canvas.drawLine(Offset(xA, yMid), Offset(xB, yMid), paint);
+    final xMid = (xA + xB) / 2;
+    canvas.drawLine(Offset(xMid, yMid), Offset(xMid, yHasta), paint);
   }
 
   @override
@@ -860,35 +888,30 @@ class _ConectorBracket extends CustomPainter {
       ..color = color
       ..strokeWidth = 1.5;
 
-    // Oeste: Ronda1 -> Semis -> Final de conferencia -> Final NBA.
-    for (var i = 0; i < 2; i++) {
-      _tramo(canvas, paint, boxWidth, centroY(0, 2 * i), centroY(0, 2 * i + 1), colWidth);
-    }
-    _tramo(canvas, paint, colWidth + boxWidth, centroY(1, 0), centroY(1, 1), 2 * colWidth);
-    canvas.drawLine(
-      Offset(2 * colWidth + boxWidth, centroFinales),
-      Offset(finalsX, centroFinales),
-      paint,
-    );
+    double abajoDe(int fila) => centroY(fila) + boxHeight / 2;
+    double arribaDe(int fila) => centroY(fila) - boxHeight / 2;
 
-    // Este (espejo): mismo dibujo reflejado a la derecha de la Final NBA.
-    // Cada columna hacia fuera está un colWidth más allá de finalsX (el
-    // mismo colWidth que ya incluye boxWidth+connector).
-    final finalConfEsteX = finalsX + boxWidth + connector; // = finalsX + colWidth
-    final semisEsteX = finalsX + 2 * colWidth;
-    final ronda1EsteX = finalsX + 3 * colWidth;
-
-    canvas.drawLine(
-      Offset(finalsX + boxWidth, centroFinales),
-      Offset(finalConfEsteX, centroFinales),
-      paint,
-    );
-    _tramo(canvas, paint, semisEsteX, centroY(1, 0), centroY(1, 1),
-        finalConfEsteX + boxWidth);
+    // Oeste, bajando: Ronda1 (fila 0) -> Semis (1) -> Final Oeste (2).
     for (var i = 0; i < 2; i++) {
-      _tramo(canvas, paint, ronda1EsteX, centroY(0, 2 * i),
-          centroY(0, 2 * i + 1), semisEsteX + boxWidth);
+      _tramo(canvas, paint, abajoDe(0), centroX(0, 2 * i),
+          centroX(0, 2 * i + 1), arribaDe(1));
     }
+    _tramo(canvas, paint, abajoDe(1), centroX(1, 0), centroX(1, 1),
+        arribaDe(2));
+    // Final Oeste -> Final NBA.
+    canvas.drawLine(Offset(centroFinales, abajoDe(2)),
+        Offset(centroFinales, arribaDe(3)), paint);
+
+    // Este, subiendo: Ronda1 (fila 6) -> Semis (5) -> Final Este (4).
+    for (var i = 0; i < 2; i++) {
+      _tramo(canvas, paint, arribaDe(6), centroX(0, 2 * i),
+          centroX(0, 2 * i + 1), abajoDe(5));
+    }
+    _tramo(canvas, paint, arribaDe(5), centroX(1, 0), centroX(1, 1),
+        abajoDe(4));
+    // Final Este -> Final NBA.
+    canvas.drawLine(Offset(centroFinales, arribaDe(4)),
+        Offset(centroFinales, abajoDe(3)), paint);
   }
 
   @override

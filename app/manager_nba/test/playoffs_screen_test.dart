@@ -8,6 +8,7 @@ import 'package:manager_nba/data/importer/jugadores_importer.dart';
 import 'package:manager_nba/domain/franquicia_repository.dart';
 import 'package:manager_nba/domain/playoffs_repository.dart';
 import 'package:manager_nba/domain/slots_repository.dart';
+import 'package:manager_nba/features/partido/serie_boxscores_screen.dart';
 import 'package:manager_nba/features/playoffs/playoffs_screen.dart';
 
 /// Verifica que el bracket visual (Stack + CustomPainter con geometría a
@@ -98,32 +99,76 @@ void main() {
     expect(find.textContaining('Campeones de la NBA'), findsOneWidget);
   });
 
-  testWidgets('tocar una serie ya jugada abre sus estadísticas: el partido '
-      'suelto del play-in va directo al boxscore y una serie al mejor de 7 '
-      'enseña antes la lista', (WidgetTester tester) async {
+  /// El Play-In ocupa una tarjeta grande encima del cuadro, y en cuanto
+  /// decide quién es el 7 y el 8 no aporta nada: lo único que hacía era
+  /// empujar el bracket hacia abajo cada vez que entrabas a mirar cómo iban
+  /// tus playoffs. Sus resultados no se pierden — quedan en las cabezas de
+  /// serie del propio cuadro.
+  testWidgets('el Play-In desaparece del bracket en cuanto se resuelve',
+      (WidgetTester tester) async {
+    await sembrarPlayoffs(db);
+    await pump(tester);
+    expect(find.text('Play-In'), findsOneWidget);
+
+    // Por el camino real (el botón), no tocando la base de datos por
+    // detrás: así se comprueba también que la pantalla se refresca sola.
+    await tester.tap(
+        find.widgetWithText(OutlinedButton, 'Resolver el Play-In'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('Play-In'), findsNothing);
+    expect(find.text('Bracket'), findsOneWidget);
+
+    // Y lo que decidía el play-in ya está en el cuadro: la primera ronda
+    // tiene rivales de verdad en vez de huecos "por definir".
+    final ronda1 = (await leerSeries(db)).firstWhere((s) => s.ronda == 1);
+    expect(ronda1.equipoA, isNot(equipoPorDefinir));
+    expect(ronda1.equipoB, isNot(equipoPorDefinir));
+  });
+
+  testWidgets('tocar una serie ya jugada del cuadro abre la lista de sus '
+      'partidos', (WidgetTester tester) async {
     await sembrarPlayoffs(db);
     await simularPlayoffsCompletos(db);
     await pump(tester);
 
     final series = await leerSeries(db);
-
-    final playIn = series.firstWhere((s) => s.ronda == 0);
-    await tester.tap(find.byKey(ValueKey('playin-${playIn.id}')));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-    expect(find.text('Resultado del partido'), findsOneWidget);
-
-    // La transición de vuelta tiene que terminar del todo: mientras la
-    // pantalla anterior se desvanece sigue capturando los toques.
-    await tester.pageBack();
-    await tester.pump();
-    await tester.pump(const Duration(seconds: 1));
-
     final finalNba = series.firstWhere((s) => s.conferencia == 'Final');
     await tester.tap(find.byKey(ValueKey('serie-${finalNba.id}')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('Partidos de la serie'), findsOneWidget);
+  });
+
+  /// Una serie a partido único (el play-in) salta la lista y va directa al
+  /// boxscore. Se prueba llamando al helper y no tocando la pantalla porque
+  /// el panel del play-in desaparece en cuanto se juega, así que ya no hay
+  /// ningún sitio en la UI de playoffs desde donde llegar aquí — pero el
+  /// mismo helper lo usa la NBA Cup, que sí tiene eliminatorias a un
+  /// partido, y esa bifurcación hay que seguir vigilándola.
+  testWidgets('una serie a partido único abre el boxscore directamente',
+      (WidgetTester tester) async {
+    await sembrarPlayoffs(db);
+    await simularPlayoffsCompletos(db);
+    final playIn = (await leerSeries(db)).firstWhere((s) => s.ronda == 0);
+
+    await tester.pumpWidget(MaterialApp(
+      home: Builder(
+        builder: (context) => Scaffold(
+          body: TextButton(
+            onPressed: () => abrirEstadisticasDeSerie(context, db,
+                origen: 'playoffs', serieId: playIn.id),
+            child: const Text('abrir'),
+          ),
+        ),
+      ),
+    ));
+    await tester.tap(find.text('abrir'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('Resultado del partido'), findsOneWidget);
   });
 
   testWidgets('al decidirse la Final NBA en pantalla, sale el diálogo de '

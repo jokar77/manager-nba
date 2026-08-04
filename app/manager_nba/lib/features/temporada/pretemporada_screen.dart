@@ -60,8 +60,8 @@ class PretemporadaScreen extends StatelessWidget {
                   .map((c) => ListTile(
                         dense: true,
                         title: Text(c.nombre),
-                        subtitle: Text('Cuelga las botas con media '
-                            '${c.mediaAntes}'),
+                        subtitle: Text('Cuelga las botas con ${c.edad} años '
+                            'y media ${c.mediaAntes}'),
                       ))
                   .toList(),
             ),

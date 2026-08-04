@@ -29,14 +29,176 @@ abrirse y llevarse por delante una partida de diez temporadas. iOS lo
 concede sin preguntar cuando la web está añadida a la pantalla de inicio;
 si el navegador dice que no, se avisa por consola y se sigue jugando.
 
-Con ello **`CACHE` en `web/sw.js` sube a `manager-nba-v2`**. Es
-obligatorio y se olvida fácil: `index.html` está en la lista de
-precacheados, así que sin subir la versión los navegadores que ya tengan
-el juego seguirían sirviendo el `index.html` viejo y el cambio no llegaría
-nunca. Vale para cualquier cambio en `web/`, no solo en `sw.js`.
+### Subir `CACHE` en CADA publicación (la trampa que más se olvida)
+
+`web/sw.js` tiene `const CACHE = 'manager-nba-vN'`. **Hay que subir ese
+número en toda publicación que cambie el juego, no solo al tocar `web/`.**
+
+El motivo es `main.dart.js`: es el juego entero compilado, está en la lista
+de precarga del service worker, y cambia con cualquier línea de Dart. Como
+`guardarLoQueFalte` no vuelve a pedir lo que ya está guardado —a propósito,
+es lo que permite completar una caché a medias sin descargar 17 MB otra
+vez— sin subir la versión los que ya tengan el juego **se quedan con el
+código viejo para siempre**: la web se actualiza en GitHub Pages y ellos no
+ven ni un cambio.
+
+Al subirla, el `activate` borra las cachés viejas y la nueva se llena de
+cero, así que tampoco quedan mezclados ficheros de dos compilaciones.
+
+Histórico: v1 (publicación inicial) → v2 (almacenamiento persistente) →
+v3 (arreglo del service worker + lista parte 9).
 
 **README:** el enlace ya apunta a `https://jokar77.github.io/manager-nba/`
 (antes tenía el marcador `USUARIO/REPOSITORIO`).
+
+### Lista parte 9 (terminada)
+
+**P9-1 · Fin de temporada: clasificación en vez de la lista de partidos.**
+La pestaña del medio del resumen enseñaba los 82 partidos uno a uno; ahora
+enseña la clasificación de los 30 equipos, por conferencias, con tu equipo
+resaltado y la línea de corte de playoffs (8) y play-in (10). La lista de
+partidos no contaba nada que no hubieras visto ya según se jugaban.
+`EquipoEnLaClasificacion` en `resumen_temporada_repository.dart`, calculada
+con el mismo criterio que el puesto que ya salía arriba (por porcentaje, y
+por nombre para desempatar). Regresión en `resumen_temporada_test.dart`:
+30 filas, 15 por conferencia, ordenadas, y el puesto de la cabecera
+coherente con la tabla.
+
+**P9-2 · Playoffs: el Play-In desaparece y el cuadro pasa a vertical.**
+El panel del Play-In se oculta en cuanto se resuelve —cumplida su función
+solo empujaba el bracket hacia abajo— y sus resultados quedan igualmente
+a la vista en las cabezas de serie del cuadro.
+
+El bracket ahora va de arriba abajo: el Oeste baja de la primera ronda a
+su final de conferencia, el Este sube desde abajo y las dos mitades se
+encuentran en la Final NBA del centro. **No es solo estética:** en
+horizontal el cuadro necesitaba 1400 píxeles de ancho y en un móvil de 390
+quedaba al 28%; girado mide 714, o sea el 55%. El scroll vertical de la
+pantalla se encarga del alto. Se conserva el `InteractiveViewer` para
+pellizcar, pero en tablet ya cabe sin encoger.
+
+Dos avisos para quien toque esto:
+
+- El cuadro lleva `ValueKey('cuadro-playoffs')` **porque los tests lo
+  necesitan**: si cabe sin encoger no se crea el `InteractiveViewer`, así
+  que buscar ese widget para medirlo (como hacía `adaptacion_movil_test`)
+  falla con "Bad state: No element" en tablet.
+- Al ocultar el Play-In se pierde el único camino de la UI de playoffs
+  hacia el boxscore de un partido único. Esa bifurcación de
+  `abrirEstadisticasDeSerie` la sigue usando la NBA Cup, así que su test se
+  reescribió llamando al helper directamente en vez de borrarlo.
+
+**P9-3 · Retiros: la edad de cada retirado.** `CambioDeJugador` gana
+`edad` (la de después de cumplir años, que es con la que de verdad se
+retira). Se muestra en la pantalla de retirados y en el resumen de
+pretemporada. Regresión en `progresion_repository_test.dart`, que además
+comprueba que esa edad coincide con la que queda guardada en la base de
+datos.
+
+### Tests flaky conocidos
+
+`ofertas_camino_real_test` ("llegan ofertas igual", espera >0) y
+`premios_repository_test` ("no puede repetir como Rookie del Año") fallaron
+una vez cada uno en una pasada de la suite y pasaron las tres veces
+siguientes por separado, con la suite entera verde después. Son
+simulaciones **sin semilla a propósito**, así que un fallo suelto de estos
+dos no es una regresión — pero si empiezan a caer a menudo, lo que hay que
+arreglar es el test (subir la muestra o fijar la semilla), no el juego.
+
+### "Mi equipo es mejor y me hacen 27-55": era el sorteo de forma
+
+Reportado así: *"jugando con los Knicks me hacen poquísimas victorias pero
+en otra partida ganan ellos el anillo, y con OKC he hecho 27-55"*.
+
+**Lo obvio se descartó primero, con números.** Simulando 8 temporadas
+completas del mismo equipo llevado por el usuario y llevado por la CPU:
+
+| | lo llevas tú | lo lleva la CPU |
+|---|---|---|
+| NYK | 54,6 victorias | 52,5 |
+| OKC | 49,6 | 51,3 |
+
+El `top8` era idéntico en los dos brazos, o sea la misma plantilla. **No
+hay ninguna desventaja por ser tu equipo** (+2,1 y −1,6: ruido).
+
+**Lo que sí había era demasiado azar.** Diez temporadas del mismo equipo
+con la misma plantilla daban 43, 43, 44, 44, 46, 48, 50, 55, 62 y 64
+victorias: desviación 7,9, contra un suelo binomial irreducible de 4,4.
+Descomponiendo la varianza:
+
+| | desviación de victorias | r con la forma |
+|---|---|---|
+| con forma | 7,9 | **0,78** |
+| forma a 1.0 para todos | 5,1 | — |
+| suelo binomial | 4,4 | — |
+
+El sorteo de forma explicaba el **61%** de la temporada (r²=0,61) y aportaba
+él solo ±6 victorias. Las lesiones quedaron descartadas: 3 de media por
+equipo y correlación inconsistente entre tandas (−0,54 y +0,38 con n=10).
+
+**Causa.** La forma se sorteaba por jugador con sigma 0,07, pero los diez
+sorteos de una rotación **se sumaban**: la forma media de un equipo se
+desviaba 0,027, y ese 2,7% de fuerza colectiva valía esas ±6 victorias.
+
+**Arreglo** (`_arrastreDeEquipo = 0.35` en `forma_repository.dart`): se
+sortea igual que antes y después se le devuelve a cada equipo el 65% de la
+suerte colectiva que le había tocado. La variedad individual queda intacta
+—sigma por jugador 0,070 → 0,067, o sea el MVP sigue cambiando— y lo que
+desaparece es el arrastre de equipo. No se centra del todo a propósito: un
+equipo puede tener un buen año o uno gris, como en la NBA.
+
+Medido después: desviación 7,9 → **5,7**, forma de equipo 0,0268 →
+**0,0114**, r 0,78 → **0,53**. Sin forma sale 4,4 con un suelo de 4,5, o
+sea que lo que queda ya es el azar irreducible de los partidos.
+
+Regresión en `forma_y_premios_test.dart`, midiendo el sorteo directamente
+(rápido y sin ruido de partidos) por los dos lados: la desviación por
+equipo por debajo de 0,016 y la individual por encima de 0,055.
+**Comprobado que falla con el código viejo** (daba 0,0222).
+
+### El juego no funcionaba sin conexión (dos bugs del service worker)
+
+Reportado así: *"si agrego el juego a la pantalla de inicio no va sin
+internet y va fatal casi no funciona, pero desde Safari normal sí va"*.
+Eran dos fallos distintos, y el segundo solo se ve **sirviendo el sitio y
+mirando qué pide el navegador de verdad**, no leyendo la lista.
+
+**1. La lista de precarga no coincidía con lo que el juego carga.**
+Sirviendo la compilación en local bajo `/manager-nba/` y leyendo las
+peticiones reales, el arranque pide:
+
+- `canvaskit/chromium/canvaskit.wasm` + `.js` — **no estaban en la lista**
+- `assets/packages/cupertino_icons/assets/CupertinoIcons.ttf` — **tampoco**
+
+y en cambio se precargaban `skwasm.js` + `skwasm.wasm` (3,6 MB) que **no
+se piden nunca**, porque el build fija `renderer: canvaskit`.
+
+Flutter elige la variante del motor en caliente: los navegadores basados
+en Chromium piden `canvaskit/chromium/`, el resto —Safari, o sea el
+iPhone— `canvaskit/` a secas. Como el service worker no puede saber quién
+le tocará, **ahora van las dos**. Es el motor de dibujo: sin él en caché,
+sin conexión la pantalla se queda en blanco. Comprobado directamente en
+Chromium; para Safari se cubre por la otra variante.
+
+**2. Una instalación a medias era permanente.** El `install` guardaba los
+ficheros uno a uno y se saltaba los que fallaran (a propósito: mejor 24 de
+25 que ninguno), pero **no volvía a intentarlo jamás**. Si la primera vez
+pillaba mala cobertura —o era el primer arranque desde la pantalla de
+inicio del iPhone, que tiene su propia caché vacía, aparte de la de
+Safari— la caché se quedaba incompleta para siempre: unos ficheros se
+servían y otros no. Eso es literalmente "va fatal, casi no funciona".
+Ahora cada vez que se abre el juego con conexión se completa lo que falte
+(`completarPrecargaSiFalta`, enganchado al `fetch` de navegación).
+
+**Verificado de verdad:** borrando service worker y cachés, recargando,
+**matando el servidor** y recargando otra vez → los 9 ficheros críticos se
+sirven con 200, el motor de Flutter arranca (`flutterView` presente,
+`_flutter` inicializado) y **cero errores en consola**.
+
+Un aviso que no es un bug y conviene recordar: **en iOS, la app de la
+pantalla de inicio tiene su propia caché, separada de Safari.** Haber
+cargado el juego en Safari no sirve de nada para el icono. Hay que abrirlo
+**una vez desde el icono y con conexión**.
 
 ### Tu equipo se descolgaba de la liga cada verano (dos asimetrías)
 

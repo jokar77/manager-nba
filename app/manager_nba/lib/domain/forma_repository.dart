@@ -20,6 +20,29 @@ const formaMaxima = 1.16;
 /// un año grande y uno flojo hay más de un 30% de distancia relativa.
 const _sigmaForma = 0.07;
 
+/// Cuánto se le deja arrastrar a un equipo entero la suerte de sus
+/// jugadores. Con 1.0 no se corrige nada (como estaba) y con 0.0 la forma
+/// media de cada rotación es exactamente 1.0.
+///
+/// Que la forma varíe por jugador es bueno y hace falta: es lo que mueve el
+/// MVP de un año a otro. Lo que no puede pasar es que se acumule. Los
+/// sorteos individuales de los diez que juegan se suman y mueven la fuerza
+/// del equipo entero, y ahí el efecto era brutal: midiendo 10 temporadas
+/// del MISMO equipo con la MISMA plantilla, las victorias se desviaban 7,9
+/// —contra un suelo irreducible de 4,4— y la forma sorteada explicaba el
+/// 61% del resultado final (r = 0,78). Dicho de otra forma, tu temporada la
+/// decidía más un dado de septiembre que tu plantilla.
+///
+/// Se deja algo (0.35) a propósito: un equipo puede tener un buen año o uno
+/// gris, como en la NBA de verdad. Lo que ya no puede es que ese dado pese
+/// más que las decisiones del manager.
+const _arrastreDeEquipo = 0.35;
+
+/// Cuántos jugadores se consideran "la rotación" al neutralizar el arrastre:
+/// los mejores por media, que son los que de verdad juegan (ver
+/// generarRotacionAutomatica y generarAlineacionAutomatica, ambas de 10).
+const _tamanoDeLaRotacion = 10;
+
 /// Sortea el estado de forma de esta temporada para todos los jugadores y
 /// lo guarda, sustituyendo el anterior. Se llama al crear la franquicia (y
 /// se llamará al empezar cada temporada nueva).
@@ -27,8 +50,34 @@ Future<void> sortearFormaDeTemporada(AppDatabase db, {Random? random}) async {
   final rng = random ?? Random();
   final jugadores = await db.select(db.jugadores).get();
 
+  final sorteo = {
+    for (final j in jugadores) j.id: 1.0 + _ruidoGaussiano(rng) * _sigmaForma
+  };
+
+  // Cuánta suerte le ha tocado a cada equipo EN CONJUNTO, mirando solo a
+  // los que van a jugar. Los agentes libres y los retirados no forman
+  // equipo, así que se quedan con su sorteo tal cual.
+  final porEquipo = <String, List<Jugador>>{};
+  for (final j in jugadores) {
+    if (j.retirado) continue;
+    porEquipo.putIfAbsent(j.equipo, () => []).add(j);
+  }
+  final arrastrePorEquipo = <String, double>{};
+  for (final entrada in porEquipo.entries) {
+    final rotacion = [...entrada.value]
+      ..sort((a, b) => b.media.compareTo(a.media));
+    final losQueJuegan = rotacion.take(_tamanoDeLaRotacion).toList();
+    if (losQueJuegan.isEmpty) continue;
+    final media = losQueJuegan
+            .map((j) => sorteo[j.id]!)
+            .reduce((a, b) => a + b) /
+        losQueJuegan.length;
+    arrastrePorEquipo[entrada.key] = media - 1.0;
+  }
+
   final filas = jugadores.map((j) {
-    final factor = (1.0 + _ruidoGaussiano(rng) * _sigmaForma)
+    final exceso = j.retirado ? 0.0 : (arrastrePorEquipo[j.equipo] ?? 0.0);
+    final factor = (sorteo[j.id]! - exceso * (1 - _arrastreDeEquipo))
         .clamp(formaMinima, formaMaxima)
         .toDouble();
     return FormaTemporadaJugadorCompanion.insert(

@@ -216,8 +216,8 @@ class _FilaRetirado extends StatelessWidget {
             ? const Icon(Icons.person_off)
             : EquipoLogo(codigoEquipo: cambio.equipo, tamano: 32),
         title: Text(cambio.nombre),
-        subtitle: Text(
-            '$procedencia · se retira con media ${cambio.mediaAntes}$aviso'),
+        subtitle: Text('$procedencia · se retira con ${cambio.edad} años y '
+            'media ${cambio.mediaAntes}$aviso'),
         trailing: onTap == null
             ? null
             : (camisetaRetirada

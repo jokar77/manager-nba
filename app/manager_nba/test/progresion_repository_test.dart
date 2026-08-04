@@ -159,6 +159,28 @@ void main() {
           .getSingle();
     }
 
+    /// La lista de retirados enseña con qué edad cuelga las botas cada uno,
+    /// así que el cambio tiene que traer esa edad — y la de después de
+    /// cumplir años, que es la de verdad: retirarse "con 38" cuando ya has
+    /// cumplido 39 sería mentir por un año.
+    test('el cambio de un retirado trae la edad con la que se retira',
+        () async {
+      final id = await db.into(db.jugadores).insert(
+          _veterano(nombre: 'El Rey', edad: 41, media: 60)
+              .copyWith(edadRetiro: const Value(36)));
+
+      final cambios = await envejecerLiga(db, random: Random(3));
+      final suyo = cambios.firstWhere((c) => c.jugadorId == id);
+
+      expect(suyo.seRetira, isTrue);
+      expect(suyo.edad, 42, reason: 'tenía 41 y el verano le suma uno');
+
+      final enBd = await (db.select(db.jugadores)..where((t) => t.id.equals(id)))
+          .getSingle();
+      expect(suyo.edad, enBd.edad,
+          reason: 'la edad del cambio y la guardada tienen que coincidir');
+    });
+
     test('un 92 con la edad de retiro cumplida sigue jugando', () async {
       final ficha = _veterano(nombre: 'El Rey', edad: 41, media: 92)
           .copyWith(edadRetiro: const Value(36));

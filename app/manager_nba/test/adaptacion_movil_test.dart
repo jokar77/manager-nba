@@ -172,10 +172,9 @@ void main() {
     expect(find.textContaining('Mete a un tercero'), findsOneWidget);
   });
 
-  /// El cuadro tiene la disposición de un bracket de verdad —las dos
-  /// conferencias enfrentadas con la Final NBA en el centro— y se encoge
-  /// hasta caber entero en el ancho que haya. Nada de scroll horizontal:
-  /// las dos mitades tienen que estar a la vista a la vez.
+  /// El cuadro va de arriba abajo —el Oeste baja, el Este sube y la Final
+  /// NBA queda en medio— y cabe entero en el ancho que haya. Nada de scroll
+  /// horizontal: las dos conferencias tienen que estar a la vista a la vez.
   Future<void> comprobarCuadroEntero(WidgetTester tester, Size tamano) async {
     expect(
         await montar(
@@ -184,11 +183,15 @@ void main() {
 
     expect(find.text('CONFERENCIA OESTE'), findsOneWidget);
     expect(find.text('CONFERENCIA ESTE'), findsOneWidget);
-    expect(find.text('Final NBA'), findsWidgets);
+    expect(find.textContaining('FINAL'), findsWidgets);
 
     // Y de verdad entra en pantalla: nada del cuadro se sale por los lados.
+    //
+    // Se mide por clave y no buscando el InteractiveViewer: girado a
+    // vertical el cuadro mide 714 en vez de 1400, así que en una tablet ya
+    // cabe sin encoger y entonces no hay InteractiveViewer que encontrar.
     final cuadro = tester.renderObject<RenderBox>(
-        find.byType(InteractiveViewer).first);
+        find.byKey(const ValueKey('cuadro-playoffs')));
     expect(cuadro.size.width, lessThanOrEqualTo(tamano.width + 0.5),
         reason: 'el cuadro mide ${cuadro.size.width} y la pantalla '
             '${tamano.width}: se sale por un lado');

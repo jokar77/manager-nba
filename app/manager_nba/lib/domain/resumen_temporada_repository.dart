@@ -49,6 +49,28 @@ class JugadorDelResumen {
   });
 }
 
+/// Una fila de la clasificación general: cómo terminó un equipo el año.
+///
+/// Al cerrar la temporada, lo que interesa no es repasar tus 82 partidos
+/// uno a uno —eso ya lo has visto según se jugaban— sino ver dónde has
+/// quedado respecto a los otros 29.
+class EquipoEnLaClasificacion {
+  final String equipo;
+  final String conferencia;
+  final int victorias;
+  final int derrotas;
+
+  const EquipoEnLaClasificacion({
+    required this.equipo,
+    required this.conferencia,
+    required this.victorias,
+    required this.derrotas,
+  });
+
+  int get jugados => victorias + derrotas;
+  double get porcentaje => jugados == 0 ? 0 : victorias / jugados;
+}
+
 /// Todo lo que pasó en tu temporada regular, de una sola lectura.
 class ResumenDeTemporada {
   final String etiquetaTemporada;
@@ -67,6 +89,9 @@ class ResumenDeTemporada {
   final List<PartidoDelResumen> partidos;
   final List<JugadorDelResumen> jugadores;
 
+  /// Los 30 equipos ordenados de mejor a peor porcentaje.
+  final List<EquipoEnLaClasificacion> clasificacion;
+
   const ResumenDeTemporada({
     required this.etiquetaTemporada,
     required this.numeroTemporada,
@@ -83,6 +108,7 @@ class ResumenDeTemporada {
     required this.peorDerrota,
     required this.partidos,
     required this.jugadores,
+    required this.clasificacion,
   });
 
   int get partidosJugados => victorias + derrotas;
@@ -212,6 +238,21 @@ Future<ResumenDeTemporada> leerResumenDeTemporada(
         ..where((t) => t.id.equals(0)))
       .getSingleOrNull();
 
+  // La clasificación entera, con el mismo criterio que el puesto de arriba:
+  // por porcentaje, y el nombre del equipo para desempatar de forma estable.
+  final clasificacion = jugadosPorEquipo.keys
+      .map((e) => EquipoEnLaClasificacion(
+            equipo: e,
+            conferencia: conferenciaPorEquipo[e] ?? 'Oeste',
+            victorias: victoriasPorEquipo[e] ?? 0,
+            derrotas: (jugadosPorEquipo[e] ?? 0) - (victoriasPorEquipo[e] ?? 0),
+          ))
+      .toList()
+    ..sort((a, b) {
+      final porPorcentaje = b.porcentaje.compareTo(a.porcentaje);
+      return porPorcentaje != 0 ? porPorcentaje : a.equipo.compareTo(b.equipo);
+    });
+
   return ResumenDeTemporada(
     etiquetaTemporada:
         temporada == null ? '' : etiquetaDeTemporada(temporada.anioInicio),
@@ -229,5 +270,6 @@ Future<ResumenDeTemporada> leerResumenDeTemporada(
     peorDerrota: extremo(false),
     partidos: mios,
     jugadores: jugadores,
+    clasificacion: clasificacion,
   );
 }

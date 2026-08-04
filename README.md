@@ -16,6 +16,11 @@ reordena según el ancho disponible.
 webs), toca Compartir → *Añadir a pantalla de inicio*. Se queda con su
 icono y **funciona sin conexión**: en el metro, en un avión o sin datos.
 
+⚠️ Después de añadirlo, **ábrelo una vez desde el icono y con conexión**,
+y espera a que cargue del todo. La app de la pantalla de inicio tiene su
+propia caché, separada de la de Safari: haberlo usado antes en Safari no
+le sirve de nada. Si te lo saltas, sin datos no arrancará.
+
 **En Android:** Chrome ofrece "Instalar aplicación" solo.
 
 La primera vez se descargan unos 17 MB. Después, nada.
@@ -59,7 +64,9 @@ Publicar es automático: cada push a `main` dispara
 `.github/workflows/publicar.yml`, que compila y actualiza la web. Si los
 tests fallan, no se publica.
 
-Al tocar `web/sw.js` **o `web/index.html`** hay que subir la versión de
-`CACHE` (ahora `manager-nba-v2` → `-v3`) o los navegadores que ya tengan
-el juego seguirán con la copia vieja: `index.html` está en la lista de
-ficheros precacheados y se sirve desde la caché sin volver a pedirlo.
+**En cada publicación que cambie el juego hay que subir `CACHE` en
+`web/sw.js`** (ahora `manager-nba-v3` → `-v4`). No solo al tocar `web/`:
+`main.dart.js` es el juego entero compilado, está en la lista de precarga
+del service worker, y el service worker no vuelve a pedir lo que ya tiene
+guardado. Sin subir la versión, quien ya tenga el juego se queda con el
+código viejo para siempre.

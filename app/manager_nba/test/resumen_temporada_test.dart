@@ -34,6 +34,46 @@ void main() {
         db, 'DEN', partidos.first.fecha.add(const Duration(days: 60)));
   }
 
+  /// Al cerrar la temporada, la pestaña del medio enseña la clasificación de
+  /// los 30 equipos y no la lista de tus 82 partidos: esa lista no contaba
+  /// nada que no hubieras visto ya según se jugaban.
+  test('el resumen trae la clasificación entera, ordenada y con tu equipo '
+      'dentro', () async {
+    await simularUnTramo();
+    final resumen = await leerResumenDeTemporada(db, 'DEN');
+
+    expect(resumen.clasificacion, hasLength(30));
+
+    // Ordenada de mejor a peor porcentaje, sin saltos.
+    for (var i = 1; i < resumen.clasificacion.length; i++) {
+      expect(resumen.clasificacion[i - 1].porcentaje,
+          greaterThanOrEqualTo(resumen.clasificacion[i].porcentaje),
+          reason: 'la clasificación no está ordenada en la posición $i');
+    }
+
+    // Quince por conferencia, y cada fila cuadra con lo jugado.
+    for (final conferencia in ['Este', 'Oeste']) {
+      expect(
+          resumen.clasificacion
+              .where((e) => e.conferencia == conferencia)
+              .length,
+          15,
+          reason: 'la conferencia $conferencia no tiene 15 equipos');
+    }
+
+    final tuya =
+        resumen.clasificacion.firstWhere((e) => e.equipo == 'DEN');
+    expect(tuya.victorias, resumen.victorias);
+    expect(tuya.derrotas, resumen.derrotas);
+
+    // Y el puesto que se enseña arriba es coherente con la tabla.
+    final deTuConferencia = resumen.clasificacion
+        .where((e) => e.conferencia == resumen.conferencia)
+        .toList();
+    expect(deTuConferencia.indexWhere((e) => e.equipo == 'DEN') + 1,
+        resumen.puestoEnConferencia);
+  });
+
   test('el resumen cuadra con lo que se ha jugado de verdad', () async {
     await simularUnTramo();
     final resumen = await leerResumenDeTemporada(db, 'DEN');

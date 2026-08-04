@@ -47,6 +47,10 @@ class CambioDeJugador {
   final int mediaDespues;
   final bool seRetira;
 
+  /// La edad que tiene ya cumplido el año, o sea con la que se retira quien
+  /// cuelga las botas. "Se retira con 39" dice mucho más que la media sola.
+  final int edad;
+
   const CambioDeJugador({
     required this.jugadorId,
     required this.nombre,
@@ -54,6 +58,7 @@ class CambioDeJugador {
     required this.mediaAntes,
     required this.mediaDespues,
     required this.seRetira,
+    required this.edad,
   });
 
   int get delta => mediaDespues - mediaAntes;
@@ -97,6 +102,7 @@ Future<List<CambioDeJugador>> envejecerLiga(
         mediaAntes: j.media,
         mediaDespues: j.media,
         seRetira: true,
+        edad: nuevaEdad,
       ));
       actualizaciones.add((
         j.id,
@@ -118,6 +124,7 @@ Future<List<CambioDeJugador>> envejecerLiga(
       mediaAntes: j.media,
       mediaDespues: nuevaMedia,
       seRetira: false,
+      edad: nuevaEdad,
     ));
     actualizaciones.add((
       j.id,

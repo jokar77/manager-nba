@@ -89,6 +89,78 @@ void main() {
         reason: 'y jugadores en un año flojo');
   });
 
+  /// La forma varía por jugador, pero NO puede acumularse en el equipo.
+  ///
+  /// De dónde sale: reportado como "juego con los Knicks y me hacen
+  /// poquísimas victorias, pero en otra partida ganan ellos el anillo".
+  /// Primero se descartó lo obvio midiendo el mismo equipo llevado por el
+  /// usuario y llevado por la CPU: 54,6 contra 52,5 victorias de media en
+  /// NYK y 49,6 contra 51,3 en OKC, o sea ninguna desventaja por ser tuyo.
+  ///
+  /// El problema era el azar. Simulando 10 temporadas del MISMO equipo con
+  /// la MISMA plantilla, las victorias se desviaban 7,9 —contra un suelo
+  /// binomial irreducible de 4,4— y el sorteo de forma correlacionaba 0,78
+  /// con el resultado final: explicaba el 61% de la temporada. Poniendo la
+  /// forma a 1.0 para todos, la desviación caía a 5,1.
+  ///
+  /// La causa: los sorteos individuales de los diez que juegan se sumaban.
+  /// Con sigma 0,07 por jugador, la forma media de una rotación se desviaba
+  /// 0,027, y ese 2,7% de fuerza de equipo valía unas ±6 victorias.
+  ///
+  /// Este test mide el sorteo directamente en vez de simular temporadas:
+  /// es la misma magnitud, sin esperar tres minutos ni depender del ruido
+  /// de los partidos. Con el código viejo la desviación por equipo salía
+  /// ~0,027 y esto fallaba.
+  test('la forma da variedad por jugador pero no reparte suerte por equipos',
+      () async {
+    // Seis equipos de 12, que es el tamaño de plantilla real del juego.
+    const equipos = ['DEN', 'BOS', 'NYK', 'OKC', 'LAL', 'MIA'];
+    for (final equipo in equipos) {
+      for (var i = 0; i < 12; i++) {
+        await db.into(db.jugadores).insert(_jugador(
+            nombre: '$equipo$i', equipo: equipo, atrDefensa: 70));
+      }
+    }
+
+    // Varias tiradas: una sola no dice nada de una desviación.
+    final mediasDeEquipo = <double>[];
+    final todosLosFactores = <double>[];
+    for (var tirada = 0; tirada < 40; tirada++) {
+      await sortearFormaDeTemporada(db, random: Random(tirada));
+      final formas = await leerFormas(db);
+      final jugadores = await db.select(db.jugadores).get();
+
+      for (final equipo in equipos) {
+        // Los 10 que juegan, como hace el propio sorteo.
+        final plantilla = jugadores.where((j) => j.equipo == equipo).toList()
+          ..sort((a, b) => b.media.compareTo(a.media));
+        final rotacion = plantilla.take(10).map((j) => formas[j.id]!).toList();
+        mediasDeEquipo.add(rotacion.reduce((a, b) => a + b) / rotacion.length);
+      }
+      todosLosFactores.addAll(formas.values);
+    }
+
+    double desviacion(List<double> xs) {
+      final m = xs.reduce((a, b) => a + b) / xs.length;
+      return sqrt(
+          xs.fold<double>(0, (a, x) => a + (x - m) * (x - m)) / xs.length);
+    }
+
+    // Lo que se arregla: la suerte del EQUIPO. Antes 0,027.
+    final desvEquipo = desviacion(mediasDeEquipo);
+    expect(desvEquipo, lessThan(0.016),
+        reason: 'la forma media de una rotación se mueve '
+            '${desvEquipo.toStringAsFixed(4)}: eso son victorias regaladas o '
+            'robadas antes de jugar un solo partido');
+
+    // Y lo que NO se puede perder por el camino: que cada jugador siga
+    // teniendo años buenos y malos, que es lo que mueve los premios.
+    final desvJugador = desviacion(todosLosFactores);
+    expect(desvJugador, greaterThan(0.055),
+        reason: 'sin variedad individual el MVP sería siempre el mismo: '
+            'desviación ${desvJugador.toStringAsFixed(4)}');
+  });
+
   test('volver a sortear la forma cambia los factores: por eso los premios '
       'no salen siempre para el mismo jugador', () async {
     for (var i = 0; i < 60; i++) {
