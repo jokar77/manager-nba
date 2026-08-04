@@ -1,3 +1,138 @@
+# ESTADO ACTUAL (leer esto primero)
+
+**El juego está PUBLICADO y jugable en:**
+
+```
+https://jokar77.github.io/manager-nba/
+```
+
+Verificado con peticiones reales: HTTP 200, `base href = /manager-nba/`, el
+service worker se registra, y los nueve ficheros críticos se sirven —
+incluidos `sqlite3.wasm` (731 KB) y `canvaskit.wasm` (7 MB).
+
+- **Repositorio:** `https://github.com/jokar77/manager-nba` (público, rama
+  `main`). El usuario es `jokar77`.
+- **Publicación automática:** cada `git push` dispara
+  `.github/workflows/publicar.yml`, que compila, **pasa los 320 tests** y
+  despliega en GitHub Pages. Si los tests fallan NO se publica.
+- En Settings → Pages, *Source* está en **GitHub Actions** (ya configurado).
+- `gh` CLI NO está instalado; `git` sí (2.55). El push lo hace el usuario a
+  mano porque necesita autenticarse.
+- Verificación local: `flutter analyze` limpio y **322/322 tests pasando**.
+
+## Hecho el 4 de agosto de 2026
+
+**Almacenamiento persistente: HECHO.** `web/index.html` pide
+`navigator.storage.persist()` al arrancar (solo si no lo tiene ya). Sin
+esto Safari podía borrar los datos de una web que llevara semanas sin
+abrirse y llevarse por delante una partida de diez temporadas. iOS lo
+concede sin preguntar cuando la web está añadida a la pantalla de inicio;
+si el navegador dice que no, se avisa por consola y se sigue jugando.
+
+Con ello **`CACHE` en `web/sw.js` sube a `manager-nba-v2`**. Es
+obligatorio y se olvida fácil: `index.html` está en la lista de
+precacheados, así que sin subir la versión los navegadores que ya tengan
+el juego seguirían sirviendo el `index.html` viejo y el cambio no llegaría
+nunca. Vale para cualquier cambio en `web/`, no solo en `sw.js`.
+
+**README:** el enlace ya apunta a `https://jokar77.github.io/manager-nba/`
+(antes tenía el marcador `USUARIO/REPOSITORIO`).
+
+### Tu equipo se descolgaba de la liga cada verano (dos asimetrías)
+
+El bug más gordo encontrado hasta ahora, y estuvo escondido detrás de
+tests verdes desde siempre. Medido jugando **cuatro temporadas completas
+por el camino real** (partidos incluidos) con tres comportamientos de
+usuario distintos y la misma semilla:
+
+| | T1 | T2 | T3 | T4 | top-8 final |
+|---|---|---|---|---|---|
+| ni renueva ni ficha | 41-41 | 35-47 | 12-70 | **4-78** | 74,4 |
+| solo renueva | 57-25 | 18-64 | 33-49 | 38-44 | 81,0 |
+| renueva y ficha hasta 18 | 55-27 | 29-53 | 51-31 | 50-32 | 87,0 |
+
+Su masa salarial caía de 237M a 54M mientras la liga se movía en 200M.
+Dos causas independientes, las dos silenciosas:
+
+1. **13 contra 18.** El único objetivo de plantilla que existía para tu
+   equipo era `plantillaMinima` (13). Las 29 de la CPU acaban el verano en
+   `plantillaMaxima` (18). Y la pantalla de agencia libre te ponía
+   "Plantilla lista" en verde al llegar a 13, sin decirte que ibas cinco
+   por detrás de todos tus rivales.
+2. **Sin mecanismo de reequilibrio.** `colocarAgentesLibresDeNivel`
+   convierte espacio salarial en jugadores cada verano ofreciendo a los
+   agentes libres buenos al equipo con más margen — y **excluía a tu
+   equipo siempre**, no solo durante tu ventana de mercado. Con 150M sin
+   gastar no se te ofrecía a nadie nunca, así que un año malo no tenía
+   suelo.
+
+**Arreglo.** `HuecosDePlantilla` gana `fichajesRecomendados` y
+`plantillaAlCompleto` (el listón de 18) junto al mínimo de 13, que sigue
+siendo el que bloquea. `completarPlantillaConElMinimo` acepta `hasta:`.
+Al cerrar tu ventana, tu equipo se completa hasta 18 con los restos y
+entra en el reparto de agentes libres **con un tope: nada de media 82 o
+más**. La pantalla dice ahora "Plantilla: 13 de 18" y explica el hueco.
+
+**El tope importa tanto como el reparto.** Sin él la medición se iba al
+otro extremo: el usuario que no tocaba nada acababa 59-23 con la mejor
+plantilla de la liga —le fichaban solo a un jugador de media 98—, o sea
+que jugar el mercado dejaba de servir para nada. Con tope, el usuario
+ausente se queda en 30-52: mediocre, que es la consecuencia correcta.
+
+Regresión en `test/tu_equipo_no_se_descuelga_test.dart`, con los dos
+lados cubiertos y **comprobado que falla con el código viejo** (13 contra
+18) y que el segundo falla si se quita el tope.
+
+**Aviso honesto sobre lo medido:** con el arreglo, la diferencia entre
+jugar el mercado y no jugarlo queda en ~8 victorias sobre una sola
+semilla y cuatro temporadas. Eso está dentro del ruido de esta
+simulación: sirve para afirmar que la espiral desapareció, no para
+afirmar que el equilibrio esté fino. Si se quiere ajustar, hay que medir
+con varias semillas.
+
+## Cómo se reparte a los amigos
+
+Se les pasa el enlace y ya: no hay registro ni instalación. En **iPhone hay
+que abrirlo con Safari** (Chrome en iOS no sabe instalar webs) → Compartir →
+Añadir a pantalla de inicio. En Android, Chrome ofrece "Instalar aplicación".
+
+La primera apertura necesita conexión (~17 MB); después funciona sin datos.
+Cada persona tiene su partida en su propio dispositivo: no se comparten ni
+se sincronizan entre el móvil y el PC de la misma persona.
+
+## Cómo se trabaja aquí (lo que ha funcionado)
+
+Escrito porque se ha demostrado tres veces en las últimas dos listas, y
+porque razonar sobre el código en vez de medirlo llevó a conclusiones
+falsas varias veces:
+
+**Medir por el camino real ANTES de arreglar.** Los bugs gordos de las
+partes 7 y 8 se encontraron todos escribiendo un test de diagnóstico
+desechable que replicaba el flujo del juego, no leyendo el código. En los
+cuatro casos los tests existentes pasaban mientras el camino real estaba
+roto.
+
+**Descartar hipótesis con números, no con intuición.** En P8-1 ("los Wolves
+acaban últimos") se descartaron por medición: las lesiones (2 frente a 3,7
+de media), que la alineación del usuario fuera peor que la de la CPU (50,1%
+en 9000 partidos) y que la media no prediga la fuerza (r=0,84, sí la
+predice). La causa real —el orden del verano— no se parecía a ninguna de
+las tres.
+
+**Cuidado con las muestras pequeñas.** Una medición de 4 temporadas dio "10
+victorias de diferencia" que resultó ser ruido; la plantilla se genera con
+aleatoriedad en cada partida y MIN oscilaba entre 25 y 54 victorias. Los
+estadísticos de baja varianza (medias sobre 9000 partidos, huecos de rating
+día a día) dijeron la verdad; el máximo o una muestra de 4, no.
+
+**Probar que el test falla con el código viejo.** Antes de dar por bueno un
+arreglo. Si el test pasa igual sin el arreglo, no está midiendo el bug.
+
+**Los diagnósticos desechables se borran** al terminar (`zz_diag_*.dart`),
+dejando solo el test de regresión definitivo.
+
+---
+
 # Objetivo del proyecto (leer antes que nada)
 
 **Manager NBA se hace para jugarlo en móvil y en tablet, y tiene que poder
@@ -90,16 +225,35 @@ Al tocar `sw.js` o cambiar la lista de ficheros hay que **subir la versión
 de `CACHE`** (`manager-nba-v1` → `-v2`): el `activate` borra las cachés
 viejas y evita quedarse con mitad de una build y mitad de otra.
 
-**Lo que falta y es decisión del usuario:** subirlo a un sitio con HTTPS
-(GitHub Pages, Netlify, Cloudflare Pages...). Los service workers no
-arrancan en `http://` salvo en localhost, así que servirlo desde el PC por
-la wifi de casa NO vale para el iPhone. Si el hosting cuelga la app de un
-subdirectorio, hay que compilar con `--base-href /loquesea/`.
+Hosting: **hecho, GitHub Pages** (ver el estado al principio del fichero).
+Los service workers no arrancan en `http://` salvo en localhost, así que
+servirlo desde el PC por la wifi de casa NO vale para el iPhone — hace falta
+HTTPS de verdad. El `--base-href` lo pone el workflow solo, sacándolo del
+nombre del repositorio.
 
-## Lista parte 8 — en curso
+### El repositorio de git (montado en esta sesión)
+
+`git init` se hizo en la raíz del proyecto. Detalle importante: la carpeta
+pesa **4,7 GB**, pero al repositorio solo van **305 ficheros y 5,1 MB**. Lo
+que se queda fuera vía `.gitignore`:
+
+- `data/draft/` — 4,4 GB entre `nba.sqlite` (2,2 GB) y los CSV crudos de
+  Kaggle. De ahí salieron una vez los JSON de `assets/data`, que sí están
+  versionados. No hacen falta para jugar ni para compilar.
+- `build/`, `.dart_tool/` y los `ephemeral/` de cada plataforma (el de
+  Windows solo son ya 309 MB).
+
+Si algún día hay que regenerar los datos, esos 4,4 GB están **solo en el
+disco local**: no hay copia en GitHub.
+
+## Lista parte 8 — terminada
 
 Confirmado por el usuario: **el juego en navegador funciona bien, sin
 tiempos de carga largos tras 2 temporadas jugadas.** El port a WASM vale.
+
+Los diez puntos están hechos, cada crítico con su test de regresión:
+`rotacion_tras_el_verano_test.dart`, `tope_de_ofertas_test.dart` y
+`estrellas_sin_equipo_test.dart`.
 
 1. ~~**CRÍTICO.** Los Wolves terminan últimos.~~ **HECHO.** No era el motor:
    era el ORDEN del verano. La rotación se rehacía dentro de
@@ -132,18 +286,29 @@ tiempos de carga largos tras 2 temporadas jugadas.** El port a WASM vale.
    De paso, un `break` que debía ser `continue`: si a UN jugador no se le
    encontraba sitio, el reparto cortaba y dejaba en la calle a todos los de
    detrás.
-4. Chris Paul: falta el nombre del segundo equipo que le retira camiseta
-   (sale vacío), y el número correcto es el 3, no el 43.
-5. Bracket de playoffs: volver a la disposición anterior de conferencias,
-   pero ajustada para que se vea entera en pantalla.
-6. Hall of Fame, nuevo inducido: el mensaje debe decir "entró en el año X",
-   sin sus estadísticas ahí.
-7. En el navegador el nombre del equipo se solapa con el récord en la
-   cabecera.
-8. Partido en vivo: enseñar el logo de cada equipo junto a su marcador.
-9. Simulación por rango (mes/semana/fecha): añadir al resumen cuántas
-   victorias y derrotas han sido.
-10. Cabecera/menú: enseñar también el puesto actual en la conferencia.
+4. ~~Chris Paul: segundo equipo vacío y dorsal 43 en vez del 3.~~ **HECHO.**
+   Dos fallos encadenados. El nombre salía vacío porque sus etapas reales
+   incluyen **NOH** (New Orleans Hornets), franquicia desaparecida para la
+   que `infoDe()` devuelve una ficha vacía; las pantallas de camisetas usan
+   ahora `nombreDeEquipoEnFicha`, que sí conoce las históricas. Y el 43 era
+   un dorsal **sorteado** por el juego: ni LAC ni NOH estaban en
+   `codigoPorNombreReal`, así que su número real no se encontraba. Añadidos
+   los dos códigos, más sus entradas con el 3 en `camisetas_futuras.json`.
+5. ~~Bracket.~~ **HECHO.** Vuelta a las dos conferencias enfrentadas con la
+   Final NBA en el centro. Mide 1400px, así que se encoge hasta caber
+   entero en el ancho disponible y va dentro de un `InteractiveViewer` para
+   poder acercarse. Se eliminó `_BracketPorConferencia`.
+6. ~~Hall of Fame, nuevo inducido.~~ **HECHO.** Dice "Entró en 2029" en vez
+   de la puntuación de carrera.
+7. ~~Cabecera solapada.~~ **HECHO.** Era altura: el apodo lo pinta
+   `FlexibleSpaceBar` pegado abajo y los datos llegaban hasta ahí.
+   `expandedHeight` 190 → 214 y margen inferior 46 → 58.
+8. ~~Logo junto al marcador.~~ **HECHO.**
+9. ~~Victorias/derrotas en el resumen.~~ **HECHO:** "12 partidos · 8-4".
+10. ~~Puesto en la conferencia.~~ **HECHO.** Tercer dato en la cabecera,
+    calculado por porcentaje de victorias (no por victorias a secas, que a
+    mitad de temporada engañaría). En rojo si caes del 10º, que es quedarse
+    fuera del play-in.
 
 ## Lista parte 7 — terminada
 

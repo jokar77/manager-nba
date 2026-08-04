@@ -4,6 +4,7 @@ import '../../data/database/app_database.dart';
 import '../../domain/agencia_libre_repository.dart';
 import '../../domain/calendario_repository.dart';
 import '../../domain/contratos_repository.dart';
+import '../../domain/draft_repository.dart';
 import '../../domain/posiciones.dart';
 import '../../domain/salarios.dart';
 import '../../domain/tipo_evento_temporada.dart';
@@ -40,7 +41,10 @@ class AgenciaLibreScreen extends StatefulWidget {
 class _AgenciaLibreScreenState extends State<AgenciaLibreScreen> {
   List<Jugador> _libres = [];
   HuecosDePlantilla _huecos =
-      const HuecosDePlantilla(fichajesQueFaltan: 0, puestosSinCubrir: []);
+      const HuecosDePlantilla(
+          fichajesQueFaltan: 0,
+          fichajesRecomendados: 0,
+          puestosSinCubrir: []);
   int _espacio = 0;
   int _plantilla = 0;
   bool _cargando = true;
@@ -117,8 +121,11 @@ class _AgenciaLibreScreenState extends State<AgenciaLibreScreen> {
   Future<void> _completarAutomaticamente() async {
     if (_cerrada) return;
     setState(() => _procesando = true);
+    // Hasta el tamaño de la liga, no hasta el mínimo: el botón está para
+    // no tener que ir uno a uno, y dejarte en 13 era dejarte a medias.
     final fichados = await completarPlantillaConElMinimo(
-        widget.db, widget.equipoUsuario);
+        widget.db, widget.equipoUsuario,
+        hasta: plantillaMaxima);
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(fichados.isEmpty
@@ -175,7 +182,7 @@ class _AgenciaLibreScreenState extends State<AgenciaLibreScreen> {
                     espacio: _espacio,
                     plantilla: _plantilla,
                   ),
-                  if (!_huecos.plantillaLista && !_cerrada)
+                  if (!_huecos.plantillaAlCompleto && !_cerrada)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: SizedBox(
@@ -275,7 +282,13 @@ class _Estado extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lista = huecos.plantillaLista;
-    final color = lista ? Colors.green : Colors.orange;
+    // El verde se reserva para la plantilla de verdad completa. Antes se
+    // ponía en cuanto llegabas al mínimo de 13 y decía "plantilla lista",
+    // que era exactamente la información equivocada: la liga entera juega
+    // con 18 y nadie te avisaba de que ibas cinco por detrás.
+    final color = huecos.plantillaAlCompleto
+        ? Colors.green
+        : (lista ? Colors.amber : Colors.orange);
 
     return Container(
       width: double.infinity,
@@ -285,15 +298,22 @@ class _Estado extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            lista
-                ? 'Plantilla lista: $plantilla jugadores.'
-                : 'Plantilla incompleta: $plantilla jugadores.',
+            huecos.plantillaAlCompleto
+                ? 'Plantilla al completo: $plantilla jugadores.'
+                : 'Plantilla: $plantilla de $plantillaMaxima jugadores.',
             style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).colorScheme.onSurface),
           ),
           if (huecos.fichajesQueFaltan > 0)
             Text('Faltan ${huecos.fichajesQueFaltan} fichajes para el mínimo.',
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface))
+          else if (huecos.fichajesRecomendados > 0)
+            Text(
+                'Los otros 29 equipos juegan con $plantillaMaxima. Con '
+                '$plantilla puedes empezar, pero vas '
+                '${huecos.fichajesRecomendados} por detrás.',
                 style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurface)),
           if (huecos.puestosSinCubrir.isNotEmpty)

@@ -13,7 +13,7 @@
 //
 // Al cambiar de versión hay que subir CACHE: el activate borra las cachés
 // viejas y así una actualización no deja mezclados ficheros de dos builds.
-const CACHE = 'manager-nba-v1';
+const CACHE = 'manager-nba-v2';
 
 // Lo imprescindible para arrancar y jugar. Se descarga entero al instalar,
 // de una vez, para que baste con abrir el juego UNA vez con conexión.

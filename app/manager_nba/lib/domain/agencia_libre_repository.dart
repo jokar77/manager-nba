@@ -30,16 +30,39 @@ Future<int> tamanoDePlantilla(AppDatabase db, String equipo) async {
 /// Qué le falta a [equipo] para poder afrontar la temporada: número de
 /// fichajes pendientes y puestos sin recambio. Mientras esto no esté a
 /// cero no se puede empezar a jugar.
+///
+/// Hay dos listones, y la diferencia entre ellos costaba temporadas
+/// enteras. [plantillaLista] es el mínimo legal ([plantillaMinima], 13):
+/// por debajo de eso no se puede ni salir a la pista. [plantillaAlCompleto]
+/// es el tamaño con el que de verdad juega la liga ([plantillaMaxima], 18),
+/// que es donde acaban las 29 plantillas de la CPU cada verano.
+///
+/// Antes solo existía el primero, y la pantalla de agencia libre te decía
+/// "plantilla lista" en cuanto llegabas a 13 — cinco jugadores por debajo
+/// de todos tus rivales, todos los años y sin avisar. Medido sobre cuatro
+/// temporadas con la misma semilla, el mismo equipo hacía 38-44 quedándose
+/// en 13-16 y 50-32 completando hasta 18, con la media de sus ocho mejores
+/// subiendo de 81,0 a 87,0.
 class HuecosDePlantilla {
   final int fichajesQueFaltan;
+
+  /// Cuántos faltan para llegar al tamaño con el que juega el resto de la
+  /// liga. No bloquea nada: es lo que hay que enseñar para que la decisión
+  /// de quedarse corto sea tuya y no una sorpresa.
+  final int fichajesRecomendados;
+
   final List<String> puestosSinCubrir;
 
   const HuecosDePlantilla({
     required this.fichajesQueFaltan,
+    required this.fichajesRecomendados,
     required this.puestosSinCubrir,
   });
 
   bool get plantillaLista => fichajesQueFaltan <= 0 && puestosSinCubrir.isEmpty;
+
+  bool get plantillaAlCompleto =>
+      fichajesRecomendados <= 0 && puestosSinCubrir.isEmpty;
 }
 
 Future<HuecosDePlantilla> huecosDePlantilla(
@@ -57,6 +80,7 @@ Future<HuecosDePlantilla> huecosDePlantilla(
 
   return HuecosDePlantilla(
     fichajesQueFaltan: plantillaMinima - plantilla.length,
+    fichajesRecomendados: plantillaMaxima - plantilla.length,
     puestosSinCubrir: sinCubrir,
   );
 }
@@ -274,13 +298,24 @@ Future<void> completarPlantillasDeLaCpu(
   }
 
   if (respetarTuVentana) return;
+  // Tu ventana ya está cerrada, así que tu equipo entra en el reparto como
+  // uno más. No es fichar por ti a mitad de tu turno: es que, terminado el
+  // verano, tu oficina hace su trabajo igual que las otras 29.
   await colocarAgentesLibresDeNivel(db,
-      equipoUsuario: equipoUsuario, claseDelDraft: claseDelDraft);
+      equipoUsuario: equipoUsuario,
+      claseDelDraft: claseDelDraft,
+      incluirAlUsuario: true);
 }
 
 /// Nivel a partir del cual un agente libre no puede quedarse sin equipo: en
 /// la NBA real un jugador de este nivel firma en cuanto sale al mercado.
 const _mediaQueNoSeQuedaLibre = 76;
+
+/// A partir de aquí un agente libre es una estrella, y a las estrellas las
+/// fichas tú o no las fichas: tu oficina no firma a nadie de este nivel por
+/// su cuenta. Por debajo sí, para que un verano desatendido no te deje sin
+/// rotación (ver [colocarAgentesLibresDeNivel]).
+const _mediaDeEstrellaQueFichasTu = 82;
 
 /// Reparte a los agentes libres buenos entre los equipos que tengan sitio.
 ///
@@ -296,21 +331,45 @@ const _mediaQueNoSeQuedaLibre = 76;
 /// en verano: en la temporada 1 se pasaban el año entero sin equipo. Al
 /// engancharlo a la fecha límite, tú tienes toda la ventana para ficharlos
 /// primero y, si no lo haces, se los lleva la liga.
+/// [incluirAlUsuario] mete también a tu equipo en el reparto, pero solo
+/// para jugadores por debajo de [_mediaDeEstrellaQueFichasTu]. Únicamente
+/// se usa al cerrar tu ventana de mercado en verano, nunca en temporada.
+///
+/// Hace falta porque tu equipo era el único de la liga sin mecanismo de
+/// reequilibrio: las 29 franquicias de la CPU convierten su espacio
+/// salarial en jugadores cada verano y la tuya no, así que un año malo se
+/// convertía en una espiral sin suelo. Medido sobre cuatro temporadas con
+/// la misma semilla, un usuario que renovaba a los suyos pero no firmaba
+/// agentes libres acababa 3-79 con la masa salarial en 120M y 150M sin
+/// gastar, mientras la liga se movía en 200M.
+///
+/// El tope es igual de importante que el reparto. Sin él —dejando que tu
+/// equipo optase también a las estrellas— la medición se iba al otro
+/// extremo: el usuario que no tocaba nada acababa 59-23 con la mejor
+/// plantilla de la liga, o sea que jugar el mercado dejaba de servir para
+/// nada. Con el tope, tu oficina te tapa agujeros con rotación decente y
+/// las estrellas siguen siendo cosa tuya.
 Future<int> colocarAgentesLibresDeNivel(
   AppDatabase db, {
   required String equipoUsuario,
   int? claseDelDraft,
+  bool incluirAlUsuario = false,
 }) async {
-  final equipos = (await db.select(db.jugadores).get())
+  final todos = (await db.select(db.jugadores).get())
       .map((j) => j.equipo)
       .where(esFranquicia)
-      .where((e) => e != equipoUsuario)
       .toSet()
       .toList();
+  final soloCpu = todos.where((e) => e != equipoUsuario).toList();
 
   var colocados = 0;
   for (final jugador in await agentesLibres(db)) {
     if (jugador.media < _mediaQueNoSeQuedaLibre) break; // vienen ordenados
+
+    final equipos = incluirAlUsuario &&
+            jugador.media < _mediaDeEstrellaQueFichasTu
+        ? todos
+        : soloCpu;
 
     // Se le ofrece al que más margen tenga: es quien de verdad puede
     // permitírselo y a quien más le pesa un hueco en la plantilla.
@@ -526,17 +585,26 @@ Future<Jugador?> _ficharPorElMinimo(
 /// priorizando los puestos que estén sin cubrir. Es el botón de "arréglalo
 /// tú" para no tener que ir uno a uno.
 ///
+/// [hasta] sube el listón por encima del mínimo (por ejemplo hasta
+/// [plantillaMaxima], que es donde acaba la liga entera): sigue firmando
+/// por el mínimo mientras la plantilla no llegue a ese tamaño.
+///
 /// Devuelve los fichados.
 Future<List<Jugador>> completarPlantillaConElMinimo(
   AppDatabase db,
   String equipo, {
+  int? hasta,
   Random? random,
 }) async {
   final fichados = <Jugador>[];
+  final objetivo = hasta ?? plantillaMinima;
 
   while (true) {
     final huecos = await huecosDePlantilla(db, equipo);
-    if (huecos.plantillaLista) break;
+    if (huecos.plantillaLista &&
+        await tamanoDePlantilla(db, equipo) >= objetivo) {
+      break;
+    }
 
     final libres = await agentesLibres(db);
     if (libres.isEmpty) break;

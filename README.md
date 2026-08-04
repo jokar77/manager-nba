@@ -10,8 +10,7 @@ reordena según el ancho disponible.
 
 ## Jugar
 
-👉 **[Abrir el juego](https://USUARIO.github.io/REPOSITORIO/)**
-*(cambia esa dirección por la tuya cuando publiques)*
+👉 **[Abrir el juego](https://jokar77.github.io/manager-nba/)**
 
 **En el iPhone:** ábrelo con **Safari** (Chrome en iOS no sabe instalar
 webs), toca Compartir → *Añadir a pantalla de inicio*. Se queda con su
@@ -60,5 +59,7 @@ Publicar es automático: cada push a `main` dispara
 `.github/workflows/publicar.yml`, que compila y actualiza la web. Si los
 tests fallan, no se publica.
 
-Al tocar `web/sw.js` hay que subir la versión de `CACHE`
-(`manager-nba-v1` → `-v2`) o los navegadores se quedarán con la copia vieja.
+Al tocar `web/sw.js` **o `web/index.html`** hay que subir la versión de
+`CACHE` (ahora `manager-nba-v2` → `-v3`) o los navegadores que ya tengan
+el juego seguirán con la copia vieja: `index.html` está en la lista de
+ficheros precacheados y se sirve desde la caché sin volver a pedirlo.

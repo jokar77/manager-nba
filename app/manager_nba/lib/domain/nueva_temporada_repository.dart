@@ -357,6 +357,20 @@ Future<void> cerrarVentanaDeAgenciaLibre(
       claseDelDraft: claseDelDraft,
       random: random);
 
+  // Y tu equipo también llega al tamaño con el que juega la liga, con lo
+  // que haya sobrado. Va DESPUÉS de la ola de la CPU a propósito: los
+  // agentes libres de nivel ya se han repartido y aquí solo quedan restos
+  // que se firman por el mínimo, así que esto no ficha por ti — solo
+  // impide que salgas a jugar cinco hombres por debajo de tus 29 rivales.
+  //
+  // Sin esto tu plantilla se quedaba clavada en `plantillaMinima` (13)
+  // mientras las 29 de la CPU acababan en `plantillaMaxima` (18), todos
+  // los veranos. Medido sobre cuatro temporadas seguidas con la misma
+  // semilla: 37-45, 19-63, 19-63 y 4-78, con la media de los ocho mejores
+  // cayendo de 83,4 a 74,4 mientras la liga subía a 87.
+  await completarPlantillaConElMinimo(db, equipoUsuario,
+      hasta: plantillaMaxima, random: random);
+
   final sinMercado = await depurarAgenciaLibre(db);
   await evaluarIngresosHallDeLaFama(
     db,

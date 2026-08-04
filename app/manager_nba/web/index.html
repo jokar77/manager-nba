@@ -60,6 +60,32 @@
         });
       });
     }
+
+    // Almacenamiento persistente. Por defecto el navegador considera los
+    // datos de una web "de usar y tirar": si va justo de espacio, o si pasan
+    // semanas sin abrirla, Safari los borra. Aquí eso serían diez
+    // temporadas de partida por la ventana.
+    //
+    // Con esto se le pide al navegador que los marque como permanentes. En
+    // iOS lo concede sin preguntar cuando la web está añadida a la pantalla
+    // de inicio; en un navegador normal puede decir que no, y entonces solo
+    // queda avisar por consola: no hay forma de forzarlo, y tampoco es
+    // motivo para no dejar jugar.
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persisted().then(function (yaEsPersistente) {
+        if (yaEsPersistente) return;
+        return navigator.storage.persist().then(function (concedido) {
+          if (!concedido) {
+            console.warn(
+              'El navegador no ha concedido almacenamiento persistente: ' +
+              'la partida podria borrarse si pasa mucho tiempo sin abrirla. ' +
+              'En iPhone, anade el juego a la pantalla de inicio.');
+          }
+        });
+      }).catch(function (e) {
+        console.warn('No se pudo pedir almacenamiento persistente:', e);
+      });
+    }
   </script>
 </body>
 </html>
