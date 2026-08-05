@@ -51,6 +51,116 @@ v3 (arreglo del service worker + lista parte 9).
 **README:** el enlace ya apunta a `https://jokar77.github.io/manager-nba/`
 (antes tenía el marcador `USUARIO/REPOSITORIO`).
 
+### Página de diagnóstico: `web/estado.html`
+
+Cuando el usuario dice "en el icono va mal" no hay forma de mirar su
+iPhone, y adivinar sale caro. Esta página se abre en
+`https://jokar77.github.io/manager-nba/estado.html` y dice en cristiano
+qué tiene guardado ese dispositivo: si está abierto desde el icono o desde
+Safari (en iOS son **cachés distintas**), si el modo sin conexión está
+instalado, qué versión, cuántos ficheros hay guardados, **cuáles de los
+críticos faltan**, si la partida está protegida de borrado y cuánto ocupa.
+Arriba del todo, un veredicto de una línea.
+
+Trae dos botones de reparación: uno borra la caché y recarga, y otro
+además desregistra el service worker (el "a fondo"). **Ninguno toca las
+partidas**, que viven en otro sitio.
+
+Encontró dos bugs del service worker el mismo día que se escribió:
+
+1. **Cualquier navegación devolvía `index.html`.** Con el modo sin
+   conexión instalado, abrir `estado.html` te daba el juego. Ahora se
+   busca primero la página pedida (caché y luego red) y solo se cae al
+   index cuando de verdad no existe — que es lo que hace falta para que
+   una ruta cualquiera siga abriendo el juego. Verificado con el servidor
+   apagado: `estado.html` se abre, `/una/ruta/inventada` cae al juego, y
+   el juego arranca igual.
+2. **El repaso de la caché se lanzaba también sin conexión.** Cada
+   fichero que faltara eran peticiones colgadas hasta que el sistema las
+   cortaba, en cada apertura, justo cuando peor viene. Ahora solo se
+   repasa si `navigator.onLine`.
+
+Esta publicación **no sube `CACHE`** a propósito: la lista de precarga y
+`main.dart.js` no cambian, solo la lógica del service worker (que se
+reinstala sola al cambiar el fichero). Subirla haría que todo el mundo se
+volviera a bajar 17 MB para nada.
+
+### La liga se quedaba sin anotadores (arreglado)
+
+Encontrado midiendo 15 veranos seguidos. Las **medias** aguantan, pero los
+**puntos** se hunden:
+
+| | mejor anotador | jugadores >25 pts | medias 90+ |
+|---|---|---|---|
+| T1 | 33,5 | 16 | 20 |
+| T7 | 32,8 | 8 | 34 |
+| T10 | 29,1 | 4 | 30 |
+| T13 | 26,0 | 1 | 29 |
+| **T16** | **21,4** | **0** | 26 |
+
+A los quince años hay 26 jugadores de media 90+ y **ninguno pasa de 21,4
+puntos**. Superestrellas que anotan como suplentes.
+
+**Causa (dos fallos que se refuerzan):**
+
+1. `_ptsDe(media) = (media - 48) * 0.34` en `draft_repository.dart` es
+   **lineal y topada en 18**. Un prospecto de media 90 nace con 14,3
+   puntos —un 90 real anota ~28— y ninguno puede pasar de 18 nunca.
+2. `envejecerLiga` escala `ptsPg` por `nuevaMedia / media`, que también es
+   lineal. Un rookie de 65 con 5,8 puntos que llega a 95 acaba con 8,5.
+
+La relación entre media y puntos es **convexa** (como la salarial: entre un
+70 y un 80 hay poca diferencia, entre un 85 y un 95 hay muchísima), y
+escalarla linealmente no puede reproducirla. Los jugadores del dataset real
+sí tienen puntos coherentes; según se retiran y los sustituyen los
+generados, el techo anotador de la liga se desploma.
+
+**Arreglo.** `lib/domain/curva_estadisticas.dart`, nueva. Es la curva medida
+en el dataset real, sin ajustar ninguna fórmula elegante: se interpolan los
+datos. Una curva inventada que pasara "cerca" sería más bonita y menos
+fiel, y aquí hace falta fidelidad.
+
+| media | 67  | 72  | 77  | 82   | 87   | 92   | 97   |
+|-------|-----|-----|-----|------|------|------|------|
+| pts   | 3,4 | 4,4 | 7,8 | 13,3 | 19,6 | 25,2 | 28,2 |
+
+Asistencias y rebotes igual, multiplicados por el puesto (un base reparte
+un 72% más que el jugador medio de su nivel; un pívot coge un 52% más
+rebotes). Los dos sitios rotos pasan a usarla:
+
+- `envejecerLiga` mueve al jugador **por la curva**: calcula su estilo
+  (`ptsPg / puntosTipicos(mediaVieja)`) y lo aplica al nivel nuevo. Así se
+  le conserva la personalidad —quien anota más de lo normal para su nivel
+  lo sigue haciendo— y si su media no cambia, el número no se mueve ni un
+  decimal.
+- El generador del draft nace justo en la curva, sin tope de 18.
+
+**El tope del estilo se calibró midiendo, no a ojo.** Con el primer valor
+probado (2,0) apareció un jugador de **43,7 puntos** en la séptima
+temporada. Con 1,5 —que es donde andan los más atípicos del dataset— y un
+techo duro de 34 (el máximo real es 33,5), desaparece.
+
+**Resultado, 15 veranos con la misma semilla:**
+
+| | T1 | T4 | T7 | T10 | T13 | T16 |
+|---|---|---|---|---|---|---|
+| mejor anotador ANTES | 33,5 | — | 32,8 | 29,1 | 26,0 | **21,4** |
+| mejor anotador AHORA | 33,5 | 32,7 | 33,3 | 33,3 | 29,6 | **28,2** |
+| jugadores >25 ANTES | 16 | — | 8 | 4 | 1 | **0** |
+| jugadores >25 AHORA | 16 | 28 | 35 | 26 | 15 | **18** |
+
+Y comprobado también en la **anotación simulada de verdad** (no el prior),
+jugando seis temporadas completas: el top-5 se queda entre 27 y 34 puntos
+por partido, con 8-13 jugadores por encima de 25 cada año. Sin deriva.
+
+Regresión en `la_liga_no_se_queda_sin_anotadores_test.dart`, con las dos
+caras (que no se hunda y que no se dispare) más tres tests rápidos de la
+curva: que sea convexa, que un jugador sin cambio de media conserve sus
+números exactos, y que los puestos se diferencien. **Comprobado que falla
+con el código viejo** (22,4 puntos contra el umbral de 26).
+
+Con esto **`CACHE` sube a `manager-nba-v4`**: cambia `main.dart.js`.
+
 ### Lista parte 9 (terminada)
 
 **P9-1 · Fin de temporada: clasificación en vez de la lista de partidos.**

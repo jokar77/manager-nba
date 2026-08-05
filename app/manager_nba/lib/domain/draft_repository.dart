@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:drift/drift.dart';
 
 import '../data/database/app_database.dart';
+import 'curva_estadisticas.dart';
 import 'equipos_especiales.dart';
 import 'picks_repository.dart';
 import 'posiciones.dart';
@@ -253,29 +254,24 @@ String _nombreUnico(Random rng, Set<String> usados) {
 int _atributo(Random rng, int media, int sesgo) =>
     (media + sesgo + rng.nextInt(9) - 4).clamp(30, 99);
 
-double _ptsDe(int media) => ((media - 48) * 0.34).clamp(1.5, 18.0);
+// Los números con los que nace un prospecto salen de la curva medida en el
+// dataset real (ver curva_estadisticas.dart), no de una recta.
+//
+// Antes eran rectas con tope: `_ptsDe` daba `(media - 48) * 0.34` topado en
+// 18, así que un prospecto de media 90 nacía con 14,3 puntos —un 90 real
+// anota unos 25— y NINGÚN jugador generado podía pasar de 18 en su vida.
+// Con las clases de draft sustituyendo poco a poco al dataset real, el
+// techo anotador de la liga se hundía: medido sobre 15 veranos, el mejor
+// anotador pasaba de 33,5 a 21,4 puntos.
+//
+// Los prospectos nacen justo en la curva, sin desviarse: su personalidad ya
+// la marcan sus atributos y lo que hagan al progresar.
+double _ptsDe(int media) => puntosTipicos(media);
 
-double _astDe(String posicion, int media) {
-  final base = switch (posicion) {
-    'PG' => 0.16,
-    'SG' => 0.09,
-    'SF' => 0.07,
-    'PF' => 0.05,
-    _ => 0.04,
-  };
-  return ((media - 45) * base).clamp(0.4, 9.0);
-}
+double _astDe(String posicion, int media) =>
+    asistenciasTipicas(media, posicion);
 
-double _trbDe(String posicion, int media) {
-  final base = switch (posicion) {
-    'C' => 0.22,
-    'PF' => 0.18,
-    'SF' => 0.12,
-    'SG' => 0.08,
-    _ => 0.07,
-  };
-  return ((media - 45) * base).clamp(0.6, 13.0);
-}
+double _trbDe(String posicion, int media) => rebotesTipicos(media, posicion);
 
 /// Pone en marcha el draft de [anioDraft]: genera la clase completa y la
 /// deja en el "pool" ([equipoProspectos]) — todavía no es de nadie — y

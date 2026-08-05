@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Estado del juego</title>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      margin: 0; padding: 20px 16px 48px;
+      background: #101418; color: #e6e9ee;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 17px; line-height: 1.5;
+    }
+    h1 { font-size: 22px; margin: 0 0 4px; }
+    p.sub { margin: 0 0 20px; color: #8b95a3; font-size: 15px; }
+    .fila {
+      display: flex; align-items: baseline; gap: 10px;
+      padding: 11px 0; border-bottom: 1px solid #232a33;
+    }
+    .fila .k { color: #8b95a3; font-size: 15px; flex: 1; }
+    .fila .v { font-weight: 700; text-align: right; }
+    .ok { color: #4ade80; }
+    .mal { color: #f87171; }
+    .aviso { color: #fbbf24; }
+    ul { margin: 8px 0 0; padding-left: 20px; color: #f87171; font-size: 14px; }
+    button {
+      width: 100%; margin-top: 28px; padding: 15px;
+      font-size: 17px; font-weight: 700; border: 0; border-radius: 10px;
+      background: #3b82f6; color: white;
+    }
+    button.peligro { background: #7f1d1d; margin-top: 12px; }
+    #resultado { margin-top: 14px; font-size: 15px; }
+    a { color: #60a5fa; }
+  </style>
+</head>
+<body>
+  <h1>Estado del juego</h1>
+  <p class="sub">Esta página no es el juego: sirve para ver qué tiene guardado
+    este dispositivo cuando algo va mal.</p>
+
+  <div id="informe">Comprobando…</div>
+
+  <button id="reparar">Reparar: borrar la caché y recargar</button>
+  <button id="borrarTodo" class="peligro">Reparar a fondo (tarda más)</button>
+  <p class="sub" style="margin-top:12px">
+    Reparar <strong>no borra tu partida</strong>: las partidas se guardan
+    aparte, no en la caché de ficheros.
+  </p>
+  <div id="resultado"></div>
+
+  <p style="margin-top:28px"><a href="./">← Volver al juego</a></p>
+
+<script>
+// Los mismos ficheros sin los que el juego no arranca. Si alguno de estos
+// falta en la caché, sin conexión se queda en blanco o a medias.
+var CRITICOS = [
+  'index.html',
+  'main.dart.js',
+  'flutter_bootstrap.js',
+  'flutter.js',
+  'sqlite3.wasm',
+  'drift_worker.js',
+  'canvaskit/canvaskit.js',
+  'canvaskit/canvaskit.wasm',
+  'assets/AssetManifest.bin.json',
+  'assets/assets/data/jugadores.json'
+];
+
+function fila(clave, valor, clase) {
+  return '<div class="fila"><span class="k">' + clave +
+    '</span><span class="v ' + (clase || '') + '">' + valor + '</span></div>';
+}
+
+async function comprobar() {
+  var html = '';
+
+  // ¿Está abierto desde el icono o desde Safari? Importa porque en iOS cada
+  // uno tiene su propia caché, separada de la del otro.
+  var comoApp = window.navigator.standalone === true ||
+    window.matchMedia('(display-mode: standalone)').matches;
+  html += fila('Abierto desde', comoApp ? 'el icono' : 'el navegador',
+    comoApp ? 'ok' : 'aviso');
+
+  html += fila('Conexión', navigator.onLine ? 'sí' : 'no',
+    navigator.onLine ? 'ok' : 'aviso');
+
+  // Service worker: es lo que hace que funcione sin datos.
+  var registros = [];
+  if ('serviceWorker' in navigator) {
+    registros = await navigator.serviceWorker.getRegistrations();
+  }
+  html += fila('Modo sin conexión',
+    registros.length ? 'instalado' : 'NO instalado',
+    registros.length ? 'ok' : 'mal');
+
+  // Qué versión tiene guardada, y si le falta algo.
+  var nombres = [];
+  try { nombres = await caches.keys(); } catch (e) {}
+  html += fila('Versión guardada', nombres.length ? nombres.join(', ') : 'ninguna',
+    nombres.length ? 'ok' : 'mal');
+
+  var guardados = 0;
+  // Sin caché ninguna faltan TODOS, no cero: decir "faltan 0" cuando no hay
+  // nada guardado es justo la lectura contraria a la realidad.
+  var faltan = CRITICOS.slice();
+  if (nombres.length) {
+    var cache = await caches.open(nombres[0]);
+    guardados = (await cache.keys()).length;
+    faltan = [];
+    for (var i = 0; i < CRITICOS.length; i++) {
+      var hit = await cache.match(CRITICOS[i]) ||
+                await cache.match('./' + CRITICOS[i]);
+      if (!hit) faltan.push(CRITICOS[i]);
+    }
+  }
+  html += fila('Ficheros guardados', guardados,
+    guardados >= 25 ? 'ok' : (guardados > 0 ? 'aviso' : 'mal'));
+  html += fila('Ficheros críticos que faltan', faltan.length,
+    faltan.length === 0 ? 'ok' : 'mal');
+  if (faltan.length) html += '<ul><li>' + faltan.join('</li><li>') + '</li></ul>';
+
+  // Si el navegador puede borrar la partida por falta de uso.
+  var persistente = false;
+  try {
+    if (navigator.storage && navigator.storage.persisted) {
+      persistente = await navigator.storage.persisted();
+    }
+  } catch (e) {}
+  html += fila('Partida protegida de borrado', persistente ? 'sí' : 'no',
+    persistente ? 'ok' : 'aviso');
+
+  // Cuánto ocupa: si sale 0, no se ha descargado nada de verdad.
+  try {
+    if (navigator.storage && navigator.storage.estimate) {
+      var e2 = await navigator.storage.estimate();
+      html += fila('Espacio usado',
+        (e2.usage / 1048576).toFixed(1) + ' MB',
+        e2.usage > 15 * 1048576 ? 'ok' : 'aviso');
+    }
+  } catch (e) {}
+
+  // Veredicto en una línea, que es lo único que hace falta leer.
+  var bien = registros.length && faltan.length === 0 && guardados >= 25;
+  html = '<div class="fila"><span class="k">RESUMEN</span><span class="v ' +
+    (bien ? 'ok">listo para jugar sin datos' : 'mal">le falta algo') +
+    '</span></div>' + html;
+
+  document.getElementById('informe').innerHTML = html;
+}
+
+document.getElementById('reparar').onclick = async function () {
+  this.disabled = true;
+  var r = document.getElementById('resultado');
+  r.textContent = 'Borrando la caché…';
+  try {
+    for (var n of await caches.keys()) await caches.delete(n);
+    r.textContent = 'Hecho. Abriendo el juego para que se descargue otra vez…';
+    setTimeout(function () { location.href = './'; }, 1200);
+  } catch (e) {
+    r.textContent = 'No se pudo: ' + e;
+    this.disabled = false;
+  }
+};
+
+document.getElementById('borrarTodo').onclick = async function () {
+  this.disabled = true;
+  var r = document.getElementById('resultado');
+  r.textContent = 'Desinstalando el modo sin conexión y borrando la caché…';
+  try {
+    for (var reg of await navigator.serviceWorker.getRegistrations()) {
+      await reg.unregister();
+    }
+    for (var n of await caches.keys()) await caches.delete(n);
+    r.textContent = 'Hecho. Abriendo el juego: se instalará todo de cero. ' +
+      'Necesita conexión y tarda un minuto.';
+    setTimeout(function () { location.href = './'; }, 1600);
+  } catch (e) {
+    r.textContent = 'No se pudo: ' + e;
+    this.disabled = false;
+  }
+};
+
+comprobar();
+</script>
+</body>
+</html>

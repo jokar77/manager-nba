@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:drift/drift.dart';
 
 import '../data/database/app_database.dart';
+import 'curva_estadisticas.dart';
 import 'equipos_especiales.dart';
 
 // Este repositorio es quien manda a los jugadores a `equipoRetirados`, y
@@ -117,6 +118,32 @@ Future<List<CambioDeJugador>> envejecerLiga(
 
     final factor = j.media == 0 ? 1.0 : nuevaMedia / j.media;
 
+    // Las estadísticas se mueven POR LA CURVA de su nuevo nivel, no
+    // multiplicando por la razón de medias.
+    //
+    // Escalar linealmente parecía razonable y vaciaba la liga: la relación
+    // entre media y puntos es convexa (un 77 anota 7,8 y un 87 anota 19,6),
+    // así que un rookie de 65 con 5,8 puntos que llegaba a 95 acababa con
+    // 8,5 en vez de los ~28 que le tocan. Medido sobre 15 veranos, el mejor
+    // anotador de la liga caía de 33,5 a 21,4 puntos y desaparecían los de
+    // 25+, mientras seguía habiendo 26 medias de 90 o más.
+    //
+    // El "estilo" conserva la personalidad: quien anota más de lo normal
+    // para su nivel lo sigue haciendo al subir. Y si la media no cambia, el
+    // resultado es exactamente el que tenía.
+    double porLaCurva(double valor, double antes, double despues) =>
+        despues * estiloRespectoASuNivel(valor, antes);
+
+    final nuevosPts = porLaCurva(
+            j.ptsPg, puntosTipicos(j.media), puntosTipicos(nuevaMedia))
+        .clamp(0.0, maxPuntosPorPartido);
+    final nuevasAst = porLaCurva(j.astPg,
+        asistenciasTipicas(j.media, j.posicion),
+        asistenciasTipicas(nuevaMedia, j.posicion));
+    final nuevosReb = porLaCurva(j.trbPg,
+        rebotesTipicos(j.media, j.posicion),
+        rebotesTipicos(nuevaMedia, j.posicion));
+
     cambios.add(CambioDeJugador(
       jugadorId: j.id,
       nombre: j.nombreFicticio,
@@ -136,9 +163,9 @@ Future<List<CambioDeJugador>> envejecerLiga(
         atrAtaque: Value(_escalarAtributo(j.atrAtaque, factor)),
         atrDefensa: Value(_escalarAtributo(j.atrDefensa, factor)),
         atrTiro3: Value(_escalarAtributo(j.atrTiro3, factor)),
-        ptsPg: Value(j.ptsPg * factor),
-        astPg: Value(j.astPg * factor),
-        trbPg: Value(j.trbPg * factor),
+        ptsPg: Value(nuevosPts),
+        astPg: Value(nuevasAst),
+        trbPg: Value(nuevosReb),
       )
     ));
   }

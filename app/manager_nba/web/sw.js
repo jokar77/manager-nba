@@ -21,7 +21,7 @@
 //
 // Al subirla, el `activate` borra las cachés viejas y la nueva se llena de
 // cero, así que no quedan mezclados ficheros de dos compilaciones.
-const CACHE = 'manager-nba-v3';
+const CACHE = 'manager-nba-v4';
 
 // Lo imprescindible para arrancar y jugar. Se descarga entero al instalar,
 // de una vez, para que baste con abrir el juego UNA vez con conexión.
@@ -119,6 +119,11 @@ async function guardarLoQueFalte(cache) {
 let repasando = false;
 async function completarPrecargaSiFalta() {
   if (repasando) return;
+  // Sin conexión no hay nada que completar, y sí mucho que estropear: cada
+  // fichero que falte serían 29 peticiones que se quedan colgadas hasta que
+  // el sistema las corta, en cada apertura del juego. Justo cuando peor
+  // viene, que es jugando sin datos.
+  if (!self.navigator.onLine) return;
   repasando = true;
   try {
     const cache = await caches.open(CACHE);
@@ -172,9 +177,28 @@ self.addEventListener('fetch', (evento) => {
     // instalación se quedó a medias (mala cobertura, o el primer arranque
     // desde la pantalla de inicio del iPhone), aquí se completa sola.
     evento.waitUntil(completarPrecargaSiFalta());
-    evento.respondWith(
-      caches.match('index.html').then((r) => r || fetch(peticion))
-    );
+
+    // Antes esto devolvía `index.html` a SECAS para cualquier navegación, y
+    // se tragaba las páginas propias: con el modo sin conexión instalado,
+    // abrir `estado.html` te daba el juego. Ahora se busca primero la página
+    // pedida —en la caché y en la red— y solo se cae al index cuando de
+    // verdad no existe, que es lo que hace falta para que una ruta cualquiera
+    // del juego siga abriendo el juego.
+    evento.respondWith((async () => {
+      const guardada = await caches.match(peticion);
+      if (guardada) return guardada;
+      try {
+        const red = await fetch(peticion);
+        if (red && red.ok) {
+          const copia = red.clone();
+          caches.open(CACHE).then((cache) => cache.put(peticion, copia));
+          return red;
+        }
+      } catch (e) {
+        // Sin conexión: se resuelve abajo con el index.
+      }
+      return (await caches.match('index.html')) || fetch(peticion);
+    })());
     return;
   }
 
