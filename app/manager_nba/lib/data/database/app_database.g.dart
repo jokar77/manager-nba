@@ -10727,6 +10727,53 @@ class $EntrenadoresTable extends Entrenadores
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _salarioMeta = const VerificationMeta(
+    'salario',
+  );
+  @override
+  late final GeneratedColumn<int> salario = GeneratedColumn<int>(
+    'salario',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _aniosContratoMeta = const VerificationMeta(
+    'aniosContrato',
+  );
+  @override
+  late final GeneratedColumn<int> aniosContrato = GeneratedColumn<int>(
+    'anios_contrato',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _equipoQuePagaFiniquitoMeta =
+      const VerificationMeta('equipoQuePagaFiniquito');
+  @override
+  late final GeneratedColumn<String> equipoQuePagaFiniquito =
+      GeneratedColumn<String>(
+        'equipo_que_paga_finiquito',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _aniosDeFiniquitoMeta = const VerificationMeta(
+    'aniosDeFiniquito',
+  );
+  @override
+  late final GeneratedColumn<int> aniosDeFiniquito = GeneratedColumn<int>(
+    'anios_de_finiquito',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -10742,6 +10789,10 @@ class $EntrenadoresTable extends Entrenadores
     temporadas,
     victorias,
     derrotas,
+    salario,
+    aniosContrato,
+    equipoQuePagaFiniquito,
+    aniosDeFiniquito,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -10850,6 +10901,39 @@ class $EntrenadoresTable extends Entrenadores
         derrotas.isAcceptableOrUnknown(data['derrotas']!, _derrotasMeta),
       );
     }
+    if (data.containsKey('salario')) {
+      context.handle(
+        _salarioMeta,
+        salario.isAcceptableOrUnknown(data['salario']!, _salarioMeta),
+      );
+    }
+    if (data.containsKey('anios_contrato')) {
+      context.handle(
+        _aniosContratoMeta,
+        aniosContrato.isAcceptableOrUnknown(
+          data['anios_contrato']!,
+          _aniosContratoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('equipo_que_paga_finiquito')) {
+      context.handle(
+        _equipoQuePagaFiniquitoMeta,
+        equipoQuePagaFiniquito.isAcceptableOrUnknown(
+          data['equipo_que_paga_finiquito']!,
+          _equipoQuePagaFiniquitoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('anios_de_finiquito')) {
+      context.handle(
+        _aniosDeFiniquitoMeta,
+        aniosDeFiniquito.isAcceptableOrUnknown(
+          data['anios_de_finiquito']!,
+          _aniosDeFiniquitoMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -10911,6 +10995,22 @@ class $EntrenadoresTable extends Entrenadores
         DriftSqlType.int,
         data['${effectivePrefix}derrotas'],
       )!,
+      salario: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}salario'],
+      )!,
+      aniosContrato: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}anios_contrato'],
+      )!,
+      equipoQuePagaFiniquito: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}equipo_que_paga_finiquito'],
+      ),
+      aniosDeFiniquito: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}anios_de_finiquito'],
+      )!,
     );
   }
 
@@ -10949,6 +11049,21 @@ class Entrenador extends DataClass implements Insertable<Entrenador> {
   /// y lo que mira un equipo de la CPU antes de echarle.
   final int victorias;
   final int derrotas;
+
+  /// Su contrato: lo que cobra al año y los años que le quedan (incluido
+  /// este). Sale del presupuesto de banquillo, que es aparte del tope
+  /// salarial de jugadores (ver entrenadores.dart).
+  final int salario;
+  final int aniosContrato;
+
+  /// El finiquito: si le has despedido con años por delante, el equipo que
+  /// le echó le sigue pagando hasta que se cumpla el contrato.
+  ///
+  /// Vive aquí y no en una tabla aparte porque es información del contrato
+  /// del entrenador, no una entidad nueva — y así no puede quedarse
+  /// huérfana si alguien vuelve a firmarle.
+  final String? equipoQuePagaFiniquito;
+  final int aniosDeFiniquito;
   const Entrenador({
     required this.id,
     required this.nombreFicticio,
@@ -10963,6 +11078,10 @@ class Entrenador extends DataClass implements Insertable<Entrenador> {
     required this.temporadas,
     required this.victorias,
     required this.derrotas,
+    required this.salario,
+    required this.aniosContrato,
+    this.equipoQuePagaFiniquito,
+    required this.aniosDeFiniquito,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -10980,6 +11099,14 @@ class Entrenador extends DataClass implements Insertable<Entrenador> {
     map['temporadas'] = Variable<int>(temporadas);
     map['victorias'] = Variable<int>(victorias);
     map['derrotas'] = Variable<int>(derrotas);
+    map['salario'] = Variable<int>(salario);
+    map['anios_contrato'] = Variable<int>(aniosContrato);
+    if (!nullToAbsent || equipoQuePagaFiniquito != null) {
+      map['equipo_que_paga_finiquito'] = Variable<String>(
+        equipoQuePagaFiniquito,
+      );
+    }
+    map['anios_de_finiquito'] = Variable<int>(aniosDeFiniquito);
     return map;
   }
 
@@ -10998,6 +11125,12 @@ class Entrenador extends DataClass implements Insertable<Entrenador> {
       temporadas: Value(temporadas),
       victorias: Value(victorias),
       derrotas: Value(derrotas),
+      salario: Value(salario),
+      aniosContrato: Value(aniosContrato),
+      equipoQuePagaFiniquito: equipoQuePagaFiniquito == null && nullToAbsent
+          ? const Value.absent()
+          : Value(equipoQuePagaFiniquito),
+      aniosDeFiniquito: Value(aniosDeFiniquito),
     );
   }
 
@@ -11020,6 +11153,12 @@ class Entrenador extends DataClass implements Insertable<Entrenador> {
       temporadas: serializer.fromJson<int>(json['temporadas']),
       victorias: serializer.fromJson<int>(json['victorias']),
       derrotas: serializer.fromJson<int>(json['derrotas']),
+      salario: serializer.fromJson<int>(json['salario']),
+      aniosContrato: serializer.fromJson<int>(json['aniosContrato']),
+      equipoQuePagaFiniquito: serializer.fromJson<String?>(
+        json['equipoQuePagaFiniquito'],
+      ),
+      aniosDeFiniquito: serializer.fromJson<int>(json['aniosDeFiniquito']),
     );
   }
   @override
@@ -11039,6 +11178,12 @@ class Entrenador extends DataClass implements Insertable<Entrenador> {
       'temporadas': serializer.toJson<int>(temporadas),
       'victorias': serializer.toJson<int>(victorias),
       'derrotas': serializer.toJson<int>(derrotas),
+      'salario': serializer.toJson<int>(salario),
+      'aniosContrato': serializer.toJson<int>(aniosContrato),
+      'equipoQuePagaFiniquito': serializer.toJson<String?>(
+        equipoQuePagaFiniquito,
+      ),
+      'aniosDeFiniquito': serializer.toJson<int>(aniosDeFiniquito),
     };
   }
 
@@ -11056,6 +11201,10 @@ class Entrenador extends DataClass implements Insertable<Entrenador> {
     int? temporadas,
     int? victorias,
     int? derrotas,
+    int? salario,
+    int? aniosContrato,
+    Value<String?> equipoQuePagaFiniquito = const Value.absent(),
+    int? aniosDeFiniquito,
   }) => Entrenador(
     id: id ?? this.id,
     nombreFicticio: nombreFicticio ?? this.nombreFicticio,
@@ -11070,6 +11219,12 @@ class Entrenador extends DataClass implements Insertable<Entrenador> {
     temporadas: temporadas ?? this.temporadas,
     victorias: victorias ?? this.victorias,
     derrotas: derrotas ?? this.derrotas,
+    salario: salario ?? this.salario,
+    aniosContrato: aniosContrato ?? this.aniosContrato,
+    equipoQuePagaFiniquito: equipoQuePagaFiniquito.present
+        ? equipoQuePagaFiniquito.value
+        : this.equipoQuePagaFiniquito,
+    aniosDeFiniquito: aniosDeFiniquito ?? this.aniosDeFiniquito,
   );
   Entrenador copyWithCompanion(EntrenadoresCompanion data) {
     return Entrenador(
@@ -11096,6 +11251,16 @@ class Entrenador extends DataClass implements Insertable<Entrenador> {
           : this.temporadas,
       victorias: data.victorias.present ? data.victorias.value : this.victorias,
       derrotas: data.derrotas.present ? data.derrotas.value : this.derrotas,
+      salario: data.salario.present ? data.salario.value : this.salario,
+      aniosContrato: data.aniosContrato.present
+          ? data.aniosContrato.value
+          : this.aniosContrato,
+      equipoQuePagaFiniquito: data.equipoQuePagaFiniquito.present
+          ? data.equipoQuePagaFiniquito.value
+          : this.equipoQuePagaFiniquito,
+      aniosDeFiniquito: data.aniosDeFiniquito.present
+          ? data.aniosDeFiniquito.value
+          : this.aniosDeFiniquito,
     );
   }
 
@@ -11114,7 +11279,11 @@ class Entrenador extends DataClass implements Insertable<Entrenador> {
           ..write('premios: $premios, ')
           ..write('temporadas: $temporadas, ')
           ..write('victorias: $victorias, ')
-          ..write('derrotas: $derrotas')
+          ..write('derrotas: $derrotas, ')
+          ..write('salario: $salario, ')
+          ..write('aniosContrato: $aniosContrato, ')
+          ..write('equipoQuePagaFiniquito: $equipoQuePagaFiniquito, ')
+          ..write('aniosDeFiniquito: $aniosDeFiniquito')
           ..write(')'))
         .toString();
   }
@@ -11134,6 +11303,10 @@ class Entrenador extends DataClass implements Insertable<Entrenador> {
     temporadas,
     victorias,
     derrotas,
+    salario,
+    aniosContrato,
+    equipoQuePagaFiniquito,
+    aniosDeFiniquito,
   );
   @override
   bool operator ==(Object other) =>
@@ -11151,7 +11324,11 @@ class Entrenador extends DataClass implements Insertable<Entrenador> {
           other.premios == this.premios &&
           other.temporadas == this.temporadas &&
           other.victorias == this.victorias &&
-          other.derrotas == this.derrotas);
+          other.derrotas == this.derrotas &&
+          other.salario == this.salario &&
+          other.aniosContrato == this.aniosContrato &&
+          other.equipoQuePagaFiniquito == this.equipoQuePagaFiniquito &&
+          other.aniosDeFiniquito == this.aniosDeFiniquito);
 }
 
 class EntrenadoresCompanion extends UpdateCompanion<Entrenador> {
@@ -11168,6 +11345,10 @@ class EntrenadoresCompanion extends UpdateCompanion<Entrenador> {
   final Value<int> temporadas;
   final Value<int> victorias;
   final Value<int> derrotas;
+  final Value<int> salario;
+  final Value<int> aniosContrato;
+  final Value<String?> equipoQuePagaFiniquito;
+  final Value<int> aniosDeFiniquito;
   const EntrenadoresCompanion({
     this.id = const Value.absent(),
     this.nombreFicticio = const Value.absent(),
@@ -11182,6 +11363,10 @@ class EntrenadoresCompanion extends UpdateCompanion<Entrenador> {
     this.temporadas = const Value.absent(),
     this.victorias = const Value.absent(),
     this.derrotas = const Value.absent(),
+    this.salario = const Value.absent(),
+    this.aniosContrato = const Value.absent(),
+    this.equipoQuePagaFiniquito = const Value.absent(),
+    this.aniosDeFiniquito = const Value.absent(),
   });
   EntrenadoresCompanion.insert({
     this.id = const Value.absent(),
@@ -11197,6 +11382,10 @@ class EntrenadoresCompanion extends UpdateCompanion<Entrenador> {
     this.temporadas = const Value.absent(),
     this.victorias = const Value.absent(),
     this.derrotas = const Value.absent(),
+    this.salario = const Value.absent(),
+    this.aniosContrato = const Value.absent(),
+    this.equipoQuePagaFiniquito = const Value.absent(),
+    this.aniosDeFiniquito = const Value.absent(),
   }) : nombreFicticio = Value(nombreFicticio),
        nombreReal = Value(nombreReal),
        equipo = Value(equipo),
@@ -11218,6 +11407,10 @@ class EntrenadoresCompanion extends UpdateCompanion<Entrenador> {
     Expression<int>? temporadas,
     Expression<int>? victorias,
     Expression<int>? derrotas,
+    Expression<int>? salario,
+    Expression<int>? aniosContrato,
+    Expression<String>? equipoQuePagaFiniquito,
+    Expression<int>? aniosDeFiniquito,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -11233,6 +11426,11 @@ class EntrenadoresCompanion extends UpdateCompanion<Entrenador> {
       if (temporadas != null) 'temporadas': temporadas,
       if (victorias != null) 'victorias': victorias,
       if (derrotas != null) 'derrotas': derrotas,
+      if (salario != null) 'salario': salario,
+      if (aniosContrato != null) 'anios_contrato': aniosContrato,
+      if (equipoQuePagaFiniquito != null)
+        'equipo_que_paga_finiquito': equipoQuePagaFiniquito,
+      if (aniosDeFiniquito != null) 'anios_de_finiquito': aniosDeFiniquito,
     });
   }
 
@@ -11250,6 +11448,10 @@ class EntrenadoresCompanion extends UpdateCompanion<Entrenador> {
     Value<int>? temporadas,
     Value<int>? victorias,
     Value<int>? derrotas,
+    Value<int>? salario,
+    Value<int>? aniosContrato,
+    Value<String?>? equipoQuePagaFiniquito,
+    Value<int>? aniosDeFiniquito,
   }) {
     return EntrenadoresCompanion(
       id: id ?? this.id,
@@ -11265,6 +11467,11 @@ class EntrenadoresCompanion extends UpdateCompanion<Entrenador> {
       temporadas: temporadas ?? this.temporadas,
       victorias: victorias ?? this.victorias,
       derrotas: derrotas ?? this.derrotas,
+      salario: salario ?? this.salario,
+      aniosContrato: aniosContrato ?? this.aniosContrato,
+      equipoQuePagaFiniquito:
+          equipoQuePagaFiniquito ?? this.equipoQuePagaFiniquito,
+      aniosDeFiniquito: aniosDeFiniquito ?? this.aniosDeFiniquito,
     );
   }
 
@@ -11310,6 +11517,20 @@ class EntrenadoresCompanion extends UpdateCompanion<Entrenador> {
     if (derrotas.present) {
       map['derrotas'] = Variable<int>(derrotas.value);
     }
+    if (salario.present) {
+      map['salario'] = Variable<int>(salario.value);
+    }
+    if (aniosContrato.present) {
+      map['anios_contrato'] = Variable<int>(aniosContrato.value);
+    }
+    if (equipoQuePagaFiniquito.present) {
+      map['equipo_que_paga_finiquito'] = Variable<String>(
+        equipoQuePagaFiniquito.value,
+      );
+    }
+    if (aniosDeFiniquito.present) {
+      map['anios_de_finiquito'] = Variable<int>(aniosDeFiniquito.value);
+    }
     return map;
   }
 
@@ -11328,7 +11549,11 @@ class EntrenadoresCompanion extends UpdateCompanion<Entrenador> {
           ..write('premios: $premios, ')
           ..write('temporadas: $temporadas, ')
           ..write('victorias: $victorias, ')
-          ..write('derrotas: $derrotas')
+          ..write('derrotas: $derrotas, ')
+          ..write('salario: $salario, ')
+          ..write('aniosContrato: $aniosContrato, ')
+          ..write('equipoQuePagaFiniquito: $equipoQuePagaFiniquito, ')
+          ..write('aniosDeFiniquito: $aniosDeFiniquito')
           ..write(')'))
         .toString();
   }
@@ -17125,6 +17350,10 @@ typedef $$EntrenadoresTableCreateCompanionBuilder =
       Value<int> temporadas,
       Value<int> victorias,
       Value<int> derrotas,
+      Value<int> salario,
+      Value<int> aniosContrato,
+      Value<String?> equipoQuePagaFiniquito,
+      Value<int> aniosDeFiniquito,
     });
 typedef $$EntrenadoresTableUpdateCompanionBuilder =
     EntrenadoresCompanion Function({
@@ -17141,6 +17370,10 @@ typedef $$EntrenadoresTableUpdateCompanionBuilder =
       Value<int> temporadas,
       Value<int> victorias,
       Value<int> derrotas,
+      Value<int> salario,
+      Value<int> aniosContrato,
+      Value<String?> equipoQuePagaFiniquito,
+      Value<int> aniosDeFiniquito,
     });
 
 class $$EntrenadoresTableFilterComposer
@@ -17214,6 +17447,26 @@ class $$EntrenadoresTableFilterComposer
 
   ColumnFilters<int> get derrotas => $composableBuilder(
     column: $table.derrotas,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get salario => $composableBuilder(
+    column: $table.salario,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get aniosContrato => $composableBuilder(
+    column: $table.aniosContrato,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get equipoQuePagaFiniquito => $composableBuilder(
+    column: $table.equipoQuePagaFiniquito,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get aniosDeFiniquito => $composableBuilder(
+    column: $table.aniosDeFiniquito,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -17291,6 +17544,26 @@ class $$EntrenadoresTableOrderingComposer
     column: $table.derrotas,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get salario => $composableBuilder(
+    column: $table.salario,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get aniosContrato => $composableBuilder(
+    column: $table.aniosContrato,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get equipoQuePagaFiniquito => $composableBuilder(
+    column: $table.equipoQuePagaFiniquito,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get aniosDeFiniquito => $composableBuilder(
+    column: $table.aniosDeFiniquito,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$EntrenadoresTableAnnotationComposer
@@ -17350,6 +17623,24 @@ class $$EntrenadoresTableAnnotationComposer
 
   GeneratedColumn<int> get derrotas =>
       $composableBuilder(column: $table.derrotas, builder: (column) => column);
+
+  GeneratedColumn<int> get salario =>
+      $composableBuilder(column: $table.salario, builder: (column) => column);
+
+  GeneratedColumn<int> get aniosContrato => $composableBuilder(
+    column: $table.aniosContrato,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get equipoQuePagaFiniquito => $composableBuilder(
+    column: $table.equipoQuePagaFiniquito,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get aniosDeFiniquito => $composableBuilder(
+    column: $table.aniosDeFiniquito,
+    builder: (column) => column,
+  );
 }
 
 class $$EntrenadoresTableTableManager
@@ -17396,6 +17687,10 @@ class $$EntrenadoresTableTableManager
                 Value<int> temporadas = const Value.absent(),
                 Value<int> victorias = const Value.absent(),
                 Value<int> derrotas = const Value.absent(),
+                Value<int> salario = const Value.absent(),
+                Value<int> aniosContrato = const Value.absent(),
+                Value<String?> equipoQuePagaFiniquito = const Value.absent(),
+                Value<int> aniosDeFiniquito = const Value.absent(),
               }) => EntrenadoresCompanion(
                 id: id,
                 nombreFicticio: nombreFicticio,
@@ -17410,6 +17705,10 @@ class $$EntrenadoresTableTableManager
                 temporadas: temporadas,
                 victorias: victorias,
                 derrotas: derrotas,
+                salario: salario,
+                aniosContrato: aniosContrato,
+                equipoQuePagaFiniquito: equipoQuePagaFiniquito,
+                aniosDeFiniquito: aniosDeFiniquito,
               ),
           createCompanionCallback:
               ({
@@ -17426,6 +17725,10 @@ class $$EntrenadoresTableTableManager
                 Value<int> temporadas = const Value.absent(),
                 Value<int> victorias = const Value.absent(),
                 Value<int> derrotas = const Value.absent(),
+                Value<int> salario = const Value.absent(),
+                Value<int> aniosContrato = const Value.absent(),
+                Value<String?> equipoQuePagaFiniquito = const Value.absent(),
+                Value<int> aniosDeFiniquito = const Value.absent(),
               }) => EntrenadoresCompanion.insert(
                 id: id,
                 nombreFicticio: nombreFicticio,
@@ -17440,6 +17743,10 @@ class $$EntrenadoresTableTableManager
                 temporadas: temporadas,
                 victorias: victorias,
                 derrotas: derrotas,
+                salario: salario,
+                aniosContrato: aniosContrato,
+                equipoQuePagaFiniquito: equipoQuePagaFiniquito,
+                aniosDeFiniquito: aniosDeFiniquito,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

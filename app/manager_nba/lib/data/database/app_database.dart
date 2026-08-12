@@ -44,7 +44,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 21;
+  int get schemaVersion => 22;
 
   /// CUIDADO AL TOCAR ESTO: aquí se decide si una actualización del juego
   /// conserva las partidas guardadas o se las lleva por delante.
@@ -73,6 +73,18 @@ class AppDatabase extends _$AppDatabase {
           // partida en curso sigue intacta; el importador la rellena sola
           // la próxima vez que se abra (ver entrenadores_importer.dart).
           if (from < 21) await m.createTable(entrenadores);
+
+          // 21 -> 22: contratos de entrenador (sueldo, años y finiquito).
+          // Columnas nuevas con valor por defecto, así que las filas que ya
+          // existan quedan con contrato a cero; `asignarContratosQueFalten`
+          // les pone uno acorde a su nivel al abrir la partida.
+          if (from < 22) {
+            await m.addColumn(entrenadores, entrenadores.salario);
+            await m.addColumn(entrenadores, entrenadores.aniosContrato);
+            await m.addColumn(
+                entrenadores, entrenadores.equipoQuePagaFiniquito);
+            await m.addColumn(entrenadores, entrenadores.aniosDeFiniquito);
+          }
         },
       );
 

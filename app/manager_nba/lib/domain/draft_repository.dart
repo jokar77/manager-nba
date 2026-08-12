@@ -234,6 +234,13 @@ String _nombreSorteado(Random rng) {
       '${apellido[rng.nextInt(apellido.length)]}';
 }
 
+/// Un nombre inventado que no esté ya en [usados] (se le añade). Lo usan
+/// tanto los rookies del draft como los entrenadores que van saliendo del
+/// mercado, para que todo el mundo inventado en la partida salga del mismo
+/// repertorio y con el mismo reparto de orígenes.
+String nombreFicticioUnico(Random rng, Set<String> usados) =>
+    _nombreUnico(rng, usados);
+
 String _nombreUnico(Random rng, Set<String> usados) {
   for (var intento = 0; intento < 200; intento++) {
     final nombre = _nombreSorteado(rng);

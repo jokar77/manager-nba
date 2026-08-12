@@ -119,6 +119,9 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
     // quedado sin cubrir se rellenan.
     await importarEntrenadoresSiHaceFalta(db);
     await asignarEntrenadoresQueFalten(db);
+    // Las partidas de la versión anterior tienen entrenador pero no
+    // contrato: se les pone uno acorde a su nivel.
+    await asignarContratosQueFalten(db);
     await marcarRanuraComoUsada(slot);
     if (!mounted) {
       await cerrarSlot(db);

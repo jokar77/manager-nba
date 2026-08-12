@@ -613,9 +613,32 @@ Future<List<Jugador>> completarPlantillaConElMinimo(
     // simplemente al mejor disponible que acepte el mínimo.
     final puesto =
         huecos.puestosSinCubrir.isEmpty ? null : huecos.puestosSinCubrir.first;
-    final candidatos = puesto == null
+
+    // NUNCA una estrella por esta vía. Esto es la red de seguridad para que
+    // no te quedes sin plantilla, no una forma de que te regalen un 87 por
+    // el salario mínimo.
+    //
+    // El bug que arregla: al filtrar por un puesto vacante, si el único
+    // agente libre que lo cubría era una estrella, `.last` era esa estrella
+    // y se firmaba por el mínimo del convenio. Salía una de cada tres
+    // partidas simuladas y te aparecía un titular de nivel All-Star en la
+    // plantilla sin haber hecho nada.
+    List<Jugador> sinEstrellas(List<Jugador> xs) =>
+        xs.where((j) => j.media < _mediaDeEstrellaQueFichasTu).toList();
+
+    var candidatos = sinEstrellas(puesto == null
         ? libres
-        : libres.where((j) => juegaComodoDe(j, puesto)).toList();
+        : libres.where((j) => juegaComodoDe(j, puesto)).toList());
+
+    // Si ese puesto solo lo cubre una estrella, se deja sin cubrir y se
+    // rellena con quien sea: jugar a alguien fuera de posición cuesta un
+    // 10% (ver factorDePuesto), regalar un 87 desequilibra la partida.
+    if (candidatos.isEmpty && puesto != null) {
+      candidatos = sinEstrellas(libres);
+      // Y si ya se llegó al tamaño objetivo, no hay nada más que hacer:
+      // seguir fichando para tapar un hueco imposible vaciaría el mercado.
+      if (await tamanoDePlantilla(db, equipo) >= objetivo) break;
+    }
     if (candidatos.isEmpty) break;
 
     // Por el mínimo solo firman los que no valen mucho más que eso: nadie

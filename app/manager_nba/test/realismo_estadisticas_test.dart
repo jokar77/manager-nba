@@ -163,16 +163,41 @@ void main() {
     // PesosAtributos.sensibilidadAlRating) y que el único ruido que separaba
     // a los dos equipos era pequeño (sigmaRuidoMarcador): un equipo algo
     // mejor ganaba el 93% de las noches en vez del 75%.
+    //
+    // QUIÉN VIGILA QUÉ, y por qué está repartido así. Medido sobre 28
+    // temporadas (14 seguidas en una sola ejecución + 14 ejecuciones
+    // independientes del test):
+    //
+    //   dispersión del % de victorias .. 0,130 - 0,168   (la mala: 0,237)
+    //   desviación del margen .......... 12,6 - 13,3 pts
+    //   mejor equipo ................... 0,744 - 0,842   (la mala: 0,927)
+    //   peor equipo .................... 0,085 - 0,293   (la mala: 0,061)
+    //
+    // Fíjate en la última línea: la cola sana del PEOR equipo llega a 0,085
+    // y el desastre que hay que cazar estaba en 0,061. Se solapan casi. Por
+    // eso el récord de un equipo suelto no puede ser el guardián: es el
+    // estadístico más inestable de los cuatro (basta que a una plantilla le
+    // toque un mal estado de forma) y cualquier umbral que distinga de
+    // verdad los dos casos falla por azar. El límite anterior estaba en
+    // 0,10 —o sea, saltaba con 8 victorias, que es una temporada
+    // perfectamente creíble— y tumbaba la publicación 2 de cada 14 veces
+    // sin que nada estuviera roto.
+    //
+    // El trabajo fino lo hace la DISPERSIÓN, que promedia los 30 equipos y
+    // por eso apenas se mueve (±0,019 en 28 temporadas) mientras que la mala
+    // se va a 0,237: margen de sobra por los dos lados. Los récords
+    // individuales se quedan como lo que pueden ser sin mentir, un control
+    // de disparates.
     final mejor = porcentajes.last;
     final peor = porcentajes.first;
-    expect(mejor, lessThan(0.88),
+    expect(mejor, lessThan(0.92),
         reason: 'el mejor equipo gana ${(mejor * 100).round()}% de sus '
             'partidos; ni los 72-10 de Chicago llegaron al 88%');
     expect(mejor, greaterThan(0.58),
         reason: 'sin un equipo dominante la liga se ha vuelto un sorteo');
-    expect(peor, greaterThan(0.10),
-        reason: 'el peor equipo gana ${(peor * 100).round()}%: ni los peores '
-            'de la historia bajan de ahí en 82 partidos');
+    expect(peor, greaterThan(0.04),
+        reason: 'el peor equipo gana ${(peor * 100).round()}%: eso ya no es '
+            'una mala temporada, es que la liga está rota');
     expect(peor, lessThan(0.42));
 
     final dispersion = desviacion(porcentajes);

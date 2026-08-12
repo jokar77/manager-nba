@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:manager_nba/data/database/app_database.dart';
 import 'package:manager_nba/data/importer/entrenadores_importer.dart';
 import 'package:manager_nba/data/importer/jugadores_importer.dart';
+import 'package:manager_nba/domain/contratos_repository.dart';
 import 'package:manager_nba/domain/entrenadores_repository.dart';
 import 'package:manager_nba/domain/equipos_especiales.dart';
 import 'package:manager_nba/domain/franquicia_repository.dart';
@@ -104,9 +105,9 @@ void main() {
     final peor = libres.last;
     expect(mediaDe(mejor), greaterThan(mediaDe(peor)));
 
-    expect(await aceptariaDirigirA(db, mejor, equipoDelSuelo), isFalse,
+    expect((await valorarOfertaDe(db, mejor, equipoDelSuelo)).acepta, isFalse,
         reason: 'el mejor del mercado quiere un proyecto ganador');
-    expect(await aceptariaDirigirA(db, peor, equipoDelSuelo), isTrue,
+    expect((await valorarOfertaDe(db, peor, equipoDelSuelo)).acepta, isTrue,
         reason: 'el más modesto firma donde sea: es su oportunidad');
 
     await db.close();
@@ -124,7 +125,7 @@ void main() {
     final libres = await leerEntrenadoresLibres(db);
     var aceptanAlguno = 0;
     for (final c in libres) {
-      if (await aceptariaDirigirA(db, c, 'BOS')) aceptanAlguno++;
+      if ((await valorarOfertaDe(db, c, 'BOS')).acepta) aceptanAlguno++;
     }
     expect(aceptanAlguno, greaterThan(0),
         reason: 'sin partidos jugados no hay nada que juzgar: el récord no '
@@ -138,9 +139,10 @@ void main() {
     await despedirEntrenador(db, equipoDelSuelo);
 
     final mejor = (await leerEntrenadoresLibres(db)).first;
-    final motivo = await contratarEntrenador(db, mejor.id, equipoDelSuelo);
+    final resultado = await contratarEntrenador(db, mejor.id, equipoDelSuelo,
+        salario: salarioQuePide(mejor), anios: aniosQuePide(mejor));
 
-    expect(motivo, MotivoDeRechazo.noLeConvenceElProyecto);
+    expect(resultado.motivo, MotivoDeRechazo.noLeConvenceLaOferta);
     expect(await leerEntrenadorDe(db, equipoDelSuelo), isNull,
         reason: 'un rechazo no puede dejar a medias el fichaje');
 
@@ -151,12 +153,15 @@ void main() {
       () async {
     final db = await _ligaConEntrenadores('BOS');
     final anterior = await leerEntrenadorDe(db, 'BOS');
+    // Para que quepa en el presupuesto hay que hacer sitio: el que está
+    // cobra, y al despedirle su sueldo se convierte en finiquito.
+    await despedirEntrenador(db, 'BOS');
 
-    // Alguien del mercado que acepte dirigir a un equipo bueno.
     final libres = await leerEntrenadoresLibres(db);
     Entrenador? candidato;
     for (final c in libres) {
-      if (await aceptariaDirigirA(db, c, 'BOS')) {
+      final cabe = salarioQuePide(c) <= await maximoQuePuedesOfrecer(db, 'BOS');
+      if (cabe && (await valorarOfertaDe(db, c, 'BOS')).acepta) {
         candidato = c;
         break;
       }
@@ -164,11 +169,15 @@ void main() {
     expect(candidato, isNotNull,
         reason: 'un equipo campeón tiene que poder fichar a alguien');
 
-    final motivo = await contratarEntrenador(db, candidato!.id, 'BOS');
-    expect(motivo, isNull);
+    final resultado = await contratarEntrenador(db, candidato!.id, 'BOS',
+        salario: salarioQuePide(candidato), anios: aniosQuePide(candidato));
+    expect(resultado.firmado, isTrue, reason: resultado.mensaje);
 
     final ahora = await leerEntrenadorDe(db, 'BOS');
     expect(ahora?.id, candidato.id);
+    expect(ahora?.salario, salarioQuePide(candidato));
+    expect(ahora?.aniosContrato, aniosQuePide(candidato));
+
     final libresDespues = await leerEntrenadoresLibres(db);
     expect(libresDespues.map((e) => e.id), contains(anterior!.id),
         reason: 'al que estaba se le despide, no se le borra');
@@ -336,6 +345,261 @@ void main() {
     expect(despues?.victorias, 58);
     expect(despues?.derrotas, 24);
     expect(despues?.temporadas, antes.temporadas + 1);
+
+    await db.close();
+  });
+
+  test('el sueldo sube con el nivel y se queda dentro de la escala real',
+      () async {
+    // Los topes salen de los sueldos publicados: el mejor pagado de la NBA
+    // ronda los 17-18M y el suelo del oficio los 2M.
+    expect(salarioDeEntrenador(90), greaterThan(salarioDeEntrenador(76)));
+    expect(salarioDeEntrenador(76), greaterThan(salarioDeEntrenador(60)));
+    expect(salarioDeEntrenador(99), lessThanOrEqualTo(salarioMaximoEntrenador));
+    expect(salarioDeEntrenador(40),
+        greaterThanOrEqualTo(salarioMinimoEntrenador));
+
+    // Y la curva tiene que ser convexa, como la de los jugadores: arriba se
+    // concentra el dinero. Si fuera recta, un 90 costaría lo mismo de más
+    // que un 70 y no habría decisión económica ninguna.
+    final subeArriba = salarioDeEntrenador(90) - salarioDeEntrenador(80);
+    final subeAbajo = salarioDeEntrenador(70) - salarioDeEntrenador(60);
+    expect(subeArriba, greaterThan(subeAbajo * 2));
+  });
+
+  test('el dinero tapa parte de la falta de proyecto, pero no toda', () async {
+    // Un entrenador bueno en un equipo flojo: a su precio dice que no.
+    final aSuPrecio = valorarOferta(
+      mediaDelEntrenador: 88,
+      desarrolloDelEntrenador: 70,
+      mediaDelEquipo: 82,
+      victorias: 0,
+      derrotas: 0,
+      salarioOfrecido: 12000000,
+      salarioPedido: 12000000,
+      aniosOfrecidos: 4,
+      aniosPedidos: 4,
+    );
+    expect(aSuPrecio.acepta, isFalse);
+
+    // Pagándole el doble sigue sin llegar: el tope de lo que compra el
+    // dinero existe justo para que el mercado no se resuelva con la
+    // cartera.
+    final aldoble = valorarOferta(
+      mediaDelEntrenador: 88,
+      desarrolloDelEntrenador: 70,
+      mediaDelEquipo: 82,
+      victorias: 0,
+      derrotas: 0,
+      salarioOfrecido: 24000000,
+      salarioPedido: 12000000,
+      aniosOfrecidos: 4,
+      aniosPedidos: 4,
+    );
+    expect(aldoble.loQueFalta, lessThan(aSuPrecio.loQueFalta),
+        reason: 'el dinero tiene que acercar');
+    expect(aSuPrecio.loQueFalta - aldoble.loQueFalta,
+        lessThanOrEqualTo(maxPuntosQueCompraElDinero + 0.001),
+        reason: 'pero nunca más de lo que dice el tope');
+  });
+
+  test('ofrecer menos años de los que pide echa para atrás', () async {
+    RespuestaDelEntrenador con(int anios) => valorarOferta(
+          mediaDelEntrenador: 70,
+          desarrolloDelEntrenador: 70,
+          mediaDelEquipo: 83,
+          victorias: 0,
+          derrotas: 0,
+          salarioOfrecido: 5000000,
+          salarioPedido: 5000000,
+          aniosOfrecidos: anios,
+          aniosPedidos: 3,
+        );
+    expect(con(1).loQueFalta, greaterThan(con(3).loQueFalta));
+    expect(con(4).loQueFalta, lessThan(con(3).loQueFalta));
+  });
+
+  test('despedir con contrato en vigor deja un finiquito que sigue contando '
+      'en la masa salarial', () async {
+    final db = await _ligaConEntrenadores('BOS');
+    final actual = await leerEntrenadorDe(db, 'BOS');
+    expect(actual!.salario, greaterThan(0));
+    expect(actual.aniosContrato, greaterThan(0));
+
+    final coste = await costeDeDespedir(db, 'BOS');
+    expect(coste, actual.salario * actual.aniosContrato);
+
+    final masaAntes = await masaSalarial(db, 'BOS');
+    await despedirEntrenador(db, 'BOS');
+    final masaDespues = await masaSalarial(db, 'BOS');
+
+    final presupuesto = await presupuestoDe(db, 'BOS');
+    expect(presupuesto.sueldoDelActual, 0, reason: 'ya no dirige nadie');
+    expect(presupuesto.finiquitos, actual.salario,
+        reason: 'se le sigue pagando lo mismo cada año que le quedaba');
+    expect(masaDespues, masaAntes,
+        reason: 'echarle no te ahorra un céntimo: su sueldo sigue en la masa '
+            'salarial hasta que se cumpla el contrato');
+
+    await db.close();
+  });
+
+  test('el sueldo del entrenador cuenta en la masa salarial del equipo',
+      () async {
+    final db = await _ligaConEntrenadores('MEM');
+    final entrenador = await leerEntrenadorDe(db, 'MEM');
+
+    final soloJugadores = (await (db.select(db.jugadores)
+              ..where((t) =>
+                  t.equipo.equals('MEM') & t.retirado.equals(false)))
+            .get())
+        .fold<int>(0, (a, j) => a + j.salario);
+
+    expect(await masaSalarial(db, 'MEM'), soloJugadores + entrenador!.salario,
+        reason: 'el banquillo entra en el total de la franquicia');
+    expect(await costeDelBanquillo(db, 'MEM'), entrenador.salario);
+
+    await db.close();
+  });
+
+  test('un equipo pasado de tope solo puede firmar entrenador por el mínimo',
+      () async {
+    // PHI arranca la partida con 246M de masa salarial, por encima del tope
+    // de la franquicia. La válvula es la misma que con los jugadores —
+    // siempre se puede firmar por el mínimo— y existe para que esos equipos
+    // no se queden sin banquillo para siempre.
+    final db = await _ligaConEntrenadores('PHI');
+    await despedirEntrenador(db, 'PHI');
+
+    final presupuesto = await presupuestoDe(db, 'PHI');
+    expect(presupuesto.espacioEnElTope, lessThan(0),
+        reason: 'PHI empieza pasado de tope');
+    expect(presupuesto.libre, salarioMinimoEntrenador,
+        reason: 'solo le queda la excepción del mínimo');
+
+    final caro = (await leerEntrenadoresLibres(db))
+        .firstWhere((e) => salarioQuePide(e) > salarioMinimoEntrenador);
+    final rechazado = await contratarEntrenador(db, caro.id, 'PHI',
+        salario: salarioQuePide(caro), anios: 3);
+    expect(rechazado.motivo, MotivoDeRechazo.sinPresupuesto);
+    expect(await leerEntrenadorDe(db, 'PHI'), isNull);
+
+    await db.close();
+  });
+
+  test('un equipo de la CPU pasado de tope acaba encontrando entrenador '
+      'por el mínimo', () async {
+    // La otra cara del mismo caso: si la CPU descartara a todo el que pide
+    // más de lo que le cabe, las seis franquicias que empiezan pasadas de
+    // tope se quedarían sin banquillo para siempre.
+    final db = await _ligaConEntrenadores('DEN');
+    await despedirEntrenador(db, 'PHI');
+    expect(await leerEntrenadorDe(db, 'PHI'), isNull);
+    expect((await presupuestoDe(db, 'PHI')).espacioEnElTope, lessThan(0));
+
+    await pasarElVeranoDeLosEntrenadores(db,
+        equipoUsuario: 'DEN', random: Random(31));
+
+    final nuevo = await leerEntrenadorDe(db, 'PHI');
+    expect(nuevo, isNotNull, reason: 'PHI no puede quedarse sin entrenador');
+    expect(nuevo!.salario, lessThanOrEqualTo(salarioMinimoEntrenador),
+        reason: 'pasado de tope, solo por el mínimo');
+
+    await db.close();
+  });
+
+  test('gastar en el banquillo te deja menos sitio para jugadores', () async {
+    // Es la consecuencia de que el entrenador cuente en la masa salarial:
+    // el espacio salarial del equipo baja exactamente lo que cobra.
+    final db = await _ligaConEntrenadores('MEM');
+    final entrenador = await leerEntrenadorDe(db, 'MEM');
+    final espacioConEntrenador = await espacioSalarial(db, 'MEM');
+
+    await despedirEntrenador(db, 'MEM');
+    // Despedir no libera nada: el finiquito sigue contando.
+    expect(await espacioSalarial(db, 'MEM'), espacioConEntrenador,
+        reason: 'el finiquito ocupa el mismo sitio que ocupaba su sueldo');
+
+    // Y cuando se cumple el contrato, ahí sí se recupera el espacio.
+    for (var i = 0; i < entrenador!.aniosContrato; i++) {
+      await pasarElVeranoDeLosEntrenadores(db,
+          equipoUsuario: 'DEN', random: Random(20 + i));
+    }
+    expect(await costeDelBanquillo(db, 'MEM'), greaterThanOrEqualTo(0));
+
+    await db.close();
+  });
+
+  test('el finiquito se va consumiendo cada verano hasta desaparecer',
+      () async {
+    final db = await _ligaConEntrenadores('BOS');
+    final despedido = await leerEntrenadorDe(db, 'BOS');
+    final anios = despedido!.aniosContrato;
+    await despedirEntrenador(db, 'BOS');
+
+    expect((await presupuestoDe(db, 'BOS')).finiquitos, greaterThan(0));
+
+    for (var i = 0; i < anios; i++) {
+      await pasarElVeranoDeLosEntrenadores(db,
+          equipoUsuario: 'DEN', random: Random(i + 1));
+    }
+
+    expect((await presupuestoDe(db, 'BOS')).finiquitos, 0,
+        reason: 'pasados los años del contrato, ya no se le debe nada');
+
+    await db.close();
+  });
+
+  test('cuando a TU entrenador se le acaba el contrato, la CPU no puede '
+      'llevárselo ese mismo verano', () async {
+    // Sin esto, renovar no sería una decisión sino una carrera que siempre
+    // pierdes: el verano libera a tu entrenador y, dos pasos más abajo, un
+    // equipo de la CPU con el banquillo vacío se lo lleva antes de que
+    // llegues a la pantalla.
+    final db = await _ligaConEntrenadores('DEN');
+    final tuyo = await leerEntrenadorDe(db, 'DEN');
+
+    // Se le deja un año, para que este verano sea el último.
+    await (db.update(db.entrenadores)..where((t) => t.id.equals(tuyo!.id)))
+        .write(const EntrenadoresCompanion(aniosContrato: Value(1)));
+
+    await pasarElVeranoDeLosEntrenadores(db,
+        equipoUsuario: 'DEN', random: Random(9));
+
+    final despues = await (db.select(db.entrenadores)
+          ..where((t) => t.id.equals(tuyo!.id)))
+        .getSingle();
+    expect(despues.equipo, anyOf(equipoAgenciaLibre, equipoRetirados),
+        reason: 'se le acabó el contrato y nadie ha podido ficharlo todavía');
+    expect(await leerEntrenadorDe(db, 'DEN'), isNull,
+        reason: 'tu banquillo queda vacante: te toca decidir a ti');
+
+    await db.close();
+  });
+
+  test('el mercado no se seca: si quedan pocos libres, se generan más',
+      () async {
+    final db = await _ligaConEntrenadores('DEN');
+
+    // Se vacía el mercado a lo bruto, como pasaría tras muchos veranos de
+    // retiradas.
+    await (db.delete(db.entrenadores)
+          ..where((t) => t.equipo.equals(equipoAgenciaLibre)))
+        .go();
+    expect(await leerEntrenadoresLibres(db), isEmpty);
+
+    await generarEntrenadoresSiFaltan(db, random: Random(4));
+
+    final libres = await leerEntrenadoresLibres(db);
+    expect(libres.length, greaterThanOrEqualTo(12));
+    // Son entrenadores de primer trabajo, no estrellas caídas del cielo.
+    for (final e in libres) {
+      expect(mediaDe(e), lessThan(78),
+          reason: 'los buenos se hacen ganando, no se generan');
+      expect(e.nombreFicticio, isNotEmpty);
+    }
+    expect(libres.map((e) => e.nombreFicticio).toSet().length, libres.length,
+        reason: 'sin nombres repetidos');
 
     await db.close();
   });

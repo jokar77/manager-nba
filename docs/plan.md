@@ -16,27 +16,39 @@ https://jokar77.github.io/manager-nba/
   a mano** porque necesita autenticarse: hay que darle los comandos en
   bloques separados (PowerShell 5.1 **no admite `&&`**).
 - Verificación local: `flutter analyze` limpio en los dos paquetes,
-  **348 tests** de la app + **19** de `sim_engine`, y `flutter build web`
+  **359 tests** de la app + **19** de `sim_engine`, y `flutter build web`
   correcto.
 
-## SIN PUBLICAR AHORA MISMO (lo primero que hay que resolver)
+## SIN PUBLICAR AHORA MISMO
 
-Lo último commiteado es `aaa317a` ("Lista parte 10"). **Ojo: ese commit se
-llevó también los entrenadores a medio hacer** — se hizo con la función sin
-terminar en el árbol de trabajo. No se perdió nada, pero significa que lo
-que hay commiteado NO es una versión coherente por sí sola: le falta el
-acceso desde el menú, el asset declarado en `pubspec.yaml` y los tests.
+Lo último publicado es `9035f88`, que ya lleva **la lista parte 10 y los
+entrenadores completos** (caché `manager-nba-v6`).
 
-**Los entrenadores YA están terminados y verificados, sin commit.** Incluye
-`web/sw.js` con **`CACHE = manager-nba-v6`**, obligatorio porque cambia
-`main.dart.js` (ver más abajo). Comandos para el usuario:
+Antes de eso hubo dos publicaciones en rojo (`aaa317a` y `bc5dda8`) que **no
+llegaron a la web**. No fue por el código: fue un test inestable, ya
+arreglado (ver "Tests que simulan temporadas" más abajo). Merece la pena
+recordar el episodio porque el diagnóstico costó: la página de Actions de
+GitHub leída desde fuera puede dar resultados falsos, y la fuente fiable es
+la API:
+
+```
+https://api.github.com/repos/jokar77/manager-nba/actions/runs?per_page=10
+```
+
+Queda sin commitear: el arreglo del test inestable, **el dinero de los
+entrenadores** (contratos, tope, finiquitos, agencia libre y 18 entrenadores
+inventados), el bug del jugador regalado por el mínimo, y las notas de este
+fichero. `web/sw.js` va en **`CACHE = manager-nba-v7`**, obligatorio porque
+cambia `main.dart.js`.
+
+Comandos para el usuario:
 
 ```
 git add -A
 ```
 
 ```
-git commit -m "Entrenadores: contratar, despedir y que se noten en la cancha"
+git commit -m "Entrenadores con contrato, sueldo y agencia libre propia"
 ```
 
 ```
@@ -74,6 +86,38 @@ Cada uno tiene tres facetas 0-99: **ataque** y **defensa** se notan en cada
 partido (van sumadas al rating de equipo en `sim_engine`), y **desarrollo**
 se nota en verano (acelera o frena lo que crecen los jóvenes).
 
+### El dinero del banquillo
+
+El sueldo del entrenador **cuenta en la masa salarial de la franquicia** y
+compite con los jugadores contra el mismo tope. Por eso `topeSalarial` está
+en 240M y no en los 220M reales de la NBA: son los 220M más 20M de margen
+para el banquillo.
+
+Ese margen no es un capricho, sale de medir el dataset. Con el tope pelado
+de 220M hay **seis equipos que empiezan la partida por encima** (PHI -26M,
+DEN -22M, GSW -16M, más ORL, MIN y NYK) y trece más con menos de 18M de
+aire. Como la regla es "pasado de tope, solo se ficha por el mínimo", esos
+seis se habrían quedado con los peores entrenadores de la liga siendo los
+mejores equipos. **Si alguna vez se quiere endurecer, se baja
+`topeSalarial`**: cuanto más cerca de 220M, más duele fichar entrenador.
+
+Lo demás del modelo económico:
+
+- La escala de sueldos sale de los reales: 18M el mejor pagado, ~8M uno
+  asentado, 2M el suelo del oficio. Curva convexa, como la de jugadores.
+- **Despedir no ahorra nada**: al que echas le sigues pagando los años que
+  le quedaban y ese finiquito sigue contando en la masa salarial. Es lo que
+  convierte un despido en una decisión cara.
+- **Pasado de tope solo se firma por el mínimo**, igual que con jugadores.
+  Vale para ti y para la CPU — sin esa válvula las seis franquicias pasadas
+  de tope se habrían quedado sin banquillo para siempre.
+- La negociación es **determinista**, al revés que la de jugadores: un
+  entrenador se ficha una vez al año, y que eso se resolviera con un dado
+  dejaría al usuario sin saber si le faltó dinero, proyecto o suerte.
+- El dinero tapa como mucho **4 puntos** de falta de proyecto. Sin ese tope
+  bastaría subir el deslizador para llevarte al mejor entrenador de la liga
+  a la peor plantilla.
+
 Lo que hay que saber para no romperlo:
 
 - **La escala está centrada, no es un bonus.** Un entrenador de 76 (la media
@@ -100,10 +144,25 @@ Lo que hay que saber para no romperlo:
   verano. Llevarlo aparte serían dos consultas más en cada uno de los ~2.500
   partidos de un año, para acabar con dos cuentas que pueden separarse.
 
-Lo que se dejó fuera y sería lo siguiente: sueldo de entrenador (haría falta
-un modelo de finanzas), premio de Entrenador del Año simulado, y que los
-entrenadores nuevos se generen cuando se agote el mercado (ahora solo hay
-los 40 del asset; si se retiran todos, se acaban).
+El mercado no se seca: hay 58 entrenadores en el asset (30 reales con
+equipo, 10 reales libres y 18 inventados de nivel bajo-medio) y cuando la
+lista de libres baja de 12 se generan más, con el mismo generador de nombres
+que los rookies del draft. Los generados son de primer trabajo, nivel ~60:
+los buenos se hacen ganando partidos, no se fabrican.
+
+Lo que se dejó fuera y sería lo siguiente: el premio de Entrenador del Año,
+que el entrenador afecte a las lesiones o a la química, y una pantalla de
+"palmarés de entrenadores" para ver sus carreras.
+
+### Un bug gordo que salió por el camino
+
+`completarPlantillaConElMinimo` (la red que evita que te quedes sin
+plantilla) **podía regalarte un jugador de 87 por el salario mínimo**: al
+filtrar por un puesto vacante, si el único agente libre que lo cubría era
+una estrella, se la firmaba. Salía en 2 de cada 6 partidas simuladas. Ahora
+esa vía no firma a nadie de 82 o más, y si un puesto solo lo cubre una
+estrella se deja sin cubrir — jugar a alguien fuera de posición cuesta un
+10%, regalar un 87 desequilibra la partida.
 
 ## Cosas que el juego NO tiene (por si se pide)
 
@@ -163,6 +222,33 @@ está instalado; `node` no. La receta:
 
 Sirve también para `estado.html`. Dos bugs del service worker se
 encontraron así, y ninguno se habría visto leyendo el código.
+
+### Tests que simulan temporadas: cuidado con los umbrales
+
+`realismo_estadisticas_test.dart` y compañía simulan temporadas enteras
+**con azar real, sin semilla**, a propósito. Eso obliga a una disciplina al
+poner cualquier umbral, porque `flutter test` corre en cada `git push` y un
+test que falla 1 de cada 7 veces **bloquea la publicación** sin que nada esté
+roto (pasó de verdad: dos envíos seguidos en rojo).
+
+La regla que salió de ahí:
+
+1. **Antes de poner un número, medir el estadístico muchas veces.** No
+   estimarlo. Los dos umbrales que fallaron estaban puestos a ojo.
+2. **Preferir estadísticos agregados a extremos.** La dispersión del % de
+   victorias promedia 30 equipos y se mueve ±0,019; el récord del PEOR
+   equipo se mueve entre 0,085 y 0,293. Un umbral sobre el segundo no puede
+   distinguir "mala suerte" de "motor roto", porque las dos distribuciones
+   se solapan.
+3. **Comprobar que el test sigue fallando con el código malo.** Se restauran
+   las constantes de la regresión (aquí: `sensibilidadAlRating = 1.0` y
+   `sigmaRuidoMarcador = 5.5`), se ejecuta, y tiene que saltar. Si no salta,
+   se ha aflojado de más y ya no vigila nada.
+4. **Y que ya no falla con el bueno**, repitiéndolo tantas veces como haga
+   falta para superar el ritmo de fallo que tenía (aquí, 14 pasadas).
+
+Si algún día vuelve a salir un aspa roja con "N tests passed, 1 failed", el
+primer sospechoso es este tipo de test, no el cambio que se acaba de subir.
 
 ## Hecho el 4-5 de agosto de 2026
 

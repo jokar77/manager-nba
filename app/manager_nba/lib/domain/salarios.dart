@@ -10,9 +10,31 @@ const salarioMinimo = 2300000;
 /// 62,58M la 2026-27) para que un contrato real nunca quede por fuera.
 const salarioMaximo = 70000000;
 
-/// Tope salarial por equipo y temporada. Al pasarse, solo se puede fichar
-/// por el mínimo.
-const topeSalarial = 220000000;
+/// Tope salarial por equipo y temporada, jugadores Y banquillo juntos. Al
+/// pasarse, solo se puede fichar por el mínimo.
+///
+/// Son los 220M del tope real de la NBA más 20M de margen para el
+/// entrenador, y ese margen no es un regalo: el sueldo del banquillo entra
+/// en la masa salarial (ver [masaSalarial]), así que gastarte 18M en un
+/// entrenador de primera te deja 18M menos para jugadores. Compite de
+/// verdad.
+///
+/// Por qué el margen y no meter al entrenador en los 220M pelados: medido
+/// sobre el dataset, SEIS equipos empiezan la partida por encima de 220M
+/// (PHI a -26M, DEN a -22M, GSW a -16M, más ORL, MIN y NYK) y trece más
+/// tienen menos de 18M de aire. Con el tope pelado, esos seis no podrían
+/// firmar entrenador en absoluto —por encima del tope solo se ficha por el
+/// mínimo— y los mejores equipos de la liga acabarían con los peores
+/// banquillos, que es justo al revés de lo que pasa en la realidad.
+///
+/// Si alguna vez se quiere endurecer, se baja este número: cuanto más cerca
+/// de 220M, más duele fichar entrenador.
+const topeSalarial = 240000000;
+
+/// La parte del tope pensada para el banquillo. No es un presupuesto
+/// separado —el tope es uno solo— pero sirve para explicar de dónde sale el
+/// margen y para acotar lo que se le puede ofrecer a un entrenador.
+const margenDeBanquillo = 20000000;
 
 /// Estima el salario de un jugador del que no tenemos contrato real, a
 /// partir de su nivel. La curva es deliberadamente convexa: entre un

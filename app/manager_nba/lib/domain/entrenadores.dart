@@ -1,8 +1,10 @@
 /// Las reglas de los entrenadores que no necesitan base de datos: cómo se
-/// resume su nivel en un número, qué hace falta para convencerles y cuándo
-/// se retiran. Aparte del repositorio para poder probarlas sin montar una
-/// partida entera.
+/// resume su nivel en un número, cuánto cobran, qué hace falta para
+/// convencerles y cuándo se retiran. Aparte del repositorio para poder
+/// probarlas sin montar una partida entera.
 library;
+
+import 'dart:math';
 
 /// Peso de cada faceta en la media del entrenador.
 ///
@@ -45,12 +47,50 @@ String estiloDeEntrenador({
   return 'Formador de jóvenes';
 }
 
-/// Edad a partir de la cual un entrenador puede colgar la carpeta. No es un
-/// corte duro: por encima de esta edad se retira con una probabilidad que
-/// crece cada año (ver `retiradasDeEntrenadores`). Popovich dirigió hasta
-/// los 76, así que el tope duro se pone algo por encima.
-const edadDeRetiroDeEntrenador = 66;
-const edadMaximaDeEntrenador = 77;
+// ---------------------------------------------------------------------------
+// Dinero
+// ---------------------------------------------------------------------------
+
+/// Lo que cobra un entrenador del montón de la liga, y el techo de la
+/// escala. Calibrado con los sueldos reales publicados: el mejor pagado de
+/// la NBA ronda los 17-18M al año, un entrenador asentado 8-10M, uno recién
+/// llegado 3-4M, y el suelo del oficio anda por los 2M.
+const salarioMinimoEntrenador = 2000000;
+const salarioMaximoEntrenador = 18000000;
+
+/// Lo que pide un entrenador de [media] al año, en dólares.
+///
+/// La curva es convexa igual que la de los jugadores (ver salarios.dart):
+/// entre un 55 y un 65 hay dos millones de diferencia, y entre un 80 y un
+/// 90 hay ocho. El dinero se concentra arriba del todo, que es como
+/// funciona el mercado de banquillos de verdad.
+int salarioDeEntrenador(int media) {
+  final porEncimaDelSuelo = max(0, media - 50) / 40.0;
+  final bruto = salarioMinimoEntrenador +
+      pow(porEncimaDelSuelo.clamp(0.0, 1.0), 2.2) *
+          (salarioMaximoEntrenador - salarioMinimoEntrenador);
+  // Se redondea a cien mil: un sueldo de "8.437.219" no lo publica nadie.
+  return ((bruto / 100000).round() * 100000)
+      .clamp(salarioMinimoEntrenador, salarioMaximoEntrenador);
+}
+
+// El sueldo del entrenador NO tiene un presupuesto aparte: entra en la masa
+// salarial de la franquicia y compite con los jugadores, contra el mismo
+// tope (ver `topeSalarial` y `masaSalarial`). El tope lleva 20M de margen
+// justo por esto; el porqué de ese margen está explicado en salarios.dart.
+
+/// Los años que pide un entrenador según su nivel y su edad. Un entrenador
+/// de prestigio no firma por uno; uno de 68 años tampoco pide cinco.
+int aniosPedidosPorEntrenador({required int media, required int edad}) {
+  if (edad >= 64) return 2;
+  if (media >= 82) return 4;
+  if (media >= 70) return 3;
+  return 2;
+}
+
+// ---------------------------------------------------------------------------
+// Convencerle
+// ---------------------------------------------------------------------------
 
 /// Media de equipo (la de sus cinco mejores) que exige un entrenador del
 /// montón, y cuánto sube esa exigencia por cada punto de su propia media.
@@ -65,10 +105,6 @@ const edadMaximaDeEntrenador = 77;
 ///   un entrenador de 90 pide 87 ... le valen ~5 equipos
 ///   uno de 76 (la media) pide 84 . le vale la mitad de la liga
 ///   uno de 66 pide 82 ........... le vale cualquiera
-///
-/// Es la única barrera para fichar: no hay dinero de por medio porque el
-/// tope salarial del juego cuenta solo jugadores, así que sin esto no habría
-/// decisión ninguna — ficharías al mejor libre siempre.
 const _mediaDeEquipoNeutra = 84.0;
 const _cuantoMasPideElBueno = 0.22;
 
@@ -83,27 +119,41 @@ const _rebajaDelFormador = 2.0;
 /// tanto: matiza, pero no sustituye a la plantilla.
 const _valorDeUnaVictoria = 0.05;
 
-/// ¿Acepta este entrenador dirigir a un equipo así?
+/// Cuánto proyecto puede comprar el dinero, como máximo, y cuánto hay que
+/// pasarse de su precio para llegar ahí.
 ///
-/// La regla en una frase: cuanto mejor es el entrenador, mejor tiene que
-/// ser el equipo para que le diga que sí. Un 90 quiere un contendiente; un
-/// 66 firma con cualquiera.
-///
-/// [mediaDelEquipo] es la de los cinco mejores jugadores de la plantilla —
-/// el mismo criterio que usa la ficha de equipo. [victorias] y [derrotas]
-/// son el récord con el que se le juzga.
-bool aceptaLaOferta({
+/// El tope existe para que el mercado no se resuelva con la cartera: puedes
+/// convencer a alguien de que tu equipo es un punto o dos peor de lo que él
+/// querría, no de que un equipo de 82 es un aspirante al anillo. Sin el
+/// tope, bastaría con subir el deslizador al máximo para llevarte al mejor
+/// entrenador de la liga a la peor plantilla, y la decisión desaparecería.
+const maxPuntosQueCompraElDinero = 4.0;
+const _sobreprecioParaElMaximo = 0.6;
+
+/// Y lo que mueven los años: ofrecerle menos de los que pide le echa para
+/// atrás bastante más de lo que le atrae ofrecerle de más. Un entrenador
+/// quiere estabilidad para hacer su trabajo; un año extra está bien, pero
+/// dos años menos de los que pedía es una desconfianza que se nota.
+const _puntosPorAnio = 0.6;
+const _maxPuntosPorAniosDeMas = 1.2;
+const _minPuntosPorAniosDeMenos = -2.0;
+
+/// Edad a partir de la cual un entrenador puede colgar la carpeta. No es un
+/// corte duro: por encima de esta edad se retira con una probabilidad que
+/// crece cada año (ver `pasarElVeranoDeLosEntrenadores`). Popovich dirigió
+/// hasta los 76, así que el tope duro se pone algo por encima.
+const edadDeRetiroDeEntrenador = 66;
+const edadMaximaDeEntrenador = 77;
+
+/// Lo que exige el entrenador, en media de equipo.
+double exigenciaDeProyecto({
   required int mediaDelEntrenador,
   required int desarrolloDelEntrenador,
-  required int mediaDelEquipo,
-  required int victorias,
-  required int derrotas,
 }) {
   var exigencia = _mediaDeEquipoNeutra +
       (mediaDelEntrenador - 76) * _cuantoMasPideElBueno;
   if (desarrolloDelEntrenador >= 80) exigencia -= _rebajaDelFormador;
-
-  return mediaDelEquipo + _tironDelRecord(victorias, derrotas) >= exigencia;
+  return exigencia;
 }
 
 /// Lo que suma o resta el récord, con 41-41 como punto neutro.
@@ -117,11 +167,74 @@ bool aceptaLaOferta({
 ///
 /// Y a mitad de temporada se proyecta a 82: un 5-15 es un ritmo de 20
 /// victorias, no un año de 5.
-double _tironDelRecord(int victorias, int derrotas) {
+double tironDelRecord(int victorias, int derrotas) {
   final jugados = victorias + derrotas;
   if (jugados == 0) return 0;
   final proyectadas = victorias / jugados * 82;
   return (proyectadas - 41) * _valorDeUnaVictoria;
+}
+
+/// Cuántos puntos de proyecto compra (o destruye) la oferta económica.
+/// [sobreprecio] es `salario / pedido - 1`: 0,2 es un 20% por encima de lo
+/// que pide, -0,3 es un 30% por debajo.
+double compensacionPorDinero(double sobreprecio) =>
+    (sobreprecio / _sobreprecioParaElMaximo).clamp(-1.5, 1.0) *
+    maxPuntosQueCompraElDinero;
+
+/// Lo que mueven los años ofrecidos frente a los que pedía.
+double efectoDeLosAnios({required int ofrecidos, required int pedidos}) =>
+    ((ofrecidos - pedidos) * _puntosPorAnio)
+        .clamp(_minPuntosPorAniosDeMenos, _maxPuntosPorAniosDeMas);
+
+/// La respuesta del entrenador a una oferta concreta, con el motivo.
+class RespuestaDelEntrenador {
+  final bool acepta;
+
+  /// Cuánto le falta al proyecto para convencerle, en puntos de media de
+  /// equipo. Negativo o cero cuando acepta. Sirve para poder decirle al
+  /// usuario si está cerca o si no hay dinero que lo arregle.
+  final double loQueFalta;
+
+  const RespuestaDelEntrenador({required this.acepta, required this.loQueFalta});
+}
+
+/// ¿Acepta este entrenador dirigir a un equipo así, por ese dinero y esos
+/// años?
+///
+/// La regla en una frase: cuanto mejor es el entrenador, mejor tiene que
+/// ser el proyecto — y el dinero puede tapar parte de la diferencia, pero
+/// solo parte (ver [maxPuntosQueCompraElDinero]).
+///
+/// Es DETERMINISTA, a diferencia de la negociación con jugadores, que va
+/// por probabilidad. Y es a propósito: un entrenador se ficha una vez al
+/// año, no cuarenta veces como en el mercado de jugadores. Que una decisión
+/// tan aislada se resolviera con un dado dejaría al usuario sin saber nunca
+/// si le faltó dinero, proyecto o suerte; así puede subir la oferta y ver
+/// exactamente dónde está la línea.
+RespuestaDelEntrenador valorarOferta({
+  required int mediaDelEntrenador,
+  required int desarrolloDelEntrenador,
+  required int mediaDelEquipo,
+  required int victorias,
+  required int derrotas,
+  required int salarioOfrecido,
+  required int salarioPedido,
+  required int aniosOfrecidos,
+  required int aniosPedidos,
+}) {
+  final exigencia = exigenciaDeProyecto(
+    mediaDelEntrenador: mediaDelEntrenador,
+    desarrolloDelEntrenador: desarrolloDelEntrenador,
+  );
+  final ofrecido = mediaDelEquipo +
+      tironDelRecord(victorias, derrotas) +
+      compensacionPorDinero(salarioOfrecido / salarioPedido - 1) +
+      efectoDeLosAnios(ofrecidos: aniosOfrecidos, pedidos: aniosPedidos);
+
+  return RespuestaDelEntrenador(
+    acepta: ofrecido >= exigencia,
+    loQueFalta: exigencia - ofrecido,
+  );
 }
 
 /// Cuánto acelera (o frena) el entrenador el crecimiento de un jugador

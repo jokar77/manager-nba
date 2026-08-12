@@ -463,4 +463,19 @@ class Entrenadores extends Table {
   /// y lo que mira un equipo de la CPU antes de echarle.
   IntColumn get victorias => integer().withDefault(const Constant(0))();
   IntColumn get derrotas => integer().withDefault(const Constant(0))();
+
+  /// Su contrato: lo que cobra al año y los años que le quedan (incluido
+  /// este). Sale del presupuesto de banquillo, que es aparte del tope
+  /// salarial de jugadores (ver entrenadores.dart).
+  IntColumn get salario => integer().withDefault(const Constant(0))();
+  IntColumn get aniosContrato => integer().withDefault(const Constant(0))();
+
+  /// El finiquito: si le has despedido con años por delante, el equipo que
+  /// le echó le sigue pagando hasta que se cumpla el contrato.
+  ///
+  /// Vive aquí y no en una tabla aparte porque es información del contrato
+  /// del entrenador, no una entidad nueva — y así no puede quedarse
+  /// huérfana si alguien vuelve a firmarle.
+  TextColumn get equipoQuePagaFiniquito => text().nullable()();
+  IntColumn get aniosDeFiniquito => integer().withDefault(const Constant(0))();
 }

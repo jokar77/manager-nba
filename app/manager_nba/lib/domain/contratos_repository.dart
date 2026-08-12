@@ -21,12 +21,40 @@ int valorDeMercado(Jugador jugador) {
   return (base * prima).round().clamp(salarioMinimo, salarioMaximo);
 }
 
-/// Masa salarial de [equipo] esta temporada.
+/// Masa salarial de [equipo] esta temporada: los jugadores MÁS el banquillo.
+///
+/// El entrenador cuenta en el total de la franquicia, así que el dinero que
+/// te gastes en el banquillo es dinero que no tienes para jugadores. Por eso
+/// [topeSalarial] incluye el margen del banquillo — ver la nota que hay allí.
+///
+/// También cuenta lo que se le siga pagando a un entrenador despedido: el
+/// finiquito no desaparece por haberle echado, y es lo que hace que cambiar
+/// de entrenador a mitad de contrato sea una decisión cara de verdad.
 Future<int> masaSalarial(AppDatabase db, String equipo) async {
   final plantilla = await (db.select(db.jugadores)
         ..where((t) => t.equipo.equals(equipo) & t.retirado.equals(false)))
       .get();
-  return plantilla.fold<int>(0, (a, j) => a + j.salario);
+  final jugadores = plantilla.fold<int>(0, (a, j) => a + j.salario);
+  return jugadores + await costeDelBanquillo(db, equipo);
+}
+
+/// Lo que le cuesta el banquillo a [equipo]: el sueldo de quien dirige más
+/// los finiquitos de los que echó y aún tienen contrato.
+///
+/// Se consulta la tabla directamente en vez de pasar por
+/// entrenadores_repository para no encadenar imports entre repositorios por
+/// una suma de dos columnas.
+Future<int> costeDelBanquillo(AppDatabase db, String equipo) async {
+  final actual = await (db.select(db.entrenadores)
+        ..where((t) => t.equipo.equals(equipo)))
+      .getSingleOrNull();
+  final finiquitos = await (db.select(db.entrenadores)
+        ..where((t) =>
+            t.equipoQuePagaFiniquito.equals(equipo) &
+            t.aniosDeFiniquito.isBiggerThanValue(0)))
+      .get();
+  return (actual?.salario ?? 0) +
+      finiquitos.fold<int>(0, (suma, e) => suma + e.salario);
 }
 
 /// Cuánto le queda a [equipo] por debajo del tope. Negativo si ya se pasó.
