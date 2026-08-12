@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'data/database/app_database.dart';
 import 'domain/ajustes_repository.dart';
 import 'domain/slots_repository.dart';
 import 'features/inicio/start_menu_screen.dart';
+import 'i18n/textos.dart';
 import 'shared/pantalla.dart';
 
 void main() {
@@ -32,14 +34,26 @@ class ManagerNbaApp extends StatefulWidget {
 class _ManagerNbaAppState extends State<ManagerNbaApp> {
   final _temaNotifier = ValueNotifier<ThemeMode>(ThemeMode.light);
 
+  /// El idioma vive aquí arriba, igual que el tema: cambiarlo tiene que
+  /// repintar la app entera al momento, no solo la pantalla de ajustes.
+  final _idiomaNotifier = ValueNotifier<Idioma>(Idioma.espanol);
+
   @override
   void dispose() {
     _temaNotifier.dispose();
+    _idiomaNotifier.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    return ValueListenableBuilder<Idioma>(
+      valueListenable: _idiomaNotifier,
+      builder: (context, idioma, _) => _conTema(idioma),
+    );
+  }
+
+  Widget _conTema(Idioma idioma) {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: _temaNotifier,
       builder: (context, modo, _) {
@@ -47,6 +61,9 @@ class _ManagerNbaAppState extends State<ManagerNbaApp> {
           title: 'Manager NBA',
           navigatorObservers: [routeObserver],
           themeMode: modo,
+          locale: idioma.locale,
+          supportedLocales: Idioma.values.map((i) => i.locale),
+          localizationsDelegates: GlobalMaterialLocalizations.delegates,
           theme: ThemeData(
             useMaterial3: true,
             colorScheme: ColorScheme.fromSeed(
@@ -72,7 +89,11 @@ class _ManagerNbaAppState extends State<ManagerNbaApp> {
           // TODAS las filas sin tener que tocar una por una.
           builder: (context, child) {
             final tema = Theme.of(context);
-            if (!tamanoDe(context).esTactil) return child!;
+            // Los textos se cuelgan aquí, por encima de todas las rutas,
+            // para que cualquier pantalla los tenga sin pasarlos a mano.
+            final conIdioma =
+                Idiomas(textos: textosDe(idioma), child: child!);
+            if (!tamanoDe(context).esTactil) return conIdioma;
             return Theme(
               data: tema.copyWith(
                 visualDensity: VisualDensity.standard,
@@ -81,11 +102,14 @@ class _ManagerNbaAppState extends State<ManagerNbaApp> {
                   minTileHeight: alturaTactilMinima(context),
                 ),
               ),
-              child: child!,
+              child: conIdioma,
             );
           },
           home: _ArranqueScreen(
-              ajustesDb: widget.ajustesDb, temaNotifier: _temaNotifier),
+            ajustesDb: widget.ajustesDb,
+            temaNotifier: _temaNotifier,
+            idiomaNotifier: _idiomaNotifier,
+          ),
         );
       },
     );
@@ -99,8 +123,13 @@ class _ManagerNbaAppState extends State<ManagerNbaApp> {
 class _ArranqueScreen extends StatefulWidget {
   final AppDatabase ajustesDb;
   final ValueNotifier<ThemeMode> temaNotifier;
+  final ValueNotifier<Idioma> idiomaNotifier;
 
-  const _ArranqueScreen({required this.ajustesDb, required this.temaNotifier});
+  const _ArranqueScreen({
+    required this.ajustesDb,
+    required this.temaNotifier,
+    required this.idiomaNotifier,
+  });
 
   @override
   State<_ArranqueScreen> createState() => _ArranqueScreenState();
@@ -119,6 +148,7 @@ class _ArranqueScreenState extends State<_ArranqueScreen> {
     await migrarPartidaSinSlots();
     final modoOscuro = await leerModoOscuro(widget.ajustesDb);
     widget.temaNotifier.value = modoOscuro ? ThemeMode.dark : ThemeMode.light;
+    widget.idiomaNotifier.value = await leerIdioma(widget.ajustesDb);
   }
 
   @override
@@ -138,7 +168,10 @@ class _ArranqueScreenState extends State<_ArranqueScreen> {
         }
 
         return StartMenuScreen(
-            ajustesDb: widget.ajustesDb, temaNotifier: widget.temaNotifier);
+          ajustesDb: widget.ajustesDb,
+          temaNotifier: widget.temaNotifier,
+          idiomaNotifier: widget.idiomaNotifier,
+        );
       },
     );
   }

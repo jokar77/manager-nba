@@ -25,6 +25,7 @@ import '../mercado/agencia_libre_screen.dart';
 import '../mercado/entrenador_screen.dart';
 import '../mercado/ofertas_screen.dart';
 import '../mercado/traspasos_screen.dart';
+import '../../i18n/textos.dart';
 import '../../shared/contraste.dart';
 import '../../shared/equipo_logo.dart';
 import '../../shared/navegacion.dart';
@@ -176,6 +177,7 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
   Widget build(BuildContext context) {
     final db = widget.db;
     final equipo = widget.equipo;
+    final textos = t(context);
     final info = infoDe(equipo);
     final colorEquipo = info.colorPrimario;
 
@@ -199,7 +201,7 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
                 actions: [
                   IconButton(
                     icon: const Icon(Icons.settings),
-                    tooltip: 'Ajustes',
+                    tooltip: textos.ajustes,
                     onPressed: () =>
                         Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) => AjustesScreen(db: db),
@@ -222,8 +224,8 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
                   _AccesoMenu(
                     icono: Icons.calendar_month,
                     color: const Color(0xFF3D7BFF),
-                    titulo: 'Calendario',
-                    subtitulo: 'Ve tu temporada y simula partidos',
+                    titulo: textos.calendario,
+                    subtitulo: textos.calendarioDetalle,
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
                       settings:
                           const RouteSettings(name: RutasPrincipales.calendario),
@@ -234,8 +236,8 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
                   _AccesoMenu(
                     icono: Icons.groups,
                     color: const Color(0xFF14A38B),
-                    titulo: 'Tu equipo',
-                    subtitulo: 'Jugadores y alineación',
+                    titulo: textos.tuEquipo,
+                    subtitulo: textos.tuEquipoDetalle,
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) => RosterConfigScreen(
                         db: db,
@@ -248,9 +250,9 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
                   _AccesoMenu(
                     icono: Icons.sports,
                     color: const Color(0xFF9C6ADE),
-                    titulo: 'Entrenador',
+                    titulo: textos.entrenador,
                     subtitulo: estado.entrenador == null
-                        ? 'Tu banquillo está vacante'
+                        ? textos.banquilloVacante
                         : '${estado.entrenador} · media '
                             '${estado.mediaEntrenador}',
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
@@ -261,19 +263,19 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
                   _AccesoMenu(
                     icono: Icons.leaderboard,
                     color: const Color(0xFF7A5AF8),
-                    titulo: 'Clasificación',
-                    subtitulo: 'Equipos y líderes de estadísticas',
+                    titulo: textos.clasificacion,
+                    subtitulo: textos.clasificacionDetalle,
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) =>
                           ClasificacionScreen(db: db, equipoUsuario: equipo),
                     )),
                   ),
-                  const _SeparadorDeSeccion(titulo: 'Mercado'),
+                  _SeparadorDeSeccion(titulo: textos.mercado),
                   _AccesoMenu(
                     icono: Icons.swap_horiz,
                     color: const Color(0xFFE08A1E),
-                    titulo: 'Traspasos',
-                    subtitulo: 'Negocia intercambios con el resto de la liga',
+                    titulo: textos.traspasos,
+                    subtitulo: textos.traspasosDetalle,
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) =>
                           TraspasosScreen(db: db, equipoUsuario: equipo),
@@ -282,7 +284,7 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
                   _AccesoMenu(
                     icono: Icons.mark_email_unread,
                     color: const Color(0xFFD64550),
-                    titulo: 'Ofertas recibidas',
+                    titulo: textos.ofertasRecibidas,
                     subtitulo: estado.ofertas == 0
                         ? 'Nadie te ha propuesto nada por ahora'
                         : estado.ofertas == 1
@@ -298,18 +300,18 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
                   _AccesoMenu(
                     icono: Icons.person_add,
                     color: const Color(0xFF2E9E5B),
-                    titulo: 'Agencia libre',
-                    subtitulo: 'Jugadores sin equipo y espacio salarial',
+                    titulo: textos.agenciaLibre,
+                    subtitulo: textos.agenciaLibreDetalle,
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) =>
                           AgenciaLibreScreen(db: db, equipoUsuario: equipo),
                     )),
                   ),
-                  const _SeparadorDeSeccion(titulo: 'Competición'),
+                  _SeparadorDeSeccion(titulo: textos.competicion),
                   _AccesoMenu(
                     icono: Icons.emoji_events_outlined,
                     color: const Color(0xFFB07D2B),
-                    titulo: 'NBA Cup',
+                    titulo: textos.nbaCup,
                     subtitulo: estado.copaSembrada
                         ? 'Cuadro y resultados de la Copa'
                         : 'Se desbloquea al terminar la fase de grupos',
@@ -324,8 +326,8 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
                   _AccesoMenu(
                     icono: Icons.star,
                     color: const Color(0xFF1D8FE0),
-                    titulo: 'All-Star',
-                    subtitulo: 'Votación, partido de las estrellas y MVP',
+                    titulo: textos.allStar,
+                    subtitulo: textos.allStarDetalle,
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) => AllStarScreen(db: db),
                     )),
@@ -333,8 +335,8 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
                   _AccesoMenu(
                     icono: Icons.assessment,
                     color: const Color(0xFF2E9E7B),
-                    titulo: 'Resumen de la temporada',
-                    subtitulo: 'Récord, todos tus partidos y promedios',
+                    titulo: textos.resumenTemporada,
+                    subtitulo: textos.resumenTemporadaDetalle,
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) => ResumenTemporadaScreen(
                           db: db, equipoUsuario: equipo),
@@ -343,7 +345,7 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
                   _AccesoMenu(
                     icono: Icons.emoji_events,
                     color: const Color(0xFFD4A017),
-                    titulo: 'Premios',
+                    titulo: textos.premios,
                     subtitulo: estado.temporadaCompleta
                         ? 'Premios de fin de temporada'
                         : 'Se desbloquea al terminar la temporada regular',
@@ -358,7 +360,7 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
                   _AccesoMenu(
                     icono: Icons.sports_basketball,
                     color: const Color(0xFFE2622C),
-                    titulo: 'Playoffs',
+                    titulo: textos.playoffs,
                     subtitulo: estado.temporadaCompleta
                         ? 'Bracket de eliminatorias'
                         : 'Se desbloquea al terminar la temporada regular',
@@ -370,11 +372,11 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
                                   PlayoffsScreen(db: db, equipoUsuario: equipo),
                             )),
                   ),
-                  const _SeparadorDeSeccion(titulo: 'Legado'),
+                  _SeparadorDeSeccion(titulo: textos.legado),
                   _AccesoMenu(
                     icono: Icons.military_tech,
                     color: const Color(0xFF8E6BC9),
-                    titulo: 'Legado',
+                    titulo: textos.legado,
                     subtitulo: 'Hall of Fame y camisetas retiradas',
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) =>
@@ -438,7 +440,7 @@ class _CabeceraEquipo extends StatelessWidget {
                                 color: secundario,
                                 fontSize: 13,
                                 letterSpacing: 0.3)),
-                        Text('Temporada ${estado.temporada}',
+                        Text('${t(context).temporada} ${estado.temporada}',
                             style: TextStyle(
                                 color: sobre,
                                 fontSize: 15,
@@ -458,7 +460,7 @@ class _CabeceraEquipo extends StatelessWidget {
                     child: _Dato(
                       // El récord ya deja claro cuántos se han jugado (V+D),
                       // así que no hace falta un dato aparte para eso.
-                      etiqueta: 'Récord (${estado.partidosJugados}/82)',
+                      etiqueta: '${t(context).record} (${estado.partidosJugados}/82)',
                       valor: '${estado.victorias}-${estado.derrotas}',
                       color: sobre,
                       colorEtiqueta: secundario,

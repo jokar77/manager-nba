@@ -4,6 +4,7 @@ import '../../data/database/app_database.dart';
 import '../../domain/entrenadores_repository.dart';
 import '../../domain/equipos_info.dart';
 import '../../domain/salarios.dart' show topeSalarial;
+import '../../i18n/textos.dart';
 import '../../shared/pantalla.dart';
 
 /// Tu banquillo: quién lo ocupa, qué contrato tiene, cuánto te queda de
@@ -133,13 +134,13 @@ class _EntrenadorScreenState extends State<EntrenadorScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
+            child: Text(t(context).cancelar),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.error),
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Despedir'),
+            child: Text(t(context).despedir),
           ),
         ],
       ),
@@ -152,7 +153,7 @@ class _EntrenadorScreenState extends State<EntrenadorScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Entrenador')),
+      appBar: AppBar(title: Text(t(context).entrenador)),
       body: FutureBuilder<_EstadoDelBanquillo>(
         future: _futuro,
         builder: (context, snapshot) {
@@ -175,7 +176,7 @@ class _EntrenadorScreenState extends State<EntrenadorScreen> {
               const SizedBox(height: 12),
               _Presupuesto(presupuesto: estado.presupuesto),
               const SizedBox(height: 20),
-              Text('Agencia libre de entrenadores',
+              Text('${t(context).agenciaLibre} · ${t(context).entrenador}',
                   style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 4),
               Text(
@@ -315,7 +316,8 @@ class _DialogoDeNegociacionState extends State<_DialogoDeNegociacion> {
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 12),
-                Text('Sueldo: ${formatearMillones(_salario)} al año'),
+                Text('${t(context).sueldo}: '
+                    '${t(context).alAnio(formatearMillones(_salario))}'),
                 Slider(
                   value: _salario.toDouble().clamp(
                       salarioMinimoEntrenador.toDouble(), _maximo.toDouble()),
@@ -328,8 +330,7 @@ class _DialogoDeNegociacionState extends State<_DialogoDeNegociacion> {
                       : (v) => setState(() => _salario =
                           (v / _paso).round() * _paso),
                 ),
-                Text('Duración: $_anios '
-                    '${_anios == 1 ? 'temporada' : 'temporadas'}'),
+                Text('${t(context).duracion}: ${t(context).anios(_anios)}'),
                 Slider(
                   value: _anios.toDouble(),
                   min: 1,
@@ -351,11 +352,11 @@ class _DialogoDeNegociacionState extends State<_DialogoDeNegociacion> {
       actions: [
         TextButton(
           onPressed: _enviando ? null : () => Navigator.of(context).pop(),
-          child: const Text('Cancelar'),
+          child: Text(t(context).cancelar),
         ),
         FilledButton(
           onPressed: _enviando || sinPresupuesto ? null : _ofrecer,
-          child: const Text('Ofrecer'),
+          child: Text(t(context).ofrecer),
         ),
       ],
     );
@@ -388,7 +389,7 @@ class _Veredicto extends StatelessWidget {
       return _Aviso(
         icono: Icons.check_circle,
         color: const Color(0xFF2E9E5B),
-        texto: 'Aceptaría esta oferta.',
+        texto: t(context).aceptariaLaOferta,
       );
     }
     // Que se distinga "sube un poco" de "olvídalo" es la información que
@@ -398,9 +399,8 @@ class _Veredicto extends StatelessWidget {
       icono: aTiro ? Icons.trending_up : Icons.block,
       color: Theme.of(context).colorScheme.error,
       texto: aTiro
-          ? 'Todavía no. Con más dinero o más años puede cambiar de idea.'
-          : 'No va a aceptar: tu proyecto le queda lejos y el dinero no lo '
-              'arregla.',
+          ? t(context).todaviaNo
+          : t(context).noVaAAceptar,
     );
   }
 }
@@ -455,7 +455,7 @@ class _Presupuesto extends StatelessWidget {
                 const Icon(Icons.account_balance_wallet, size: 18),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text('Lo que puedes ofrecer',
+                  child: Text(t(context).loQuePuedesOfrecer,
                       style: Theme.of(context).textTheme.titleSmall),
                 ),
                 const SizedBox(width: 8),
@@ -476,7 +476,7 @@ class _Presupuesto extends StatelessWidget {
                 importe: presupuesto.sueldoDelActual),
             if (presupuesto.finiquitos > 0)
               _LineaDeGasto(
-                etiqueta: 'Finiquitos de despedidos',
+                etiqueta: t(context).finiquitos,
                 importe: presupuesto.finiquitos,
                 enRojo: true,
               ),
@@ -484,7 +484,7 @@ class _Presupuesto extends StatelessWidget {
                 etiqueta: 'Masa salarial (con banquillo)',
                 importe: presupuesto.masaSalarialTotal),
             _LineaDeGasto(
-                etiqueta: 'Tope de la franquicia', importe: topeSalarial),
+                etiqueta: t(context).topeDeLaFranquicia, importe: topeSalarial),
             const SizedBox(height: 6),
             Text(
               presupuesto.espacioEnElTope <= 0
@@ -549,14 +549,12 @@ class _BanquilloActual extends StatelessWidget {
     if (e == null) {
       return Card(
         color: Theme.of(context).colorScheme.errorContainer,
-        child: const Padding(
-          padding: EdgeInsets.all(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
           child: ListTile(
-            leading: Icon(Icons.person_off),
-            title: Text('Sin entrenador'),
-            subtitle: Text(
-                'Tu equipo juega sin banquillo. Ficha a alguien de la lista '
-                'de abajo.'),
+            leading: const Icon(Icons.person_off),
+            title: Text(t(context).sinEntrenador),
+            subtitle: Text(t(context).sinEntrenadorDetalle),
           ),
         ),
       );
@@ -613,7 +611,7 @@ class _BanquilloActual extends StatelessWidget {
               child: TextButton.icon(
                 onPressed: onDespedir,
                 icon: const Icon(Icons.logout),
-                label: const Text('Despedir'),
+                label: Text(t(context).despedir),
                 style: TextButton.styleFrom(
                     foregroundColor: Theme.of(context).colorScheme.error),
               ),
@@ -659,7 +657,9 @@ class _FilaCandidato extends StatelessWidget {
     // dejaría al usuario a ciegas.
     final boton = FilledButton(
       onPressed: onNegociar,
-      child: Text(candidato.aceptariaSuPrecio ? 'Negociar' : 'Ofrecer'),
+      child: Text(candidato.aceptariaSuPrecio
+          ? t(context).negociar
+          : t(context).ofrecer),
     );
 
     final identidad = Column(
@@ -741,9 +741,9 @@ class _Facetas extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final barras = [
-      ('Ataque', entrenador.atrAtaque, const Color(0xFFE08A1E)),
-      ('Defensa', entrenador.atrDefensa, const Color(0xFF3D7BFF)),
-      ('Desarrollo', entrenador.atrDesarrollo, const Color(0xFF2E9E5B)),
+      (t(context).ataque, entrenador.atrAtaque, const Color(0xFFE08A1E)),
+      (t(context).defensa, entrenador.atrDefensa, const Color(0xFF3D7BFF)),
+      (t(context).desarrollo, entrenador.atrDesarrollo, const Color(0xFF2E9E5B)),
     ];
     final widgets = barras
         .map((b) => _Barra(etiqueta: b.$1, valor: b.$2, color: b.$3))

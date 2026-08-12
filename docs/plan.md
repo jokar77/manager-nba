@@ -37,9 +37,9 @@ https://api.github.com/repos/jokar77/manager-nba/actions/runs?per_page=10
 
 Queda sin commitear: el arreglo del test inestable, **el dinero de los
 entrenadores** (contratos, tope, finiquitos, agencia libre y 18 entrenadores
-inventados), el bug del jugador regalado por el mínimo, y las notas de este
-fichero. `web/sw.js` va en **`CACHE = manager-nba-v7`**, obligatorio porque
-cambia `main.dart.js`.
+inventados), el bug del jugador regalado por el mínimo, **los siete idiomas**
+(ver más abajo) y las notas de este fichero. `web/sw.js` va en
+**`CACHE = manager-nba-v7`**, obligatorio porque cambia `main.dart.js`.
 
 Comandos para el usuario:
 
@@ -48,7 +48,7 @@ git add -A
 ```
 
 ```
-git commit -m "Entrenadores con contrato, sueldo y agencia libre propia"
+git commit -m "Entrenadores con contrato y el juego en siete idiomas"
 ```
 
 ```
@@ -163,6 +163,50 @@ una estrella, se la firmaba. Salía en 2 de cada 6 partidas simuladas. Ahora
 esa vía no firma a nadie de 82 o más, y si un puesto solo lo cubre una
 estrella se deja sin cubrir — jugar a alguien fuera de posición cuesta un
 10%, regalar un 87 desequilibra la partida.
+
+## Idiomas (empezado, a medias)
+
+El juego habla **siete idiomas**: español, inglés, francés, portugués de
+Brasil, alemán, italiano y chino simplificado. El selector está en Ajustes,
+se guarda en la columna `idioma` que ya existía y repinta la app entera al
+momento.
+
+Cómo está montado, y por qué así: `lib/i18n/textos.dart` es una **clase
+abstracta** con un `part` por idioma, no los ficheros `.arb` que trae
+Flutter. La razón es que aquí **el compilador vigila**: si se añade un texto
+y falta en un idioma, `flutter analyze` falla y no se publica. Con `.arb`, lo
+que falte sale en tiempo de ejecución delante del usuario.
+
+**Añadir un texto:** se pone en `Textos` y el analizador señala los siete
+sitios donde falta. **Añadir un idioma:** clase nueva, entrada en `Idioma` y
+en `textosDe`.
+
+Hay un test (`test/idiomas_test.dart`) que además pilla el otro fallo típico:
+dejar la cadena en castellano copiada y pegada. Si más de un 25% de los
+textos de un idioma coinciden con el castellano, salta.
+
+### Lo que falta
+
+Traducidos: el menú de inicio, Ajustes, el menú principal completo y la
+pantalla de Entrenador. **El resto de pantallas siguen en castellano** —
+calendario, plantilla, traspasos, draft, Legado, playoffs, premios... Son
+unos 350 textos más. No es difícil, es largo: se van pasando pantalla a
+pantalla, añadiendo las claves a `Textos` y traduciéndolas en los siete
+ficheros.
+
+### AVISO: el chino puede salir en cuadraditos en la web
+
+El juego se compila con `--no-web-resources-cdn` para funcionar sin
+conexión, así que CanvasKit **no puede descargarse las fuentes CJK de Google
+al vuelo**. La fuente por defecto (Roboto) no tiene glifos chinos.
+
+- En **Android e iOS** los coge del sistema: debería verse bien.
+- En **la web** hay que comprobarlo en un navegador de verdad. Si salen
+  cuadraditos, la solución es empaquetar una fuente con glifos chinos
+  (Noto Sans SC subseteada) y declararla en `pubspec.yaml`. Son varios MB,
+  así que conviene cargarla solo cuando el idioma sea chino.
+
+**Esto no está comprobado todavía.**
 
 ## Cosas que el juego NO tiene (por si se pide)
 

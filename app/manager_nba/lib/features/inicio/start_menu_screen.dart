@@ -15,6 +15,7 @@ import '../ajustes/ajustes_screen.dart';
 import '../hub/home_hub_screen.dart';
 import '../roster/roster_config_screen.dart';
 import '../roster/team_selector_screen.dart';
+import '../../i18n/textos.dart';
 import '../../shared/contraste.dart';
 import '../../shared/equipo_logo.dart';
 import '../../shared/navegacion.dart';
@@ -31,11 +32,13 @@ class StartMenuScreen extends StatefulWidget {
   /// ninguna partida, y sobrevive a borrar cualquier ranura.
   final AppDatabase ajustesDb;
   final ValueNotifier<ThemeMode> temaNotifier;
+  final ValueNotifier<Idioma> idiomaNotifier;
 
   const StartMenuScreen({
     super.key,
     required this.ajustesDb,
     required this.temaNotifier,
+    required this.idiomaNotifier,
   });
 
   @override
@@ -389,10 +392,13 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
         child: OutlinedButton.icon(
           onPressed: () => Navigator.of(context).push(MaterialPageRoute(
             builder: (context) => AjustesScreen(
-                db: widget.ajustesDb, temaNotifier: widget.temaNotifier),
+              db: widget.ajustesDb,
+              temaNotifier: widget.temaNotifier,
+              idiomaNotifier: widget.idiomaNotifier,
+            ),
           )),
           icon: const Icon(Icons.settings),
-          label: const Text('Ajustes', style: TextStyle(fontSize: 16)),
+          label: Text(t(context).ajustes, style: const TextStyle(fontSize: 16)),
         ),
       ),
     ];
