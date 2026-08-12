@@ -74,6 +74,7 @@ flutter:
 
   assets:
     - assets/data/jugadores.json
+    - assets/data/entrenadores.json
     - assets/data/datos_reales.json
     - assets/data/retired_numbers.json
     - assets/data/hof_players_simple.json

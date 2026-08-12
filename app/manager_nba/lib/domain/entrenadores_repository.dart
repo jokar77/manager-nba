@@ -87,14 +87,13 @@ Future<bool> aceptariaDirigirA(
   String equipo,
 ) async {
   final media = await mediaDeLosCincoMejores(db, equipo);
-  final resultado = await (db.select(db.resultadoTemporada)
-        ..where((t) => t.equipo.equals(equipo)))
-      .getSingleOrNull();
+  final record = await recordDeEstaTemporada(db, equipo);
   return aceptaLaOferta(
     mediaDelEntrenador: mediaDe(entrenador),
     desarrolloDelEntrenador: entrenador.atrDesarrollo,
     mediaDelEquipo: media,
-    victoriasElAnoPasado: resultado?.victorias ?? 0,
+    victorias: record.victorias,
+    derrotas: record.derrotas,
   );
 }
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/conferencias.dart';
 import '../../domain/contratos_repository.dart';
+import '../../domain/entrenadores_repository.dart';
 import '../../domain/equipos_info.dart';
 import '../../main.dart' show routeObserver;
 import '../../domain/fin_temporada_repository.dart';
@@ -21,6 +22,7 @@ import '../temporada/legado_screen.dart';
 import '../temporada/resumen_temporada_screen.dart';
 import '../torneo/torneo_screen.dart';
 import '../mercado/agencia_libre_screen.dart';
+import '../mercado/entrenador_screen.dart';
 import '../mercado/ofertas_screen.dart';
 import '../mercado/traspasos_screen.dart';
 import '../../shared/contraste.dart';
@@ -56,6 +58,10 @@ class _EstadoDelHub {
   final int puestoConferencia;
   final String conferencia;
 
+  /// Quién ocupa tu banquillo, y su media. Null si está vacante.
+  final String? entrenador;
+  final int mediaEntrenador;
+
   const _EstadoDelHub({
     required this.temporadaCompleta,
     required this.copaSembrada,
@@ -66,6 +72,8 @@ class _EstadoDelHub {
     required this.masaSalarial,
     required this.puestoConferencia,
     required this.conferencia,
+    this.entrenador,
+    this.mediaEntrenador = 0,
   });
 
   static const vacio = _EstadoDelHub(
@@ -116,6 +124,8 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
     final puesto =
         deMiConferencia.indexWhere((r) => r.equipo == widget.equipo) + 1;
 
+    final entrenador = await leerEntrenadorDe(widget.db, widget.equipo);
+
     return _EstadoDelHub(
       temporadaCompleta: completa,
       copaSembrada: copaSembrada,
@@ -126,6 +136,8 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
       masaSalarial: masa,
       puestoConferencia: puesto,
       conferencia: conferencia,
+      entrenador: entrenador?.nombreFicticio,
+      mediaEntrenador: entrenador == null ? 0 : mediaDe(entrenador),
     );
   }
 
@@ -231,6 +243,19 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
                         esConfiguracionInicial: false,
                         onGuardado: () => Navigator.of(context).pop(),
                       ),
+                    )),
+                  ),
+                  _AccesoMenu(
+                    icono: Icons.sports,
+                    color: const Color(0xFF9C6ADE),
+                    titulo: 'Entrenador',
+                    subtitulo: estado.entrenador == null
+                        ? 'Tu banquillo está vacante'
+                        : '${estado.entrenador} · media '
+                            '${estado.mediaEntrenador}',
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) =>
+                          EntrenadorScreen(db: db, equipoUsuario: equipo),
                     )),
                   ),
                   _AccesoMenu(

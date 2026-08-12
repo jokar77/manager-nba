@@ -41,6 +41,7 @@ EquipoPartido _equipoUniforme(
   double astPg = 3,
   double trbPg = 5,
   String? idEstrellaAtaque,
+  EntrenadorEnPartido? entrenador,
 }) {
   final jugadores = List.generate(5, (i) {
     final id = '$nombre-$i';
@@ -58,7 +59,28 @@ EquipoPartido _equipoUniforme(
       esEstrellaAtaque: id == idEstrellaAtaque,
     );
   });
-  return EquipoPartido(nombre: nombre, jugadores: jugadores);
+  return EquipoPartido(
+      nombre: nombre, jugadores: jugadores, entrenador: entrenador);
+}
+
+/// Victorias de 82 de [propio] contra [rival], con las mismas plantillas y
+/// las mismas semillas: lo único que cambia entre dos llamadas es lo que se
+/// le pase de entrenador.
+double _victoriasDe82({
+  EntrenadorEnPartido? propio,
+  EntrenadorEnPartido? rival,
+  int partidos = 6000,
+}) {
+  var ganados = 0;
+  for (var seed = 0; seed < partidos; seed++) {
+    final boxscore = simularPartido(
+      local: _equipoUniforme('A', entrenador: propio),
+      visitante: _equipoUniforme('B', entrenador: rival),
+      seed: seed,
+    );
+    if (boxscore.marcadorLocal > boxscore.marcadorVisitante) ganados++;
+  }
+  return ganados / partidos * 82;
 }
 
 void main() {
@@ -441,6 +463,54 @@ void main() {
           (b.marcadorVisitante - mediaVisitante).sign);
 
       expect(mismoSentido.length / boxscores.length, greaterThan(0.62));
+    });
+  });
+
+  group('entrenador', () {
+    // La escala está centrada en la media de la liga (76), así que un
+    // entrenador del montón tiene que dar EXACTAMENTE lo mismo que no tener
+    // ninguno. Si no fuera así, quedarse sin banquillo sería un castigo
+    // automático y despedir a alguien no sería nunca una opción.
+    test('uno del montón no cambia nada respecto a no tener entrenador', () {
+      const medio = EntrenadorEnPartido(ataque: 76, defensa: 76);
+      expect(aporteDelEntrenador(76), 0);
+      expect(
+        _victoriasDe82(propio: medio, rival: medio),
+        _victoriasDe82(),
+      );
+    });
+
+    test('uno bueno gana más partidos que uno malo con la misma plantilla',
+        () {
+      const medio = EntrenadorEnPartido(ataque: 76, defensa: 76);
+      const bueno = EntrenadorEnPartido(ataque: 86, defensa: 93);
+      const malo = EntrenadorEnPartido(ataque: 64, defensa: 60);
+
+      final conBueno = _victoriasDe82(propio: bueno, rival: medio);
+      final neutro = _victoriasDe82(propio: medio, rival: medio);
+      final conMalo = _victoriasDe82(propio: malo, rival: medio);
+
+      expect(conBueno, greaterThan(neutro));
+      expect(neutro, greaterThan(conMalo));
+
+      // Y el recorrido tiene que quedarse donde lo pone la NBA real: unas
+      // 5-7 victorias del mejor banquillo al peor. Por debajo de 3 el
+      // entrenador sería decorativo; por encima de 10, el juego dejaría de
+      // ir de construir una plantilla.
+      final recorrido = conBueno - conMalo;
+      expect(recorrido, greaterThan(3.0));
+      expect(recorrido, lessThan(10.0));
+    });
+
+    test('el aporte está acotado: un entrenador de 99 no rompe la escala', () {
+      // Sin tope, un asset futuro con valores extremos podría convertir al
+      // entrenador en el factor dominante del partido.
+      expect(aporteDelEntrenador(99),
+          lessThanOrEqualTo(PesosAtributos.maxAporteEntrenador *
+              PesosAtributos.desvioMaximoEntrenador));
+      expect(aporteDelEntrenador(1),
+          greaterThanOrEqualTo(-PesosAtributos.maxAporteEntrenador *
+              PesosAtributos.desvioMaximoEntrenador));
     });
   });
 }

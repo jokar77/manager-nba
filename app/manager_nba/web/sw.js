@@ -21,7 +21,7 @@
 //
 // Al subirla, el `activate` borra las cachés viejas y la nueva se llena de
 // cero, así que no quedan mezclados ficheros de dos compilaciones.
-const CACHE = 'manager-nba-v5';
+const CACHE = 'manager-nba-v6';
 
 // Lo imprescindible para arrancar y jugar. Se descarga entero al instalar,
 // de una vez, para que baste con abrir el juego UNA vez con conexión.
@@ -69,6 +69,7 @@ const ESENCIALES = [
   // pintado sin conexión se queda esperando una fuente que no llega.
   'assets/packages/cupertino_icons/assets/CupertinoIcons.ttf',
   'assets/assets/data/jugadores.json',
+  'assets/assets/data/entrenadores.json',
   'assets/assets/data/datos_reales.json',
   'assets/assets/data/legado_real_scoring.json',
   'assets/assets/data/hof_players_simple.json',
