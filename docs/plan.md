@@ -15,22 +15,31 @@ https://jokar77.github.io/manager-nba/
 - `gh` CLI NO está instalado; `git` sí (2.55). **El push lo hace el usuario
   a mano** porque necesita autenticarse: hay que darle los comandos en
   bloques separados (PowerShell 5.1 **no admite `&&`**).
-- Verificación local: `flutter analyze` limpio, **330 tests** y
-  `flutter build web` correcto.
+- Verificación local: `flutter analyze` limpio en los dos paquetes,
+  **348 tests** de la app + **19** de `sim_engine`, y `flutter build web`
+  correcto.
 
 ## SIN PUBLICAR AHORA MISMO (lo primero que hay que resolver)
 
-Lo último publicado es el commit `8d92cd8` (curva de estadísticas), que
-dejó la web en **`CACHE = manager-nba-v4`**.
+Lo último commiteado es `aaa317a` ("Lista parte 10"). **Ojo: ese commit se
+llevó también los entrenadores a medio hacer** — se hizo con la función sin
+terminar en el árbol de trabajo. No se perdió nada, pero significa que lo
+que hay commiteado NO es una versión coherente por sí sola: le falta el
+acceso desde el menú, el asset declarado en `pubspec.yaml` y los tests.
 
-**La lista parte 10 está hecha y verificada pero SIN COMMIT.** Son 13
-ficheros e incluyen `web/sw.js` con **`CACHE = manager-nba-v5`**, que es
-obligatorio porque vuelve a cambiar `main.dart.js` (ver más abajo). Los
-comandos que hay que darle al usuario:
+**Los entrenadores YA están terminados y verificados, sin commit.** Incluye
+`web/sw.js` con **`CACHE = manager-nba-v6`**, obligatorio porque cambia
+`main.dart.js` (ver más abajo). Comandos para el usuario:
 
 ```
 git add -A
-git commit -m "Lista parte 10: posiciones reales, confeti completo, ano en el Hall of Fame y campeon en el bracket"
+```
+
+```
+git commit -m "Entrenadores: contratar, despedir y que se noten en la cancha"
+```
+
+```
 git push
 ```
 
@@ -53,31 +62,76 @@ git push
    desapareció, no que el equilibrio esté fino. Haría falta medir con
    varias semillas.
 
+## Entrenadores (hecho, sin publicar)
+
+Los 30 entrenadores reales de la 2025-26 con nombre ficticio, más 10 libres
+en el mercado. **El dataset de Kaggle NO servía**: su tabla `team_details`
+trae entrenadores, pero de 2023 y solo de 27 equipos. La lista se sacó de
+dos rankings independientes de la 2025-26 (CBS y Bleacher Report), que
+coinciden en los 30 nombres; las medias salen de promediar los dos puestos.
+
+Cada uno tiene tres facetas 0-99: **ataque** y **defensa** se notan en cada
+partido (van sumadas al rating de equipo en `sim_engine`), y **desarrollo**
+se nota en verano (acelera o frena lo que crecen los jóvenes).
+
+Lo que hay que saber para no romperlo:
+
+- **La escala está centrada, no es un bonus.** Un entrenador de 76 (la media
+  medida del asset) aporta exactamente 0, igual que no tener ninguno. Por eso
+  despedir a alguien no es un castigo automático y es una decisión de verdad.
+- **Vale 5,6 victorias de 82 del mejor al peor**, medido sobre 40.000
+  partidos entre plantillas idénticas. Está anotado en el comentario de
+  `PesosAtributos.maxAporteEntrenador` junto a la tabla de medidas. Subirlo
+  convertiría el juego en "ficha al mejor entrenador y olvida la plantilla".
+- **La barrera para fichar es el nivel de tu equipo, no el dinero** (el tope
+  salarial solo cuenta jugadores). Las constantes de `entrenadores.dart`
+  salen de MEDIR el dataset: las medias de los cinco mejores de los 30
+  equipos van de 82 a 90, con mediana 85. Toda la liga cabe en 8 puntos, así
+  que la exigencia se mueve despacio a propósito.
+- **Trampa que ya mordió una vez:** al empezar la temporada todos van 0-0.
+  Contar eso como "una temporada de 0 victorias" dejaba a la liga entera por
+  debajo de lo que pide cualquiera y en el año 1 no firmaba nadie por nadie.
+  Sin partidos jugados el récord no cuenta (ver `_tironDelRecord`).
+- **Tu banquillo no lo toca el verano.** La CPU despide a los suyos con menos
+  de 28 victorias (55% de probabilidad); a ti solo puede pasarte que el tuyo
+  se retire, y te lo dice el resumen de pretemporada.
+- El récord del entrenador **no se guarda partido a partido**: es el de su
+  equipo (`ResultadoTemporada`), y se acumula a su carrera una vez por
+  verano. Llevarlo aparte serían dos consultas más en cada uno de los ~2.500
+  partidos de un año, para acabar con dos cuentas que pueden separarse.
+
+Lo que se dejó fuera y sería lo siguiente: sueldo de entrenador (haría falta
+un modelo de finanzas), premio de Entrenador del Año simulado, y que los
+entrenadores nuevos se generen cuando se agote el mercado (ahora solo hay
+los 40 del asset; si se retiran todos, se acaban).
+
 ## Cosas que el juego NO tiene (por si se pide)
 
 Copia de seguridad (exportar/importar), finanzas del club (solo hay tope
-salarial: ni ingresos ni taquilla), entrenador y staff, química de
+salarial: ni ingresos ni taquilla), staff más allá del entrenador, química de
 vestuario, ojeadores con incertidumbre real, y el selector de **idioma en
 Ajustes está deshabilitado** (es un placeholder).
 
-## PELIGRO: tocar `schemaVersion` borra TODAS las partidas
+## CUIDADO al tocar `schemaVersion` (ya arreglado, pero hay que mantenerlo)
 
-`app_database.dart` tiene `schemaVersion => 20` y una migración que, al
-subir de versión, **borra todas las tablas y las recrea**:
+`app_database.dart` está en `schemaVersion => 21`. **Hasta la 20 la
+migración borraba todas las tablas y las recreaba** — el comentario decía
+"sin usuarios reales todavía", y eso dejó de ser verdad hace tiempo: el
+usuario y sus amigos tienen partidas en marcha.
+
+Al añadir los entrenadores se cambió por una migración de verdad:
 
 ```dart
 onUpgrade: (m, from, to) async {
-  for (final tabla in allTables) { await m.deleteTable(...); }
-  await m.createAll();
+  if (from < 20) { /* camino destructivo, solo para bases prehistóricas */ }
+  if (from < 21) await m.createTable(entrenadores);   // aditivo
 }
 ```
 
-El comentario que hay al lado dice "sin usuarios reales todavía", y **eso
-ya no es verdad**: el usuario y sus amigos tienen partidas en marcha. Así
-que cualquier cambio de tablas o columnas destruye lo que estén jugando.
-
-**No subir `schemaVersion` sin preguntárselo antes al usuario**, y si hace
-falta de verdad, escribir una migración de verdad en vez de la que hay.
+**La regla a partir de aquí: cada salto de versión se escribe a mano y es
+ADITIVO** — crear tablas o columnas nuevas, nunca borrar lo que ya está. Si
+alguna vez hiciera falta un cambio que no se puede hacer así, hay que
+preguntárselo al usuario antes, porque cuesta partidas.
 
 Cambiar `assets/data/*.json` NO tiene ese problema: se leen al importar, así
 que una partida en curso conserva los datos viejos y el cambio entra en las

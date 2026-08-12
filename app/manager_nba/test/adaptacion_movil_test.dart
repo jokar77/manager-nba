@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:manager_nba/data/database/app_database.dart';
 import 'package:sim_engine/sim_engine.dart' as sim;
 
+import 'package:manager_nba/data/importer/entrenadores_importer.dart';
 import 'package:manager_nba/data/importer/jugadores_importer.dart';
 import 'package:manager_nba/domain/allstar_repository.dart';
 import 'package:manager_nba/domain/franquicia_repository.dart';
@@ -15,6 +16,7 @@ import 'package:manager_nba/features/calendario/calendario_screen.dart';
 import 'package:manager_nba/features/partido/boxscore_screen.dart';
 import 'package:manager_nba/features/hub/home_hub_screen.dart';
 import 'package:manager_nba/features/mercado/agencia_libre_screen.dart';
+import 'package:manager_nba/features/mercado/entrenador_screen.dart';
 import 'package:manager_nba/features/mercado/traspasos_screen.dart';
 import 'package:manager_nba/features/playoffs/playoffs_screen.dart';
 import 'package:manager_nba/features/roster/roster_config_screen.dart';
@@ -45,6 +47,7 @@ void main() {
     db = AppDatabase.forTesting(NativeDatabase.memory());
     await importarJugadoresSiHaceFalta(db);
     await crearFranquicia(db, 'DEN');
+    await importarEntrenadoresSiHaceFalta(db);
 
     almacen = AlmacenDeSlotsEnMemoria();
     almacenDeSlots = almacen;
@@ -111,6 +114,12 @@ void main() {
 
   pruebaEnLosTresTamanos('el resumen de la temporada',
       () => ResumenTemporadaScreen(db: db, equipoUsuario: 'DEN'));
+
+  // Las tres barras de facetas van en fila cuando hay sitio y apiladas
+  // cuando no; es justo el tipo de cosa que desborda en un iPhone si se
+  // deja en fila siempre.
+  pruebaEnLosTresTamanos('la pantalla de entrenador',
+      () => EntrenadorScreen(db: db, equipoUsuario: 'DEN'));
 
   pruebaEnLosTresTamanos(
     'el bracket de playoffs',
