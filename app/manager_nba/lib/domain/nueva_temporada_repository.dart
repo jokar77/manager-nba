@@ -9,6 +9,7 @@ import 'camisetas_repository.dart';
 import 'carrera_repository.dart';
 import 'contratos_repository.dart';
 import 'dorsales_repository.dart';
+import 'entrenadores_repository.dart';
 import 'leyendas.dart';
 import 'draft_repository.dart';
 import 'equipos_especiales.dart';
@@ -130,6 +131,10 @@ class CierreDeTemporada {
   /// Pasaba en silencio: se enteraba uno meses después, entrando en Legado.
   final List<CamisetaRetirada> nuevasCamisetasRetiradas;
 
+  /// El baile de banquillos del verano: quién se retira, a quién echan y
+  /// quién le sustituye.
+  final List<MovimientoDeEntrenador> movimientosDeEntrenadores;
+
   const CierreDeTemporada({
     required this.equipoUsuario,
     required this.temporadaCerrada,
@@ -137,6 +142,7 @@ class CierreDeTemporada {
     required this.cambios,
     required this.nuevosEnHallDeLaFama,
     this.nuevasCamisetasRetiradas = const [],
+    this.movimientosDeEntrenadores = const [],
   });
 
   List<CambioDeJugador> get retirados =>
@@ -167,8 +173,21 @@ Future<CierreDeTemporada> cerrarTemporada(
   await _archivarTemporada(db, temporada.numero);
   await archivarEstadisticasDeTemporada(db, temporada.numero);
 
-  final cambios = await envejecerLiga(db, random: rng);
+  // Los jóvenes crecen con el entrenador que han tenido ESTE año, así que
+  // se lee antes de que el verano mueva los banquillos de sitio.
+  final desarrollo = {
+    for (final e in await db.select(db.entrenadores).get())
+      if (esFranquicia(e.equipo)) e.equipo: e.atrDesarrollo,
+  };
+  final cambios = await envejecerLiga(db,
+      random: rng, desarrolloPorEquipo: desarrollo);
   final retirados = cambios.where((c) => c.seRetira).toList();
+
+  // Y ahora sí, el baile de banquillos: retiradas, despidos de la CPU y
+  // sustitutos. Va después de envejecer para que la plantilla que miran los
+  // candidatos sea la del año que viene, no la que ya no existe.
+  final movimientosDeEntrenadores = await pasarElVeranoDeLosEntrenadores(db,
+      equipoUsuario: equipoUsuario, random: rng);
 
   final nuevosHof = await evaluarIngresosHallDeLaFama(
     db,
@@ -203,6 +222,7 @@ Future<CierreDeTemporada> cerrarTemporada(
     cambios: cambios,
     nuevosEnHallDeLaFama: nuevosHof,
     nuevasCamisetasRetiradas: nuevasCamisetas,
+    movimientosDeEntrenadores: movimientosDeEntrenadores,
   );
 }
 

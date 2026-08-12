@@ -14,6 +14,8 @@ import '../reglas/pesos_atributos.dart';
 /// 1. Cada equipo obtiene un rating ofensivo/defensivo (0-99) como media de
 ///    los índices de sus jugadores activos, ponderada por minutos jugados,
 ///    factor_longevidad y un bonus si el jugador es la estrella designada.
+///    Al resultado se le suma lo que aporte el entrenador, si lo hay (ver
+///    [aporteDelEntrenador]).
 /// 2. El marcador de cada equipo sale de comparar su rating ofensivo con el
 ///    rating defensivo rival contra una referencia de liga, más ruido
 ///    gaussiano acotado.
@@ -171,6 +173,26 @@ double _pesoJugador(JugadorEnPartido jep, {required bool esRolAtaque}) {
   return fraccionMinutos * jep.jugador.factorLongevidad * multiplicadorRol;
 }
 
+/// Lo que el entrenador suma o resta al rating del equipo, en puntos de
+/// rating. Un entrenador del montón aporta 0; el mejor de la liga, algo
+/// menos de [PesosAtributos.maxAporteEntrenador]; el peor, otro tanto en
+/// negativo. Sin entrenador (equipos del All-Star, tests antiguos) el
+/// aporte es exactamente 0, así que el motor se comporta como siempre.
+///
+/// Va SUMADO al rating y no multiplicado a propósito: un buen entrenador
+/// saca lo mismo de un equipo bueno que de uno malo. Multiplicar habría
+/// hecho que los entrenadores solo importasen en los equipos ya fuertes,
+/// que es lo contrario de para qué los ficha un equipo en reconstrucción.
+double aporteDelEntrenador(int? atributo) {
+  if (atributo == null) return 0;
+  final desvio =
+      (atributo - PesosAtributos.atributoEntrenadorMedio) /
+          PesosAtributos.recorridoEntrenador;
+  return desvio.clamp(-PesosAtributos.desvioMaximoEntrenador,
+          PesosAtributos.desvioMaximoEntrenador) *
+      PesosAtributos.maxAporteEntrenador;
+}
+
 double _ratingOfensivoEquipo(EquipoPartido equipo) {
   final activos = equipo.jugadoresActivos;
   double sumaPonderada = 0;
@@ -181,7 +203,8 @@ double _ratingOfensivoEquipo(EquipoPartido equipo) {
     sumaPesos += peso;
   }
   if (sumaPesos == 0) return PesosAtributos.ratingLigaMedio;
-  return sumaPonderada / sumaPesos;
+  return sumaPonderada / sumaPesos +
+      aporteDelEntrenador(equipo.entrenador?.ataque);
 }
 
 double _ratingDefensivoEquipo(EquipoPartido equipo) {
@@ -194,7 +217,8 @@ double _ratingDefensivoEquipo(EquipoPartido equipo) {
     sumaPesos += peso;
   }
   if (sumaPesos == 0) return PesosAtributos.ratingLigaMedio;
-  return sumaPonderada / sumaPesos;
+  return sumaPonderada / sumaPesos +
+      aporteDelEntrenador(equipo.entrenador?.defensa);
 }
 
 int _marcadorEquipo({

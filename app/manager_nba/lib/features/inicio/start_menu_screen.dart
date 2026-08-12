@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../data/database/app_database.dart';
+import '../../data/importer/entrenadores_importer.dart';
 import '../../data/importer/jugadores_importer.dart';
+import '../../domain/entrenadores_repository.dart';
 import '../../domain/equipos_info.dart';
 import '../../domain/franquicia_repository.dart';
 import '../../domain/legado_historico_repository.dart';
@@ -112,6 +114,11 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
     // el legado real, lo consigue ahora mismo (no vuelve a hacer nada si ya
     // lo tenía).
     await importarLegadoHistoricoSiHaceFalta(db);
+    // Lo mismo con los entrenadores: una partida empezada antes de que
+    // existieran se los encuentra aquí, y los banquillos que se hayan
+    // quedado sin cubrir se rellenan.
+    await importarEntrenadoresSiHaceFalta(db);
+    await asignarEntrenadoresQueFalten(db);
     await marcarRanuraComoUsada(slot);
     if (!mounted) {
       await cerrarSlot(db);
@@ -167,6 +174,10 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
     // tiene que arrancar con el dataset original, no con una liga
     // envejecida: la importación se fuerza siempre al empezar.
     await importarJugadoresSiHaceFalta(db, forzar: true);
+    // Los entrenadores también vuelven a su sitio de partida: los de la
+    // carrera anterior están envejecidos, retirados y repartidos por otros
+    // equipos.
+    await importarEntrenadoresSiHaceFalta(db, forzar: true);
     await nuevaFranquicia(db);
     // Las camisetas y el Hall of Fame reales sobreviven a "nueva partida"
     // (son hechos del mundo real, no logros de esta partida en concreto);

@@ -191,24 +191,23 @@ List<ProspectoDraft> generarClaseDeDraft({
     // le corresponde a un no drafteado.
     final aniosDeRookie = posicionRelativa < 0.5 ? 4 : 2;
 
+    final tiro3 = _atributo(rng, media, posicion == 'C' ? -8 : 4);
+    final defensa = _atributo(rng, media, posicion == 'C' ? 6 : 0);
+
     prospectos.add(ProspectoDraft(
       posicionEnDraft: i + 1,
       companion: JugadoresCompanion.insert(
         nombreFicticio: _nombreUnico(rng, usados),
         nombreReal: '',
         posicion: posicion,
-        posicionSecundaria: Value(derivarPosicionSecundaria(
-          posicion: posicion,
-          astPg: _astDe(posicion, media),
-          trbPg: _trbDe(posicion, media),
-        )),
+        posicionSecundaria: Value(_segundaPosicionDe(posicion, tiro3, defensa)),
         equipo: equipoAgenciaLibre,
         edad: edad,
         media: media,
         potencial: potencial,
-        atrTiro3: _atributo(rng, media, posicion == 'C' ? -8 : 4),
+        atrTiro3: tiro3,
         atrAtaque: _atributo(rng, media, 0),
-        atrDefensa: _atributo(rng, media, posicion == 'C' ? 6 : 0),
+        atrDefensa: defensa,
         ptsPg: _ptsDe(media),
         astPg: _astDe(posicion, media),
         trbPg: _trbDe(posicion, media),
@@ -253,6 +252,25 @@ String _nombreUnico(Random rng, Set<String> usados) {
 
 int _atributo(Random rng, int media, int sesgo) =>
     (media + sesgo + rng.nextInt(9) - 4).clamp(30, 99);
+
+/// La segunda posición de un prospecto, por su perfil de juego: el que tira
+/// de tres se abre hacia fuera y el que defiende tira hacia dentro.
+///
+/// No se usa `derivarPosicionSecundaria` (la de los jugadores reales) porque
+/// no serviría de nada: un prospecto nace justo en la curva, con las
+/// asistencias y los rebotes EXACTAMENTE típicos de su puesto, así que la
+/// comparación daría empate y todas las hornadas saldrían escoradas al
+/// mismo lado. Sus atributos sí vienen sorteados, y ahí sí hay variedad.
+String _segundaPosicionDe(String posicion, int tiro3, int defensa) {
+  final indice = posicionesEquipo.indexOf(posicion);
+  if (indice <= 0) return posicionesEquipo[1];
+  if (indice >= posicionesEquipo.length - 1) {
+    return posicionesEquipo[posicionesEquipo.length - 2];
+  }
+  return tiro3 > defensa
+      ? posicionesEquipo[indice - 1]
+      : posicionesEquipo[indice + 1];
+}
 
 // Los números con los que nace un prospecto salen de la curva medida en el
 // dataset real (ver curva_estadisticas.dart), no de una recta.

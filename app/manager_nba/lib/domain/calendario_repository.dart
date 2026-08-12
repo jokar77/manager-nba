@@ -5,6 +5,7 @@ import '../data/calendario/generador_calendario.dart';
 import '../data/database/app_database.dart';
 import '../features/partido/alineacion_automatica.dart';
 import 'agencia_libre_repository.dart';
+import 'entrenadores_repository.dart';
 import 'fin_temporada_repository.dart';
 import 'forma_repository.dart';
 import 'franquicia_repository.dart';
@@ -145,6 +146,11 @@ Future<ResultadoTramo> simularTramo(
   final lesionesNuevas = <NuevaLesion>[];
   var campeonDeCopaAqui = false;
 
+  // Los 30 entrenadores de una sola vez. Dentro del bucle de abajo se monta
+  // la alineación de cada equipo en cada jornada, así que consultarlos ahí
+  // serían miles de consultas por mes simulado.
+  final entrenadores = await leerEntrenadoresDeLaLiga(db);
+
   await db.transaction(() async {
     final pendientesUsuario = await _pendientesDe(db, equipoUsuario, tope);
     for (final partido in pendientesUsuario) {
@@ -168,7 +174,8 @@ Future<ResultadoTramo> simularTramo(
 
       final equipoPropio =
           await construirEquipoUsuarioParaFecha(db, equipoUsuario, partido.fecha);
-      final resultado = await _simularYPersistir(db, partido, equipoPropio);
+      final resultado = await _simularYPersistir(db, partido, equipoPropio,
+          entrenadores: entrenadores);
       simuladosUsuario.add(PartidoSimuladoInfo(
         fecha: partido.fecha,
         rival: partido.rival,
@@ -189,8 +196,10 @@ Future<ResultadoTramo> simularTramo(
       final pendientes = await _pendientesDe(db, equipo, tope);
       for (final partido in pendientes) {
         final equipoPropio = await construirAutoParaFecha(
-            db, equipo, partido.fecha);
-        await _simularYPersistir(db, partido, equipoPropio);
+            db, equipo, partido.fecha,
+            entrenadores: entrenadores);
+        await _simularYPersistir(db, partido, equipoPropio,
+            entrenadores: entrenadores);
       }
     }
   });
@@ -279,18 +288,29 @@ Future<List<PartidosCalendarioData>> _pendientesDe(
       .get();
 }
 
+/// [entrenadores] es el mapa de toda la liga, leído UNA vez por tramo. Es
+/// una optimización con motivo: simular un mes monta la alineación de los 30
+/// equipos en cada jornada, y preguntar por el entrenador dentro de ese
+/// bucle son miles de consultas. Si no se pasa, se consulta el del equipo
+/// (que es lo que quieren playoffs y NBA Cup, donde se monta un equipo
+/// suelto).
 Future<sim.EquipoPartido> construirAutoParaFecha(
   AppDatabase db,
   String equipo,
-  DateTime fecha,
-) async {
+  DateTime fecha, {
+  Map<String, sim.EntrenadorEnPartido>? entrenadores,
+}) async {
   final plantilla = await (db.select(db.jugadores)
         ..where((t) => t.equipo.equals(equipo)))
       .get();
   final lesionados = await jugadoresFueraDeJuegoEn(db, fecha);
   final formas = await _formasConLesionLeve(db, fecha);
   return generarAlineacionAutomatica(equipo, plantilla,
-      lesionadosIds: lesionados, formas: formas);
+      lesionadosIds: lesionados,
+      formas: formas,
+      entrenador: entrenadores != null
+          ? entrenadores[equipo]
+          : await entrenadorEnPartidoDe(db, equipo));
 }
 
 /// El estado de forma de la temporada combinado con la penalización de
@@ -319,15 +339,20 @@ Future<({sim.Boxscore boxscore, List<NuevaLesion> lesiones})>
     _simularYPersistir(
   AppDatabase db,
   PartidosCalendarioData partido,
-  sim.EquipoPartido equipoPropietario,
-) async {
+  sim.EquipoPartido equipoPropietario, {
+  Map<String, sim.EntrenadorEnPartido>? entrenadores,
+}) async {
   final plantillaRival = await (db.select(db.jugadores)
         ..where((t) => t.equipo.equals(partido.rival)))
       .get();
   final lesionadosRival = await jugadoresFueraDeJuegoEn(db, partido.fecha);
   final formas = await _formasConLesionLeve(db, partido.fecha);
   final equipoRival = generarAlineacionAutomatica(partido.rival, plantillaRival,
-      lesionadosIds: lesionadosRival, formas: formas);
+      lesionadosIds: lesionadosRival,
+      formas: formas,
+      entrenador: entrenadores != null
+          ? entrenadores[partido.rival]
+          : await entrenadorEnPartidoDe(db, partido.rival));
 
   final local = partido.esLocal ? equipoPropietario : equipoRival;
   final visitante = partido.esLocal ? equipoRival : equipoPropietario;

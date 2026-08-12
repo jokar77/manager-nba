@@ -1,4 +1,5 @@
 import '../data/database/app_database.dart';
+import 'curva_estadisticas.dart';
 
 /// Los 5 puestos de una alineación NBA, del exterior al interior. El orden
 /// importa: dos puestos contiguos son "parecidos" (un base puede hacer de
@@ -16,6 +17,22 @@ const posicionesEquipo = ['PG', 'SG', 'SF', 'PF', 'C'];
 const factorPuestoNatural = 1.0;
 const factorPuestoSecundario = 0.96;
 const factorFueraDePosicion = 0.9;
+
+/// Lo que pesa estar cómodo en el puesto **al repartir la alineación**, en
+/// puntos de media. No toca la simulación: es solo un desempate.
+///
+/// Hace falta porque con estos factores dos candidatos muy distintos pueden
+/// quedar a un pelo. Caso real de la plantilla de Denver: Strawther (76,
+/// escolta) valía 76 × 0,9 = 68,40 como pívot suplente y Nnaji (71, PF/C)
+/// valía 71 × 0,96 = 68,16. Ganaba el escolta por **0,24**, y la alineación
+/// automática sacaba a un base-escolta de pívot teniendo un interior en el
+/// banquillo. Decidir eso por 0,24 puntos es decidirlo por ruido.
+///
+/// Con un punto de margen, un empate técnico se resuelve a favor de quien
+/// juega ahí de verdad, y el que está fuera de sitio sigue ganando el
+/// puesto cuando es de verdad mejor (que era la intención original: hacen
+/// falta unos 5 puntos de media para compensar la penalización).
+const margenDeComodidadAlRepartir = 1.0;
 
 /// La posición secundaria declarada en el dataset, si la trae ("SG / PG").
 /// Devuelve null si solo trae una.
@@ -36,10 +53,24 @@ String? posicionSecundariaDeclarada(String posicionCruda) {
 /// de lo que rebotea, hacia fuera (un escolta que también hace de base); si
 /// rebotea más, hacia dentro (un alero que también hace de ala-pívot). Los
 /// extremos del espectro (base y pívot) solo pueden ir hacia un lado.
+/// La comparación es **relativa a lo normal de su puesto**, no en absoluto.
+///
+/// Antes se miraba `astPg > trbPg` a secas, y eso en la práctica preguntaba
+/// "¿es base?": en la NBA casi todo el mundo rebotea más de lo que asiste
+/// (un alero tipo reparte 3,0 y coge 4,9). Medido sobre los 641 del
+/// dataset, de los que pueden tirar hacia los dos lados —escoltas, aleros y
+/// ala-pívots— **332 se iban hacia dentro y solo 45 hacia fuera**: 4 de 123
+/// aleros pasaban a escolta y 2 de 123 ala-pívots a alero. La liga entera
+/// se escoraba hacia el poste y nadie cubría el perímetro.
+///
+/// De ahí que Tatum saliera de "Ala-Pívot y Pívot": rebotea 10,0 y asiste
+/// 5,3, así que la regla vieja lo mandaba hacia dentro sin mirar que para
+/// un alero esas asistencias son muchas.
 String derivarPosicionSecundaria({
   required String posicion,
   required double astPg,
   required double trbPg,
+  required int media,
 }) {
   final indice = posicionesEquipo.indexOf(posicion);
   if (indice < 0) return posicion;
@@ -47,7 +78,13 @@ String derivarPosicionSecundaria({
   if (indice == posicionesEquipo.length - 1) {
     return posicionesEquipo[posicionesEquipo.length - 2];
   }
-  return astPg > trbPg
+
+  // Cuánto se sale de lo esperable para alguien de su puesto y su nivel.
+  // Si reparte más de lo suyo, tira hacia fuera; si rebotea más de lo suyo,
+  // hacia dentro.
+  final tiraFuera = astPg / asistenciasTipicas(media, posicion);
+  final tiraDentro = trbPg / rebotesTipicos(media, posicion);
+  return tiraFuera > tiraDentro
       ? posicionesEquipo[indice - 1]
       : posicionesEquipo[indice + 1];
 }
@@ -106,7 +143,8 @@ Map<String, List<Jugador>> repartirPorPuestos(
         (
           jugador: jugador,
           puesto: puesto,
-          valor: jugador.media * factorDePuesto(jugador, puesto),
+          valor: jugador.media * factorDePuesto(jugador, puesto) +
+              (juegaComodoDe(jugador, puesto) ? margenDeComodidadAlRepartir : 0),
         ),
   ];
   // Desempates explícitos (id del jugador y orden de puesto) para que el

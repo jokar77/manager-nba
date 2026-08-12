@@ -87,7 +87,10 @@ Future<void> importarJugadoresSiHaceFalta(AppDatabase db,
       // normal), se deriva del juego del jugador.
       posicionSecundaria: Value(posicionSecundariaDeclarada(posicionCruda) ??
           derivarPosicionSecundaria(
-              posicion: posicion, astPg: astPg, trbPg: trbPg)),
+              posicion: posicion,
+              astPg: astPg,
+              trbPg: trbPg,
+              media: media)),
       // El equipo del dataset es de la 2025-26; si sabemos dónde está
       // ahora de verdad, manda ese.
       equipo: (real?['equipo'] as String?) ?? mapa['equipo'] as String,

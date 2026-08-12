@@ -6,21 +6,111 @@
 https://jokar77.github.io/manager-nba/
 ```
 
-Verificado con peticiones reales: HTTP 200, `base href = /manager-nba/`, el
-service worker se registra, y los nueve ficheros críticos se sirven —
-incluidos `sqlite3.wasm` (731 KB) y `canvaskit.wasm` (7 MB).
-
 - **Repositorio:** `https://github.com/jokar77/manager-nba` (público, rama
   `main`). El usuario es `jokar77`.
 - **Publicación automática:** cada `git push` dispara
-  `.github/workflows/publicar.yml`, que compila, **pasa los 320 tests** y
-  despliega en GitHub Pages. Si los tests fallan NO se publica.
+  `.github/workflows/publicar.yml`, que compila, pasa los tests y despliega
+  en GitHub Pages. Si los tests fallan NO se publica.
 - En Settings → Pages, *Source* está en **GitHub Actions** (ya configurado).
-- `gh` CLI NO está instalado; `git` sí (2.55). El push lo hace el usuario a
-  mano porque necesita autenticarse.
-- Verificación local: `flutter analyze` limpio y **322/322 tests pasando**.
+- `gh` CLI NO está instalado; `git` sí (2.55). **El push lo hace el usuario
+  a mano** porque necesita autenticarse: hay que darle los comandos en
+  bloques separados (PowerShell 5.1 **no admite `&&`**).
+- Verificación local: `flutter analyze` limpio, **330 tests** y
+  `flutter build web` correcto.
 
-## Hecho el 4 de agosto de 2026
+## SIN PUBLICAR AHORA MISMO (lo primero que hay que resolver)
+
+Lo último publicado es el commit `8d92cd8` (curva de estadísticas), que
+dejó la web en **`CACHE = manager-nba-v4`**.
+
+**La lista parte 10 está hecha y verificada pero SIN COMMIT.** Son 13
+ficheros e incluyen `web/sw.js` con **`CACHE = manager-nba-v5`**, que es
+obligatorio porque vuelve a cambiar `main.dart.js` (ver más abajo). Los
+comandos que hay que darle al usuario:
+
+```
+git add -A
+git commit -m "Lista parte 10: posiciones reales, confeti completo, ano en el Hall of Fame y campeon en el bracket"
+git push
+```
+
+## Lo que queda abierto
+
+1. **El icono del iPhone sigue funcionando mal y NO está diagnosticado.**
+   Se verificó que la web publicada está bien (los 12 ficheros críticos dan
+   200 y sirve la versión correcta), así que el problema está en el
+   dispositivo. Se le pidió al usuario que abra
+   `https://jokar77.github.io/manager-nba/estado.html` **desde el icono** y
+   diga qué pone. **Esa respuesta no ha llegado todavía**: es el siguiente
+   dato que hace falta, y sin él cualquier arreglo sería adivinar.
+2. **No hay copia de seguridad de partidas.** Viven solo en el navegador
+   del móvil. El usuario decidió **aparcarlo** porque el plan es sacar el
+   juego como app nativa en el futuro. Aviso asociado: **borrar el icono en
+   iOS puede borrar la partida**; los botones de reparar de `estado.html`
+   sí son seguros (solo tocan la caché de ficheros).
+3. El equilibrio entre jugar el mercado y no jugarlo quedó en ~8 victorias,
+   medido con **una sola semilla**. Sirve para decir que la espiral
+   desapareció, no que el equilibrio esté fino. Haría falta medir con
+   varias semillas.
+
+## Cosas que el juego NO tiene (por si se pide)
+
+Copia de seguridad (exportar/importar), finanzas del club (solo hay tope
+salarial: ni ingresos ni taquilla), entrenador y staff, química de
+vestuario, ojeadores con incertidumbre real, y el selector de **idioma en
+Ajustes está deshabilitado** (es un placeholder).
+
+## PELIGRO: tocar `schemaVersion` borra TODAS las partidas
+
+`app_database.dart` tiene `schemaVersion => 20` y una migración que, al
+subir de versión, **borra todas las tablas y las recrea**:
+
+```dart
+onUpgrade: (m, from, to) async {
+  for (final tabla in allTables) { await m.deleteTable(...); }
+  await m.createAll();
+}
+```
+
+El comentario que hay al lado dice "sin usuarios reales todavía", y **eso
+ya no es verdad**: el usuario y sus amigos tienen partidas en marcha. Así
+que cualquier cambio de tablas o columnas destruye lo que estén jugando.
+
+**No subir `schemaVersion` sin preguntárselo antes al usuario**, y si hace
+falta de verdad, escribir una migración de verdad en vez de la que hay.
+
+Cambiar `assets/data/*.json` NO tiene ese problema: se leen al importar, así
+que una partida en curso conserva los datos viejos y el cambio entra en las
+partidas nuevas.
+
+## Cómo verificar (los comandos que se usan aquí)
+
+Todo desde `app/manager_nba`:
+
+```
+flutter analyze
+flutter test
+flutter build web --release --no-web-resources-cdn --pwa-strategy=none --base-href "/manager-nba/"
+```
+
+Los dos flags del build no son opcionales: ver la sección del port a WASM.
+
+**Para probar el service worker de verdad** (que es la única forma de
+pillar los bugs de "sin conexión"), hace falta servir el sitio **bajo la
+ruta real** `/manager-nba/`, porque el `base href` va con ella. `python`
+está instalado; `node` no. La receta:
+
+1. Compilar con el `--base-href` de arriba.
+2. Copiar `build/web` a `<scratch>/sitio/manager-nba`.
+3. `python -m http.server 8099 --bind 127.0.0.1 --directory <scratch>/sitio`
+4. Abrir `http://localhost:8099/manager-nba/`.
+5. Para la prueba sin conexión: **matar el servidor** y recargar. Si el
+   juego arranca, funciona de verdad.
+
+Sirve también para `estado.html`. Dos bugs del service worker se
+encontraron así, y ninguno se habría visto leyendo el código.
+
+## Hecho el 4-5 de agosto de 2026
 
 **Almacenamiento persistente: HECHO.** `web/index.html` pide
 `navigator.storage.persist()` al arrancar (solo si no lo tiene ya). Sin
@@ -46,7 +136,8 @@ Al subirla, el `activate` borra las cachés viejas y la nueva se llena de
 cero, así que tampoco quedan mezclados ficheros de dos compilaciones.
 
 Histórico: v1 (publicación inicial) → v2 (almacenamiento persistente) →
-v3 (arreglo del service worker + lista parte 9).
+v3 (lista parte 9) → v4 (curva de estadísticas + página de estado) →
+**v5 (lista parte 10)**.
 
 **README:** el enlace ya apunta a `https://jokar77.github.io/manager-nba/`
 (antes tenía el marcador `USUARIO/REPOSITORIO`).
@@ -161,6 +252,70 @@ con el código viejo** (22,4 puntos contra el umbral de 26).
 
 Con esto **`CACHE` sube a `manager-nba-v4`**: cambia `main.dart.js`.
 
+### Lista parte 10 (terminada)
+
+**P10-1 · Bracket de playoffs.** Ya estaba hecho en la parte 9 (vertical,
+entero en móvil, Play-In que desaparece al resolverse). Se le añade que la
+Final NBA decidida se corone **en el propio cuadro** —borde y fondo
+dorados— en vez de saberse solo por el banner de arriba.
+
+**P10-2 · El confeti se quedaba colgado.** `avance = (t - retraso) *
+velocidad`: un papelillo con retraso 0,35 y velocidad 0,75 terminaba la
+animación con avance **0,49**, o sea a media pantalla. Y como el
+desvanecido solo entra a partir de 0,85, ni siquiera se difuminaba: se
+quedaba clavado mientras el diálogo siguiera abierto. Ahora el avance se
+mide sobre el trozo que le queda a CADA papelillo (`(t - retraso) / (1 -
+retraso) * velocidad`, con velocidad ≥ 1), así que todos llegan abajo antes
+de que se pare el reloj.
+
+**P10-3 · El año de ingreso en la lista de nuevos del Hall of Fame.** El
+año estaba en el código pero la pantalla se pintaba antes de que cargara
+la temporada, y en ese primer fotograma caía al texto sin año. Eran dos
+`FutureBuilder` anidados que dibujaban con lo que hubiera. Ahora se espera
+a tener las dos cosas, como hace la lista grande.
+
+**P10-4 · Posiciones mal asignadas.** Dos fallos distintos.
+
+*El dato.* El volcado de Kaggle (`data/draft/nba.sqlite`, solo en disco
+local) trae posiciones reales en `common_player_info.position`. A nivel
+grueso el dataset solo fallaba en 14 de 248 emparejados, pero el detalle
+estaba mal: Tatum figuraba como `PF` cuando la fuente dice
+**Forward-Guard**. Se aplicaron **25 correcciones con fuente** a
+`jugadores.json` usando solo las etiquetas inequívocas
+(`Guard-Forward`→SG, `Forward-Guard`→SF, `Forward-Center`→PF,
+`Center-Forward`→C, `Center`→C): Tatum→SF, Mobley y Holmgren→C, Sabonis y
+Jaren Jackson→PF, Mikal Bridges→SG... Las ambiguas (`Guard` o `Forward` a
+secas) se dejan como están: no hay dato para afinarlas y no se inventan.
+
+*La regla.* `derivarPosicionSecundaria` comparaba `astPg > trbPg` **en
+absoluto**, que en la práctica preguntaba "¿es base?": en la NBA casi todo
+el mundo rebotea más de lo que asiste. Medido sobre los 641 jugadores, de
+los que pueden tirar hacia los dos lados **332 se iban hacia dentro y solo
+45 hacia fuera** — 4 de 123 aleros pasaban a escolta. Ahora se compara con
+lo típico de su puesto y su nivel (usando `curva_estadisticas.dart`), y el
+reparto queda **153 fuera / 237 dentro**. Tatum sale **SF/PF**.
+
+Los prospectos del draft necesitan otra regla: nacen justo en la curva, así
+que compararlos por asistencias y rebotes daría siempre empate y todas las
+hornadas saldrían escoradas al mismo lado. Se usa su perfil sorteado (quien
+tira de tres se abre, quien defiende tira hacia dentro).
+
+**Efecto colateral que hubo que resolver.** Al cambiar las posiciones, la
+alineación automática de Denver sacó a Strawther (76, escolta) de pívot
+suplente por delante de Nnaji (71, PF/C): 76 × 0,9 = **68,40** contra 71 ×
+0,96 = **68,16**. El algoritmo hacía lo que dice su documentación, pero
+decidir el pívot suplente por **0,24 puntos** es decidirlo por ruido. Se
+añade `margenDeComodidadAlRepartir` (1 punto de media, solo al repartir la
+alineación — la simulación no se toca): un empate técnico se resuelve a
+favor de quien juega ahí de verdad, y el de fuera sigue ganando el puesto
+cuando es de verdad mejor. El test que codificaba la política vieja se
+actualizó conservando lo que protegía (que no se siente a un 86 detrás de
+un 65).
+
+**Ojo con las partidas en curso:** las posiciones se leen al importar, así
+que una partida ya empezada conserva las viejas. El arreglo entra en las
+partidas nuevas.
+
 ### Lista parte 9 (terminada)
 
 **P9-1 · Fin de temporada: clasificación en vez de la lista de partidos.**
@@ -205,15 +360,29 @@ pretemporada. Regresión en `progresion_repository_test.dart`, que además
 comprueba que esa edad coincide con la que queda guardada en la base de
 datos.
 
-### Tests flaky conocidos
+### Tests flaky: uno arreglado, otro asumido
 
-`ofertas_camino_real_test` ("llegan ofertas igual", espera >0) y
-`premios_repository_test` ("no puede repetir como Rookie del Año") fallaron
-una vez cada uno en una pasada de la suite y pasaron las tres veces
-siguientes por separado, con la suite entera verde después. Son
-simulaciones **sin semilla a propósito**, así que un fallo suelto de estos
-dos no es una regresión — pero si empiezan a caer a menudo, lo que hay que
-arreglar es el test (subir la muestra o fijar la semilla), no el juego.
+**`premios_repository_test` ("no puede repetir como Rookie del Año"):
+ARREGLADO.** Cayó en tres pasadas completas de las últimas cinco, así que
+tocaba mirarlo. Pasaba 4/4 en solitario y fallaba en la suite, lo que
+parecía un problema de aislamiento — pero no: el andamiaje del test exigía
+que un novato sintético **ganara** el ROY en la temporada 1, y ese premio
+se pondera por victorias del equipo (P3-3) sobre una simulación sin
+semilla. Un rookie del dataset en un equipo de 60 victorias podía
+adelantarle sin que nada estuviera roto.
+
+Ahora comprueba el mecanismo real y determinista: en la temporada 1 no
+tiene nada archivado en `HistorialEstadisticasJugador` (es rookie) y en la
+2 sí (ya no puede serlo). El fondo del test —que la elegibilidad no use la
+edad como atajo— queda igual de cubierto. 3/3 en solitario.
+
+**`realismo_estadisticas_test` (reparto de récords de la liga): se asume.**
+Simula una temporada entera **sin semilla a propósito** (está escrito en el
+propio test) y comprueba que el mejor no gane el 88% ni el peor baje del
+10%. Medido tras los cambios de la parte 10: 5/5 en solitario, y un fallo
+suelto en una pasada completa. Es el precio de medir realismo sobre una
+temporada de verdad; si empezara a caer a menudo, lo que hay que subir es
+la muestra, no tocar el juego.
 
 ### "Mi equipo es mejor y me hacen 27-55": era el sorteo de forma
 

@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 
 import '../data/database/app_database.dart';
 import 'curva_estadisticas.dart';
+import 'entrenadores.dart';
 import 'equipos_especiales.dart';
 
 // Este repositorio es quien manda a los jugadores a `equipoRetirados`, y
@@ -73,9 +74,16 @@ class CambioDeJugador {
 ///
 /// Devuelve un cambio por jugador afectado, ordenado de mejor a peor
 /// evolución (los retirados aparte).
+///
+/// [desarrolloPorEquipo] es el atributo de desarrollo del entrenador de cada
+/// equipo. Es lo único que hace el entrenador fuera de los partidos, y solo
+/// toca a los que todavía crecen: acelera o frena su salto hacia el
+/// potencial (ver [factorDeDesarrollo]). A un veterano en declive no le
+/// afecta — un buen entrenador no le quita años a nadie.
 Future<List<CambioDeJugador>> envejecerLiga(
   AppDatabase db, {
   Random? random,
+  Map<String, int> desarrolloPorEquipo = const {},
 }) async {
   final rng = random ?? Random();
   final jugadores = await (db.select(db.jugadores)
@@ -87,7 +95,8 @@ Future<List<CambioDeJugador>> envejecerLiga(
 
   for (final j in jugadores) {
     final nuevaEdad = j.edad + 1;
-    final nuevaMedia = _mediaTrasUnAno(j, nuevaEdad, rng);
+    final nuevaMedia = _mediaTrasUnAno(j, nuevaEdad, rng,
+        factorDeDesarrollo(desarrolloPorEquipo[j.equipo]));
 
     // El nivel que decide es el del verano que viene, no el del año pasado:
     // si el declive de este verano ya te baja del listón, te retiras ahora y
@@ -181,7 +190,8 @@ Future<List<CambioDeJugador>> envejecerLiga(
   return cambios;
 }
 
-int _mediaTrasUnAno(Jugador j, int nuevaEdad, Random rng) {
+int _mediaTrasUnAno(
+    Jugador j, int nuevaEdad, Random rng, double factorEntrenador) {
   // El techo de crecimiento: su potencial, pero NUNCA por debajo de lo que
   // ya es. En el dataset el potencial de 396 de los 641 jugadores viene por
   // debajo de su media (se generó como "cuánto le queda por crecer", no
@@ -195,8 +205,11 @@ int _mediaTrasUnAno(Jugador j, int nuevaEdad, Random rng) {
   if (nuevaEdad < _edadFinDeCrecimiento) {
     // Los jóvenes se acercan a su potencial: cuanto más lejos están, más
     // rápido suben (un proyecto explota, un jugador ya hecho apenas mejora).
+    // Aquí, y solo aquí, entra el entrenador: acelera o frena el salto, pero
+    // no puede subir a nadie por encima de su potencial.
     final margen = (techo - j.media).clamp(0, 40);
-    final salto = (margen * (0.22 + rng.nextDouble() * 0.26)).round();
+    final salto =
+        (margen * (0.22 + rng.nextDouble() * 0.26) * factorEntrenador).round();
     return min(techo, j.media + salto);
   }
 

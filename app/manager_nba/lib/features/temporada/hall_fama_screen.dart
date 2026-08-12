@@ -78,12 +78,18 @@ class NuevosEnHallDeLaFamaScreen extends StatefulWidget {
 
 class _NuevosEnHallDeLaFamaScreenState
     extends State<NuevosEnHallDeLaFamaScreen> {
-  late final Future<Map<int, CarreraJugador>> _carreras =
-      leerCarrerasParaFichas(widget.db, widget.nuevos.map((m) => m.jugadorId));
+  /// Las carreras y el año en curso, de una sola espera. El año hace falta
+  /// para poder decir "entró en 2029" en vez de "temporada 3", que no le
+  /// dice nada a nadie.
+  late final Future<(TemporadaData, Map<int, CarreraJugador>)> _todo =
+      _cargar();
 
-  /// El año en curso, para poder decir "entró en 2029" en vez de "temporada
-  /// 3", que no le dice nada a nadie.
-  late final Future<TemporadaData> _temporada = leerTemporada(widget.db);
+  Future<(TemporadaData, Map<int, CarreraJugador>)> _cargar() async {
+    final temporada = await leerTemporada(widget.db);
+    final carreras = await leerCarrerasParaFichas(
+        widget.db, widget.nuevos.map((m) => m.jugadorId));
+    return (temporada, carreras);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -99,14 +105,18 @@ class _NuevosEnHallDeLaFamaScreenState
           ),
         ],
       ),
-      body: FutureBuilder<TemporadaData>(
-        future: _temporada,
-        builder: (context, snapTemporada) {
-          final temporada = snapTemporada.data;
-          return FutureBuilder<Map<int, CarreraJugador>>(
-        future: _carreras,
+      // Se espera a tener las DOS cosas antes de pintar. Antes eran dos
+      // FutureBuilder anidados y la lista se dibujaba con lo que hubiera:
+      // en el primer fotograma la temporada todavía no había llegado, así
+      // que el año de ingreso no salía — justo lo que sí enseña la lista
+      // grande del Hall of Fame, que espera a tener sus datos.
+      body: FutureBuilder<(TemporadaData, Map<int, CarreraJugador>)>(
+        future: _todo,
         builder: (context, snapshot) {
-          final carreras = snapshot.data ?? const {};
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final (temporada, carreras) = snapshot.data!;
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
@@ -130,13 +140,13 @@ class _NuevosEnHallDeLaFamaScreenState
                     // El día que entras en el Hall of Fame lo que importa es
                     // que has entrado, y en qué año. Sus números están a un
                     // toque de distancia, en la ficha.
+                    // Negativo = historia real (el año de verdad); positivo =
+                    // una temporada de tu partida, que se traduce a año.
                     subtitle: Text(
                       m.temporadaIngreso < 0
                           ? 'Entró en ${-m.temporadaIngreso}'
-                          : temporada == null
-                              ? 'Entró en el Hall of Fame'
-                              : 'Entró en '
-                                  '${anioDeTemporadaDesde(temporada, m.temporadaIngreso)}',
+                          : 'Entró en '
+                              '${anioDeTemporadaDesde(temporada, m.temporadaIngreso)}',
                     ),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () =>
@@ -151,8 +161,6 @@ class _NuevosEnHallDeLaFamaScreenState
                   ),
                 ),
             ],
-          );
-        },
           );
         },
       ),

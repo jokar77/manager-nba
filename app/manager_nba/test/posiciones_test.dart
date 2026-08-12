@@ -9,16 +9,47 @@ import 'package:manager_nba/domain/posiciones.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  /// La comparación es RELATIVA a lo normal de su puesto. Antes era
+  /// `astPg > trbPg` en absoluto, que en la práctica preguntaba "¿es
+  /// base?": en la NBA casi todo el mundo rebotea más de lo que asiste, así
+  /// que de los 641 del dataset, 332 se iban hacia dentro y solo 45 hacia
+  /// fuera. Por eso Tatum salía de "Ala-Pívot y Pívot".
   test('la segunda posición siempre es un puesto contiguo, hacia fuera si '
-      'el jugador reparte más y hacia dentro si rebotea más', () {
-    // Extremos del espectro: solo pueden ir hacia un lado.
-    expect(derivarPosicionSecundaria(posicion: 'PG', astPg: 1, trbPg: 9), 'SG');
-    expect(derivarPosicionSecundaria(posicion: 'C', astPg: 9, trbPg: 1), 'PF');
+      'el jugador reparte más de lo normal en su puesto y hacia dentro si '
+      'rebotea más de lo normal', () {
+    // Extremos del espectro: solo pueden ir hacia un lado, pase lo que pase.
+    expect(
+        derivarPosicionSecundaria(
+            posicion: 'PG', astPg: 1, trbPg: 9, media: 80),
+        'SG');
+    expect(
+        derivarPosicionSecundaria(
+            posicion: 'C', astPg: 9, trbPg: 1, media: 80),
+        'PF');
 
-    // Un escolta que reparte mucho también hace de base.
-    expect(derivarPosicionSecundaria(posicion: 'SG', astPg: 7, trbPg: 3), 'PG');
-    // Un escolta reboteador tira hacia alero.
-    expect(derivarPosicionSecundaria(posicion: 'SG', astPg: 2, trbPg: 6), 'SF');
+    // Un escolta que reparte mucho para ser escolta también hace de base.
+    expect(
+        derivarPosicionSecundaria(
+            posicion: 'SG', astPg: 7, trbPg: 3, media: 80),
+        'PG');
+    // Y uno que rebotea mucho para ser escolta tira hacia alero.
+    expect(
+        derivarPosicionSecundaria(
+            posicion: 'SG', astPg: 2, trbPg: 8, media: 80),
+        'SF');
+
+    // El caso que motivó todo esto: Tatum. En el dataset figuraba como PF
+    // (mal: la fuente real dice "Forward-Guard") y con 10,0 rebotes la
+    // regla vieja lo empujaba a C, dejándolo de "Ala-Pívot y Pívot".
+    //
+    // Corregida la primaria a SF, el resultado es SF/PF — Alero y
+    // Ala-Pívot, que es lo que es. Sigue tirando hacia dentro porque 10
+    // rebotes son muchos hasta para un alero, y eso es correcto: lo que
+    // estaba roto era partir de un puesto equivocado.
+    expect(
+        derivarPosicionSecundaria(
+            posicion: 'SF', astPg: 5.3, trbPg: 10.0, media: 93),
+        'PF');
   });
 
   test('si el dataset trae dos posiciones ("SG / PG"), se respeta la '

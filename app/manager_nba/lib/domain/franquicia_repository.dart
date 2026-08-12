@@ -7,6 +7,7 @@ import '../data/calendario/generador_calendario.dart';
 import '../data/database/app_database.dart';
 import 'agencia_libre_repository.dart';
 import 'dorsales_repository.dart';
+import 'entrenadores_repository.dart';
 import 'equipos_especiales.dart';
 import 'forma_repository.dart';
 import 'jugador_mapping.dart';
@@ -551,5 +552,8 @@ Future<sim.EquipoPartido> construirEquipoUsuarioParaFecha(
   }
 
   return sim.EquipoPartido(
-      nombre: equipoUsuario, jugadores: jugadoresEnPartido);
+    nombre: equipoUsuario,
+    jugadores: jugadoresEnPartido,
+    entrenador: await entrenadorEnPartidoDe(db, equipoUsuario),
+  );
 }

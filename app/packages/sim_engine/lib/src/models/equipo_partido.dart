@@ -1,3 +1,4 @@
+import 'entrenador_en_partido.dart';
 import 'jugador_en_partido.dart';
 
 /// Una plantilla de 5 titulares + banquillo, lista para simular un partido.
@@ -5,7 +6,17 @@ class EquipoPartido {
   final String nombre;
   final List<JugadorEnPartido> jugadores;
 
-  EquipoPartido({required this.nombre, required this.jugadores}) {
+  /// Quién dirige. Opcional: un equipo sin entrenador rinde exactamente
+  /// como antes de que existieran (ver [aporteDelEntrenador]), así que
+  /// todo lo que no le pase uno —el All-Star, los tests viejos— sigue
+  /// funcionando igual.
+  final EntrenadorEnPartido? entrenador;
+
+  EquipoPartido({
+    required this.nombre,
+    required this.jugadores,
+    this.entrenador,
+  }) {
     final sumaMinutos =
         jugadores.fold<int>(0, (acc, j) => acc + j.minutos);
     if (sumaMinutos != 240) {

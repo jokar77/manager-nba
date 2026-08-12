@@ -29,6 +29,7 @@ sim.EquipoPartido generarAlineacionAutomatica(
   List<Jugador> plantilla, {
   Set<int> lesionadosIds = const {},
   Map<int, double> formas = const {},
+  sim.EntrenadorEnPartido? entrenador,
 }) {
   var disponibles =
       plantilla.where((j) => !lesionadosIds.contains(j.id)).toList();
@@ -71,5 +72,9 @@ sim.EquipoPartido generarAlineacionAutomatica(
         _minutosSuplentes[i]);
   }
 
-  return sim.EquipoPartido(nombre: nombreEquipo, jugadores: jugadoresEnPartido);
+  return sim.EquipoPartido(
+    nombre: nombreEquipo,
+    jugadores: jugadoresEnPartido,
+    entrenador: entrenador,
+  );
 }

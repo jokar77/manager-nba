@@ -31,6 +31,7 @@ part 'app_database.g.dart';
   DraftEnCurso,
   PicksDraft,
   OfertasTraspaso,
+  Entrenadores,
 ])
 class AppDatabase extends _$AppDatabase {
   /// Abre la partida guardada con el nombre [nombre]. Cada partida vive por
@@ -43,19 +44,35 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 20;
+  int get schemaVersion => 21;
 
+  /// CUIDADO AL TOCAR ESTO: aquí se decide si una actualización del juego
+  /// conserva las partidas guardadas o se las lleva por delante.
+  ///
+  /// Hasta la versión 20 el `onUpgrade` tiraba el esquema entero y lo
+  /// recreaba, con el argumento de que no había usuarios reales. Ya los hay:
+  /// hay gente con carreras de varias temporadas en marcha. Desde la 20 en
+  /// adelante, cada salto tiene que escribirse a mano y ser ADITIVO — crear
+  /// tablas o columnas nuevas, nunca borrar lo que ya está.
+  ///
+  /// El camino destructivo se queda solo para las bases anteriores a la 20,
+  /// que son de la época en que efectivamente no había nada que perder.
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) => m.createAll(),
-        // Sin usuarios reales todavía: en un upgrade simplemente se tira
-        // el esquema entero y se recrea, en vez de escribir migraciones
-        // paso a paso para datos que no existen aún.
         onUpgrade: (m, from, to) async {
-          for (final tabla in allTables) {
-            await m.deleteTable(tabla.actualTableName);
+          if (from < 20) {
+            for (final tabla in allTables) {
+              await m.deleteTable(tabla.actualTableName);
+            }
+            await m.createAll();
+            return;
           }
-          await m.createAll();
+
+          // 20 -> 21: los entrenadores. Tabla nueva y nada más, así que la
+          // partida en curso sigue intacta; el importador la rellena sola
+          // la próxima vez que se abra (ver entrenadores_importer.dart).
+          if (from < 21) await m.createTable(entrenadores);
         },
       );
 

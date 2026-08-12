@@ -33,6 +33,38 @@ class PesosAtributos {
   /// conversión rating -> marcador.
   static const double puntosLigaMedios = 112;
 
+  /// Atributo de un entrenador del montón, y cuánto se separan de él los
+  /// extremos. Medido sobre los 30 entrenadores del asset: la media de
+  /// ataque y de defensa es 76 y el recorrido a cada lado ronda los 16
+  /// puntos (el mejor anda por 93-94, el peor por 60-62).
+  static const double atributoEntrenadorMedio = 76;
+  static const double recorridoEntrenador = 16;
+
+  /// Lo que suma (o resta) un entrenador al rating de equipo, en puntos de
+  /// rating, cuando está un recorrido entero por encima (o por debajo) de
+  /// la media.
+  ///
+  /// El número parece pequeño y no lo es. Medido sobre 40.000 partidos entre
+  /// dos plantillas idénticas, cambiando solo el banquillo:
+  ///
+  ///   sin entrenador / entrenador medio ... 41,1 victorias de 82
+  ///   el mejor de la liga ................. 43,8  (+2,7)
+  ///   el peor de la liga .................. 38,2  (-2,9)
+  ///   recorrido completo .................. 5,6 victorias
+  ///
+  /// Que es justo lo que la NBA real le atribuye a un banquillo. Y nótese
+  /// que un entrenador medio da exactamente lo mismo que no tener ninguno:
+  /// la escala está centrada, así que el entrenador desempata, no infla.
+  ///
+  /// Subirlo más convertiría el juego en "ficha al mejor entrenador y
+  /// olvídate de la plantilla", que es exactamente lo que no se quiere:
+  /// el equipo lo hacen los jugadores y el entrenador desempata.
+  static const double maxAporteEntrenador = 0.7;
+
+  /// Tope del desvío del entrenador, en recorridos. Evita que un asset
+  /// futuro con un entrenador de 99 se salga de la escala prevista.
+  static const double desvioMaximoEntrenador = 1.25;
+
   /// Minutos de referencia para "un titular con carga normal", usados para
   /// escalar pts_pg/ast_pg/trb_pg reales según los minutos asignados.
   static const double minutosReferencia = 36;

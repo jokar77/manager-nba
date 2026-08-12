@@ -424,3 +424,43 @@ class BoxscoresSerie extends Table {
   DateTimeColumn get fecha => dateTime()();
   TextColumn get boxscoreJson => text()();
 }
+
+/// Los entrenadores de la liga: uno por franquicia, más los que están sin
+/// equipo esperando una oferta.
+///
+/// Igual que con los jugadores, `equipo` es quien manda: [equipoAgenciaLibre]
+/// para los que están libres y [equipoRetirados] para los que ya lo han
+/// dejado. No se borra a nadie — un entrenador retirado sigue haciendo falta
+/// para contar quién ganó qué.
+@DataClassName('Entrenador')
+class Entrenadores extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  TextColumn get nombreFicticio => text()();
+  TextColumn get nombreReal => text()();
+  TextColumn get equipo => text()();
+  IntColumn get edad => integer()();
+
+  /// Las tres facetas, en la misma escala 0-99 que los atributos de un
+  /// jugador. Ataque y defensa se notan en cada partido (van al rating de
+  /// equipo, ver sim_engine); desarrollo se nota de verano en verano, en lo
+  /// que crecen los jóvenes de la plantilla.
+  IntColumn get atrAtaque => integer()();
+  IntColumn get atrDefensa => integer()();
+  IntColumn get atrDesarrollo => integer()();
+
+  /// Palmarés previo a tu partida: anillos y premios de Entrenador del Año
+  /// que ya tenía cuando empezaste. Lo que gane contigo se guarda aparte, en
+  /// `HistorialCampeones` y `HistorialPremios`.
+  IntColumn get anillos => integer().withDefault(const Constant(0))();
+  IntColumn get premios => integer().withDefault(const Constant(0))();
+
+  /// Temporadas dirigidas antes de tu partida, para poder decir "lleva 22
+  /// años en esto" y para que la edad de retiro tenga sentido.
+  IntColumn get temporadas => integer().withDefault(const Constant(0))();
+
+  /// Récord acumulado EN TU PARTIDA, que es lo que sube o baja su cotización
+  /// y lo que mira un equipo de la CPU antes de echarle.
+  IntColumn get victorias => integer().withDefault(const Constant(0))();
+  IntColumn get derrotas => integer().withDefault(const Constant(0))();
+}

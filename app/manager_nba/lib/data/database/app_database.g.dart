@@ -10575,6 +10575,765 @@ class OfertasTraspasoCompanion extends UpdateCompanion<OfertaTraspaso> {
   }
 }
 
+class $EntrenadoresTable extends Entrenadores
+    with TableInfo<$EntrenadoresTable, Entrenador> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $EntrenadoresTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _nombreFicticioMeta = const VerificationMeta(
+    'nombreFicticio',
+  );
+  @override
+  late final GeneratedColumn<String> nombreFicticio = GeneratedColumn<String>(
+    'nombre_ficticio',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nombreRealMeta = const VerificationMeta(
+    'nombreReal',
+  );
+  @override
+  late final GeneratedColumn<String> nombreReal = GeneratedColumn<String>(
+    'nombre_real',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _equipoMeta = const VerificationMeta('equipo');
+  @override
+  late final GeneratedColumn<String> equipo = GeneratedColumn<String>(
+    'equipo',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _edadMeta = const VerificationMeta('edad');
+  @override
+  late final GeneratedColumn<int> edad = GeneratedColumn<int>(
+    'edad',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _atrAtaqueMeta = const VerificationMeta(
+    'atrAtaque',
+  );
+  @override
+  late final GeneratedColumn<int> atrAtaque = GeneratedColumn<int>(
+    'atr_ataque',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _atrDefensaMeta = const VerificationMeta(
+    'atrDefensa',
+  );
+  @override
+  late final GeneratedColumn<int> atrDefensa = GeneratedColumn<int>(
+    'atr_defensa',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _atrDesarrolloMeta = const VerificationMeta(
+    'atrDesarrollo',
+  );
+  @override
+  late final GeneratedColumn<int> atrDesarrollo = GeneratedColumn<int>(
+    'atr_desarrollo',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _anillosMeta = const VerificationMeta(
+    'anillos',
+  );
+  @override
+  late final GeneratedColumn<int> anillos = GeneratedColumn<int>(
+    'anillos',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _premiosMeta = const VerificationMeta(
+    'premios',
+  );
+  @override
+  late final GeneratedColumn<int> premios = GeneratedColumn<int>(
+    'premios',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _temporadasMeta = const VerificationMeta(
+    'temporadas',
+  );
+  @override
+  late final GeneratedColumn<int> temporadas = GeneratedColumn<int>(
+    'temporadas',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _victoriasMeta = const VerificationMeta(
+    'victorias',
+  );
+  @override
+  late final GeneratedColumn<int> victorias = GeneratedColumn<int>(
+    'victorias',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _derrotasMeta = const VerificationMeta(
+    'derrotas',
+  );
+  @override
+  late final GeneratedColumn<int> derrotas = GeneratedColumn<int>(
+    'derrotas',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    nombreFicticio,
+    nombreReal,
+    equipo,
+    edad,
+    atrAtaque,
+    atrDefensa,
+    atrDesarrollo,
+    anillos,
+    premios,
+    temporadas,
+    victorias,
+    derrotas,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'entrenadores';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Entrenador> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('nombre_ficticio')) {
+      context.handle(
+        _nombreFicticioMeta,
+        nombreFicticio.isAcceptableOrUnknown(
+          data['nombre_ficticio']!,
+          _nombreFicticioMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_nombreFicticioMeta);
+    }
+    if (data.containsKey('nombre_real')) {
+      context.handle(
+        _nombreRealMeta,
+        nombreReal.isAcceptableOrUnknown(data['nombre_real']!, _nombreRealMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nombreRealMeta);
+    }
+    if (data.containsKey('equipo')) {
+      context.handle(
+        _equipoMeta,
+        equipo.isAcceptableOrUnknown(data['equipo']!, _equipoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_equipoMeta);
+    }
+    if (data.containsKey('edad')) {
+      context.handle(
+        _edadMeta,
+        edad.isAcceptableOrUnknown(data['edad']!, _edadMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_edadMeta);
+    }
+    if (data.containsKey('atr_ataque')) {
+      context.handle(
+        _atrAtaqueMeta,
+        atrAtaque.isAcceptableOrUnknown(data['atr_ataque']!, _atrAtaqueMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_atrAtaqueMeta);
+    }
+    if (data.containsKey('atr_defensa')) {
+      context.handle(
+        _atrDefensaMeta,
+        atrDefensa.isAcceptableOrUnknown(data['atr_defensa']!, _atrDefensaMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_atrDefensaMeta);
+    }
+    if (data.containsKey('atr_desarrollo')) {
+      context.handle(
+        _atrDesarrolloMeta,
+        atrDesarrollo.isAcceptableOrUnknown(
+          data['atr_desarrollo']!,
+          _atrDesarrolloMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_atrDesarrolloMeta);
+    }
+    if (data.containsKey('anillos')) {
+      context.handle(
+        _anillosMeta,
+        anillos.isAcceptableOrUnknown(data['anillos']!, _anillosMeta),
+      );
+    }
+    if (data.containsKey('premios')) {
+      context.handle(
+        _premiosMeta,
+        premios.isAcceptableOrUnknown(data['premios']!, _premiosMeta),
+      );
+    }
+    if (data.containsKey('temporadas')) {
+      context.handle(
+        _temporadasMeta,
+        temporadas.isAcceptableOrUnknown(data['temporadas']!, _temporadasMeta),
+      );
+    }
+    if (data.containsKey('victorias')) {
+      context.handle(
+        _victoriasMeta,
+        victorias.isAcceptableOrUnknown(data['victorias']!, _victoriasMeta),
+      );
+    }
+    if (data.containsKey('derrotas')) {
+      context.handle(
+        _derrotasMeta,
+        derrotas.isAcceptableOrUnknown(data['derrotas']!, _derrotasMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Entrenador map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Entrenador(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      nombreFicticio: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nombre_ficticio'],
+      )!,
+      nombreReal: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nombre_real'],
+      )!,
+      equipo: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}equipo'],
+      )!,
+      edad: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}edad'],
+      )!,
+      atrAtaque: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}atr_ataque'],
+      )!,
+      atrDefensa: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}atr_defensa'],
+      )!,
+      atrDesarrollo: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}atr_desarrollo'],
+      )!,
+      anillos: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}anillos'],
+      )!,
+      premios: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}premios'],
+      )!,
+      temporadas: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}temporadas'],
+      )!,
+      victorias: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}victorias'],
+      )!,
+      derrotas: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}derrotas'],
+      )!,
+    );
+  }
+
+  @override
+  $EntrenadoresTable createAlias(String alias) {
+    return $EntrenadoresTable(attachedDatabase, alias);
+  }
+}
+
+class Entrenador extends DataClass implements Insertable<Entrenador> {
+  final int id;
+  final String nombreFicticio;
+  final String nombreReal;
+  final String equipo;
+  final int edad;
+
+  /// Las tres facetas, en la misma escala 0-99 que los atributos de un
+  /// jugador. Ataque y defensa se notan en cada partido (van al rating de
+  /// equipo, ver sim_engine); desarrollo se nota de verano en verano, en lo
+  /// que crecen los jóvenes de la plantilla.
+  final int atrAtaque;
+  final int atrDefensa;
+  final int atrDesarrollo;
+
+  /// Palmarés previo a tu partida: anillos y premios de Entrenador del Año
+  /// que ya tenía cuando empezaste. Lo que gane contigo se guarda aparte, en
+  /// `HistorialCampeones` y `HistorialPremios`.
+  final int anillos;
+  final int premios;
+
+  /// Temporadas dirigidas antes de tu partida, para poder decir "lleva 22
+  /// años en esto" y para que la edad de retiro tenga sentido.
+  final int temporadas;
+
+  /// Récord acumulado EN TU PARTIDA, que es lo que sube o baja su cotización
+  /// y lo que mira un equipo de la CPU antes de echarle.
+  final int victorias;
+  final int derrotas;
+  const Entrenador({
+    required this.id,
+    required this.nombreFicticio,
+    required this.nombreReal,
+    required this.equipo,
+    required this.edad,
+    required this.atrAtaque,
+    required this.atrDefensa,
+    required this.atrDesarrollo,
+    required this.anillos,
+    required this.premios,
+    required this.temporadas,
+    required this.victorias,
+    required this.derrotas,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['nombre_ficticio'] = Variable<String>(nombreFicticio);
+    map['nombre_real'] = Variable<String>(nombreReal);
+    map['equipo'] = Variable<String>(equipo);
+    map['edad'] = Variable<int>(edad);
+    map['atr_ataque'] = Variable<int>(atrAtaque);
+    map['atr_defensa'] = Variable<int>(atrDefensa);
+    map['atr_desarrollo'] = Variable<int>(atrDesarrollo);
+    map['anillos'] = Variable<int>(anillos);
+    map['premios'] = Variable<int>(premios);
+    map['temporadas'] = Variable<int>(temporadas);
+    map['victorias'] = Variable<int>(victorias);
+    map['derrotas'] = Variable<int>(derrotas);
+    return map;
+  }
+
+  EntrenadoresCompanion toCompanion(bool nullToAbsent) {
+    return EntrenadoresCompanion(
+      id: Value(id),
+      nombreFicticio: Value(nombreFicticio),
+      nombreReal: Value(nombreReal),
+      equipo: Value(equipo),
+      edad: Value(edad),
+      atrAtaque: Value(atrAtaque),
+      atrDefensa: Value(atrDefensa),
+      atrDesarrollo: Value(atrDesarrollo),
+      anillos: Value(anillos),
+      premios: Value(premios),
+      temporadas: Value(temporadas),
+      victorias: Value(victorias),
+      derrotas: Value(derrotas),
+    );
+  }
+
+  factory Entrenador.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Entrenador(
+      id: serializer.fromJson<int>(json['id']),
+      nombreFicticio: serializer.fromJson<String>(json['nombreFicticio']),
+      nombreReal: serializer.fromJson<String>(json['nombreReal']),
+      equipo: serializer.fromJson<String>(json['equipo']),
+      edad: serializer.fromJson<int>(json['edad']),
+      atrAtaque: serializer.fromJson<int>(json['atrAtaque']),
+      atrDefensa: serializer.fromJson<int>(json['atrDefensa']),
+      atrDesarrollo: serializer.fromJson<int>(json['atrDesarrollo']),
+      anillos: serializer.fromJson<int>(json['anillos']),
+      premios: serializer.fromJson<int>(json['premios']),
+      temporadas: serializer.fromJson<int>(json['temporadas']),
+      victorias: serializer.fromJson<int>(json['victorias']),
+      derrotas: serializer.fromJson<int>(json['derrotas']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'nombreFicticio': serializer.toJson<String>(nombreFicticio),
+      'nombreReal': serializer.toJson<String>(nombreReal),
+      'equipo': serializer.toJson<String>(equipo),
+      'edad': serializer.toJson<int>(edad),
+      'atrAtaque': serializer.toJson<int>(atrAtaque),
+      'atrDefensa': serializer.toJson<int>(atrDefensa),
+      'atrDesarrollo': serializer.toJson<int>(atrDesarrollo),
+      'anillos': serializer.toJson<int>(anillos),
+      'premios': serializer.toJson<int>(premios),
+      'temporadas': serializer.toJson<int>(temporadas),
+      'victorias': serializer.toJson<int>(victorias),
+      'derrotas': serializer.toJson<int>(derrotas),
+    };
+  }
+
+  Entrenador copyWith({
+    int? id,
+    String? nombreFicticio,
+    String? nombreReal,
+    String? equipo,
+    int? edad,
+    int? atrAtaque,
+    int? atrDefensa,
+    int? atrDesarrollo,
+    int? anillos,
+    int? premios,
+    int? temporadas,
+    int? victorias,
+    int? derrotas,
+  }) => Entrenador(
+    id: id ?? this.id,
+    nombreFicticio: nombreFicticio ?? this.nombreFicticio,
+    nombreReal: nombreReal ?? this.nombreReal,
+    equipo: equipo ?? this.equipo,
+    edad: edad ?? this.edad,
+    atrAtaque: atrAtaque ?? this.atrAtaque,
+    atrDefensa: atrDefensa ?? this.atrDefensa,
+    atrDesarrollo: atrDesarrollo ?? this.atrDesarrollo,
+    anillos: anillos ?? this.anillos,
+    premios: premios ?? this.premios,
+    temporadas: temporadas ?? this.temporadas,
+    victorias: victorias ?? this.victorias,
+    derrotas: derrotas ?? this.derrotas,
+  );
+  Entrenador copyWithCompanion(EntrenadoresCompanion data) {
+    return Entrenador(
+      id: data.id.present ? data.id.value : this.id,
+      nombreFicticio: data.nombreFicticio.present
+          ? data.nombreFicticio.value
+          : this.nombreFicticio,
+      nombreReal: data.nombreReal.present
+          ? data.nombreReal.value
+          : this.nombreReal,
+      equipo: data.equipo.present ? data.equipo.value : this.equipo,
+      edad: data.edad.present ? data.edad.value : this.edad,
+      atrAtaque: data.atrAtaque.present ? data.atrAtaque.value : this.atrAtaque,
+      atrDefensa: data.atrDefensa.present
+          ? data.atrDefensa.value
+          : this.atrDefensa,
+      atrDesarrollo: data.atrDesarrollo.present
+          ? data.atrDesarrollo.value
+          : this.atrDesarrollo,
+      anillos: data.anillos.present ? data.anillos.value : this.anillos,
+      premios: data.premios.present ? data.premios.value : this.premios,
+      temporadas: data.temporadas.present
+          ? data.temporadas.value
+          : this.temporadas,
+      victorias: data.victorias.present ? data.victorias.value : this.victorias,
+      derrotas: data.derrotas.present ? data.derrotas.value : this.derrotas,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Entrenador(')
+          ..write('id: $id, ')
+          ..write('nombreFicticio: $nombreFicticio, ')
+          ..write('nombreReal: $nombreReal, ')
+          ..write('equipo: $equipo, ')
+          ..write('edad: $edad, ')
+          ..write('atrAtaque: $atrAtaque, ')
+          ..write('atrDefensa: $atrDefensa, ')
+          ..write('atrDesarrollo: $atrDesarrollo, ')
+          ..write('anillos: $anillos, ')
+          ..write('premios: $premios, ')
+          ..write('temporadas: $temporadas, ')
+          ..write('victorias: $victorias, ')
+          ..write('derrotas: $derrotas')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    nombreFicticio,
+    nombreReal,
+    equipo,
+    edad,
+    atrAtaque,
+    atrDefensa,
+    atrDesarrollo,
+    anillos,
+    premios,
+    temporadas,
+    victorias,
+    derrotas,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Entrenador &&
+          other.id == this.id &&
+          other.nombreFicticio == this.nombreFicticio &&
+          other.nombreReal == this.nombreReal &&
+          other.equipo == this.equipo &&
+          other.edad == this.edad &&
+          other.atrAtaque == this.atrAtaque &&
+          other.atrDefensa == this.atrDefensa &&
+          other.atrDesarrollo == this.atrDesarrollo &&
+          other.anillos == this.anillos &&
+          other.premios == this.premios &&
+          other.temporadas == this.temporadas &&
+          other.victorias == this.victorias &&
+          other.derrotas == this.derrotas);
+}
+
+class EntrenadoresCompanion extends UpdateCompanion<Entrenador> {
+  final Value<int> id;
+  final Value<String> nombreFicticio;
+  final Value<String> nombreReal;
+  final Value<String> equipo;
+  final Value<int> edad;
+  final Value<int> atrAtaque;
+  final Value<int> atrDefensa;
+  final Value<int> atrDesarrollo;
+  final Value<int> anillos;
+  final Value<int> premios;
+  final Value<int> temporadas;
+  final Value<int> victorias;
+  final Value<int> derrotas;
+  const EntrenadoresCompanion({
+    this.id = const Value.absent(),
+    this.nombreFicticio = const Value.absent(),
+    this.nombreReal = const Value.absent(),
+    this.equipo = const Value.absent(),
+    this.edad = const Value.absent(),
+    this.atrAtaque = const Value.absent(),
+    this.atrDefensa = const Value.absent(),
+    this.atrDesarrollo = const Value.absent(),
+    this.anillos = const Value.absent(),
+    this.premios = const Value.absent(),
+    this.temporadas = const Value.absent(),
+    this.victorias = const Value.absent(),
+    this.derrotas = const Value.absent(),
+  });
+  EntrenadoresCompanion.insert({
+    this.id = const Value.absent(),
+    required String nombreFicticio,
+    required String nombreReal,
+    required String equipo,
+    required int edad,
+    required int atrAtaque,
+    required int atrDefensa,
+    required int atrDesarrollo,
+    this.anillos = const Value.absent(),
+    this.premios = const Value.absent(),
+    this.temporadas = const Value.absent(),
+    this.victorias = const Value.absent(),
+    this.derrotas = const Value.absent(),
+  }) : nombreFicticio = Value(nombreFicticio),
+       nombreReal = Value(nombreReal),
+       equipo = Value(equipo),
+       edad = Value(edad),
+       atrAtaque = Value(atrAtaque),
+       atrDefensa = Value(atrDefensa),
+       atrDesarrollo = Value(atrDesarrollo);
+  static Insertable<Entrenador> custom({
+    Expression<int>? id,
+    Expression<String>? nombreFicticio,
+    Expression<String>? nombreReal,
+    Expression<String>? equipo,
+    Expression<int>? edad,
+    Expression<int>? atrAtaque,
+    Expression<int>? atrDefensa,
+    Expression<int>? atrDesarrollo,
+    Expression<int>? anillos,
+    Expression<int>? premios,
+    Expression<int>? temporadas,
+    Expression<int>? victorias,
+    Expression<int>? derrotas,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (nombreFicticio != null) 'nombre_ficticio': nombreFicticio,
+      if (nombreReal != null) 'nombre_real': nombreReal,
+      if (equipo != null) 'equipo': equipo,
+      if (edad != null) 'edad': edad,
+      if (atrAtaque != null) 'atr_ataque': atrAtaque,
+      if (atrDefensa != null) 'atr_defensa': atrDefensa,
+      if (atrDesarrollo != null) 'atr_desarrollo': atrDesarrollo,
+      if (anillos != null) 'anillos': anillos,
+      if (premios != null) 'premios': premios,
+      if (temporadas != null) 'temporadas': temporadas,
+      if (victorias != null) 'victorias': victorias,
+      if (derrotas != null) 'derrotas': derrotas,
+    });
+  }
+
+  EntrenadoresCompanion copyWith({
+    Value<int>? id,
+    Value<String>? nombreFicticio,
+    Value<String>? nombreReal,
+    Value<String>? equipo,
+    Value<int>? edad,
+    Value<int>? atrAtaque,
+    Value<int>? atrDefensa,
+    Value<int>? atrDesarrollo,
+    Value<int>? anillos,
+    Value<int>? premios,
+    Value<int>? temporadas,
+    Value<int>? victorias,
+    Value<int>? derrotas,
+  }) {
+    return EntrenadoresCompanion(
+      id: id ?? this.id,
+      nombreFicticio: nombreFicticio ?? this.nombreFicticio,
+      nombreReal: nombreReal ?? this.nombreReal,
+      equipo: equipo ?? this.equipo,
+      edad: edad ?? this.edad,
+      atrAtaque: atrAtaque ?? this.atrAtaque,
+      atrDefensa: atrDefensa ?? this.atrDefensa,
+      atrDesarrollo: atrDesarrollo ?? this.atrDesarrollo,
+      anillos: anillos ?? this.anillos,
+      premios: premios ?? this.premios,
+      temporadas: temporadas ?? this.temporadas,
+      victorias: victorias ?? this.victorias,
+      derrotas: derrotas ?? this.derrotas,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (nombreFicticio.present) {
+      map['nombre_ficticio'] = Variable<String>(nombreFicticio.value);
+    }
+    if (nombreReal.present) {
+      map['nombre_real'] = Variable<String>(nombreReal.value);
+    }
+    if (equipo.present) {
+      map['equipo'] = Variable<String>(equipo.value);
+    }
+    if (edad.present) {
+      map['edad'] = Variable<int>(edad.value);
+    }
+    if (atrAtaque.present) {
+      map['atr_ataque'] = Variable<int>(atrAtaque.value);
+    }
+    if (atrDefensa.present) {
+      map['atr_defensa'] = Variable<int>(atrDefensa.value);
+    }
+    if (atrDesarrollo.present) {
+      map['atr_desarrollo'] = Variable<int>(atrDesarrollo.value);
+    }
+    if (anillos.present) {
+      map['anillos'] = Variable<int>(anillos.value);
+    }
+    if (premios.present) {
+      map['premios'] = Variable<int>(premios.value);
+    }
+    if (temporadas.present) {
+      map['temporadas'] = Variable<int>(temporadas.value);
+    }
+    if (victorias.present) {
+      map['victorias'] = Variable<int>(victorias.value);
+    }
+    if (derrotas.present) {
+      map['derrotas'] = Variable<int>(derrotas.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EntrenadoresCompanion(')
+          ..write('id: $id, ')
+          ..write('nombreFicticio: $nombreFicticio, ')
+          ..write('nombreReal: $nombreReal, ')
+          ..write('equipo: $equipo, ')
+          ..write('edad: $edad, ')
+          ..write('atrAtaque: $atrAtaque, ')
+          ..write('atrDefensa: $atrDefensa, ')
+          ..write('atrDesarrollo: $atrDesarrollo, ')
+          ..write('anillos: $anillos, ')
+          ..write('premios: $premios, ')
+          ..write('temporadas: $temporadas, ')
+          ..write('victorias: $victorias, ')
+          ..write('derrotas: $derrotas')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -10621,6 +11380,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $OfertasTraspasoTable ofertasTraspaso = $OfertasTraspasoTable(
     this,
   );
+  late final $EntrenadoresTable entrenadores = $EntrenadoresTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -10651,6 +11411,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     draftEnCurso,
     picksDraft,
     ofertasTraspaso,
+    entrenadores,
   ];
 }
 
@@ -16349,6 +17110,362 @@ typedef $$OfertasTraspasoTableProcessedTableManager =
       OfertaTraspaso,
       PrefetchHooks Function()
     >;
+typedef $$EntrenadoresTableCreateCompanionBuilder =
+    EntrenadoresCompanion Function({
+      Value<int> id,
+      required String nombreFicticio,
+      required String nombreReal,
+      required String equipo,
+      required int edad,
+      required int atrAtaque,
+      required int atrDefensa,
+      required int atrDesarrollo,
+      Value<int> anillos,
+      Value<int> premios,
+      Value<int> temporadas,
+      Value<int> victorias,
+      Value<int> derrotas,
+    });
+typedef $$EntrenadoresTableUpdateCompanionBuilder =
+    EntrenadoresCompanion Function({
+      Value<int> id,
+      Value<String> nombreFicticio,
+      Value<String> nombreReal,
+      Value<String> equipo,
+      Value<int> edad,
+      Value<int> atrAtaque,
+      Value<int> atrDefensa,
+      Value<int> atrDesarrollo,
+      Value<int> anillos,
+      Value<int> premios,
+      Value<int> temporadas,
+      Value<int> victorias,
+      Value<int> derrotas,
+    });
+
+class $$EntrenadoresTableFilterComposer
+    extends Composer<_$AppDatabase, $EntrenadoresTable> {
+  $$EntrenadoresTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nombreFicticio => $composableBuilder(
+    column: $table.nombreFicticio,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nombreReal => $composableBuilder(
+    column: $table.nombreReal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get equipo => $composableBuilder(
+    column: $table.equipo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get edad => $composableBuilder(
+    column: $table.edad,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get atrAtaque => $composableBuilder(
+    column: $table.atrAtaque,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get atrDefensa => $composableBuilder(
+    column: $table.atrDefensa,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get atrDesarrollo => $composableBuilder(
+    column: $table.atrDesarrollo,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get anillos => $composableBuilder(
+    column: $table.anillos,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get premios => $composableBuilder(
+    column: $table.premios,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get temporadas => $composableBuilder(
+    column: $table.temporadas,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get victorias => $composableBuilder(
+    column: $table.victorias,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get derrotas => $composableBuilder(
+    column: $table.derrotas,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$EntrenadoresTableOrderingComposer
+    extends Composer<_$AppDatabase, $EntrenadoresTable> {
+  $$EntrenadoresTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nombreFicticio => $composableBuilder(
+    column: $table.nombreFicticio,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nombreReal => $composableBuilder(
+    column: $table.nombreReal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get equipo => $composableBuilder(
+    column: $table.equipo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get edad => $composableBuilder(
+    column: $table.edad,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get atrAtaque => $composableBuilder(
+    column: $table.atrAtaque,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get atrDefensa => $composableBuilder(
+    column: $table.atrDefensa,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get atrDesarrollo => $composableBuilder(
+    column: $table.atrDesarrollo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get anillos => $composableBuilder(
+    column: $table.anillos,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get premios => $composableBuilder(
+    column: $table.premios,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get temporadas => $composableBuilder(
+    column: $table.temporadas,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get victorias => $composableBuilder(
+    column: $table.victorias,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get derrotas => $composableBuilder(
+    column: $table.derrotas,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$EntrenadoresTableAnnotationComposer
+    extends Composer<_$AppDatabase, $EntrenadoresTable> {
+  $$EntrenadoresTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get nombreFicticio => $composableBuilder(
+    column: $table.nombreFicticio,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get nombreReal => $composableBuilder(
+    column: $table.nombreReal,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get equipo =>
+      $composableBuilder(column: $table.equipo, builder: (column) => column);
+
+  GeneratedColumn<int> get edad =>
+      $composableBuilder(column: $table.edad, builder: (column) => column);
+
+  GeneratedColumn<int> get atrAtaque =>
+      $composableBuilder(column: $table.atrAtaque, builder: (column) => column);
+
+  GeneratedColumn<int> get atrDefensa => $composableBuilder(
+    column: $table.atrDefensa,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get atrDesarrollo => $composableBuilder(
+    column: $table.atrDesarrollo,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get anillos =>
+      $composableBuilder(column: $table.anillos, builder: (column) => column);
+
+  GeneratedColumn<int> get premios =>
+      $composableBuilder(column: $table.premios, builder: (column) => column);
+
+  GeneratedColumn<int> get temporadas => $composableBuilder(
+    column: $table.temporadas,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get victorias =>
+      $composableBuilder(column: $table.victorias, builder: (column) => column);
+
+  GeneratedColumn<int> get derrotas =>
+      $composableBuilder(column: $table.derrotas, builder: (column) => column);
+}
+
+class $$EntrenadoresTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $EntrenadoresTable,
+          Entrenador,
+          $$EntrenadoresTableFilterComposer,
+          $$EntrenadoresTableOrderingComposer,
+          $$EntrenadoresTableAnnotationComposer,
+          $$EntrenadoresTableCreateCompanionBuilder,
+          $$EntrenadoresTableUpdateCompanionBuilder,
+          (
+            Entrenador,
+            BaseReferences<_$AppDatabase, $EntrenadoresTable, Entrenador>,
+          ),
+          Entrenador,
+          PrefetchHooks Function()
+        > {
+  $$EntrenadoresTableTableManager(_$AppDatabase db, $EntrenadoresTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$EntrenadoresTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$EntrenadoresTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$EntrenadoresTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> nombreFicticio = const Value.absent(),
+                Value<String> nombreReal = const Value.absent(),
+                Value<String> equipo = const Value.absent(),
+                Value<int> edad = const Value.absent(),
+                Value<int> atrAtaque = const Value.absent(),
+                Value<int> atrDefensa = const Value.absent(),
+                Value<int> atrDesarrollo = const Value.absent(),
+                Value<int> anillos = const Value.absent(),
+                Value<int> premios = const Value.absent(),
+                Value<int> temporadas = const Value.absent(),
+                Value<int> victorias = const Value.absent(),
+                Value<int> derrotas = const Value.absent(),
+              }) => EntrenadoresCompanion(
+                id: id,
+                nombreFicticio: nombreFicticio,
+                nombreReal: nombreReal,
+                equipo: equipo,
+                edad: edad,
+                atrAtaque: atrAtaque,
+                atrDefensa: atrDefensa,
+                atrDesarrollo: atrDesarrollo,
+                anillos: anillos,
+                premios: premios,
+                temporadas: temporadas,
+                victorias: victorias,
+                derrotas: derrotas,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String nombreFicticio,
+                required String nombreReal,
+                required String equipo,
+                required int edad,
+                required int atrAtaque,
+                required int atrDefensa,
+                required int atrDesarrollo,
+                Value<int> anillos = const Value.absent(),
+                Value<int> premios = const Value.absent(),
+                Value<int> temporadas = const Value.absent(),
+                Value<int> victorias = const Value.absent(),
+                Value<int> derrotas = const Value.absent(),
+              }) => EntrenadoresCompanion.insert(
+                id: id,
+                nombreFicticio: nombreFicticio,
+                nombreReal: nombreReal,
+                equipo: equipo,
+                edad: edad,
+                atrAtaque: atrAtaque,
+                atrDefensa: atrDefensa,
+                atrDesarrollo: atrDesarrollo,
+                anillos: anillos,
+                premios: premios,
+                temporadas: temporadas,
+                victorias: victorias,
+                derrotas: derrotas,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$EntrenadoresTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $EntrenadoresTable,
+      Entrenador,
+      $$EntrenadoresTableFilterComposer,
+      $$EntrenadoresTableOrderingComposer,
+      $$EntrenadoresTableAnnotationComposer,
+      $$EntrenadoresTableCreateCompanionBuilder,
+      $$EntrenadoresTableUpdateCompanionBuilder,
+      (
+        Entrenador,
+        BaseReferences<_$AppDatabase, $EntrenadoresTable, Entrenador>,
+      ),
+      Entrenador,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -16414,4 +17531,6 @@ class $AppDatabaseManager {
       $$PicksDraftTableTableManager(_db, _db.picksDraft);
   $$OfertasTraspasoTableTableManager get ofertasTraspaso =>
       $$OfertasTraspasoTableTableManager(_db, _db.ofertasTraspaso);
+  $$EntrenadoresTableTableManager get entrenadores =>
+      $$EntrenadoresTableTableManager(_db, _db.entrenadores);
 }

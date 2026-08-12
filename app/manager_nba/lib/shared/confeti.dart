@@ -45,7 +45,10 @@ class _LluviaDeConfetiState extends State<LluviaDeConfeti>
         _Papelillo(
           x: rng.nextDouble(),
           retraso: rng.nextDouble() * 0.35,
-          velocidad: 0.75 + rng.nextDouble() * 0.5,
+          // Nunca por debajo de 1: ver el cálculo de `avance` en el pintor.
+          // Con velocidades más lentas los papelillos rezagados se quedaban
+          // colgados a media pantalla al acabar la animación.
+          velocidad: 1.0 + rng.nextDouble() * 0.6,
           balanceo: 0.02 + rng.nextDouble() * 0.05,
           giro: rng.nextDouble() * pi,
           ancho: 5 + rng.nextDouble() * 6,
@@ -107,7 +110,17 @@ class _PintorConfeti extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint();
     for (final p in papelillos) {
-      final avance = (t - p.retraso) * p.velocidad;
+      // El avance se mide sobre el trozo de animación que le queda a ESTE
+      // papelillo desde que sale, no sobre la animación entera. Así todos
+      // llegan abajo antes de que se pare el reloj.
+      //
+      // Antes era `(t - retraso) * velocidad` a secas, y ahí estaba el bug
+      // que dejaba el confeti suspendido: uno con retraso 0,35 y velocidad
+      // 0,75 terminaba la animación con avance 0,49, o sea a media pantalla.
+      // Y como el desvanecido solo empieza en 0,85, ni siquiera se
+      // difuminaba: se quedaba ahí clavado mientras el diálogo siguiera
+      // abierto.
+      final avance = (t - p.retraso) / (1 - p.retraso) * p.velocidad;
       if (avance <= 0) continue;
       final y = avance * (size.height + p.alto * 2) - p.alto;
       if (y > size.height) continue;

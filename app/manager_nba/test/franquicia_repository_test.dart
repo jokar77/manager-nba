@@ -137,14 +137,33 @@ void main() {
       for (final posicion in posicionesEquipo) {
         for (final jugador in porPuesto[posicion]!) {
           for (final suplente in enElBanquillo) {
-            expect(rinde(suplente, posicion),
-                lessThanOrEqualTo(rinde(jugador, posicion)),
+            final ventaja = rinde(suplente, posicion) - rinde(jugador, posicion);
+            if (ventaja <= 0) continue;
+
+            // El del banquillo rinde MÁS en ese puesto. Solo se acepta si es
+            // un empate técnico resuelto por comodidad: por debajo del
+            // margen, y a favor de quien juega ahí de verdad contra quien
+            // no. Ver `margenDeComodidadAlRepartir`.
+            //
+            // Sin esta salvedad el reparto sacaba a Strawther (76, escolta)
+            // de pívot suplente por delante de Nnaji (71, PF/C): 68,40
+            // contra 68,16, o sea 0,24 de diferencia. Lo que este test
+            // sigue impidiendo es lo de verdad grave — sentar a un 86
+            // detrás de un 65—, que es para lo que se escribió.
+            expect(ventaja, lessThanOrEqualTo(margenDeComodidadAlRepartir),
                 reason: '$equipo: ${suplente.nombreFicticio} '
                     '(${etiquetaPosicion(suplente)}, media ${suplente.media}) '
-                    'rendiría más de $posicion que '
+                    'rendiría bastante más de $posicion que '
                     '${jugador.nombreFicticio} '
                     '(${etiquetaPosicion(jugador)}, media ${jugador.media}) '
                     'y se ha quedado fuera');
+            expect(juegaComodoDe(jugador, posicion), isTrue,
+                reason: '$equipo: si se prefiere a ${jugador.nombreFicticio} '
+                    'pese a rendir menos, tiene que ser por jugar ahí de '
+                    'verdad');
+            expect(juegaComodoDe(suplente, posicion), isFalse,
+                reason: '$equipo: ${suplente.nombreFicticio} está cómodo de '
+                    '$posicion y rinde más, no debería quedarse fuera');
           }
         }
       }

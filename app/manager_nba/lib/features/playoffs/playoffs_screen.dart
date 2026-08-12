@@ -960,6 +960,12 @@ class _CajaSerie extends StatelessWidget {
 
     final esTuSerie =
         serie.equipoA == equipoUsuario || serie.equipoB == equipoUsuario;
+    // La Final ya decidida se corona en el propio cuadro: dorada y con el
+    // trofeo. Antes el campeón solo se sabía por el banner de arriba, y al
+    // mirar el bracket la caja del título era una más.
+    final esCampeon = serie.etapa == 'finalNBA' && serie.ganador != null;
+    const dorado = Color(0xFFD4A017);
+
     return InkWell(
       onTap: (serie.victoriasA + serie.victoriasB) == 0
           ? null
@@ -967,9 +973,14 @@ class _CajaSerie extends StatelessWidget {
               origen: 'playoffs', serieId: serie.id),
       child: Container(
         decoration: BoxDecoration(
+          color: esCampeon ? dorado.withValues(alpha: 0.14) : null,
           border: Border.all(
-              color: esTuSerie ? Theme.of(context).colorScheme.primary : borderColor,
-              width: esTuSerie ? 2 : 1),
+              color: esCampeon
+                  ? dorado
+                  : (esTuSerie
+                      ? Theme.of(context).colorScheme.primary
+                      : borderColor),
+              width: esCampeon || esTuSerie ? 2 : 1),
           borderRadius: BorderRadius.circular(6),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
