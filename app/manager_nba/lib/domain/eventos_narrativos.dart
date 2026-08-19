@@ -93,15 +93,31 @@ class OpcionDeEvento {
   /// decisión se entienda: sin esto, eliges a ciegas y no aprendes nada.
   final String consecuencia;
 
-  /// Los efectos que deja. Puede ser ninguno (no hacer nada también es una
-  /// opción), uno, o varios con signos distintos.
+  /// Los efectos de rendimiento que deja. Uno, o varios con signos
+  /// distintos.
   final List<EfectoDeEvento> efectos;
+
+  /// Margen de tope salarial que deja la decisión, en dólares. Positivo es
+  /// dinero que entra (un patrocinio); negativo, una multa.
+  ///
+  /// Es el segundo eje del sistema, y existe porque con un solo eje todas
+  /// las decisiones se parecían: cambiar rendimiento por rendimiento acaba
+  /// siendo siempre la misma pregunta. Cambiar DINERO por piernas es otra
+  /// cosa — la respuesta depende de si vas a fichar o no, y eso ya no lo
+  /// decide el diálogo, lo decide tu plantilla.
+  final int bonusSalarial;
 
   const OpcionDeEvento({
     required this.etiqueta,
     required this.consecuencia,
     this.efectos = const [],
+    this.bonusSalarial = 0,
   });
+
+  /// ¿Esta opción no hace absolutamente nada? Se usa en el test que vigila
+  /// que ninguna lo sea: una respuesta sin consecuencias no es una
+  /// decisión, es un botón de cerrar.
+  bool get noHaceNada => efectos.isEmpty && bonusSalarial == 0;
 }
 
 /// En qué situación está el equipo cuando toca sortear un evento. Es lo que
@@ -202,6 +218,22 @@ const _algoMejor = 1.01;
 const _algoPeor = 0.99;
 const _muchoPeor = 0.98;
 
+/// Y las magnitudes de dinero, en dólares de tope salarial.
+///
+/// La referencia NO es el tope (240M): a esa escala cualquier cifra de
+/// patrocinio es ruido. La referencia es el **salario mínimo, 2,3M**,
+/// porque es el escalón que de verdad decide si puedes firmar a alguien o
+/// no. Por debajo de eso el dinero es decorativo: sube un número en una
+/// pantalla y no desbloquea ni un fichaje.
+///
+/// Por eso el pellizco pequeño es de 3M —justo por encima del mínimo, o sea
+/// "te da para un jugador de rotación"— y el grande de 6M, que ya es un
+/// suplente de nivel. Una multa fuerte quita 4M, que duele sin dejarte
+/// sin plantilla.
+const _bastanteDinero = 6000000;
+const _algoDeDinero = 3000000;
+const _multaFuerte = -4000000;
+
 /// Todos los eventos que existen. El orden no importa: se sortea entre los
 /// que encajan.
 final List<EventoNarrativo> catalogoDeEventos = [
@@ -241,8 +273,19 @@ final List<EventoNarrativo> catalogoDeEventos = [
       ),
       OpcionDeEvento(
         etiqueta: 'Ahora no toca',
-        consecuencia: 'Se entrena y se descansa. Nadie se queja en voz alta, '
-            'pero la cena no se ha olvidado.',
+        consecuencia: 'Se entrena y se descansa. Se llega con las piernas '
+            'frescas al siguiente partido, pero nadie se ha olvidado de que '
+            'dijiste que no: el grupo anda más frío de lo que estaba.',
+        efectos: [
+          EfectoDeEvento(
+              etiqueta: 'Piernas frescas',
+              factor: _algoMejor,
+              partidos: _unaRachaCorta),
+          EfectoDeEvento(
+              etiqueta: 'Grupo frío',
+              factor: _algoPeor,
+              partidos: _unaRachaLarga),
+        ],
       ),
     ],
   ),
@@ -407,8 +450,19 @@ final List<EventoNarrativo> catalogoDeEventos = [
       ),
       OpcionDeEvento(
         etiqueta: 'No entrar al trapo',
-        consecuencia: 'Dos frases hechas y a entrenar. El ruido sigue ahí, '
-            'pero no has echado más leña.',
+        consecuencia: 'Dos frases hechas y a entrenar. Sin leña, el asunto '
+            'se apaga solo en unos días. Lo que queda dentro es que no '
+            'saliste a dar la cara por ellos.',
+        efectos: [
+          EfectoDeEvento(
+              etiqueta: 'Nadie dio la cara por ellos',
+              factor: _algoPeor,
+              partidos: _unaRachaCorta),
+          EfectoDeEvento(
+              etiqueta: 'El ruido se apaga',
+              factor: _algoMejor,
+              partidos: _unaRachaLarga),
+        ],
       ),
     ],
   ),
@@ -466,7 +520,8 @@ final List<EventoNarrativo> catalogoDeEventos = [
       OpcionDeEvento(
         etiqueta: 'Abrir las puertas',
         consecuencia: 'El pabellón va a empujar de verdad los próximos '
-            'partidos. La mañana de trabajo perdida se paga en el primero.',
+            'partidos, y la tienda del club no ha parado en toda la mañana. '
+            'La sesión de trabajo perdida se paga en el siguiente.',
         efectos: [
           EfectoDeEvento(
               etiqueta: 'La grada empuja',
@@ -477,10 +532,126 @@ final List<EventoNarrativo> catalogoDeEventos = [
               factor: _algoPeor,
               partidos: 1),
         ],
+        bonusSalarial: _algoDeDinero,
       ),
       OpcionDeEvento(
         etiqueta: 'A entrenar, que es lo que toca',
-        consecuencia: 'Se trabaja. La afición lo entiende a medias.',
+        consecuencia: 'Se trabaja la mañana entera y se nota en el siguiente '
+            'partido. La afición lo entiende a medias: alguna pancarta ha '
+            'salido en la grada.',
+        efectos: [
+          EfectoDeEvento(
+              etiqueta: 'Mañana de trabajo',
+              factor: _algoMejor,
+              partidos: _unosPocosPartidos),
+          EfectoDeEvento(
+              etiqueta: 'La grada, fría',
+              factor: _algoPeor,
+              partidos: _unaRachaLarga),
+        ],
+      ),
+    ],
+  ),
+
+  // El otro eje del sistema: dinero contra piernas. Lo que hace que esta
+  // decisión no tenga respuesta correcta es que depende de algo que el
+  // diálogo no sabe — si te falta espacio para firmar a alguien o no.
+  EventoNarrativo(
+    clave: 'acto_publicitario',
+    titulo: 'Un patrocinador quiere a la plantilla',
+    texto: 'Una marca de la ciudad pone dinero encima de la mesa por un día '
+        'entero de rodaje: toda la plantilla, sesión de fotos y anuncio. Es '
+        'un día de trabajo perdido y los jugadores ya han puesto cara.',
+    cuando: (c) => c.partidosJugados >= 5,
+    opciones: const [
+      OpcionDeEvento(
+        etiqueta: 'Firmar el acuerdo entero',
+        consecuencia: 'Rodaje hasta las tantas y jugadores de mal humor, pero '
+            'el club se lleva un buen pellizco que da aire con el tope '
+            'salarial.',
+        efectos: [
+          EfectoDeEvento(
+              etiqueta: 'Día de rodaje',
+              factor: _muchoPeor,
+              partidos: _unosPocosPartidos),
+        ],
+        bonusSalarial: _bastanteDinero,
+      ),
+      OpcionDeEvento(
+        etiqueta: 'Negociar algo más corto',
+        consecuencia: 'Media mañana de fotos y a entrenar. Se cobra menos, '
+            'pero nadie ha perdido el día entero.',
+        efectos: [
+          EfectoDeEvento(
+              etiqueta: 'Mañana de fotos',
+              factor: _algoPeor,
+              partidos: 1),
+        ],
+        bonusSalarial: _algoDeDinero,
+      ),
+      OpcionDeEvento(
+        etiqueta: 'Decirles que no',
+        consecuencia: 'La plantilla se entera de que les has ahorrado el '
+            'marrón y llega al siguiente partido con las piernas nuevas. El '
+            'dinero, para otro año.',
+        efectos: [
+          EfectoDeEvento(
+              etiqueta: 'Plantilla descansada',
+              factor: _algoMejor,
+              partidos: _unaRachaCorta),
+        ],
+      ),
+    ],
+  ),
+
+  EventoNarrativo(
+    clave: 'partido_benefico',
+    titulo: 'Partido benéfico entre semana',
+    texto: 'El ayuntamiento organiza un amistoso benéfico y quiere al equipo. '
+        'Cae justo entre dos partidos de liga.',
+    cuando: (c) => c.partidosJugados >= 12,
+    opciones: const [
+      OpcionDeEvento(
+        etiqueta: 'Ir con los titulares',
+        consecuencia: 'Pabellón lleno y la ciudad volcada con el equipo. Es '
+            'un partido más en unas piernas que ya venían justas.',
+        efectos: [
+          EfectoDeEvento(
+              etiqueta: 'Un partido de más',
+              factor: _muchoPeor,
+              partidos: _unosPocosPartidos),
+          EfectoDeEvento(
+              etiqueta: 'La ciudad se vuelca',
+              factor: _algoMejor,
+              partidos: _unaRachaLarga),
+        ],
+        bonusSalarial: _bastanteDinero,
+      ),
+      OpcionDeEvento(
+        etiqueta: 'Mandar a los suplentes',
+        consecuencia: 'Los de abajo cogen minutos de verdad y se les ve '
+            'sueltos. La recaudación es menor, pero nadie importante se ha '
+            'cansado.',
+        efectos: [
+          EfectoDeEvento(
+              etiqueta: 'El banquillo coge ritmo',
+              factor: _algoMejor,
+              partidos: _unaRachaCorta),
+        ],
+        bonusSalarial: _algoDeDinero,
+      ),
+      OpcionDeEvento(
+        etiqueta: 'No ir',
+        consecuencia: 'Semana limpia de trabajo y descanso. El acto se '
+            'celebra igual sin vosotros, la ciudad lo lee como un feo y el '
+            'club acaba compensándolo de su bolsillo.',
+        efectos: [
+          EfectoDeEvento(
+              etiqueta: 'Semana de descanso',
+              factor: _algoMejor,
+              partidos: _unaRachaCorta),
+        ],
+        bonusSalarial: _multaFuerte,
       ),
     ],
   ),

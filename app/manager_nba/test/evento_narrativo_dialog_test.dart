@@ -92,6 +92,32 @@ void main() {
         expect(find.text(efecto.etiqueta), findsOneWidget);
       }
     });
+
+    testWidgets('el margen salarial se ve en ${entrada.key}', (tester) async {
+      // El dinero es el único efecto que NO se nota en la pista: si no se
+      // dice aquí, el usuario se entera semanas después al ir a fichar y
+      // sin poder relacionarlo con esta decisión. O sea, no se entera.
+      final conDinero = catalogoDeEventos
+          .expand((e) => e.opciones.map((o) => (e, o)))
+          .firstWhere((par) => par.$2.bonusSalarial > 0);
+
+      await montar(
+        tester,
+        entrada.value,
+        (context) => TextButton(
+          onPressed: () =>
+              contarConsecuencia(context, conDinero.$1, conDinero.$2),
+          child: const Text('abrir'),
+        ),
+      );
+
+      await tester.tap(find.text('abrir'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Margen salarial'), findsOneWidget);
+      expect(find.textContaining('+'), findsWidgets,
+          reason: 'el dinero que entra se enseña con su signo');
+    });
   }
 
   testWidgets('elegir una opción la devuelve', (tester) async {

@@ -45,7 +45,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 23;
+  int get schemaVersion => 24;
 
   /// CUIDADO AL TOCAR ESTO: aquí se decide si una actualización del juego
   /// conserva las partidas guardadas o se las lleva por delante.
@@ -96,6 +96,13 @@ class AppDatabase extends _$AppDatabase {
           if (from < 23) {
             await m.createTable(efectosDeEvento);
             await m.addColumn(temporada, temporada.eventosVistos);
+          }
+
+          // 24: el margen de tope salarial que dejan los eventos. Aditiva
+          // igual que la anterior: una partida en curso arranca con 0, que
+          // es justo lo que tenia antes de que esto existiera.
+          if (from < 24) {
+            await m.addColumn(temporada, temporada.bonusSalarial);
           }
         },
       );

@@ -178,6 +178,18 @@ class Temporada extends Table {
   /// listas de ids de `OfertasTraspaso`).
   TextColumn get eventosVistos => text().withDefault(const Constant(''))();
 
+  /// Margen de tope salarial extra que han dejado los eventos narrativos
+  /// esta temporada (patrocinios, actos publicitarios...). Se suma al tope
+  /// SOLO para el equipo del usuario: los otros 29 no toman estas
+  /// decisiones, así que no les puede tocar.
+  ///
+  /// Va en la fila de temporada y no en una tabla aparte porque es un
+  /// número suelto que se resetea cada verano, igual que
+  /// [eventosVistos]. Puede ser negativo (una multa) sin que nada se
+  /// rompa: el espacio salarial ya sabía ser negativo de antes, es lo que
+  /// significa estar por encima del tope.
+  IntColumn get bonusSalarial => integer().withDefault(const Constant(0))();
+
   @override
   Set<Column> get primaryKey => {id};
 }

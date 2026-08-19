@@ -10,6 +10,7 @@ TemporadaData _temporada({required int numero, required int anioInicio}) =>
       anioInicio: anioInicio,
       ofertasGeneradasEstaTemporada: 0,
       eventosVistos: '',
+      bonusSalarial: 0,
     );
 
 /// etiquetaTemporadaDesde traduce un número de temporada de la partida

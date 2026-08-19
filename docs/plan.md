@@ -128,6 +128,65 @@ tests de widget a tres tamaños (`test/adaptacion_movil_test.dart`), que
 detectan desbordes de layout pero no si algo se ve feo o si una fuente
 falta. Cuando algo dependa de verlo, hay que pedírselo al usuario.
 
+## Eventos narrativos, segunda vuelta: el dinero como segundo eje (hecho)
+
+Petición: que los eventos tengan decisiones de verdad — un acto
+publicitario que dé margen salarial a cambio de cansar a la plantilla, o
+que rechazarlo dé energía; una cena que si la rechazas empeore algo pero
+mejore otra cosa.
+
+**El problema de fondo era que solo había un eje.** Todos los eventos
+cambiaban rendimiento por rendimiento, así que en el fondo siempre
+planteaban la misma pregunta. Ahora `OpcionDeEvento` tiene también
+`bonusSalarial`: margen de tope salarial que entra (un patrocinio) o sale
+(una multa). Eso hace que la respuesta correcta dependa de algo que el
+diálogo no sabe —si te falta espacio para fichar o no—, que es justo lo
+que convierte una elección en una decisión.
+
+**Calibrado contra el salario mínimo, no contra el tope.** La primera
+idea era 1M, pero a esa escala el dinero es decorativo: el mínimo son
+2,3M, así que 1M no desbloquea ni un fichaje — sube un número en una
+pantalla y no cambia ninguna decisión. Las magnitudes quedan en 3M ("te
+da para un jugador de rotación") y 6M ("un suplente de nivel"), con una
+multa de 4M. Hay un test que lo vigila: ningún bonus positivo puede bajar
+del salario mínimo.
+
+**Tres opciones no hacían absolutamente nada** ("Ahora no toca", "No
+entrar al trapo", "A entrenar, que es lo que toca"): sin efectos y sin
+dinero, o sea botones de cerrar el diálogo. Todas tienen ya su
+contrapartida en los dos sentidos — rechazar la cena, por ejemplo, da
+piernas frescas ahora y deja el grupo más frío después.
+
+Catálogo: de 10 eventos y 23 opciones a **12 y 29**, ninguna sin
+consecuencias.
+
+**El test que vigila esto hubo que replantearlo, y el primer intento
+estaba mal.** La idea inicial fue pedir que ninguna opción "dominara" a
+las demás (no ser peor en nada y mejor en algo). Es imposible de cumplir:
+con un solo eje siempre hay una opción con el mejor balance neto, y
+exigir que no la haya solo se satisface empatándolo todo, que es peor
+diseño. Lo que se comprueba ahora es lo que de verdad importa: **la mejor
+opción en la pista tiene que pagar en algún sitio**, o con efectos
+negativos propios o renunciando a dinero que otra opción sí daba. Con esa
+regla, el acto publicitario pasa (rechazarlo es lo mejor para las piernas
+pero renuncia a 6M) y la cena también (la noche larga es la mejor pero
+cansa).
+
+El dinero se enseña en el diálogo de consecuencia con su propia fila. Es
+el único efecto que NO se nota en la pista: sin decirlo ahí, el usuario
+se enteraría semanas después al ir a fichar y sin poder relacionarlo con
+la decisión.
+
+Esquema: columna `Temporada.bonusSalarial` (migración aditiva, versión
+24). Se acumula entre eventos, lo suma `espacioSalarial` **solo al equipo
+del usuario** —los otros 29 no toman estas decisiones— y se borra en el
+cambio de año, como el resto de efectos.
+
+**Pendiente**: el catálogo sigue estando solo en castellano. Es contenido
+narrativo largo (unas 250 líneas de texto), así que no entró en la tanda
+de traducción de las pantallas; queda como trabajo aparte.
+
+
 ## Lista corta: Kyrie y el Hall of Fame (hecho)
 
 Fuente: `bugs_prioridad_alta_kyrie_hof.txt`.

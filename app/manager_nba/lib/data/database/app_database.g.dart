@@ -7044,6 +7044,18 @@ class $TemporadaTable extends Temporada
     requiredDuringInsert: false,
     defaultValue: const Constant(''),
   );
+  static const VerificationMeta _bonusSalarialMeta = const VerificationMeta(
+    'bonusSalarial',
+  );
+  @override
+  late final GeneratedColumn<int> bonusSalarial = GeneratedColumn<int>(
+    'bonus_salarial',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -7051,6 +7063,7 @@ class $TemporadaTable extends Temporada
     anioInicio,
     ofertasGeneradasEstaTemporada,
     eventosVistos,
+    bonusSalarial,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -7099,6 +7112,15 @@ class $TemporadaTable extends Temporada
         ),
       );
     }
+    if (data.containsKey('bonus_salarial')) {
+      context.handle(
+        _bonusSalarialMeta,
+        bonusSalarial.isAcceptableOrUnknown(
+          data['bonus_salarial']!,
+          _bonusSalarialMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -7127,6 +7149,10 @@ class $TemporadaTable extends Temporada
       eventosVistos: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}eventos_vistos'],
+      )!,
+      bonusSalarial: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}bonus_salarial'],
       )!,
     );
   }
@@ -7160,12 +7186,25 @@ class TemporadaData extends DataClass implements Insertable<TemporadaData> {
   /// tabla para esto seria mas ceremonia que dato (mismo criterio que las
   /// listas de ids de `OfertasTraspaso`).
   final String eventosVistos;
+
+  /// Margen de tope salarial extra que han dejado los eventos narrativos
+  /// esta temporada (patrocinios, actos publicitarios...). Se suma al tope
+  /// SOLO para el equipo del usuario: los otros 29 no toman estas
+  /// decisiones, así que no les puede tocar.
+  ///
+  /// Va en la fila de temporada y no en una tabla aparte porque es un
+  /// número suelto que se resetea cada verano, igual que
+  /// [eventosVistos]. Puede ser negativo (una multa) sin que nada se
+  /// rompa: el espacio salarial ya sabía ser negativo de antes, es lo que
+  /// significa estar por encima del tope.
+  final int bonusSalarial;
   const TemporadaData({
     required this.id,
     required this.numero,
     required this.anioInicio,
     required this.ofertasGeneradasEstaTemporada,
     required this.eventosVistos,
+    required this.bonusSalarial,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -7177,6 +7216,7 @@ class TemporadaData extends DataClass implements Insertable<TemporadaData> {
       ofertasGeneradasEstaTemporada,
     );
     map['eventos_vistos'] = Variable<String>(eventosVistos);
+    map['bonus_salarial'] = Variable<int>(bonusSalarial);
     return map;
   }
 
@@ -7187,6 +7227,7 @@ class TemporadaData extends DataClass implements Insertable<TemporadaData> {
       anioInicio: Value(anioInicio),
       ofertasGeneradasEstaTemporada: Value(ofertasGeneradasEstaTemporada),
       eventosVistos: Value(eventosVistos),
+      bonusSalarial: Value(bonusSalarial),
     );
   }
 
@@ -7203,6 +7244,7 @@ class TemporadaData extends DataClass implements Insertable<TemporadaData> {
         json['ofertasGeneradasEstaTemporada'],
       ),
       eventosVistos: serializer.fromJson<String>(json['eventosVistos']),
+      bonusSalarial: serializer.fromJson<int>(json['bonusSalarial']),
     );
   }
   @override
@@ -7216,6 +7258,7 @@ class TemporadaData extends DataClass implements Insertable<TemporadaData> {
         ofertasGeneradasEstaTemporada,
       ),
       'eventosVistos': serializer.toJson<String>(eventosVistos),
+      'bonusSalarial': serializer.toJson<int>(bonusSalarial),
     };
   }
 
@@ -7225,6 +7268,7 @@ class TemporadaData extends DataClass implements Insertable<TemporadaData> {
     int? anioInicio,
     int? ofertasGeneradasEstaTemporada,
     String? eventosVistos,
+    int? bonusSalarial,
   }) => TemporadaData(
     id: id ?? this.id,
     numero: numero ?? this.numero,
@@ -7232,6 +7276,7 @@ class TemporadaData extends DataClass implements Insertable<TemporadaData> {
     ofertasGeneradasEstaTemporada:
         ofertasGeneradasEstaTemporada ?? this.ofertasGeneradasEstaTemporada,
     eventosVistos: eventosVistos ?? this.eventosVistos,
+    bonusSalarial: bonusSalarial ?? this.bonusSalarial,
   );
   TemporadaData copyWithCompanion(TemporadaCompanion data) {
     return TemporadaData(
@@ -7246,6 +7291,9 @@ class TemporadaData extends DataClass implements Insertable<TemporadaData> {
       eventosVistos: data.eventosVistos.present
           ? data.eventosVistos.value
           : this.eventosVistos,
+      bonusSalarial: data.bonusSalarial.present
+          ? data.bonusSalarial.value
+          : this.bonusSalarial,
     );
   }
 
@@ -7258,7 +7306,8 @@ class TemporadaData extends DataClass implements Insertable<TemporadaData> {
           ..write(
             'ofertasGeneradasEstaTemporada: $ofertasGeneradasEstaTemporada, ',
           )
-          ..write('eventosVistos: $eventosVistos')
+          ..write('eventosVistos: $eventosVistos, ')
+          ..write('bonusSalarial: $bonusSalarial')
           ..write(')'))
         .toString();
   }
@@ -7270,6 +7319,7 @@ class TemporadaData extends DataClass implements Insertable<TemporadaData> {
     anioInicio,
     ofertasGeneradasEstaTemporada,
     eventosVistos,
+    bonusSalarial,
   );
   @override
   bool operator ==(Object other) =>
@@ -7280,7 +7330,8 @@ class TemporadaData extends DataClass implements Insertable<TemporadaData> {
           other.anioInicio == this.anioInicio &&
           other.ofertasGeneradasEstaTemporada ==
               this.ofertasGeneradasEstaTemporada &&
-          other.eventosVistos == this.eventosVistos);
+          other.eventosVistos == this.eventosVistos &&
+          other.bonusSalarial == this.bonusSalarial);
 }
 
 class TemporadaCompanion extends UpdateCompanion<TemporadaData> {
@@ -7289,12 +7340,14 @@ class TemporadaCompanion extends UpdateCompanion<TemporadaData> {
   final Value<int> anioInicio;
   final Value<int> ofertasGeneradasEstaTemporada;
   final Value<String> eventosVistos;
+  final Value<int> bonusSalarial;
   const TemporadaCompanion({
     this.id = const Value.absent(),
     this.numero = const Value.absent(),
     this.anioInicio = const Value.absent(),
     this.ofertasGeneradasEstaTemporada = const Value.absent(),
     this.eventosVistos = const Value.absent(),
+    this.bonusSalarial = const Value.absent(),
   });
   TemporadaCompanion.insert({
     this.id = const Value.absent(),
@@ -7302,6 +7355,7 @@ class TemporadaCompanion extends UpdateCompanion<TemporadaData> {
     required int anioInicio,
     this.ofertasGeneradasEstaTemporada = const Value.absent(),
     this.eventosVistos = const Value.absent(),
+    this.bonusSalarial = const Value.absent(),
   }) : anioInicio = Value(anioInicio);
   static Insertable<TemporadaData> custom({
     Expression<int>? id,
@@ -7309,6 +7363,7 @@ class TemporadaCompanion extends UpdateCompanion<TemporadaData> {
     Expression<int>? anioInicio,
     Expression<int>? ofertasGeneradasEstaTemporada,
     Expression<String>? eventosVistos,
+    Expression<int>? bonusSalarial,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -7317,6 +7372,7 @@ class TemporadaCompanion extends UpdateCompanion<TemporadaData> {
       if (ofertasGeneradasEstaTemporada != null)
         'ofertas_generadas_esta_temporada': ofertasGeneradasEstaTemporada,
       if (eventosVistos != null) 'eventos_vistos': eventosVistos,
+      if (bonusSalarial != null) 'bonus_salarial': bonusSalarial,
     });
   }
 
@@ -7326,6 +7382,7 @@ class TemporadaCompanion extends UpdateCompanion<TemporadaData> {
     Value<int>? anioInicio,
     Value<int>? ofertasGeneradasEstaTemporada,
     Value<String>? eventosVistos,
+    Value<int>? bonusSalarial,
   }) {
     return TemporadaCompanion(
       id: id ?? this.id,
@@ -7334,6 +7391,7 @@ class TemporadaCompanion extends UpdateCompanion<TemporadaData> {
       ofertasGeneradasEstaTemporada:
           ofertasGeneradasEstaTemporada ?? this.ofertasGeneradasEstaTemporada,
       eventosVistos: eventosVistos ?? this.eventosVistos,
+      bonusSalarial: bonusSalarial ?? this.bonusSalarial,
     );
   }
 
@@ -7357,6 +7415,9 @@ class TemporadaCompanion extends UpdateCompanion<TemporadaData> {
     if (eventosVistos.present) {
       map['eventos_vistos'] = Variable<String>(eventosVistos.value);
     }
+    if (bonusSalarial.present) {
+      map['bonus_salarial'] = Variable<int>(bonusSalarial.value);
+    }
     return map;
   }
 
@@ -7369,7 +7430,8 @@ class TemporadaCompanion extends UpdateCompanion<TemporadaData> {
           ..write(
             'ofertasGeneradasEstaTemporada: $ofertasGeneradasEstaTemporada, ',
           )
-          ..write('eventosVistos: $eventosVistos')
+          ..write('eventosVistos: $eventosVistos, ')
+          ..write('bonusSalarial: $bonusSalarial')
           ..write(')'))
         .toString();
   }
@@ -15792,6 +15854,7 @@ typedef $$TemporadaTableCreateCompanionBuilder =
       required int anioInicio,
       Value<int> ofertasGeneradasEstaTemporada,
       Value<String> eventosVistos,
+      Value<int> bonusSalarial,
     });
 typedef $$TemporadaTableUpdateCompanionBuilder =
     TemporadaCompanion Function({
@@ -15800,6 +15863,7 @@ typedef $$TemporadaTableUpdateCompanionBuilder =
       Value<int> anioInicio,
       Value<int> ofertasGeneradasEstaTemporada,
       Value<String> eventosVistos,
+      Value<int> bonusSalarial,
     });
 
 class $$TemporadaTableFilterComposer
@@ -15833,6 +15897,11 @@ class $$TemporadaTableFilterComposer
 
   ColumnFilters<String> get eventosVistos => $composableBuilder(
     column: $table.eventosVistos,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get bonusSalarial => $composableBuilder(
+    column: $table.bonusSalarial,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -15870,6 +15939,11 @@ class $$TemporadaTableOrderingComposer
     column: $table.eventosVistos,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get bonusSalarial => $composableBuilder(
+    column: $table.bonusSalarial,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$TemporadaTableAnnotationComposer
@@ -15899,6 +15973,11 @@ class $$TemporadaTableAnnotationComposer
 
   GeneratedColumn<String> get eventosVistos => $composableBuilder(
     column: $table.eventosVistos,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get bonusSalarial => $composableBuilder(
+    column: $table.bonusSalarial,
     builder: (column) => column,
   );
 }
@@ -15939,12 +16018,14 @@ class $$TemporadaTableTableManager
                 Value<int> anioInicio = const Value.absent(),
                 Value<int> ofertasGeneradasEstaTemporada = const Value.absent(),
                 Value<String> eventosVistos = const Value.absent(),
+                Value<int> bonusSalarial = const Value.absent(),
               }) => TemporadaCompanion(
                 id: id,
                 numero: numero,
                 anioInicio: anioInicio,
                 ofertasGeneradasEstaTemporada: ofertasGeneradasEstaTemporada,
                 eventosVistos: eventosVistos,
+                bonusSalarial: bonusSalarial,
               ),
           createCompanionCallback:
               ({
@@ -15953,12 +16034,14 @@ class $$TemporadaTableTableManager
                 required int anioInicio,
                 Value<int> ofertasGeneradasEstaTemporada = const Value.absent(),
                 Value<String> eventosVistos = const Value.absent(),
+                Value<int> bonusSalarial = const Value.absent(),
               }) => TemporadaCompanion.insert(
                 id: id,
                 numero: numero,
                 anioInicio: anioInicio,
                 ofertasGeneradasEstaTemporada: ofertasGeneradasEstaTemporada,
                 eventosVistos: eventosVistos,
+                bonusSalarial: bonusSalarial,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

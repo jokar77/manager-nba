@@ -682,4 +682,6 @@ abstract class Textos {
   String get potencialBajo;
   String potencialTooltip(String etiqueta);
   String get volverAlMenuPrincipalTooltip;
+
+  String get margenSalarialEvento;
 }

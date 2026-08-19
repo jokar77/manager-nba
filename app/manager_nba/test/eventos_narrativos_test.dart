@@ -6,8 +6,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:manager_nba/data/database/app_database.dart';
 import 'package:manager_nba/data/importer/jugadores_importer.dart';
+import 'package:manager_nba/domain/contratos_repository.dart';
 import 'package:manager_nba/domain/eventos_narrativos_repository.dart';
 import 'package:manager_nba/domain/franquicia_repository.dart';
+import 'package:manager_nba/domain/salarios.dart';
 
 ContextoDeEvento _contexto({
   int victorias = 20,
@@ -74,26 +76,78 @@ void main() {
     }
   });
 
-  test('ninguna opción es gratis: la que más da, algo cuesta', () {
-    // La regla de diseño número 1. Se comprueba de la única forma
-    // automatizable: dentro de un mismo evento, la opción con más ganancia
-    // acumulada tiene que tener también algún inconveniente — o bien no ser
-    // la única con efectos positivos.
+  test('la mejor opción de cada evento cuesta algo: piernas o dinero', () {
+    // La regla de diseño número 1, ahora con los DOS ejes.
+    //
+    // Ojo con la tentación de pedir que NINGUNA opción domine a las demás:
+    // eso es imposible de cumplir. Con un solo eje siempre hay una opción
+    // con el mejor balance neto, y exigir que no la haya solo se puede
+    // satisfacer empatando todo, que es peor diseño, no mejor.
+    //
+    // Lo que de verdad importa es que la opción más golosa NO sea gratis:
+    // que pagues por ella en algún sitio. Entonces la respuesta correcta
+    // depende de tu situación (si vienes de un back-to-back, si te falta
+    // espacio para fichar) y no de leerse el diálogo.
     for (final evento in catalogoDeEventos) {
-      double balance(OpcionDeEvento o) => o.efectos.fold<double>(
-          0, (a, e) => a + (e.factor - 1) * e.partidos);
+      double rendimiento(OpcionDeEvento o) => o.efectos
+          .fold<double>(0, (a, e) => a + (e.factor - 1) * e.partidos);
 
       final mejor = evento.opciones
-          .reduce((a, b) => balance(a) >= balance(b) ? a : b);
-      if (balance(mejor) <= 0) continue; // ninguna opción es netamente buena
+          .reduce((a, b) => rendimiento(a) >= rendimiento(b) ? a : b);
 
-      final tieneCoste = mejor.efectos.any((e) => !e.esBueno);
-      final hayOtraBuena = evento.opciones
-          .where((o) => o != mejor)
-          .any((o) => balance(o) > 0);
-      expect(tieneCoste || hayOtraBuena, isTrue,
-          reason: '${evento.clave}: "${mejor.etiqueta}" es mejor que el resto '
-              'y no cuesta nada, así que no hay nada que decidir');
+      // Paga con las piernas: algún efecto negativo propio.
+      final pagaEnPista = mejor.efectos.any((e) => !e.esBueno);
+      // O paga con el bolsillo: alguna otra opción daba más dinero.
+      final pagaEnDinero = evento.opciones
+          .any((o) => o.bonusSalarial > mejor.bonusSalarial);
+
+      expect(pagaEnPista || pagaEnDinero, isTrue,
+          reason: '${evento.clave}: "${mejor.etiqueta}" es la mejor en la '
+              'pista y no cuesta ni piernas ni dinero, así que no hay nada '
+              'que decidir');
+    }
+  });
+
+  test('ninguna opción se queda sin ninguna consecuencia', () {
+    // Más estricto que el test de arriba, que mira el BALANCE de la mejor
+    // opción. Este mira otra cosa: que no haya respuestas que literalmente
+    // no hagan nada. Una opción sin efectos ni dinero no es una decisión,
+    // es un botón de cerrar el diálogo — y había tres.
+    for (final evento in catalogoDeEventos) {
+      for (final opcion in evento.opciones) {
+        expect(opcion.noHaceNada, isFalse,
+            reason: '${evento.clave}: "${opcion.etiqueta}" no tiene ni '
+                'efectos ni dinero, así que elegirla es no decidir nada');
+      }
+    }
+  });
+
+  test('el dinero aparece en varios eventos y en las dos direcciones', () {
+    // Si el segundo eje solo apareciera una vez, no sería un eje: sería una
+    // excepción. Y si solo diera dinero, sería un premio, no una decisión.
+    final conDinero = catalogoDeEventos
+        .where((e) => e.opciones.any((o) => o.bonusSalarial != 0));
+    expect(conDinero.length, greaterThanOrEqualTo(3),
+        reason: 'el dinero tiene que ser un eje del catálogo, no una rareza');
+
+    final todas = catalogoDeEventos.expand((e) => e.opciones);
+    expect(todas.any((o) => o.bonusSalarial > 0), isTrue);
+    expect(todas.any((o) => o.bonusSalarial < 0), isTrue,
+        reason: 'alguna decisión tiene que costar dinero, no solo darlo');
+  });
+
+  test('el dinero de un evento da al menos para un contrato mínimo', () {
+    // Por debajo del salario mínimo el margen no desbloquea ningún fichaje:
+    // sube un número en una pantalla y no cambia ni una decisión. Si alguna
+    // vez se pone un bonus simbólico, que salte aquí.
+    for (final evento in catalogoDeEventos) {
+      for (final opcion in evento.opciones) {
+        if (opcion.bonusSalarial <= 0) continue;
+        expect(opcion.bonusSalarial, greaterThanOrEqualTo(salarioMinimo),
+            reason: '${evento.clave}: "${opcion.etiqueta}" da '
+                '${opcion.bonusSalarial}, menos que un contrato mínimo '
+                '($salarioMinimo): no le cambia la vida a nadie');
+      }
     }
   });
 
@@ -184,6 +238,74 @@ void main() {
       final otra = await eventoQueSalta(db,
           equipoUsuario: 'DEN', partidosSimulados: 50, random: Random(1));
       expect(otra?.clave, isNot('prueba'));
+    });
+
+    test('el dinero de un evento llega al espacio salarial, y solo al tuyo',
+        () async {
+      final antesTuyo = await espacioSalarial(db, 'DEN');
+      final antesRival = await espacioSalarial(db, 'LAL');
+
+      final evento = EventoNarrativo(
+        clave: 'patrocinio',
+        titulo: 'Patrocinio',
+        texto: 'Texto',
+        opciones: const [
+          OpcionDeEvento(
+              etiqueta: 'Firmar',
+              consecuencia: 'Entra dinero',
+              bonusSalarial: 6000000),
+        ],
+      );
+      await resolverEvento(db, evento, evento.opciones.first);
+
+      expect(await bonusSalarialDeEventos(db), 6000000);
+      expect(await espacioSalarial(db, 'DEN'), antesTuyo + 6000000,
+          reason: 'el margen es para tu equipo');
+      expect(await espacioSalarial(db, 'LAL'), antesRival,
+          reason: 'los otros 29 no toman estas decisiones: no les toca nada');
+    });
+
+    test('dos eventos con dinero se suman, y una multa resta', () async {
+      Future<void> resolver(String clave, int dinero) async {
+        final evento = EventoNarrativo(
+          clave: clave,
+          titulo: clave,
+          texto: 'Texto',
+          opciones: [
+            OpcionDeEvento(
+                etiqueta: 'Vale',
+                consecuencia: 'Pasa algo',
+                bonusSalarial: dinero),
+          ],
+        );
+        await resolverEvento(db, evento, evento.opciones.first);
+      }
+
+      await resolver('uno', 6000000);
+      await resolver('dos', -4000000);
+      // Se acumula: el segundo evento no puede borrar lo del primero.
+      expect(await bonusSalarialDeEventos(db), 2000000);
+    });
+
+    test('el margen salarial se va con el verano, como los demás efectos',
+        () async {
+      final evento = EventoNarrativo(
+        clave: 'patrocinio',
+        titulo: 'Patrocinio',
+        texto: 'Texto',
+        opciones: const [
+          OpcionDeEvento(
+              etiqueta: 'Firmar',
+              consecuencia: 'Entra dinero',
+              bonusSalarial: 6000000),
+        ],
+      );
+      await resolverEvento(db, evento, evento.opciones.first);
+      expect(await bonusSalarialDeEventos(db), 6000000);
+
+      await limpiarEventosDeLaTemporada(db);
+      expect(await bonusSalarialDeEventos(db), 0,
+          reason: 'un patrocinio de la temporada pasada no da aire en esta');
     });
 
     test('los efectos se multiplican entre sí: bueno y malo a la vez casi se '

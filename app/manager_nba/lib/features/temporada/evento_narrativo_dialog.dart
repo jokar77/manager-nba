@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
 import '../../domain/eventos_narrativos_repository.dart';
+import '../../domain/salarios.dart' show formatearSalario;
 import '../../shared/pantalla.dart';
 
 /// Plantea un evento narrativo y devuelve la opción elegida.
@@ -39,9 +40,15 @@ Future<void> contarConsecuencia(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(opcion.consecuencia),
-          if (opcion.efectos.isNotEmpty) ...[
+          if (opcion.efectos.isNotEmpty || opcion.bonusSalarial != 0) ...[
             const SizedBox(height: 16),
             ...opcion.efectos.map((e) => _FilaDeEfecto(efecto: e)),
+            // El dinero tiene que verse aquí o no existe: a diferencia de
+            // los efectos de vestuario, que se notan en la pista, el margen
+            // salarial solo se aprecia al ir a fichar — semanas después y
+            // sin que nada lo relacione con esta decisión.
+            if (opcion.bonusSalarial != 0)
+              _FilaDeDinero(dolares: opcion.bonusSalarial),
           ],
         ],
       ),
@@ -136,6 +143,42 @@ class _FilaDeEfecto extends StatelessWidget {
           Text(
             t(context).nPartidos(efecto.partidos),
             style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// El margen de tope salarial que deja una decisión. Verde si entra dinero,
+/// rojo si sale.
+class _FilaDeDinero extends StatelessWidget {
+  final int dolares;
+
+  const _FilaDeDinero({required this.dolares});
+
+  @override
+  Widget build(BuildContext context) {
+    final entra = dolares > 0;
+    final color =
+        entra ? const Color(0xFF2E9E5B) : Theme.of(context).colorScheme.error;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          Icon(entra ? Icons.savings : Icons.money_off, size: 18, color: color),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(t(context).margenSalarialEvento,
+                style: TextStyle(color: color, fontWeight: FontWeight.w600)),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '${entra ? '+' : '−'}${formatearSalario(dolares.abs())}',
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(color: color, fontWeight: FontWeight.bold),
           ),
         ],
       ),

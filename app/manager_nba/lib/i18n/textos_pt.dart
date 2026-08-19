@@ -1068,4 +1068,7 @@ class TextosPt extends Textos {
   String potencialTooltip(String etiqueta) => 'Potencial: $etiqueta';
   @override
   String get volverAlMenuPrincipalTooltip => 'Voltar ao menu principal';
+
+  @override
+  String get margenSalarialEvento => 'Margem salarial';
 }

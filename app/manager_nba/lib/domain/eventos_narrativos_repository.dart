@@ -208,14 +208,31 @@ Future<void> resolverEvento(
             partidosRestantes: acotado.partidos,
           ));
     }
+    if (opcion.bonusSalarial != 0) {
+      // Se ACUMULA, no se pisa: en una temporada pueden salir dos eventos
+      // con dinero y el segundo no puede borrar lo que dejó el primero.
+      final actual = await bonusSalarialDeEventos(db);
+      await (db.update(db.temporada)..where((t) => t.id.equals(0))).write(
+          TemporadaCompanion(
+              bonusSalarial: Value(actual + opcion.bonusSalarial)));
+    }
     await _apuntarVisto(db, evento.clave);
   });
+}
+
+/// El margen de tope salarial que han dejado los eventos de esta temporada.
+/// Lo suma [espacioSalarial], y solo para el equipo del usuario.
+Future<int> bonusSalarialDeEventos(AppDatabase db) async {
+  final temporada = await (db.select(db.temporada)..where((t) => t.id.equals(0)))
+      .getSingleOrNull();
+  return temporada?.bonusSalarial ?? 0;
 }
 
 /// Borra los efectos y la lista de vistos: se llama en el cambio de año.
 /// Un verano entero borra cualquier bronca de vestuario.
 Future<void> limpiarEventosDeLaTemporada(AppDatabase db) async {
   await db.delete(db.efectosDeEvento).go();
-  await (db.update(db.temporada)..where((t) => t.id.equals(0)))
-      .write(const TemporadaCompanion(eventosVistos: Value('')));
+  await (db.update(db.temporada)..where((t) => t.id.equals(0))).write(
+      const TemporadaCompanion(
+          eventosVistos: Value(''), bonusSalarial: Value(0)));
 }
