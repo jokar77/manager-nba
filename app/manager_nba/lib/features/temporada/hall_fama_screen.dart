@@ -406,7 +406,14 @@ class _FilaMiembro extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            if (c != null && _tieneNumeros(c))
+            // Al recién inducido solo se le pone el año. El día que entras
+            // en el Hall of Fame la noticia es ESA, y una segunda línea de
+            // promedios la diluye; sus números están a un toque, en la
+            // ficha. Además es justo el caso en el que peor salían: un
+            // jugador que acaba de entrar dentro de tu partida puede no
+            // tener promedios archivados todavía y ahí es donde aparecía
+            // el "21 temporadas · 0.0 pts · 0.0 ast".
+            if (!esNuevo && c != null && _tieneNumeros(c))
               Text(
                 t(context).anios(c.temporadasTotales) +
                     t(context).statsCarreraSufijo(
@@ -419,7 +426,7 @@ class _FilaMiembro extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               )
-            else if (c != null && c.temporadasTotales > 0)
+            else if (!esNuevo && c != null && c.temporadasTotales > 0)
               Text(t(context).anios(c.temporadasTotales),
                   maxLines: 1, overflow: TextOverflow.ellipsis),
           ],

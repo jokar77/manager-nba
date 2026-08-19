@@ -127,4 +127,54 @@ void main() {
     expect(find.text('1'), findsOneWidget,
         reason: 'el número 1 del ranking de puntos');
   });
+
+  testWidgets('a un recién inducido solo se le pone el año: ni temporadas '
+      'ni promedios debajo', (tester) async {
+    // Las leyendas reales importadas no traen carrera archivada, así que
+    // nunca llevan segunda línea. El caso del bug es el otro: alguien
+    // inducido DENTRO de la partida, que sí tiene temporadas guardadas.
+    // Se monta uno a mano.
+    final jugador = (await (db.select(db.jugadores)..limit(1)).getSingle());
+    await db.into(db.historialEstadisticasJugador).insert(
+        HistorialEstadisticasJugadorCompanion.insert(
+          temporada: 2,
+          jugadorId: jugador.id,
+          equipo: jugador.equipo,
+          media: 95,
+          partidosJugados: 80,
+          puntosTotales: 2000,
+          asistenciasTotales: 500,
+          rebotesTotales: 600,
+        ));
+    await db.into(db.hallDeLaFama).insert(HallDeLaFamaCompanion.insert(
+        jugadorId: jugador.id,
+        nombreJugador: jugador.nombreFicticio,
+        temporadaIngreso: 3,
+        puntuacion: 90));
+
+    // Sin marcarlo como nuevo: le sale la segunda línea con sus números.
+    // Sin esta comprobación el resto del test podría pasar por vacío.
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(body: HallDeLaFamaBody(db: db)),
+    ));
+    await asentar(tester);
+    expect(find.textContaining(' pts · '), findsWidgets,
+        reason: 'un inducido de la partida sí enseña sus promedios');
+
+    // Y ahora el mismo, marcado como recién inducido: solo el año.
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: HallDeLaFamaBody(db: db, nuevosIds: {jugador.id}),
+      ),
+    ));
+    await asentar(tester);
+
+    expect(tester.takeException(), isNull);
+    expect(find.textContaining('Entró en'), findsWidgets,
+        reason: 'el año se queda: es justo lo único que debe verse');
+    expect(find.textContaining(' pts · '), findsNothing,
+        reason: 'a un recién inducido no se le ponen los promedios');
+    expect(find.textContaining('temporadas'), findsNothing,
+        reason: 'ni el recuento de temporadas suelto');
+  });
 }

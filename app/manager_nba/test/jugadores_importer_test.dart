@@ -25,9 +25,39 @@ void main() {
     await importarJugadoresSiHaceFalta(db);
     final filas = await db.select(db.jugadores).get();
 
-    // El JSON trae 641 jugadores; ~59 son prospectos sin stats reales.
+    // El JSON trae 645 jugadores; ~59 son prospectos sin stats reales.
     expect(filas.length, greaterThan(560));
-    expect(filas.length, lessThan(641));
+    expect(filas.length, lessThan(645));
+  });
+
+  test('las estrellas que se perdieron la temporada entera por lesión '
+      'siguen estando en su equipo', () async {
+    // El dataset se genera de las estadísticas de una temporada con un
+    // mínimo de partidos, así que quien no jugó NINGUNO desaparecía del
+    // juego: Kyrie Irving no salía en Dallas. Se añadieron a mano (ver
+    // `docs/plan.md`), y esto vigila que una regeneración del dataset no
+    // los vuelva a dejar fuera sin que nadie se entere.
+    await importarJugadoresSiHaceFalta(db);
+    final filas = await db.select(db.jugadores).get();
+    final porNombreReal = {for (final j in filas) j.nombreReal: j};
+
+    const esperados = {
+      'Kyrie Irving': 'DAL',
+      'Damian Lillard': 'POR',
+      'Tyrese Haliburton': 'IND',
+      'Fred VanVleet': 'HOU',
+    };
+    for (final entrada in esperados.entries) {
+      final jugador = porNombreReal[entrada.key];
+      expect(jugador, isNotNull,
+          reason: '${entrada.key} tiene que estar en el dataset');
+      expect(jugador!.equipo, entrada.value,
+          reason: '${entrada.key} juega en ${entrada.value}');
+      // Sin atributos no lo dejaría pasar el filtro del importador, así
+      // que si llega aquí es que están; lo que se comprueba es que no
+      // sean un relleno absurdo.
+      expect(jugador.media, inInclusiveRange(70, 99));
+    }
   });
 
   test('normaliza posiciones con espacio no separable ("SG / PG" -> "SG")',

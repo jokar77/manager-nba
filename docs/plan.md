@@ -119,6 +119,77 @@ tests de widget a tres tamaños (`test/adaptacion_movil_test.dart`), que
 detectan desbordes de layout pero no si algo se ve feo o si una fuente
 falta. Cuando algo dependa de verlo, hay que pedírselo al usuario.
 
+## Lista corta: Kyrie y el Hall of Fame (hecho)
+
+Fuente: `bugs_prioridad_alta_kyrie_hof.txt`.
+
+**1 — Kyrie Irving no aparecía en su equipo. Y no era solo Kyrie.**
+
+La causa está en el pipeline de datos, no en la app.
+`preparar_datos_nba_v27.py` construye `jugadores.json` a partir de las
+estadísticas **de la temporada 2025-26** (`cargar_stats(temporada_objetivo
+=2026, minimo_partidos=15)`). Quien se perdió el año ENTERO por lesión
+grave no tiene fila en el CSV de origen, así que desaparece del juego: ni
+en `jugadores.json` ni en `datos_reales.json` (dorsales y salarios), que
+sale del mismo volcado.
+
+Buscando el patrón aparecieron **cuatro**, y los cuatro son exactamente el
+mismo caso — se rompieron y no jugaron un solo partido:
+
+| Jugador | Equipo | Lesión |
+|---|---|---|
+| Kyrie Irving | DAL | cruzado, marzo 2025 |
+| Damian Lillard | POR | Aquiles, abril 2025 |
+| Tyrese Haliburton | IND | Aquiles, Finales 2025 |
+| Fred VanVleet | HOU | cruzado, septiembre 2025 |
+
+Añadidos a mano al dataset. **Sus atributos no se pusieron a ojo**: se
+derivan del propio dataset con el script
+`anadir_jugadores_lesionados.py` (en la raíz, al lado del pipeline; es
+idempotente, si vuelves a lanzarlo no los duplica), que
+1. reconstruye `atr_ataque` de su fórmula real (`pts + ast*1,5`, escalado),
+   usando la mediana de los 15 jugadores con producción más parecida — no
+   una interpolación entre vecinos, porque la curva tiene picos sueltos
+   (Trae Young marca 98 con un bruto de 32,4, entre gente de 92) y caer al
+   lado de uno se lo lleva entero;
+2. saca `atr_defensa` y `atr_tiro3` por comparables del mismo puesto, que
+   es lo que se puede hacer: sus entradas (robos, tapones, % de triple) no
+   están en el JSON y no hay forma de reconstruirlas;
+3. compone la media con los pesos reales del pipeline (0,55 / 0,40 / 0,05)
+   y el potencial con su tabla por edad.
+
+El método **se valida a sí mismo con leave-one-out** sobre 120 jugadores
+que ya están: error mediano de media **8 puntos**, p90 de 23. Ese error es
+el suelo del método y viene de defensa y triple, que no se pueden
+reconstruir. La producción de partida es la de su última temporada sana
+(2024-25), que es justo lo que el juego usa como referencia cuando no hay
+temporada simulada.
+
+Dónde quedan: Lillard #21 de la liga, Kyrie #45, Haliburton #46,
+VanVleet #110. **Ojo**: son estimaciones, no datos reales de 2025-26 —
+esos no existen porque no jugaron.
+
+Vigilado por un test nuevo en `jugadores_importer_test.dart` que
+comprueba que los cuatro siguen en su equipo, para que una regeneración
+del dataset no los vuelva a dejar fuera en silencio.
+
+**2 — Hall of Fame: al recién inducido, solo el año.**
+
+La pantalla de anuncio de fin de temporada ya lo hacía bien. El que
+fallaba era la lista grande (`_FilaMiembro`): a un recién inducido le
+ponía debajo una segunda línea con temporadas y promedios. Y es justo el
+caso peor, porque alguien que entra DENTRO de tu partida puede no tener
+promedios archivados todavía — de ahí el "21 temporadas · 0.0 pts · 0.0
+ast" que se reportó en el punto 11 de la lista anterior y que se dio por
+cerrado sin estarlo del todo.
+
+Ahora la segunda línea se salta cuando `esNuevo`. El test nuevo en
+`legado_pantallas_test.dart` **se probó contra el código viejo y falla**,
+así que pilla el bug de verdad y no pasa por vacío (monta un inducido con
+temporadas archivadas a propósito: las leyendas reales importadas no
+tienen carrera guardada y con ellas el test no probaría nada).
+
+
 ## Lista parte 11 — EN CURSO (lo que se está haciendo ahora)
 
 Fuente: `lista_bugs_mejoras_parte11.txt` (24 puntos, ordenados por el
@@ -148,7 +219,7 @@ Marcar aquí según se vayan cerrando.
 | 17 | Bracket: el Play-In debe desaparecer al terminar | YA ESTABA: `playoffs_screen.dart:232` lo esconde en cuanto todas sus series tienen ganador. Falta que el usuario diga cuándo lo vio |
 | 18 | Avisos de lesión con el icono de cruz blanca sobre rojo | HECHO |
 | 19 | Variación realista de puntos por partido (30 un día, 20 otro) | HECHO |
-| 20 | Espacios salariales mal: en la temporada 5-6 se tienen cinco titulares de +90 y aún sobran 10M | |
+| 20 | Espacios salariales mal: en la temporada 5-6 se tienen cinco titulares de +90 y aún sobran 10M | HECHO (ver "Puntos 20 y 22" más abajo; la fila se quedó sin marcar) |
 | 21 | Igual que el 12, visto desde el retiro | HECHO (mismo arreglo) |
 | 22 | Las medias suben demasiado al avanzar temporadas; el potencial no puede alcanzarse siempre | HECHO |
 | 23 | Eventos narrativos aleatorios con decisión y consecuencias (cena de equipo = más química, menos energía) | HECHO |
@@ -200,8 +271,11 @@ además se ve el ataque/defensa del quinteto y de la rotación entera.
 
 **15 — NBA Cup.** El diálogo de campeón es el mismo para la NBA y para la
 Cup, y decía "el anillo es vuestro" en los dos casos. Ahora
-`daAnillo: false` para la Cup. **Falta** hacer más pequeño el aviso de
-jugar la final.
+`daAnillo: false` para la Cup. Y el aviso de jugar la final ya es más
+pequeño: pasó de diálogo a una barra de abajo de 6 segundos
+(`_avisarFinalDeCopaProgramada` en `simulacion_ui.dart`), porque es una
+FECHA que apuntar, no una decisión que tomar. El "falta" que ponía aquí
+era texto viejo: la parte que faltaba se hizo en la misma tanda.
 
 **18 — Icono de lesión.** `lib/shared/icono_lesion.dart`: cruz blanca sobre
 cuadro rojo, con su propio fondo para que se vea igual en claro y en
