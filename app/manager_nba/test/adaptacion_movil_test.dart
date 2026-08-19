@@ -194,22 +194,41 @@ void main() {
     expect(find.text('CONFERENCIA ESTE'), findsOneWidget);
     expect(find.textContaining('FINAL'), findsWidgets);
 
-    // Y de verdad entra en pantalla: nada del cuadro se sale por los lados.
+    // Lo que se vigila NO es que quepa, sino que se lea.
     //
-    // Se mide por clave y no buscando el InteractiveViewer: girado a
-    // vertical el cuadro mide 714 en vez de 1400, así que en una tablet ya
-    // cabe sin encoger y entonces no hay InteractiveViewer que encontrar.
+    // Antes esto comprobaba que el cuadro entrara en el ancho de la
+    // pantalla, y por eso el bug del punto 16 pasaba desapercibido: el
+    // cuadro cabía, sí, pero encogido al 55% en un móvil, con los nombres
+    // de 11px dibujados a 6. Cabía y era ilegible, que es justo lo que se
+    // reportó. Ahora se deja a tamaño real y se arrastra.
+    //
+    // 714 = 66 de la columna de etiquetas + 4 huecos de 162 de la primera
+    // ronda (ver las constantes de _BracketVisual).
+    const anchoNatural = 714.0;
+    const escalaMinima = 0.9;
     final cuadro = tester.renderObject<RenderBox>(
         find.byKey(const ValueKey('cuadro-playoffs')));
-    expect(cuadro.size.width, lessThanOrEqualTo(tamano.width + 0.5),
-        reason: 'el cuadro mide ${cuadro.size.width} y la pantalla '
-            '${tamano.width}: se sale por un lado');
+    final escala = cuadro.size.width / anchoNatural;
+    expect(escala, greaterThanOrEqualTo(escalaMinima),
+        reason: 'el cuadro se ha encogido al '
+            '${(escala * 100).toStringAsFixed(0)}% en una pantalla de '
+            '${tamano.width}: a ese tamaño no se leen los nombres');
   }
 
-  testWidgets('en móvil el cuadro de playoffs se ve entero, con las dos '
+  testWidgets('en móvil el cuadro de playoffs se lee, con las dos '
       'conferencias a la vez', (WidgetTester tester) async {
     await sembrarPlayoffs(db);
     await comprobarCuadroEntero(tester, const Size(390, 844));
+
+    // Y si no cabe, se puede arrastrar: sin esto el cuadro a tamaño real
+    // se quedaría recortado por la derecha y sin forma de llegar al Este.
+    final scrollables = tester
+        .widgetList<Scrollable>(find.byType(Scrollable))
+        .where((s) => s.axisDirection == AxisDirection.right ||
+            s.axisDirection == AxisDirection.left);
+    expect(scrollables, isNotEmpty,
+        reason: 'a tamaño real el cuadro no cabe en 390px: tiene que '
+            'poder arrastrarse en horizontal');
   });
 
   testWidgets('y en un iPad en vertical, igual', (WidgetTester tester) async {

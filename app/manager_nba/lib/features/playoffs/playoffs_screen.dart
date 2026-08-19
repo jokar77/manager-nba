@@ -266,10 +266,11 @@ class _PlayoffsScreenState extends State<PlayoffsScreen> {
                           ),
                         ),
                       const SizedBox(height: 8),
-                      // Sin scroll horizontal: el cuadro se encoge solo hasta
-                      // caber en el ancho que haya (ver _BracketVisual), así
-                      // que envolverlo en un scroll infinito le quitaría la
-                      // referencia que necesita para escalarse.
+                      // El scroll horizontal, si hace falta, lo pone el
+                      // propio _BracketVisual: necesita medir el ancho que
+                      // hay para decidir si encoge o se deja a tamaño real,
+                      // y envolverlo aquí en un scroll infinito le quitaría
+                      // esa referencia.
                       _BracketVisual(
                         db: widget.db,
                         series: series,
@@ -593,6 +594,12 @@ class _BracketVisual extends StatelessWidget {
   /// así que las etiquetas van al lado.
   static const _anchoEtiquetas = 66.0;
 
+  /// Hasta dónde se deja encoger el cuadro para que quepa de una vez. Por
+  /// debajo de esto se prefiere el tamaño real con scroll: a 0,9 los
+  /// nombres de 11px quedan en 9,9 —que se leen— y a 0,55, que es lo que
+  /// tocaba en un móvil, quedaban en 6.
+  static const _escalaMinima = 0.9;
+
   Serie? _buscar(String conferencia, String etapa) =>
       series.where((s) => s.conferencia == conferencia && s.etapa == etapa).firstOrNull;
 
@@ -753,23 +760,24 @@ class _BracketVisual extends StatelessWidget {
       ),
     );
 
-    // Se encoge hasta caber en el ancho que haya, para que el cuadro se vea
-    // ENTERO sin arrastrar el dedo a ciegas. En vertical la penalización es
-    // mucho menor que antes: 714 píxeles de ancho en vez de 1400, o sea que
-    // en un móvil de 390 se queda al 55% en lugar del 28%.
+    // El cuadro mide 714 de ancho. Antes se encogía SIEMPRE hasta caber en
+    // la pantalla, y en un móvil de 390 eso lo dejaba al 55%: los nombres
+    // de 11px dibujados a 6px, ilegibles (era el punto 16 de la lista).
     //
-    // Aun así, encogido los nombres se leen justos, y por eso va dentro de
-    // un InteractiveViewer: se pellizca para acercarse a lo que interese.
-    // Los botones de simular siguen funcionando con el zoom puesto.
+    // Ahora solo se encoge cuando el recorte es pequeño. Si hiciera falta
+    // apretarlo de verdad se deja a tamaño real y se arrastra: entre
+    // "entero pero sin poder leerlo" y "a tamaño real con scroll", lo
+    // segundo. El scroll se entiende solo; la letra de 6px no se lee de
+    // ninguna manera.
     final alturaTotal = alturaCuadro + 2 * _altoBanda + 8;
     return LayoutBuilder(builder: (context, constraints) {
-      final escala = constraints.maxWidth >= anchoTotal
-          ? 1.0
-          : constraints.maxWidth / anchoTotal;
-      final encogido = SizedBox(
-        // Clave estable para medir el cuadro desde los tests: si cabe sin
-        // encoger no hay InteractiveViewer, así que buscar ese widget no
-        // sirve para saber cuánto ocupa.
+      final requerida = constraints.maxWidth / anchoTotal;
+      final escala = requerida >= _escalaMinima
+          ? (requerida > 1.0 ? 1.0 : requerida)
+          : 1.0;
+
+      final dimensionado = SizedBox(
+        // Clave estable para medir el cuadro desde los tests.
         key: const ValueKey('cuadro-playoffs'),
         width: anchoTotal * escala,
         height: alturaTotal * escala,
@@ -780,11 +788,17 @@ class _BracketVisual extends StatelessWidget {
               width: anchoTotal, height: alturaTotal, child: cuadro),
         ),
       );
-      if (escala == 1.0) return encogido;
-      return InteractiveViewer(
-        minScale: 1,
-        maxScale: 4,
-        child: encogido,
+
+      // Si cabe, se deja quieto: un scroll que no scrollea solo estorba.
+      if (anchoTotal * escala <= constraints.maxWidth + 0.5) {
+        return dimensionado;
+      }
+      // Scroll y no InteractiveViewer: pellizcar para hacer zoom competía
+      // con el arrastre y además obligaba a descubrir el gesto. Una barra
+      // que se arrastra es lo que cualquiera prueba primero.
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: dimensionado,
       );
     });
   }

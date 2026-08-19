@@ -24,17 +24,26 @@ https://jokar77.github.io/manager-nba/
 Último commit publicado: **`f8abae8`** ("Entrenadores con contrato y el
 juego en siete idiomas"), en verde.
 
-Ya commiteados y verificados: los eventos narrativos (punto 23), con lo
-que la lista parte 11 queda en **23 de 24**. Verificado en local:
+Ya commiteados y verificados: los eventos narrativos (punto 23) y el
+bracket de móvil (punto 16), con lo que **la lista parte 11 queda
+entera**: los únicos dos que siguen abiertos (7 y 17) están a la espera
+de un ejemplo concreto del usuario, no de trabajo. Verificado en local:
 `flutter analyze` limpio en los dos paquetes, **414 tests** de la app +
 **19** de `sim_engine` en verde, y `flutter build web` correcto.
 `web/sw.js` en **`CACHE = manager-nba-v9`**.
 
-**El único punto que queda de la parte 11 es el 16** (bracket de playoffs
-diminuto en móvil): aparcado a propósito porque cambiar cómo escala el
-bracket sin poder ver una captura real sería adivinar a ciegas — este
-entorno no compone imagen, así que no hay manera de comprobar el resultado
-sin que el usuario mire su móvil.
+**El 16 (bracket diminuto en móvil) ya está hecho**, y sin necesitar la
+captura que se estaba esperando: se podía MEDIR. El cuadro mide 714 de
+ancho y se encogía siempre hasta caber, o sea al 51% en un móvil de 390,
+con los nombres de 11px dibujados a 6. Ahora solo se encoge si el recorte
+es pequeño (hasta `_escalaMinima = 0.9`); por debajo se queda a tamaño
+real y se arrastra en horizontal.
+
+La lección: el test que vigilaba esta pantalla comprobaba que el cuadro
+**cupiera**, y por eso el bug vivía ahí tan tranquilo — cabía, sí, pero
+ilegible. Ahora mide la ESCALA a la que se dibuja, que es lo que de verdad
+se reportó. Probado contra el código viejo, falla con el mensaje "el
+cuadro se ha encogido al 51%".
 
 **Esquema de base de datos en la 23**, con migración aditiva (tabla
 `EfectosDeEvento` + columna `Temporada.eventosVistos`): las partidas
@@ -173,6 +182,14 @@ Vigilado por un test nuevo en `jugadores_importer_test.dart` que
 comprueba que los cuatro siguen en su equipo, para que una regeneración
 del dataset no los vuelva a dejar fuera en silencio.
 
+**¿Faltaba alguien más?** Se barrió de dos formas, y no: (1) cruzando
+`datos_reales.json` (444 jugadores con equipo y salario reales) contra el
+dataset, cero ausencias; (2) mirando a quién descarta el filtro del
+importador por traer campos a null: son 59 y **todos tienen 19 años** —
+son los prospectos del draft de 2026 (Dybantsa, Caleb Wilson, Nate
+Ament...), que todavía no han jugado en la NBA y se excluyen a propósito.
+Los cuatro lesionados eran el conjunto completo.
+
 **2 — Hall of Fame: al recién inducido, solo el año.**
 
 La pantalla de anuncio de fin de temporada ya lo hacía bien. El que
@@ -215,7 +232,7 @@ Marcar aquí según se vayan cerrando.
 | 13 | En el historial de un jugador que pasó por mi equipo, incluir trofeos/anillos ganados DENTRO de la partida, no solo los reales | HECHO |
 | 14 | Retiros: quitar el texto "resto de la liga" | HECHO |
 | 15 | NBA Cup: el mensaje debe decir que ganas la Cup, no un anillo. El aviso de la final, más pequeño | HECHO |
-| 16 | Bracket de playoffs en móvil: se ve diminuto, tiene que ajustarse a la pantalla | |
+| 16 | Bracket de playoffs en móvil: se ve diminuto, tiene que ajustarse a la pantalla | HECHO |
 | 17 | Bracket: el Play-In debe desaparecer al terminar | YA ESTABA: `playoffs_screen.dart:232` lo esconde en cuanto todas sus series tienen ganador. Falta que el usuario diga cuándo lo vio |
 | 18 | Avisos de lesión con el icono de cruz blanca sobre rojo | HECHO |
 | 19 | Variación realista de puntos por partido (30 un día, 20 otro) | HECHO |
