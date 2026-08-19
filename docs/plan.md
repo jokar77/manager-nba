@@ -12,12 +12,41 @@ https://jokar77.github.io/manager-nba/
   `.github/workflows/publicar.yml`, que compila, pasa los tests y despliega
   en GitHub Pages. Si los tests fallan NO se publica.
 - En Settings → Pages, *Source* está en **GitHub Actions** (ya configurado).
-- `gh` CLI NO está instalado; `git` sí (2.55). **El push lo hace el usuario
-  a mano** porque necesita autenticarse: hay que darle los comandos en
-  bloques separados (PowerShell 5.1 **no admite `&&`**).
+- `gh` CLI NO está instalado; `git` sí (2.55). **`git push origin main`
+  funciona desde aquí** (las credenciales están guardadas): en la sesión
+  del 19 de agosto de 2026 se subieron cinco commits sin que el usuario
+  tuviera que hacer nada. La nota antigua decía que lo tenía que hacer él
+  a mano; ya no hace falta. Aun así, **commit y push solo cuando el
+  usuario lo pida**.
 - Verificación local: `flutter analyze` limpio en los dos paquetes,
-  **364 tests** de la app + **19** de `sim_engine`, y `flutter build web`
+  **428 tests** de la app + **19** de `sim_engine`, y `flutter build web`
   correcto.
+- PowerShell 5.1 **no admite `&&`**; el Bash de Git sí. Los dos están
+  disponibles y se usa el que convenga.
+
+## Lo hecho el 19 de agosto de 2026 (la sesión más reciente)
+
+Cinco commits, todos subidos a `main`. De más antiguo a más nuevo:
+
+| Commit | Qué |
+|---|---|
+| `1fd38ec` | Traduce a los siete idiomas **todas** las pantallas que quedaban (~30 ficheros, +300 claves) |
+| `af0e0b5` | Kyrie Irving y otras tres estrellas que faltaban del dataset + el Hall of Fame de los recién inducidos |
+| `2bd954d` | Bracket de playoffs legible en móvil (punto 16 de la lista parte 11) |
+| `cb82e7f` | Eventos narrativos: el dinero como segundo eje de decisión |
+| `6cf8638` | Kyrie también en las partidas ya empezadas + **caché a v10** |
+
+Cada uno tiene su sección propia más abajo con el porqué. Los tres
+detalles que más fácil se pierden:
+
+1. **La caché estaba en v9 con cuatro commits ya publicados.** Nadie con
+   el juego instalado había recibido nada. Es la razón de que el usuario
+   dijera "sigue sin estar Irving en Dallas" cuando el dataset ya lo
+   tenía. Ver "Subir `CACHE` en CADA publicación".
+2. **Las partidas ya empezadas no releen el dataset.** Ver "Cambiar los
+   DATOS no llega a las partidas ya empezadas".
+3. **La lista parte 11 queda entera.** Los puntos 7 y 17 no esperan
+   trabajo, esperan un ejemplo concreto del usuario.
 
 ## ESTADO DE LA PUBLICACIÓN
 
@@ -38,8 +67,18 @@ la versión es parte de publicar, no un detalle**.
 
 Con la lista parte 11 entera: los únicos dos que siguen abiertos (7 y 17)
 están a la espera de un ejemplo concreto del usuario, no de trabajo.
-Verificado en local: `flutter analyze` limpio, **425 tests** de la app +
+Verificado en local: `flutter analyze` limpio, **428 tests** de la app +
 **19** de `sim_engine` en verde, y `flutter build web` correcto.
+
+**Último commit subido: `6cf8638`** ("Kyrie tambien en las partidas ya
+empezadas, y sube la cache a v10"). Queda por confirmar que su despliegue
+salió verde — se comprueba con la API de Actions, ver más abajo.
+
+**Lo que hay que decirle al usuario para que lo vea**: recargar con
+**Ctrl+Shift+R** (o cerrar y reabrir el icono) para que el navegador coja
+la v10. Y si su carrera va por la temporada 1, Kyrie y los otros tres
+aparecen solos al continuarla; si va más avanzada, hace falta empezar una
+partida nueva (el porqué, en la sección de Kyrie).
 
 **El 16 (bracket diminuto en móvil) ya está hecho**, y sin necesitar la
 captura que se estaba esperando: se podía MEDIR. El cuadro mide 714 de
@@ -59,8 +98,10 @@ cuadro se ha encogido al 51%".
 guardadas siguen intactas y simplemente empiezan sin ningún efecto activo,
 que es el estado correcto.
 
-Última publicación CONFIRMADA en verde: `9035f88` (caché v6). Si `f8abae8`
-salió verde, la web ya lleva el dinero de los entrenadores y los idiomas.
+Última publicación CONFIRMADA en verde: `9035f88` (caché v6). Todo lo de
+`f8abae8` en adelante está subido pero **sin confirmar run a run**; como
+la caché iba en v9 hasta ahora, en la práctica nadie con el juego ya
+instalado había recibido nada de eso. La v10 es la que lo entrega todo.
 
 ### Cómo comprobar si una publicación fue bien
 
@@ -123,10 +164,18 @@ sigue con la versión anterior y basta con volver a subir cuando esté.
    Ver la sección de idiomas. Hace falta que el usuario lo abra en su móvil,
    ponga chino y diga si se lee. Es el dato que decide si hay que empaquetar
    una fuente CJK de varios MB o no hay nada que hacer.
-5. **Faltan ~350 textos por traducir**, todo lo que no sea el menú de
-   inicio, Ajustes, el menú principal y la pantalla de Entrenador. La
-   infraestructura está y añadir una clave es trivial; es trabajo largo, no
-   difícil.
+5. **Las pantallas ya están traducidas las siete** (se hizo en `1fd38ec`:
+   unas 30 pantallas y más de 300 claves nuevas). Lo que queda sin
+   traducir es **el catálogo de eventos narrativos**
+   (`lib/domain/eventos_narrativos.dart`): unas 250 líneas de texto
+   narrativo — títulos, planteamientos y consecuencias de los 12 eventos.
+   Quien juegue en otro idioma verá esos diálogos en castellano. Es
+   trabajo largo, no difícil, y el usuario ya sabe que está pendiente.
+6. **Los puntos 7 y 17 de la lista parte 11** siguen abiertos pero NO por
+   falta de trabajo: se investigaron y el código parece correcto. El 7
+   (ofertas de la CPU poco realistas) necesita que el usuario mande una
+   oferta concreta con sus jugadores y contratos; el 17 (que el Play-In
+   desaparezca al terminar) necesita que diga cuándo lo vio mal.
 
 ### Lo que NO se ha podido verificar nunca en esta máquina
 
@@ -773,7 +822,7 @@ esa vía no firma a nadie de 82 o más, y si un puesto solo lo cubre una
 estrella se deja sin cubrir — jugar a alguien fuera de posición cuesta un
 10%, regalar un 87 desequilibra la partida.
 
-## Idiomas (empezado, a medias)
+## Idiomas (las pantallas, hechas; el catálogo de eventos, no)
 
 El juego habla **siete idiomas**: español, inglés, francés, portugués de
 Brasil, alemán, italiano y chino simplificado. El selector está en Ajustes,
@@ -796,11 +845,22 @@ textos de un idioma coinciden con el castellano, salta.
 
 ### Lo que falta y cómo seguir
 
-Traducidos: el menú de inicio, Ajustes, el menú principal completo y la
-pantalla de Entrenador. **El resto de pantallas siguen en castellano** —
-calendario, plantilla, traspasos, draft, Legado, playoffs, premios... Son
-unos 350 textos más de los 414 que hay en total (medidos con
-`grep -rhoE "'[^']{4,}'" lib/features lib/shared`).
+**Las pantallas ya están todas traducidas** (commit `1fd38ec`): unas 30
+ficheros de `lib/features` y `lib/shared`, más de 300 claves nuevas. Se
+comprobó con un barrido `grep` sobre los dos directorios y lo único que
+queda son identificadores internos ('Este', 'Oeste', 'Final'), que no son
+texto de interfaz.
+
+**Lo que SIGUE en castellano es el catálogo de eventos narrativos**
+(`lib/domain/eventos_narrativos.dart`): unas 250 líneas con los títulos,
+planteamientos, etiquetas de opción y consecuencias de los 12 eventos.
+Quien juegue en otro idioma verá esos diálogos en español. No entró en la
+tanda de pantallas porque es contenido narrativo largo, no etiquetas: la
+receta de abajo sirve igual, pero son textos de varias frases y conviene
+tratarlos como una tarea propia. El usuario ya sabe que está pendiente y
+no lo ha pedido todavía.
+
+La receta de abajo es la que se usó para las pantallas y funciona.
 
 La receta para cada pantalla, que ya está rodada:
 
@@ -821,6 +881,28 @@ La receta para cada pantalla, que ya está rodada:
 - `t(context)` es una llamada a método, así que **rompe cualquier `const`**
   que lo envuelva. Hay que quitar el `const` del padre y ponerlo en los
   hijos que sigan siéndolo.
+
+**Si se generan las claves con un script de Python** (que es como se
+hicieron las 300 de golpe, y merece la pena), hay dos bugs que salieron
+y que no dan la cara al compilar — el código compila y el texto sale mal
+en pantalla:
+
+- **`\$` en vez de `$`.** En Python `"\$"` no es un escape reconocido y
+  pasa tal cual al Dart generado, donde `\$` significa "un dólar
+  literal": la interpolación deja de funcionar y al usuario le sale
+  `$nombre` escrito. Llegó a haber ~150 así. Se detecta con
+  `grep -c '\\\$' lib/i18n/textos_*.dart` (tiene que dar 0 en los siete).
+- **Apóstrofes sin escapar** en francés e italiano (`l'année`,
+  `all'anno`) cierran el literal de Dart antes de tiempo. Aquí sí falla
+  el análisis, pero con errores de sintaxis desconcertantes.
+
+La solución para los dos: **una función que construya el literal Dart**
+en vez de escribirlo a mano, escapando `\`, `'` y los saltos de línea, y
+pasarle el texto plano. Con eso desaparecen ambos.
+
+Y merece la pena montar un test desechable que llame a TODAS las claves
+nuevas con parámetros en los siete idiomas y compruebe que no queda
+ningún `$` sin interpolar; se ejecuta, se confirma y se borra.
 
 Criterio de traducción: los términos NBA que la prensa de cada país deja en
 inglés (playoffs, All-Star, NBA Cup, trade en alemán) se dejan tal cual.
@@ -848,9 +930,39 @@ salarial: ni ingresos ni taquilla), staff más allá del entrenador, química de
 vestuario, ojeadores con incertidumbre real, y el selector de **idioma en
 Ajustes está deshabilitado** (es un placeholder).
 
+## Cambiar los DATOS no llega a las partidas ya empezadas
+
+Hermana de la sección del `schemaVersion`, y se aprendió con Kyrie: hay
+**dos** formas de que un arreglo no llegue al usuario, y las dos son
+silenciosas.
+
+Los importadores del arranque siguen todos el mismo patrón: *si la tabla
+ya tiene datos, no hago nada*. Es correcto —volver a importar pisaría una
+carrera en marcha— pero significa que **añadir algo al dataset solo lo ven
+las partidas nuevas**. Las que ya existen no vuelven a mirar el asset
+jamás.
+
+Cuando un cambio de datos tenga que llegar también a las partidas en
+curso, hay que escribir un relleno explícito, como
+`anadirJugadoresQueFaltenDelDataset` o `importarLegadoHistoricoSiHaceFalta`.
+Y con dos cuidados:
+
+1. **Comprobar barato antes de leer el asset.** Estos rellenos corren en
+   CADA "continuar partida". El primer intento del de jugadores parseaba
+   300 KB en cada arranque y el test de `start_menu_screen` pasó de tardar
+   segundos a colgarse diez minutos. Ahora compara una cuenta de filas
+   contra `jugadoresUtilizablesDelDataset` y solo lee si no cuadra.
+2. **Pensar hasta cuándo tiene sentido.** El de jugadores solo actúa en la
+   primera temporada: después la liga ya no se parece al dataset (todos
+   han envejecido, ha habido traspasos) y meter a alguien con la edad del
+   asset original no sería restaurar lo que faltaba, sería inventarse un
+   fichaje con cinco años menos de los que le tocan.
+
 ## CUIDADO al tocar `schemaVersion` (ya arreglado, pero hay que mantenerlo)
 
-`app_database.dart` está en `schemaVersion => 21`. **Hasta la 20 la
+`app_database.dart` está en `schemaVersion => 24` (21 entrenadores, 22
+contratos de entrenador, 23 eventos narrativos, **24 `Temporada.bonusSalarial`**
+para el dinero de los eventos). **Hasta la 20 la
 migración borraba todas las tablas y las recreaba** — el comentario decía
 "sin usuarios reales todavía", y eso dejó de ser verdad hace tiempo: el
 usuario y sus amigos tienen partidas en marcha.
@@ -884,6 +996,29 @@ flutter build web --release --no-web-resources-cdn --pwa-strategy=none --base-hr
 ```
 
 Los dos flags del build no son opcionales: ver la sección del port a WASM.
+
+**En Git Bash (Windows) el `--base-href` hay que protegerlo**, o el shell
+convierte `/manager-nba/` en una ruta de Windows y el build se para con
+`Received a --base-href value of "C:/Program Files/Git/manager-nba/"`:
+
+```
+MSYS_NO_PATHCONV=1 flutter build web --release ... --base-href "/manager-nba/"
+```
+
+Lo mismo pasa con cualquier argumento que empiece por `/`.
+
+**Otras dos trampas del entorno**, ya pagadas varias veces:
+
+- **No lanzar dos `flutter test` a la vez.** El segundo muere con
+  `Flutter failed to delete file at ...\build\native_assets\windows\
+  sqlite3.dll`. No es un problema de permisos: es que el otro proceso
+  tiene el DLL abierto. Si sale ese error, comprobar con
+  `Get-Process dart,flutter_tester` antes de tocar nada.
+- **Los scripts de Python van con `python -X utf8 <ruta>`** y con la ruta
+  como ARGUMENTO. Metida dentro de un heredoc, una ruta estilo
+  `/c/Users/...` no la entiende el Python de Windows y el script falla
+  sin escribir nada, en silencio. Escribir los scripts con la herramienta
+  de ficheros, no con heredocs.
 
 **Para probar el service worker de verdad** (que es la única forma de
 pillar los bugs de "sin conexión"), hace falta servir el sitio **bajo la
@@ -954,7 +1089,20 @@ cero, así que tampoco quedan mezclados ficheros de dos compilaciones.
 
 Histórico: v1 (publicación inicial) → v2 (almacenamiento persistente) →
 v3 (lista parte 9) → v4 (curva de estadísticas + página de estado) →
-**v5 (lista parte 10)**.
+v5 (lista parte 10) → ... → v9 (eventos narrativos) →
+**v10 (traducciones + Kyrie + bracket móvil + dinero en los eventos)**.
+
+**Y volvió a pasar, con este aviso ya escrito.** Entre la v9 y la v10 se
+subieron CUATRO commits que cambiaban el juego sin tocar el número. El
+usuario lo detectó de la única forma en que se detecta: "sigue sin estar
+Irving en Dallas". Todo estaba bien —el dataset, el build, el
+despliegue— y aun así no le llegaba nada.
+
+Por qué se escapa tan fácil: al arreglar un bug se piensa en el bug, y
+`sw.js` no aparece por ningún lado en ese trabajo. **La regla práctica:
+subir la versión NO es el último paso de tocar `web/`, es el primer paso
+de publicar.** Si se ha cambiado una línea de Dart desde la última
+publicación, hay que subirla.
 
 **README:** el enlace ya apunta a `https://jokar77.github.io/manager-nba/`
 (antes tenía el marcador `USUARIO/REPOSITORIO`).
