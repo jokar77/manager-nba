@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sim_engine/sim_engine.dart' as sim;
+
+import '../../i18n/textos.dart';import 'package:sim_engine/sim_engine.dart' as sim;
 
 import '../../data/database/app_database.dart';
 import '../../domain/allstar_repository.dart';
@@ -106,27 +107,23 @@ class _AllStarScreenState extends State<AllStarScreen>
   Widget build(BuildContext context) {
     final datos = _datos;
     return Scaffold(
-      appBar: AppBar(title: const Text('ALL STAR WEEKEND')),
+      appBar: AppBar(title: Text(t(context).allStarWeekendMayus)),
       body: datos == null
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               padding: const EdgeInsets.all(12),
               children: [
                 _TarjetaPartido(
-                  titulo: 'All-Star',
-                  subtituloPendiente:
-                      'Se juega en el descanso de febrero. Simula hasta el '
-                      'fin de semana de las estrellas para verlo.',
+                  titulo: t(context).allStar,
+                  subtituloPendiente: t(context).allStarSubtituloPendiente,
                   boxscore: datos.allStar,
                   mvp: datos.mvpAllStar,
                   icono: Icons.star,
                 ),
                 const SizedBox(height: 12),
                 _TarjetaPartido(
-                  titulo: 'Rising Stars',
-                  subtituloPendiente:
-                      'Los mejores rookies contra los de segundo año, el '
-                      'mismo fin de semana.',
+                  titulo: t(context).risingStars,
+                  subtituloPendiente: t(context).risingStarsSubtituloPendiente,
                   boxscore: datos.risingStars,
                   mvp: datos.mvpRisingStars,
                   icono: Icons.trending_up,
@@ -136,13 +133,11 @@ class _AllStarScreenState extends State<AllStarScreen>
                 // recuento cerrado el día de la presentación era pura
                 // decoración, porque no se había votado nada todavía.
                 if (!datos.hayVotacion)
-                  const Card(
+                  Card(
                     child: Padding(
-                      padding: EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(20),
                       child: Text(
-                        'La votación abre cuando ruede el balón. Según vayas '
-                        'jugando jornadas irás viendo quién se está ganando '
-                        'el puesto y por cuántos votos.',
+                        t(context).votacionAbreCuandoRuedeBalonAviso,
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -224,7 +219,7 @@ class _TarjetaPartido extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 child: TextButton.icon(
                   icon: const Icon(Icons.list_alt, size: 18),
-                  label: const Text('Ver estadísticas'),
+                  label: Text(t(context).verEstadisticasBtn),
                   onPressed: () =>
                       Navigator.of(context).push(MaterialPageRoute<void>(
                     builder: (context) => BoxscoreScreen(boxscore: b),
@@ -315,12 +310,12 @@ class _FilaMvp extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('MVP · ${mvp.nombreFicticio}',
+                Text(t(context).mvpConNombre(mvp.nombreFicticio),
                     style: const TextStyle(fontWeight: FontWeight.bold)),
                 if (linea != null)
                   Text(
-                      '${linea.puntos} pts · ${linea.asistencias} ast · '
-                      '${linea.rebotes} reb',
+                      t(context).lineaMvpPtsAstReb(
+                          linea.puntos, linea.asistencias, linea.rebotes),
                       style: const TextStyle(fontSize: 12)),
               ],
             ),
@@ -356,15 +351,17 @@ class _CabeceraVotacion extends StatelessWidget {
         final porcentaje = (escrutinio.value * 100).round();
         final jornadas = (avance * 100).round();
         final estado = porcentaje < 100
-            ? 'Escrutado el $porcentaje% de los votos...'
+            ? t(context).escrutadoPorcentaje(porcentaje)
             : yaSeJugo
-                ? 'Recuento cerrado: estos fueron los elegidos.'
-                : 'Votación abierta, con el $jornadas% de la temporada '
-                    'jugado. Sigue simulando y los votos se moverán.';
+                ? t(context).recuentoCerradoAviso
+                : t(context).votacionAbiertaConPorcentaje(jornadas);
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(yaSeJugo ? 'Votación final' : 'Votación de aficionados',
+            Text(
+                yaSeJugo
+                    ? t(context).votacionFinalLabel
+                    : t(context).votacionDeAficionadosLabel,
                 style: const TextStyle(
                     fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
@@ -411,22 +408,25 @@ class _ListaConferencia extends StatelessWidget {
             width: double.infinity,
             color: info.colorPrimario,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Text('Conferencia $conferencia',
+            child: Text(
+                t(context).conferenciaConNombre(conferencia == 'Oeste'
+                    ? t(context).conferenciaOeste
+                    : t(context).conferenciaEste),
                 style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: textoSobre(info.colorPrimario))),
           ),
           for (var i = 0; i < convocados.length; i++) ...[
-            if (i == 0) const _Etiqueta(texto: 'Titulares'),
+            if (i == 0) _Etiqueta(texto: t(context).titularesLabel),
             if (i == titularesPorConferencia)
-              const _Etiqueta(texto: 'Suplentes'),
+              _Etiqueta(texto: t(context).suplentesLabel),
             _FilaVoto(
                 convocado: convocados[i],
                 maximoVotos: maximo,
                 escrutinio: escrutinio),
           ],
           if (aspirantes.isNotEmpty) ...[
-            const _Etiqueta(texto: 'Se quedan fuera'),
+            _Etiqueta(texto: t(context).seQuedanFueraLabel),
             for (final a in aspirantes)
               _FilaVoto(
                   convocado: a,
@@ -505,9 +505,8 @@ class _FilaVoto extends StatelessWidget {
                                   : FontWeight.normal),
                           overflow: TextOverflow.ellipsis),
                       Text(
-                          '${etiquetaPosicion(j)} · '
-                          '${convocado.valoracion.toStringAsFixed(1)} de '
-                          'valoración',
+                          t(context).posicionValoracion(etiquetaPosicion(j),
+                              convocado.valoracion.toStringAsFixed(1)),
                           style:
                               TextStyle(fontSize: 11, color: color.outline)),
                       const SizedBox(height: 3),

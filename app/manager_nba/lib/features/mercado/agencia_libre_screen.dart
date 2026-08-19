@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../i18n/textos.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/agencia_libre_repository.dart';
 import '../../domain/calendario_repository.dart';
@@ -129,8 +130,8 @@ class _AgenciaLibreScreenState extends State<AgenciaLibreScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(fichados.isEmpty
-          ? 'Plantilla completada.'
-          : 'Fichados ${fichados.length} jugadores por el mínimo.'),
+          ? t(context).plantillaCompletada
+          : t(context).fichadosPorElMinimo(fichados.length)),
     ));
     await _recargar();
   }
@@ -143,12 +144,12 @@ class _AgenciaLibreScreenState extends State<AgenciaLibreScreen> {
       canPop: !esPasoObligatorio,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Agencia libre'),
+          title: Text(t(context).tituloAgenciaLibre),
           automaticallyImplyLeading: !esPasoObligatorio,
           actions: [
             IconButton(
               icon: const Icon(Icons.groups),
-              tooltip: 'Ver tu plantilla',
+              tooltip: t(context).verTuPlantilla,
               onPressed: () => Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => RosterConfigScreen(
                   db: widget.db,
@@ -170,11 +171,9 @@ class _AgenciaLibreScreenState extends State<AgenciaLibreScreen> {
                       width: double.infinity,
                       color: Colors.red.withValues(alpha: 0.15),
                       padding: const EdgeInsets.all(12),
-                      child: const Text(
-                        'La agencia libre ha cerrado por esta temporada: ya '
-                        'se pasó la fecha límite. Puedes seguir mirando el '
-                        'mercado, pero no fichar hasta el año que viene.',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                      child: Text(
+                        t(context).agenciaLibreCerrada,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
                   _Estado(
@@ -191,7 +190,7 @@ class _AgenciaLibreScreenState extends State<AgenciaLibreScreen> {
                           onPressed:
                               _procesando ? null : _completarAutomaticamente,
                           icon: const Icon(Icons.auto_fix_high),
-                          label: const Text('Completar con contratos mínimos'),
+                          label: Text(t(context).completarConContratosMinimos),
                         ),
                       ),
                     ),
@@ -210,9 +209,9 @@ class _AgenciaLibreScreenState extends State<AgenciaLibreScreen> {
                       alignment: Alignment.centerLeft,
                       child: Text(
                         _visibles.length == _libres.length
-                            ? '${_libres.length} agentes libres'
-                            : '${_visibles.length} de ${_libres.length} '
-                                'agentes libres (hay filtros puestos)',
+                            ? t(context).contadorAgentesLibres(_libres.length)
+                            : t(context).contadorAgentesLibresFiltrado(
+                                _visibles.length, _libres.length),
                         style: TextStyle(
                             fontSize: 12,
                             color: Theme.of(context).colorScheme.outline),
@@ -221,15 +220,14 @@ class _AgenciaLibreScreenState extends State<AgenciaLibreScreen> {
                   ),
                   Expanded(
                     child: _libres.isEmpty
-                        ? const Center(
-                            child: Text('No queda nadie en el mercado.'))
+                        ? Center(
+                            child: Text(t(context).noQuedaNadieEnMercado))
                         : _visibles.isEmpty
-                            ? const Center(
+                            ? Center(
                                 child: Padding(
-                                  padding: EdgeInsets.all(24),
+                                  padding: const EdgeInsets.all(24),
                                   child: Text(
-                                    'Nadie del mercado encaja con lo que has '
-                                    'pedido. Prueba a quitar algún filtro.',
+                                    t(context).nadieEncajaConFiltro,
                                     textAlign: TextAlign.center,
                                   ),
                                 ),
@@ -258,8 +256,8 @@ class _AgenciaLibreScreenState extends State<AgenciaLibreScreen> {
                         ? widget.onContinuar
                         : null,
                     child: Text(_huecos.plantillaLista
-                        ? 'Empezar la temporada'
-                        : 'Completa la plantilla para continuar'),
+                        ? t(context).empezarLaTemporadaBtn
+                        : t(context).completaLaPlantillaParaContinuar),
                   ),
                 ),
               ),
@@ -299,34 +297,32 @@ class _Estado extends StatelessWidget {
         children: [
           Text(
             huecos.plantillaAlCompleto
-                ? 'Plantilla al completo: $plantilla jugadores.'
-                : 'Plantilla: $plantilla de $plantillaMaxima jugadores.',
+                ? t(context).plantillaAlCompletoConN(plantilla)
+                : t(context).plantillaDeMax(plantilla, plantillaMaxima),
             style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Theme.of(context).colorScheme.onSurface),
           ),
           if (huecos.fichajesQueFaltan > 0)
-            Text('Faltan ${huecos.fichajesQueFaltan} fichajes para el mínimo.',
+            Text(t(context).faltanFichajesParaMinimo(huecos.fichajesQueFaltan),
                 style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurface))
           else if (huecos.fichajesRecomendados > 0)
             Text(
-                'Los otros 29 equipos juegan con $plantillaMaxima. Con '
-                '$plantilla puedes empezar, pero vas '
-                '${huecos.fichajesRecomendados} por detrás.',
+                t(context).otrosEquiposJuegan(plantillaMaxima, plantilla,
+                    huecos.fichajesRecomendados),
                 style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurface)),
           if (huecos.puestosSinCubrir.isNotEmpty)
             Text(
-                'Sin recambio en: '
-                '${huecos.puestosSinCubrir.join(', ')}.',
+                t(context).sinRecambioEn(huecos.puestosSinCubrir.join(', ')),
                 style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurface)),
           const SizedBox(height: 4),
           Text(
             espacio < 0
-                ? 'Por encima del tope: solo fichajes del mínimo.'
-                : '${formatearSalario(espacio)} libres bajo el tope.',
+                ? t(context).porEncimaDelTopeSoloMinimo
+                : t(context).libresBajoElTope(formatearSalario(espacio)),
             style: TextStyle(
                 fontSize: 12, color: Theme.of(context).colorScheme.outline),
           ),
@@ -360,7 +356,7 @@ class _Filtros extends StatelessWidget {
       child: Row(
         children: [
           ChoiceChip(
-            label: const Text('Todos'),
+            label: Text(t(context).todosFiltro),
             selected: posicion == null,
             onSelected: (_) => onPosicion(null),
           ),
@@ -375,7 +371,7 @@ class _Filtros extends StatelessWidget {
           const SizedBox(width: 14),
           FilterChip(
             avatar: const Icon(Icons.savings, size: 18),
-            label: const Text('Que pueda pagar'),
+            label: Text(t(context).quePuedaPagar),
             selected: soloAsequibles,
             onSelected: onAsequibles,
           ),
@@ -404,8 +400,8 @@ class _FilaAgenteLibre extends StatelessWidget {
       child: ListTile(
         dense: true,
         title: Text(jugador.nombreFicticio),
-        subtitle: Text('${etiquetaPosicion(jugador)} · ${jugador.edad} años · '
-            'media ${jugador.media}'),
+        subtitle: Text(t(context)
+            .posicionEdadMedia(etiquetaPosicion(jugador), jugador.edad, jugador.media)),
         // En horizontal, no apilado: un ListTile denso solo da 40px de alto
         // al trailing, y el precio encima del botón se pasaba de ahí (se veía
         // la banda amarilla de desbordamiento). De lado caben de sobra y no
@@ -417,8 +413,8 @@ class _FilaAgenteLibre extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(width: 12),
             if (sinOfertas)
-              const Text('Ya no negocia',
-                  style: TextStyle(fontSize: 11, color: Colors.red))
+              Text(t(context).yaNoNegocia,
+                  style: const TextStyle(fontSize: 11, color: Colors.red))
             else
               SizedBox(
                 height: 28,
@@ -427,7 +423,7 @@ class _FilaAgenteLibre extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       textStyle: const TextStyle(fontSize: 12)),
                   onPressed: onNegociar,
-                  child: Text('Negociar ($ofertasRestantes)'),
+                  child: Text(t(context).negociarConN(ofertasRestantes)),
                 ),
               ),
           ],
@@ -487,15 +483,15 @@ class _DialogoDeFichajeState extends State<_DialogoDeFichaje> {
     );
 
     return AlertDialog(
-      title: Text('Oferta a ${widget.jugador.nombreFicticio}'),
+      title: Text(t(context).ofertaA(widget.jugador.nombreFicticio)),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Pide ${formatearSalario(pide)} al año',
+          Text(t(context).pideAlAnio(formatearSalario(pide)),
               style: TextStyle(color: Theme.of(context).colorScheme.outline)),
           const SizedBox(height: 16),
-          Text('Sueldo: ${formatearSalario(_salario.round())}',
+          Text(t(context).sueldoLabel(formatearSalario(_salario.round())),
               style: const TextStyle(fontWeight: FontWeight.bold)),
           Slider(
             value: _salario,
@@ -510,15 +506,14 @@ class _DialogoDeFichajeState extends State<_DialogoDeFichaje> {
             height: 32,
             child: Text(
               ratio < 0.75
-                  ? 'Se lo va a tomar como un insulto.'
+                  ? t(context).insultoOferta
                   : probabilidad < 0.25
-                      ? 'Muy improbable que la acepte así: el sueldo, los años '
-                          'o ambos se quedan cortos.'
+                      ? t(context).ofertaImprobable
                       : probabilidad < 0.6
-                          ? 'Se lo puede pensar; no las tiene todas consigo.'
+                          ? t(context).ofertaSePuedePensar
                           : probabilidad < 0.9
-                              ? 'Es probable que acepte.'
-                              : 'Prácticamente seguro que dice que sí.',
+                              ? t(context).ofertaProbableAceptar
+                              : t(context).ofertaSeguraAceptar,
               style: TextStyle(
                 fontSize: 12,
                 color: ratio < 0.75 || probabilidad < 0.25
@@ -530,7 +525,7 @@ class _DialogoDeFichajeState extends State<_DialogoDeFichaje> {
           const SizedBox(height: 16),
           Row(
             children: [
-              const Text('Años: '),
+              Text(t(context).aniosLabelDosPuntos),
               IconButton(
                 icon: const Icon(Icons.remove_circle_outline),
                 onPressed: _enviando || _anios <= 1
@@ -552,11 +547,11 @@ class _DialogoDeFichajeState extends State<_DialogoDeFichaje> {
       actions: [
         TextButton(
           onPressed: _enviando ? null : () => Navigator.of(context).pop(),
-          child: const Text('Cancelar'),
+          child: Text(t(context).cancelar),
         ),
         FilledButton(
           onPressed: _enviando ? null : _enviar,
-          child: const Text('Ofrecer'),
+          child: Text(t(context).ofrecer),
         ),
       ],
     );

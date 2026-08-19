@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../i18n/textos.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/carrera_repository.dart';
 import '../../domain/hall_fama_repository.dart';
@@ -27,12 +28,12 @@ class HallDeLaFamaScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Hall of Fame'),
+        title: Text(t(context).hallOfFame),
         automaticallyImplyLeading: onContinuar == null,
         actions: [
           IconButton(
             icon: const Icon(Icons.info_outline),
-            tooltip: 'Qué significa la puntuación de carrera',
+            tooltip: t(context).explicacionPuntuacionCarreraTooltip,
             onPressed: () => mostrarExplicacionPuntuacionHof(context),
           ),
         ],
@@ -46,7 +47,7 @@ class HallDeLaFamaScreen extends StatelessWidget {
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: onContinuar,
-                  child: const Text('Continuar'),
+                  child: Text(t(context).continuar),
                 ),
               ),
             ),
@@ -95,12 +96,12 @@ class _NuevosEnHallDeLaFamaScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Hall of Fame'),
+        title: Text(t(context).hallOfFame),
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.info_outline),
-            tooltip: 'Qué significa la puntuación de carrera',
+            tooltip: t(context).explicacionPuntuacionCarreraTooltip,
             onPressed: () => mostrarExplicacionPuntuacionHof(context),
           ),
         ],
@@ -122,9 +123,8 @@ class _NuevosEnHallDeLaFamaScreenState
             children: [
               Text(
                 widget.nuevos.length == 1
-                    ? 'Un nuevo nombre entra en el Hall of Fame.'
-                    : '${widget.nuevos.length} nombres nuevos entran en el '
-                        'Hall of Fame.',
+                    ? t(context).unNuevoNombreHof
+                    : t(context).nNombresNuevosHof(widget.nuevos.length),
                 style: const TextStyle(
                     fontSize: 16, fontWeight: FontWeight.bold),
               ),
@@ -142,12 +142,12 @@ class _NuevosEnHallDeLaFamaScreenState
                     // toque de distancia, en la ficha.
                     // Negativo = historia real (el año de verdad); positivo =
                     // una temporada de tu partida, que se traduce a año.
-                    subtitle: Text(
-                      m.temporadaIngreso < 0
-                          ? 'Entró en ${-m.temporadaIngreso}'
-                          : 'Entró en '
-                              '${anioDeTemporadaDesde(temporada, m.temporadaIngreso) + 1}',
-                    ),
+                    subtitle: Text(t(context).entroEnAnio(
+                        m.temporadaIngreso < 0
+                            ? -m.temporadaIngreso
+                            : anioDeTemporadaDesde(
+                                    temporada, m.temporadaIngreso) +
+                                1)),
                     trailing: const Icon(Icons.chevron_right),
                     onTap: () =>
                         Navigator.of(context).push(MaterialPageRoute<void>(
@@ -170,7 +170,7 @@ class _NuevosEnHallDeLaFamaScreenState
           width: double.infinity,
           child: FilledButton(
             onPressed: widget.onContinuar,
-            child: const Text('Continuar'),
+            child: Text(t(context).continuar),
           ),
         ),
       ),
@@ -185,26 +185,14 @@ void mostrarExplicacionPuntuacionHof(BuildContext context) {
   showDialog<void>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('¿Qué es la puntuación de carrera?'),
-      content: const SingleChildScrollView(
-        child: Text(
-          'Resume lo que ha dado de sí toda la carrera de un jugador, no '
-          'un solo número aislado:\n\n'
-          '• Trofeos individuales (MVP, Mejor Defensor, quintetos, Rookie '
-          'del Año, Más Mejorado).\n'
-          '• Anillos de campeón y títulos de la NBA Cup.\n'
-          '• El pico de nivel que llegó a alcanzar.\n'
-          '• Los puntos, asistencias y rebotes que acumuló, según cuántas '
-          'temporadas jugó.\n\n'
-          'Hace falta al menos 6 temporadas jugadas y superar un umbral '
-          'para entrar: un titular sólido sin premios no basta, tiene que '
-          'haber sido importante de verdad.',
-        ),
+      title: Text(t(context).queEsPuntuacionCarrera),
+      content: SingleChildScrollView(
+        child: Text(t(context).explicacionPuntuacionCarreraTexto),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Entendido'),
+          child: Text(t(context).entendido),
         ),
       ],
     ),
@@ -284,8 +272,7 @@ class _HallDeLaFamaBodyState extends State<HallDeLaFamaBody> {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
-              child: Text('No se ha podido cargar el Hall of Fame.\n'
-                  '${snapshot.error}'),
+              child: Text(t(context).noSePudoCargarHof('${snapshot.error}')),
             ),
           );
         }
@@ -295,13 +282,11 @@ class _HallDeLaFamaBodyState extends State<HallDeLaFamaBody> {
         final miembros = snapshot.data!.miembros;
         final carreras = snapshot.data!.carreras;
         if (miembros.isEmpty) {
-          return const Center(
+          return Center(
             child: Padding(
-              padding: EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
               child: Text(
-                'Todavía no hay nadie en el Hall of Fame. Solo entran '
-                'jugadores ya retirados con una carrera de las grandes: '
-                'premios, anillos y muchos años a buen nivel.',
+                t(context).todaviaNadieEnHof,
                 textAlign: TextAlign.center,
               ),
             ),
@@ -377,8 +362,9 @@ class _FilaMiembro extends StatelessWidget {
             ),
             if (esNuevo) ...[
               const SizedBox(width: 6),
-              const Chip(
-                label: Text('NUEVO', style: TextStyle(fontSize: 10)),
+              Chip(
+                label: Text(t(context).nuevoChip,
+                    style: const TextStyle(fontSize: 10)),
                 visualDensity: VisualDensity.compact,
                 padding: EdgeInsets.zero,
               ),
@@ -411,25 +397,30 @@ class _FilaMiembro extends StatelessWidget {
               // SIGUIENTE a la temporada, de ahí el +1. Poner aquí
               // "2026-27" haría que dos filas de la misma lista usaran dos
               // formatos distintos para lo mismo.
-              miembro.temporadaIngreso < 0
-                  ? 'Entró en ${-miembro.temporadaIngreso}'
-                  : 'Entró en '
-                      '${anioDeTemporadaDesde(temporadaActual, miembro.temporadaIngreso) + 1}',
+              t(context).entroEnAnio(
+                  miembro.temporadaIngreso < 0
+                      ? -miembro.temporadaIngreso
+                      : anioDeTemporadaDesde(
+                              temporadaActual, miembro.temporadaIngreso) +
+                          1),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             if (c != null && _tieneNumeros(c))
               Text(
-                '${c.temporadasTotales} temporadas · '
-                '${c.puntosPorPartido.toStringAsFixed(1)} pts · '
-                '${c.asistenciasPorPartido.toStringAsFixed(1)} ast · '
-                '${c.rebotesPorPartido.toStringAsFixed(1)} reb'
-                '${c.anillos.isEmpty ? '' : ' · ${c.anillos.length} anillos'}',
+                t(context).anios(c.temporadasTotales) +
+                    t(context).statsCarreraSufijo(
+                        c.puntosPorPartido.toStringAsFixed(1),
+                        c.asistenciasPorPartido.toStringAsFixed(1),
+                        c.rebotesPorPartido.toStringAsFixed(1)) +
+                    (c.anillos.isEmpty
+                        ? ''
+                        : ' · ${t(context).anillos(c.anillos.length)}'),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               )
             else if (c != null && c.temporadasTotales > 0)
-              Text('${c.temporadasTotales} temporadas',
+              Text(t(context).anios(c.temporadasTotales),
                   maxLines: 1, overflow: TextOverflow.ellipsis),
           ],
         ),

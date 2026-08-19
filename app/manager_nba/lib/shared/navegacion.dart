@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../i18n/textos.dart';
 /// Nombres de ruta para las pantallas a las que hace falta poder volver de
 /// un salto, sin pasar por todo lo que se haya apilado por el camino
 /// (premios, resumen de partidos simulados, boxscores...).
@@ -49,7 +50,7 @@ class BotonMenuPrincipal extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       icon: const Icon(Icons.home),
-      tooltip: 'Volver al menú principal',
+      tooltip: t(context).volverAlMenuPrincipalTooltip,
       onPressed: () => volverAlMenuPrincipal(context),
     );
   }

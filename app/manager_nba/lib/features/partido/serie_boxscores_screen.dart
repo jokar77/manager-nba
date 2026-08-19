@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sim_engine/sim_engine.dart' as sim;
+
+import '../../i18n/textos.dart';import 'package:sim_engine/sim_engine.dart' as sim;
 
 import '../../data/database/app_database.dart';
 import '../../domain/boxscores_serie_repository.dart';
@@ -41,14 +42,14 @@ class SerieBoxscoresScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Partidos de la serie')),
+      appBar: AppBar(title: Text(t(context).tituloPartidosDeLaSerie)),
       body: ListView.builder(
         itemCount: boxscores.length,
         itemBuilder: (context, i) {
           final b = boxscores[i];
           return ListTile(
-            title: Text('Partido ${i + 1}: ${b.equipoLocal} ${b.marcadorLocal} - '
-                '${b.marcadorVisitante} ${b.equipoVisitante}'),
+            title: Text(t(context).partidoNMarcador(i + 1, b.equipoLocal,
+                b.marcadorLocal, b.marcadorVisitante, b.equipoVisitante)),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => BoxscoreScreen(boxscore: b),

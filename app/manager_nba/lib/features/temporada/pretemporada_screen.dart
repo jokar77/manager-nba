@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../i18n/textos.dart';
 import '../../domain/draft_repository.dart';
 import '../../domain/nueva_temporada_repository.dart';
 import '../../domain/progresion_repository.dart';
@@ -25,7 +26,7 @@ class PretemporadaScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Temporada ${resumen.temporadaNueva}'),
+        title: Text(t(context).temporadaN(resumen.temporadaNueva)),
         automaticallyImplyLeading: false,
       ),
       body: ListView(
@@ -35,18 +36,16 @@ class PretemporadaScreen extends StatelessWidget {
             child: ListTile(
               leading: EquipoLogo(codigoEquipo: equipoUsuario),
               title: Text(
-                  'Arranca la temporada ${resumen.temporadaNueva} '
-                  '(${resumen.anioInicio}-${resumen.anioInicio + 1})',
+                  t(context).arrancaLaTemporada(resumen.temporadaNueva,
+                      resumen.anioInicio, resumen.anioInicio + 1),
                   style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: const Text(
-                  'Tu plantilla ha cambiado: revísala antes del primer '
-                  'partido — se ha dejado una alineación automática hecha.'),
+              subtitle: Text(t(context).plantillaHaCambiadoAviso),
             ),
           ),
           const SizedBox(height: 8),
           if (resumen.tusRookies.isNotEmpty)
             _Seccion(
-              titulo: 'Tus elecciones del draft',
+              titulo: t(context).tusEleccionesDelDraft,
               icono: Icons.new_releases,
               hijos: resumen.tusRookies
                   .map((r) => _FilaRookie(rookie: r))
@@ -54,20 +53,20 @@ class PretemporadaScreen extends StatelessWidget {
             ),
           if (resumen.retiradosPropios.isNotEmpty)
             _Seccion(
-              titulo: 'Se retiran de tu equipo',
+              titulo: t(context).seRetiranDeTuEquipo,
               icono: Icons.waving_hand,
               hijos: resumen.retiradosPropios
                   .map((c) => ListTile(
                         dense: true,
                         title: Text(c.nombre),
-                        subtitle: Text('Cuelga las botas con ${c.edad} años '
-                            'y media ${c.mediaAntes}'),
+                        subtitle: Text(
+                            t(context).cuelgaLasBotasCon(c.edad, c.mediaAntes)),
                       ))
                   .toList(),
             ),
           if (resumen.progresanTuyos.isNotEmpty)
             _Seccion(
-              titulo: 'Han dado un paso adelante',
+              titulo: t(context).hanDadoUnPasoAdelante,
               icono: Icons.trending_up,
               hijos: resumen.progresanTuyos
                   .take(5)
@@ -76,7 +75,7 @@ class PretemporadaScreen extends StatelessWidget {
             ),
           if (resumen.declinanTuyos.isNotEmpty)
             _Seccion(
-              titulo: 'Empiezan a bajar',
+              titulo: t(context).empiezanABajar,
               icono: Icons.trending_down,
               hijos: resumen.declinanTuyos
                   .take(5)
@@ -85,7 +84,7 @@ class PretemporadaScreen extends StatelessWidget {
             ),
           if (resumen.mejoresDelDraft.isNotEmpty)
             _Seccion(
-              titulo: 'Top del draft',
+              titulo: t(context).topDelDraft,
               icono: Icons.star,
               hijos: resumen.mejoresDelDraft
                   .map((r) => _FilaRookie(rookie: r, conEquipo: true))
@@ -93,21 +92,22 @@ class PretemporadaScreen extends StatelessWidget {
             ),
           if (resumen.traspasosDeLaLiga.isNotEmpty)
             _Seccion(
-              titulo: 'Movimientos en la liga',
+              titulo: t(context).movimientosEnLaLiga,
               icono: Icons.swap_horiz,
               hijos: resumen.traspasosDeLaLiga
-                  .map((t) => ListTile(
+                  .map((mov) => ListTile(
                         dense: true,
-                        leading: EquipoLogo(codigoEquipo: t.equipoA, tamano: 24),
-                        title: Text('${t.jugadorDeA} → ${t.equipoB}'),
-                        subtitle: Text('${t.equipoA} recibe a ${t.jugadorDeB} '
-                            '(${t.posicionDeB})'),
+                        leading:
+                            EquipoLogo(codigoEquipo: mov.equipoA, tamano: 24),
+                        title: Text('${mov.jugadorDeA} → ${mov.equipoB}'),
+                        subtitle: Text(t(context).recibeA(
+                            mov.equipoA, mov.jugadorDeB, mov.posicionDeB)),
                       ))
                   .toList(),
             ),
           if (resumen.retiradosLiga.isNotEmpty)
             _Seccion(
-              titulo: 'También se retiran',
+              titulo: t(context).tambienSeRetiran,
               icono: Icons.exit_to_app,
               hijos: [
                 ListTile(
@@ -117,7 +117,8 @@ class PretemporadaScreen extends StatelessWidget {
                       .map((c) => c.nombre)
                       .join(', ')),
                   subtitle: resumen.retiradosLiga.length > 12
-                      ? Text('y ${resumen.retiradosLiga.length - 12} más')
+                      ? Text(t(context)
+                          .yNMas(resumen.retiradosLiga.length - 12))
                       : null,
                 ),
               ],
@@ -127,7 +128,7 @@ class PretemporadaScreen extends StatelessWidget {
             width: double.infinity,
             child: FilledButton(
               onPressed: onContinuar,
-              child: const Text('Empezar la temporada'),
+              child: Text(t(context).empezarLaTemporadaBtn),
             ),
           ),
         ],
@@ -216,7 +217,8 @@ class _FilaRookie extends StatelessWidget {
       subtitle: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('${rookie.posicion} · media ${rookie.media} · '),
+          Text(t(context).posicionMediaSeparador(
+              rookie.posicion, rookie.media)),
           PotencialEstrellas(potencial: rookie.potencial, tamano: 12),
         ],
       ),

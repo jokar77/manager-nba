@@ -4,6 +4,7 @@ import '../../data/database/app_database.dart';
 import '../../domain/campeones_repository.dart';
 import '../../domain/equipos_especiales.dart';
 import '../../domain/equipos_info.dart';
+import '../../i18n/textos.dart';
 import '../../shared/equipo_logo.dart';
 import 'team_preview_screen.dart';
 
@@ -94,12 +95,12 @@ class TeamSelectorScreen extends StatelessWidget {
                 leading: EquipoLogo(codigoEquipo: fila.codigo),
                 title: Text(info.nombreCompleto,
                     style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text('Media del equipo: ${fila.media.round()}'),
+                subtitle: Text(t(context).mediaDelEquipo(fila.media.round())),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Tooltip(
-                      message: 'Torneo de mitad de temporada',
+                      message: t(context).torneoDeMitadDeTemporada,
                       child: Icon(Icons.military_tech,
                           size: 22,
                           color: fila.tieneTituloIst
@@ -108,7 +109,7 @@ class TeamSelectorScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Tooltip(
-                      message: 'Campeón NBA',
+                      message: t(context).campeonNba,
                       child: Icon(Icons.emoji_events,
                           size: 22,
                           color: fila.tieneTituloNba

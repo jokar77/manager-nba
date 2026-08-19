@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../i18n/textos.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/equipos_info.dart';
 import '../../shared/equipo_logo.dart';
@@ -38,7 +39,9 @@ class CamisetasNuevasScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(unaSola ? 'Camiseta retirada' : 'Camisetas retiradas'),
+        title: Text(unaSola
+            ? t(context).camisetaRetiradaSingular
+            : t(context).pestanaCamisetasRetiradas),
         automaticallyImplyLeading: false,
       ),
       body: ListView(
@@ -52,8 +55,8 @@ class CamisetasNuevasScreen extends StatelessWidget {
                 const SizedBox(height: 12),
                 Text(
                   unaSola
-                      ? 'Un dorsal que ya no volverá a jugarse'
-                      : 'Dorsales que ya no volverán a jugarse',
+                      ? t(context).unDorsalQueNoVolvera
+                      : t(context).dorsalesQueNoVolveran,
                   textAlign: TextAlign.center,
                   style: tema.textTheme.titleMedium,
                 ),
@@ -101,7 +104,7 @@ class CamisetasNuevasScreen extends StatelessWidget {
             width: double.infinity,
             child: FilledButton(
               onPressed: onContinuar,
-              child: const Text('Continuar'),
+              child: Text(t(context).continuar),
             ),
           ),
         ),

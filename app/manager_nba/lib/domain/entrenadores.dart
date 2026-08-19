@@ -32,7 +32,17 @@ int mediaDeEntrenador({
 /// Se compara cada faceta con las otras dos, no con la liga: lo que
 /// interesa es qué clase de entrenador es, no si es bueno (para eso está la
 /// media).
-String estiloDeEntrenador({
+/// El estilo de un entrenador, sin ningún texto todavía: la traducción es
+/// cosa de la interfaz (ver `shared/entrenador_ui.dart`), este fichero es
+/// dominio puro y no sabe de idiomas.
+enum EstiloDeEntrenador {
+  equilibrado,
+  especialistaAtaque,
+  especialistaDefensa,
+  formadorDeJovenes,
+}
+
+EstiloDeEntrenador estiloDeEntrenador({
   required int ataque,
   required int defensa,
   required int desarrollo,
@@ -41,10 +51,10 @@ String estiloDeEntrenador({
   final minimo = [ataque, defensa, desarrollo].reduce((a, b) => a < b ? a : b);
   // Sin una faceta claramente por encima, es un entrenador equilibrado y
   // decirlo es más honesto que forzar una etiqueta.
-  if (maximo - minimo < 6) return 'Equilibrado';
-  if (maximo == ataque) return 'Especialista en ataque';
-  if (maximo == defensa) return 'Especialista en defensa';
-  return 'Formador de jóvenes';
+  if (maximo - minimo < 6) return EstiloDeEntrenador.equilibrado;
+  if (maximo == ataque) return EstiloDeEntrenador.especialistaAtaque;
+  if (maximo == defensa) return EstiloDeEntrenador.especialistaDefensa;
+  return EstiloDeEntrenador.formadorDeJovenes;
 }
 
 // ---------------------------------------------------------------------------

@@ -24,11 +24,17 @@ https://jokar77.github.io/manager-nba/
 Último commit publicado: **`f8abae8`** ("Entrenadores con contrato y el
 juego en siete idiomas"), en verde.
 
-**Sin commitear todavía**: los eventos narrativos (punto 23), con lo que
-la lista parte 11 queda ENTERA. Verificado en local: `flutter analyze`
-limpio en los dos paquetes, **414 tests** de la app + **19** de
-`sim_engine` en verde, y `flutter build web` correcto. `web/sw.js` en
-**`CACHE = manager-nba-v9`**.
+Ya commiteados y verificados: los eventos narrativos (punto 23), con lo
+que la lista parte 11 queda en **23 de 24**. Verificado en local:
+`flutter analyze` limpio en los dos paquetes, **414 tests** de la app +
+**19** de `sim_engine` en verde, y `flutter build web` correcto.
+`web/sw.js` en **`CACHE = manager-nba-v9`**.
+
+**El único punto que queda de la parte 11 es el 16** (bracket de playoffs
+diminuto en móvil): aparcado a propósito porque cambiar cómo escala el
+bracket sin poder ver una captura real sería adivinar a ciegas — este
+entorno no compone imagen, así que no hay manera de comprobar el resultado
+sin que el usuario mire su móvil.
 
 **Esquema de base de datos en la 23**, con migración aditiva (tabla
 `EfectosDeEvento` + columna `Temporada.eventosVistos`): las partidas
@@ -470,9 +476,10 @@ sana y la regresión que vigila, no "un poco por debajo de lo que salió una
 vez"**. Y para saber dónde está ese hueco hay que MEDIR las dos cosas, no
 solo mirar el valor de una ejecución.
 
-Queda pendiente, y es la causa raíz de verdad: **la simulación de playoffs
-debería aceptar una semilla**, igual que la de temporada regular. Mientras
-no la acepte, cualquier test que pase por playoffs es irrepetible.
+(Nota de cuando esto se escribió: en ese momento la simulación de playoffs
+no aceptaba semilla. Ya se arregló — ver "La causa raíz de los tests
+inestables, encontrada", más abajo — y el residuo que queda es al revés:
+ahora es la temporada REGULAR la que no acepta semilla.)
 
 
 ## Entrenadores (hecho)

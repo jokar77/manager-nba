@@ -6,6 +6,7 @@ import '../../domain/equipos_especiales.dart' show esFranquicia;
 import '../../domain/equipos_info.dart';
 import '../../domain/salarios.dart' show topeSalarial;
 import '../../i18n/textos.dart';
+import '../../shared/entrenador_ui.dart';
 import '../../shared/pantalla.dart';
 
 /// Tu banquillo: quién lo ocupa, qué contrato tiene, cuánto te queda de
@@ -141,15 +142,11 @@ class _EntrenadorScreenState extends State<EntrenadorScreen> {
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('¿Despedir a ${actual.nombreFicticio}?'),
+        title: Text(t(context).despedirConfirmacion(actual.nombreFicticio)),
         content: Text(coste > 0
-            ? 'Le quedan ${actual.aniosContrato} '
-                '${actual.aniosContrato == 1 ? 'temporada' : 'temporadas'} de '
-                'contrato y hay que pagárselas igual: '
-                '${formatearMillones(coste)} que NO podrás gastarte en su '
-                'sustituto hasta que se cumplan.'
-            : 'Se quedará libre y podrá firmar por cualquier equipo. Hasta '
-                'que fiches a otro, tu equipo jugará sin entrenador.'),
+            ? t(context).despedirConTiempoRestante(
+                actual.aniosContrato, formatearMillones(coste))
+            : t(context).despedirSinContrato),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -234,29 +231,25 @@ class _EntrenadorScreenState extends State<EntrenadorScreen> {
                   style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 4),
               Text(
-                'La media de tu equipo es ${estado.mediaDelEquipo}. Cuanto '
-                'mejor es un entrenador, mejor proyecto pide — y el dinero '
-                'solo tapa parte de la diferencia.',
+                t(context).mediaDeTuEquipoEs(estado.mediaDelEquipo),
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 8),
               if (libres.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Center(
-                      child: Text('No hay ningún entrenador sin equipo')),
+                      child: Text(t(context).noHayEntrenadorSinEquipo)),
                 )
               else
                 lista(libres),
               if (conEquipo.isNotEmpty) ...[
                 const SizedBox(height: 24),
-                Text('Dirigiendo a otro equipo',
+                Text(t(context).dirigiendoAOtroEquipo,
                     style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 4),
                 Text(
-                  'Se les puede hacer una oferta, pero tienen trabajo: hace '
-                  'falta bastante más para convencerles, y el equipo al que '
-                  'se lo quites buscará sustituto en el acto.',
+                  t(context).sePuedeOfertarPeroTrabajo,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 8),
@@ -280,7 +273,7 @@ class _EntrenadorScreenState extends State<EntrenadorScreen> {
                           Expanded(
                             child: OutlinedButton(
                               onPressed: _ficharPorElMinimo,
-                              child: const Text('Fichar por el mínimo'),
+                              child: Text(t(context).ficharPorElMinimoBtn),
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -320,9 +313,7 @@ class _AvisoObligatorio extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'No puedes jugar sin entrenador. Ficha a alguien para '
-                'seguir: si no te convence nadie o no te llega el '
-                'presupuesto, siempre puedes firmar a uno por el mínimo.',
+                t(context).avisoObligatorioTexto,
                 style: TextStyle(
                     color: Theme.of(context).colorScheme.onErrorContainer),
               ),
@@ -439,8 +430,9 @@ class _DialogoDeNegociacionState extends State<_DialogoDeNegociacion> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Pide ${formatearMillones(widget.candidato.pide)} al año y '
-                  '${widget.candidato.aniosQuePide} temporadas.',
+                  t(context).pideAlAnioYTemporadas(
+                      formatearMillones(widget.candidato.pide),
+                      widget.candidato.aniosQuePide),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 const SizedBox(height: 12),
@@ -509,8 +501,7 @@ class _Veredicto extends StatelessWidget {
       return _Aviso(
         icono: Icons.money_off,
         color: Theme.of(context).colorScheme.error,
-        texto: 'No te llega la masa salarial: solo puedes ofrecer '
-            '${formatearMillones(topeDisponible)}.',
+        texto: t(context).noLlegaMasaSalarial(formatearMillones(topeDisponible)),
       );
     }
     if (respuesta.acepta) {
@@ -600,7 +591,7 @@ class _Presupuesto extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             _LineaDeGasto(
-                etiqueta: 'Tu entrenador',
+                etiqueta: t(context).tuEntrenadorLabel,
                 importe: presupuesto.sueldoDelActual),
             if (presupuesto.finiquitos > 0)
               _LineaDeGasto(
@@ -609,17 +600,15 @@ class _Presupuesto extends StatelessWidget {
                 enRojo: true,
               ),
             _LineaDeGasto(
-                etiqueta: 'Masa salarial (con banquillo)',
+                etiqueta: t(context).masaSalarialConBanquillo,
                 importe: presupuesto.masaSalarialTotal),
             _LineaDeGasto(
                 etiqueta: t(context).topeDeLaFranquicia, importe: topeSalarial),
             const SizedBox(height: 6),
             Text(
               presupuesto.espacioEnElTope <= 0
-                  ? 'Estás por encima del tope: solo puedes firmar por el '
-                      'sueldo mínimo.'
-                  : 'El sueldo del entrenador cuenta en tu masa salarial: lo '
-                      'que gastes aquí no lo tienes para jugadores.',
+                  ? t(context).porEncimaDelTopeSoloMinimo
+                  : t(context).sueldoEntrenadorCuentaEnMasa,
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
@@ -706,8 +695,9 @@ class _BanquilloActual extends StatelessWidget {
                       Text(e.nombreFicticio,
                           style: Theme.of(context).textTheme.titleLarge),
                       Text(
-                        '${infoDe(equipo).apodo} · ${e.edad} años · '
-                        '${estiloDeEntrenador(ataque: e.atrAtaque, defensa: e.atrDefensa, desarrollo: e.atrDesarrollo)}',
+                        '${infoDe(equipo).apodo} · '
+                        '${t(context).edadJugador(e.edad)} · '
+                        '${etiquetaDeEstilo(t(context), estiloDeEntrenador(ataque: e.atrAtaque, defensa: e.atrDefensa, desarrollo: e.atrDesarrollo))}',
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ],
@@ -719,10 +709,9 @@ class _BanquilloActual extends StatelessWidget {
             _Facetas(entrenador: e, compacto: compacto),
             const SizedBox(height: 12),
             Text(
-              '${formatearMillones(e.salario)} al año · '
-              '${e.aniosContrato} '
-              '${e.aniosContrato == 1 ? 'temporada' : 'temporadas'} de '
-              'contrato',
+              t(context).contratoResumen(
+                  t(context).alAnio(formatearMillones(e.salario)),
+                  t(context).anios(e.aniosContrato)),
               style: Theme.of(context)
                   .textTheme
                   .bodyMedium
@@ -730,7 +719,7 @@ class _BanquilloActual extends StatelessWidget {
             ),
             const SizedBox(height: 2),
             Text(
-              _trayectoria(e, record),
+              _trayectoria(t(context), e, record),
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 8),
@@ -750,14 +739,13 @@ class _BanquilloActual extends StatelessWidget {
     );
   }
 
-  String _trayectoria(Entrenador e, ({int victorias, int derrotas}) record) {
+  String _trayectoria(
+      Textos t, Entrenador e, ({int victorias, int derrotas}) record) {
     final partes = <String>[
-      'Esta temporada: ${record.victorias}-${record.derrotas}',
-      if (e.temporadas > 0) '${e.temporadas} temporadas dirigiendo',
-      if (e.anillos == 1) '1 anillo',
-      if (e.anillos > 1) '${e.anillos} anillos',
-      if (e.premios == 1) '1 Entrenador del Año',
-      if (e.premios > 1) '${e.premios} veces Entrenador del Año',
+      t.trayectoriaEstaTemporada(record.victorias, record.derrotas),
+      if (e.temporadas > 0) t.temporadasDirigiendo(e.temporadas),
+      if (e.anillos > 0) t.anillos(e.anillos),
+      if (e.premios > 0) t.entrenadorDelAnio(e.premios),
     ];
     return partes.join(' · ');
   }
@@ -797,21 +785,20 @@ class _FilaCandidato extends StatelessWidget {
             style: Theme.of(context).textTheme.titleSmall),
         if (candidato.dirigeA != null)
           Text(
-            'Dirige a ${infoDe(candidato.dirigeA!).apodo}',
+            t(context).dirigeAEquipo(infoDe(candidato.dirigeA!).apodo),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 fontStyle: FontStyle.italic,
                 color: Theme.of(context).colorScheme.primary),
           ),
         Text(
-          '${e.edad} años · '
-          '${estiloDeEntrenador(ataque: e.atrAtaque, defensa: e.atrDefensa, desarrollo: e.atrDesarrollo)}'
-          '${e.anillos > 0 ? ' · ${e.anillos} anillo${e.anillos > 1 ? 's' : ''}' : ''}',
+          '${t(context).edadJugador(e.edad)} · '
+          '${etiquetaDeEstilo(t(context), estiloDeEntrenador(ataque: e.atrAtaque, defensa: e.atrDefensa, desarrollo: e.atrDesarrollo))}'
+          '${e.anillos > 0 ? ' · ${t(context).anillos(e.anillos)}' : ''}',
           style: Theme.of(context).textTheme.bodySmall,
         ),
         Text(
-          'Pide ${formatearMillones(candidato.pide)} × '
-          '${candidato.aniosQuePide} '
-          '${candidato.aniosQuePide == 1 ? 'año' : 'años'}',
+          t(context).pideImportePorAnios(
+              formatearMillones(candidato.pide), candidato.aniosQuePide),
           style: Theme.of(context)
               .textTheme
               .bodySmall
@@ -849,10 +836,10 @@ class _FilaCandidato extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 6),
                 child: Text(
                   !cabeEnElPresupuesto
-                      ? 'No te cabe en el presupuesto de banquillo'
+                      ? t(context).noCabeEnPresupuesto
                       : candidato.imposible
-                          ? 'Tu proyecto le queda lejos'
-                          : 'A su precio diría que no; con más dinero, quizá',
+                          ? t(context).proyectoLeQuedaLejos
+                          : t(context).asuPrecioNo,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: Theme.of(context).colorScheme.error),
                 ),

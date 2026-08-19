@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:manager_nba/shared/potencial_estrellas.dart';
@@ -40,14 +41,26 @@ void main() {
     expect(estrellasDePotencial(75), lessThan(estrellasDePotencial(81)));
   });
 
-  test('etiquetaDePotencial se queda en 5 textos: la media estrella afina '
-      'el dibujo, no crea una banda de texto nueva', () {
-    final etiquetas = {for (var p = 45; p <= 99; p++) etiquetaDePotencial(p)};
+  testWidgets(
+      'etiquetaDePotencial se queda en 5 textos: la media estrella afina '
+      'el dibujo, no crea una banda de texto nueva', (tester) async {
+    late BuildContext context;
+    await tester.pumpWidget(MaterialApp(
+      home: Builder(builder: (c) {
+        context = c;
+        return const SizedBox.shrink();
+      }),
+    ));
+
+    final etiquetas = {
+      for (var p = 45; p <= 99; p++) etiquetaDePotencial(context, p)
+    };
     expect(etiquetas.length, 5, reason: 'siguen siendo las 5 bandas de siempre');
 
     // 4.5 y 5.0 estrellas comparten etiqueta ("Elite" empieza en 90); 3.5
     // y 4.0 comparten "Muy alto"; y así con el resto de medias bandas.
-    expect(etiquetaDePotencial(86), etiquetaDePotencial(89));
-    expect(etiquetaDePotencial(90), isNot(etiquetaDePotencial(89)));
+    expect(etiquetaDePotencial(context, 86), etiquetaDePotencial(context, 89));
+    expect(etiquetaDePotencial(context, 90),
+        isNot(etiquetaDePotencial(context, 89)));
   });
 }

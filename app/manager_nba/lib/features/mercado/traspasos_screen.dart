@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../i18n/textos.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/calendario_repository.dart';
 import '../../domain/equipos_info.dart';
@@ -313,16 +314,16 @@ class _TraspasosScreenState extends State<TraspasosScreen> {
       final seguir = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Te vas a quedar corto'),
-          content: Text('$aviso\n\n¿Lo cierras igualmente?'),
+          title: Text(t(context).teVasAQuedarCorto),
+          content: Text(t(context).avisoLoCierras(aviso)),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Mejor no'),
+              child: Text(t(context).mejorNo),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Cerrarlo igual'),
+              child: Text(t(context).cerrarloIgual),
             ),
           ],
         ),
@@ -336,9 +337,8 @@ class _TraspasosScreenState extends State<TraspasosScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(hecho
-            ? 'Traspaso cerrado.'
-            : 'Ya ha pasado la fecha límite de traspasos: no se pueden '
-                'cerrar más operaciones esta temporada.')));
+            ? t(context).traspasoCerradoSimple
+            : t(context).fechaLimiteTraspasosNoMasOperaciones)));
     await _recargarTodo();
   }
 
@@ -382,9 +382,9 @@ class _TraspasosScreenState extends State<TraspasosScreen> {
     final piezas = paquete.jugadores.length + paquete.picks.length;
     await _mostrarPropuestas(
       titulo: piezas == 1
-          ? '¿Quién se lleva a ${jugador.nombreFicticio}?'
-          : '¿Quién se lleva el paquete de $piezas piezas?',
-      vacio: 'Ningún equipo te daría a cambio nada que merezca la pena.',
+          ? t(context).quienSeLlevaA(jugador.nombreFicticio)
+          : t(context).quienSeLlevaPaquete(piezas),
+      vacio: t(context).ningunEquipoTeDariaNada,
       propuestas: propuestas,
     );
   }
@@ -395,9 +395,8 @@ class _TraspasosScreenState extends State<TraspasosScreen> {
   /// cerrar. Enseñar operaciones imposibles es peor que no enseñar nada.
   bool _avisarSiEstaCerrado() {
     if (!_cerrada) return false;
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text('El mercado está cerrado: ya pasó la fecha límite de '
-          'traspasos. No se pueden buscar operaciones hasta el año que viene.'),
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(t(context).mercadoCerradoNoSeBuscan),
     ));
     return true;
   }
@@ -413,9 +412,8 @@ class _TraspasosScreenState extends State<TraspasosScreen> {
     if (!mounted) return;
     setState(() => _buscando = false);
     await _mostrarPropuestas(
-      titulo: '¿Cómo fichar a ${jugador.nombreFicticio}?',
-      vacio: 'No tienes con qué convencerles: ni tu plantilla ni tus picks '
-          'les llegan sin dejarte roto.',
+      titulo: t(context).comoFicharA(jugador.nombreFicticio),
+      vacio: t(context).noTienesConQueConvencer,
       propuestas: propuestas,
     );
   }
@@ -448,9 +446,8 @@ class _TraspasosScreenState extends State<TraspasosScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(hecho
-            ? 'Traspaso cerrado con ${elegida.equipoRival}.'
-            : 'Ya ha pasado la fecha límite de traspasos: no se pueden '
-                'cerrar más operaciones esta temporada.')));
+            ? t(context).traspasoCerradoCon(elegida.equipoRival)
+            : t(context).fechaLimiteTraspasosNoMasOperaciones)));
     await _recargarTodo();
   }
 
@@ -484,7 +481,7 @@ class _TraspasosScreenState extends State<TraspasosScreen> {
   Widget build(BuildContext context) {
     if (_cargando) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Traspasos')),
+        appBar: AppBar(title: Text(t(context).tituloTraspasos)),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -494,7 +491,7 @@ class _TraspasosScreenState extends State<TraspasosScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Traspasos'),
+        title: Text(t(context).tituloTraspasos),
         bottom: _buscando
             ? const PreferredSize(
                 preferredSize: Size.fromHeight(4),
@@ -509,11 +506,9 @@ class _TraspasosScreenState extends State<TraspasosScreen> {
               width: double.infinity,
               color: Colors.red.withValues(alpha: 0.15),
               padding: const EdgeInsets.all(12),
-              child: const Text(
-                'La fecha límite de traspasos ya ha pasado esta temporada: '
-                'puedes seguir mirando el mercado, pero no cerrar nada hasta '
-                'el año que viene.',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              child: Text(
+                t(context).fechaLimiteTraspasosBanner,
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
           Expanded(child: _columnas(mesa)),
@@ -527,7 +522,7 @@ class _TraspasosScreenState extends State<TraspasosScreen> {
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   icon: const Icon(Icons.group_add, size: 18),
-                  label: const Text('¿No cuadra? Mete a un tercero'),
+                  label: Text(t(context).noCuadraMeteATercero),
                   onPressed: () {
                     final libres = _equipos
                         .where((e) => e != _rival && e != _tercero)
@@ -580,7 +575,7 @@ class _TraspasosScreenState extends State<TraspasosScreen> {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: _movimientos.isEmpty ? null : _evaluar,
-                    child: const Text('Proponer'),
+                    child: Text(t(context).proponer),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -589,7 +584,7 @@ class _TraspasosScreenState extends State<TraspasosScreen> {
                     onPressed: respuesta?.aceptado == true && !_cerrada
                         ? _ejecutar
                         : null,
-                    child: const Text('Cerrar traspaso'),
+                    child: Text(t(context).cerrarTraspasoBtn),
                   ),
                 ),
               ],
@@ -672,12 +667,14 @@ class _TraspasosScreenState extends State<TraspasosScreen> {
                   esTercero ? _elegirTercero(e) : _elegirRival(e),
               onQuitar: esTercero ? () => _elegirTercero(null) : null,
             ),
-      titulo: esTuyo ? 'Tu equipo' : (esTercero ? 'Tercer equipo' : 'Rival'),
+      titulo: esTuyo
+          ? t(context).tuEquipoLabel
+          : (esTercero ? t(context).tercerEquipoLabel : t(context).rivalLabel),
       movimientos: _movimientos,
       variosDestinos: _equiposEnMesa.length > 2,
       tooltipBuscador: esTuyo
-          ? 'Buscar quién te lo compraría'
-          : 'Buscar qué tendrías que dar por él',
+          ? t(context).buscarQuienCompraria
+          : t(context).buscarQueDarPorEl,
       onBuscar: esTuyo ? _buscarSalida : _buscarFichaje,
       onAlternarJugador: (j) => _alternar('j${j.id}', equipo,
           (destino) => MovimientoDeTraspaso.jugador(j.id, destino: destino)),
@@ -700,14 +697,14 @@ class _TraspasosScreenState extends State<TraspasosScreen> {
             Icon(Icons.group_add,
                 size: 40, color: Theme.of(context).colorScheme.outline),
             const SizedBox(height: 12),
-            Text('¿No cuadra?\nMete a un tercero',
+            Text(t(context).noCuadraMeteATerceroLarga,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Theme.of(context).colorScheme.outline)),
             const SizedBox(height: 12),
             OutlinedButton(
               onPressed:
                   libres.isEmpty ? null : () => _elegirTercero(libres.first),
-              child: const Text('Añadir equipo'),
+              child: Text(t(context).anadirEquipoBtn),
             ),
           ],
         ),
@@ -761,7 +758,7 @@ class _SelectorEquipo extends StatelessWidget {
         if (onQuitar != null)
           IconButton(
             icon: const Icon(Icons.close, size: 18),
-            tooltip: 'Sacar de la operación',
+            tooltip: t(context).sacarDeLaOperacion,
             onPressed: onQuitar,
           ),
       ],
@@ -834,7 +831,7 @@ class _ColumnaEquipo extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Añadir de ${infoDe(lado.equipo).nombreCompleto}',
+                        t(context).anadirDe(infoDe(lado.equipo).nombreCompleto),
                         style: const TextStyle(
                             fontSize: 15, fontWeight: FontWeight.bold),
                         overflow: TextOverflow.ellipsis,
@@ -856,7 +853,7 @@ class _ColumnaEquipo extends StatelessWidget {
                         subtitle: Text(
                             '${etiquetaPosicion(j)} · ${j.media} · '
                             '${formatearSalario(j.salario)} · '
-                            '${_aniosDeContrato(j)}',
+                            '${_aniosDeContrato(context, j)}',
                             style: const TextStyle(fontSize: 11)),
                         trailing: IconButton(
                           icon: const Icon(Icons.search, size: 18),
@@ -872,10 +869,10 @@ class _ColumnaEquipo extends StatelessWidget {
                         },
                       ),
                     if (picksLibres.isNotEmpty) ...[
-                      const Padding(
-                        padding: EdgeInsets.fromLTRB(16, 12, 16, 4),
-                        child: Text('Elecciones de draft',
-                            style: TextStyle(
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                        child: Text(t(context).eleccionesDeDraft,
+                            style: const TextStyle(
                                 fontSize: 12, fontWeight: FontWeight.bold)),
                       ),
                       for (final p in picksLibres)
@@ -890,11 +887,10 @@ class _ColumnaEquipo extends StatelessWidget {
                         ),
                     ],
                     if (libres.isEmpty && picksLibres.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.all(24),
+                      Padding(
+                        padding: const EdgeInsets.all(24),
                         child: Text(
-                          'Ya has puesto sobre la mesa todo lo que este '
-                          'equipo tenía disponible.',
+                          t(context).yaHasPuestoTodo,
                           textAlign: TextAlign.center,
                         ),
                       ),
@@ -965,7 +961,7 @@ class _ColumnaEquipo extends StatelessWidget {
                   titulo: j.nombreFicticio,
                   subtitulo: '${etiquetaPosicion(j)} · ${j.media} · '
                       '${formatearSalario(j.salario)} · '
-                      '${_aniosDeContrato(j)}',
+                      '${_aniosDeContrato(context, j)}',
                   movimientos: movimientos,
                   variosDestinos: variosDestinos,
                   onAlternar: () => onAlternarJugador(j),
@@ -1034,7 +1030,7 @@ class _HuecoParaAnadir extends StatelessWidget {
               const SizedBox(height: 6),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Text('Toca para elegir\njugadores o picks',
+                child: Text(t(context).tocaParaElegirJugadoresOPicks,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 11, color: outline)),
               ),
@@ -1170,5 +1166,7 @@ class _Fila extends StatelessWidget {
 ///
 /// El sueldo solo no basta para juzgar un traspaso: 40M con un año por
 /// delante y 40M con cinco son operaciones completamente distintas.
-String _aniosDeContrato(Jugador j) =>
-    j.aniosContrato <= 1 ? 'último año' : '${j.aniosContrato} años';
+String _aniosDeContrato(BuildContext context, Jugador j) =>
+    j.aniosContrato <= 1
+        ? t(context).ultimoAnioMinuscula
+        : t(context).aniosDeContrato(j.aniosContrato);

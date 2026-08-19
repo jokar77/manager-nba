@@ -7,6 +7,7 @@ import '../../domain/franquicia_repository.dart';
 import '../../domain/lesiones_repository.dart';
 import '../../domain/picks_repository.dart';
 import '../../domain/posiciones.dart';
+import '../../i18n/textos.dart';
 import '../../shared/icono_lesion.dart';
 import '../../shared/medias_jugador.dart';
 
@@ -141,8 +142,8 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
     }
   }
 
-  String _descripcionHueco((String, bool) hueco) =>
-      '${hueco.$2 ? "titular" : "suplente"} de ${_nombrePosicion(hueco.$1)}';
+  String _descripcionHueco(BuildContext context, (String, bool) hueco) =>
+      t(context).descripcionHueco(hueco.$2, _nombrePosicion(context, hueco.$1));
 
   Future<void> _elegirJugador(
     List<Jugador> plantilla,
@@ -158,7 +159,8 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
       context: context,
       builder: (context) => SimpleDialog(
         title: Text(
-            '${esTitular ? "Titular" : "Suplente"} — ${_nombrePosicion(posicion)}'),
+            '${esTitular ? t(context).tituloTitular : t(context).tituloSuplente} — '
+            '${_nombrePosicion(context, posicion)}'),
         children: plantilla.map((j) {
           final huecoActual = _huecoDe(j.id);
           final yaEnEsteHueco = j.id == actual;
@@ -166,12 +168,14 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
           final lesion = _lesionados[j.id];
 
           final detalle = lesion != null
-              ? '${lesion.motivo}, vuelve el ${_formatearFecha(lesion.fechaFin)}'
+              ? t(context).lesionSimple(
+                  lesion.motivo, _formatearFecha(lesion.fechaFin))
               : (huecoActual != null && !yaEnEsteHueco
                   // Elegir a alguien que ya está en otro puesto no está
                   // prohibido: se intercambian los dos, que es lo natural
                   // cuando quieres mover a un jugador de sitio.
-                  ? 'ahora ${_descripcionHueco(huecoActual)} — se intercambian'
+                  ? t(context).yaAsignadoIntercambio(
+                      _descripcionHueco(context, huecoActual))
                   : null);
 
           return SimpleDialogOption(
@@ -183,8 +187,8 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${j.nombreFicticio} (${etiquetaPosicion(j)}, '
-                        'media ${j.media})',
+                        t(context).nombreConPosicionYMedia(
+                            j.nombreFicticio, etiquetaPosicion(j), j.media),
                         style: TextStyle(
                           fontWeight:
                               yaEnEsteHueco ? FontWeight.bold : FontWeight.normal,
@@ -247,8 +251,8 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
     // botón no coge a los mejores.
     if (lesionados.isNotEmpty && !seIgnoranLesiones) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Fuera por lesión: '
-            '${lesionados.map((j) => j.nombreFicticio).join(", ")}'),
+        content: Text(t(context).fueraPorLesion(
+            lesionados.map((j) => j.nombreFicticio).join(", "))),
       ));
     }
 
@@ -316,17 +320,17 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Alineación: ${widget.equipo}'),
+          title: Text(t(context).alineacionDeEquipo(widget.equipo)),
           actions: [
             IconButton(
               icon: const Icon(Icons.style),
-              tooltip: 'Tus picks de draft',
+              tooltip: t(context).tusPicksDeDraft,
               onPressed: _verPicks,
             ),
           ],
-          bottom: const TabBar(tabs: [
-            Tab(text: 'Alineación'),
-            Tab(text: 'Estadísticas'),
+          bottom: TabBar(tabs: [
+            Tab(text: t(context).pestanaAlineacion),
+            Tab(text: t(context).pestanaEstadisticas),
           ]),
         ),
         body: FutureBuilder<List<Jugador>>(
@@ -349,7 +353,7 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
                         child: OutlinedButton.icon(
                           onPressed: () => _alinearAutomaticamente(plantilla),
                           icon: const Icon(Icons.auto_awesome),
-                          label: const Text('Alinear automáticamente'),
+                          label: Text(t(context).alinearAutomaticamenteBtn),
                         ),
                       ),
                     ),
@@ -358,7 +362,7 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
                         children: posicionesEquipo
                             .map((posicion) => _PuestoCard(
                                   posicion: posicion,
-                                  nombrePosicion: _nombrePosicion(posicion),
+                                  nombrePosicion: _nombrePosicion(context, posicion),
                                   asignacion: _asignaciones[posicion]!,
                                   jugadoresPorId: jugadoresPorId,
                                   lesionados: _lesionados,
@@ -404,8 +408,8 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
                         child: FilledButton(
                           onPressed: _rotacionCompleta ? _guardar : null,
                           child: Text(widget.esConfiguracionInicial
-                              ? 'Empezar temporada'
-                              : 'Guardar rotación'),
+                              ? t(context).empezarTemporadaBtn
+                              : t(context).guardarRotacionBtn),
                         ),
                       ),
                     ),
@@ -421,16 +425,8 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
   }
 }
 
-String _nombrePosicion(String codigo) {
-  const nombres = {
-    'PG': 'Base (PG)',
-    'SG': 'Escolta (SG)',
-    'SF': 'Alero (SF)',
-    'PF': 'Ala-pívot (PF)',
-    'C': 'Pívot (C)',
-  };
-  return nombres[codigo] ?? codigo;
-}
+String _nombrePosicion(BuildContext context, String codigo) =>
+    t(context).nombresDePosiciones[codigo] ?? codigo;
 
 class _PuestoCard extends StatelessWidget {
   final String posicion;
@@ -466,7 +462,7 @@ class _PuestoCard extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             _HuecoJugador(
-              etiqueta: 'Titular',
+              etiqueta: t(context).tituloTitular,
               posicion: posicion,
               jugador: jugadoresPorId[asignacion.titularId],
               lesion: lesionados[asignacion.titularId],
@@ -477,7 +473,7 @@ class _PuestoCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
                   children: [
-                    const Text('Minutos titular: '),
+                    Text(t(context).minutosTitularLabel),
                     IconButton(
                       icon: const Icon(Icons.remove_circle_outline, size: 20),
                       onPressed: () => onCambiarMinutosTitular(-1),
@@ -497,7 +493,7 @@ class _PuestoCard extends StatelessWidget {
                 ),
               ),
             _HuecoJugador(
-              etiqueta: 'Suplente',
+              etiqueta: t(context).tituloSuplente,
               posicion: posicion,
               jugador: jugadoresPorId[asignacion.suplenteId],
               lesion: lesionados[asignacion.suplenteId],
@@ -531,20 +527,18 @@ class _HuecoJugador extends StatelessWidget {
     final lesionado = jugador != null && lesion != null;
 
     final lineaAviso = lesionado
-        ? '${lesion!.motivo} (${lesion!.partidosEstimados} partidos) — '
-            'vuelve el ${_formatearFecha(lesion!.fechaFin)} — jugará el '
-            'suplente mientras tanto'
-        : (fueraDePosicion
-            ? 'Fuera de sus dos posiciones (rendirá algo peor)'
-            : null);
+        ? t(context).lesionConDetalle(lesion!.motivo,
+            lesion!.partidosEstimados, _formatearFecha(lesion!.fechaFin))
+        : (fueraDePosicion ? t(context).fueraDeSusDosPosiciones : null);
 
     return ListTile(
       dense: true,
       contentPadding: EdgeInsets.zero,
       title: Text(jugador == null
-          ? '$etiqueta: — elegir jugador —'
-          : '$etiqueta: ${jugador!.nombreFicticio} '
-              '(${etiquetaPosicion(jugador!)}, media ${jugador!.media})'),
+          ? '$etiqueta: ${t(context).elegirJugadorPlaceholder}'
+          : t(context).huecoConJugador(
+              etiqueta, jugador!.nombreFicticio, etiquetaPosicion(jugador!),
+              jugador!.media)),
       // El ataque y la defensa van aquí y no en el título: dos jugadores de
       // la misma media pueden ser cosas muy distintas, y sin verlo la
       // alineación se hace a ciegas.
@@ -613,7 +607,7 @@ class _EstadisticasTab extends StatelessWidget {
           dense: true,
           title: Text('${j.nombreFicticio} (${etiquetaPosicion(j)})'),
           subtitle: sinPartidos
-              ? const Text('Sin partidos jugados esta temporada')
+              ? Text(t(context).sinPartidosJugadosTemporada)
               : Text(
                   '${(s.puntosTotales / s.partidosJugados).toStringAsFixed(1)} pts · '
                   '${(s.asistenciasTotales / s.partidosJugados).toStringAsFixed(1)} ast · '
@@ -659,11 +653,12 @@ class _SelectorEstrellas extends StatelessWidget {
         children: [
           Expanded(
             child: DropdownButtonFormField<int?>(
-              decoration: const InputDecoration(labelText: 'Estrella ataque'),
+              decoration:
+                  InputDecoration(labelText: t(context).estrellaAtaqueLabel),
               initialValue:
                   candidatos.contains(estrellaAtaqueId) ? estrellaAtaqueId : null,
               items: [
-                item(null, 'Ninguna'),
+                item(null, t(context).ningunaOpcion),
                 ...candidatos
                     .map((id) => item(id, jugadoresPorId[id]!.nombreFicticio)),
               ],
@@ -673,12 +668,13 @@ class _SelectorEstrellas extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: DropdownButtonFormField<int?>(
-              decoration: const InputDecoration(labelText: 'Estrella defensa'),
+              decoration:
+                  InputDecoration(labelText: t(context).estrellaDefensaLabel),
               initialValue: candidatos.contains(estrellaDefensaId)
                   ? estrellaDefensaId
                   : null,
               items: [
-                item(null, 'Ninguna'),
+                item(null, t(context).ningunaOpcion),
                 ...candidatos
                     .map((id) => item(id, jugadoresPorId[id]!.nombreFicticio)),
               ],
@@ -706,14 +702,13 @@ class _HojaDePicks extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Tus picks de draft',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(t(context).tituloTusPicksDeDraft,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 12),
             if (picks.isEmpty)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 24),
-                child: Text('No te queda ninguna elección propia: las has '
-                    'traspasado todas.'),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Text(t(context).sinPicksPropios),
               )
             else
               Flexible(
@@ -733,7 +728,7 @@ class _HojaDePicks extends StatelessWidget {
                       title: Text(etiquetaDePick(p)),
                       subtitle: esPropio
                           ? null
-                          : const Text('Traspasado a ti por otro equipo'),
+                          : Text(t(context).traspasadoATiPorOtroEquipo),
                     );
                   },
                 ),
@@ -774,16 +769,16 @@ class _AtaqueYDefensaDelEquipo extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Ataque y defensa',
+              Text(t(context).ataqueYDefensaTitulo,
                   style: Theme.of(context).textTheme.titleSmall),
               const SizedBox(height: 8),
               _Linea(
-                  etiqueta: 'Quinteto inicial',
+                  etiqueta: t(context).quintetoInicial,
                   ataque: quinteto.ataque,
                   defensa: quinteto.defensa),
               const SizedBox(height: 4),
               _Linea(
-                  etiqueta: 'Rotación completa',
+                  etiqueta: t(context).rotacionCompleta,
                   ataque: todos.ataque,
                   defensa: todos.defensa),
             ],

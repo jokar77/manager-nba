@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/database/app_database.dart';
 import '../../domain/equipos_info.dart';
+import '../../i18n/textos.dart';
 import '../../domain/nueva_temporada_repository.dart';
 import '../../domain/playoffs_repository.dart';
 import '../../shared/campeon_dialog.dart';
@@ -86,7 +87,7 @@ class _PlayoffsScreenState extends State<PlayoffsScreen> {
     if (!mounted) return;
     await mostrarCampeonDecidido(
       context,
-      'la NBA',
+      false,
       campeon,
       esTuEquipo: campeon == widget.equipoUsuario,
       temporada: _temporada,
@@ -132,7 +133,7 @@ class _PlayoffsScreenState extends State<PlayoffsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Playoffs')),
+      appBar: AppBar(title: Text(t(context).playoffs)),
       body: FutureBuilder<List<Serie>>(
         future: _seriesFuture,
         builder: (context, snapshot) {
@@ -141,9 +142,8 @@ class _PlayoffsScreenState extends State<PlayoffsScreen> {
           }
           final series = snapshot.data!;
           if (series.isEmpty) {
-            return const Center(
-                child: Text('Los playoffs se siembran al terminar tu '
-                    'temporada regular (82 partidos).'));
+            return Center(
+                child: Text(t(context).playoffsSeSiembranAlTerminar));
           }
 
           // "Implicado" = tu equipo sigue vivo en el play-in o el bracket
@@ -164,7 +164,7 @@ class _PlayoffsScreenState extends State<PlayoffsScreen> {
               if (_procesando) const LinearProgressIndicator(),
               if (finalNba?.ganador != null) ...[
                 BannerCampeon(
-                  competicion: 'la NBA',
+                  esCup: false,
                   campeon: finalNba!.ganador!,
                   esTuEquipo: finalNba.ganador == widget.equipoUsuario,
                   temporada: _temporada,
@@ -179,7 +179,7 @@ class _PlayoffsScreenState extends State<PlayoffsScreen> {
                               ? null
                               : () => _anunciarCampeon(finalNba.ganador!),
                           icon: const Icon(Icons.emoji_events, size: 18),
-                          label: const Text('Ver celebración'),
+                          label: Text(t(context).verCelebracion),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -188,7 +188,7 @@ class _PlayoffsScreenState extends State<PlayoffsScreen> {
                           onPressed:
                               _procesando ? null : _empezarSiguienteTemporada,
                           icon: const Icon(Icons.skip_next, size: 18),
-                          label: const Text('Siguiente temporada'),
+                          label: Text(t(context).siguienteTemporadaBtn),
                         ),
                       ),
                     ],
@@ -203,8 +203,8 @@ class _PlayoffsScreenState extends State<PlayoffsScreen> {
                         child: OutlinedButton(
                           onPressed: _procesando ? null : _simularRonda,
                           child: Text(playInSinResolver
-                              ? 'Resolver el Play-In'
-                              : 'Simular ronda completa'),
+                              ? t(context).resolverPlayIn
+                              : t(context).simularRondaCompleta),
                         ),
                       ),
                       if (!implicado) ...[
@@ -212,7 +212,7 @@ class _PlayoffsScreenState extends State<PlayoffsScreen> {
                         Expanded(
                           child: FilledButton(
                             onPressed: _procesando ? null : _simularTodo,
-                            child: const Text('Simular todo'),
+                            child: Text(t(context).simularTodoBtn),
                           ),
                         ),
                       ],
@@ -239,7 +239,7 @@ class _PlayoffsScreenState extends State<PlayoffsScreen> {
                         ),
                         const SizedBox(height: 16),
                       ],
-                      const Text('Bracket',
+                      Text(t(context).bracketTitulo,
                           style: TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16)),
                       if (playInSinResolver)
@@ -254,8 +254,7 @@ class _PlayoffsScreenState extends State<PlayoffsScreen> {
                               const SizedBox(width: 6),
                               Expanded(
                                 child: Text(
-                                  'La primera ronda no empieza hasta que el '
-                                  'Play-In decida quién es el 7 y el 8.',
+                                  t(context).primeraRondaEsperaPlayIn,
                                   style: TextStyle(
                                       fontSize: 12,
                                       color: Theme.of(context)
@@ -310,10 +309,10 @@ class _PanelPlayIn extends StatelessWidget {
     required this.onSimular,
   });
 
-  static const _queSeJuega = {
-    'playin_7v8': 'El ganador entra como 7',
-    'playin_9v10': 'El perdedor queda eliminado',
-    'playin_final': 'El ganador entra como 8',
+  static Map<String, String> _queSeJuega(Textos textos) => {
+    'playin_7v8': textos.playInGanadorEntra7,
+    'playin_9v10': textos.playInPerdedorEliminado,
+    'playin_final': textos.playInGanadorEntra8,
   };
 
   @override
@@ -324,7 +323,7 @@ class _PanelPlayIn extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Text('Play-In',
+            Text(t(context).fronteraPlayIn,
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(width: 8),
             if (resuelto)
@@ -345,7 +344,7 @@ class _PanelPlayIn extends StatelessWidget {
                   equipoUsuario: equipoUsuario,
                   procesando: procesando,
                   onSimular: onSimular,
-                  queSeJuega: _queSeJuega,
+                  queSeJuega: _queSeJuega(t(context)),
                 ),
             ];
             if (restricciones.maxWidth < 520) {
@@ -411,16 +410,19 @@ class _ColumnaPlayIn extends StatelessWidget {
             width: double.infinity,
             color: info.colorPrimario,
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            child: Text('Conferencia $conferencia',
+            child: Text(
+                conferencia == 'Oeste'
+                    ? t(context).conferenciaOesteTitulo
+                    : t(context).conferenciaEsteTitulo,
                 style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                     color: textoSobre(info.colorPrimario))),
           ),
           if (ordenadas.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(10),
-              child: Text('Sin play-in', style: TextStyle(fontSize: 12)),
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Text(t(context).sinPlayIn, style: const TextStyle(fontSize: 12)),
             )
           else
             for (final serie in ordenadas)
@@ -496,12 +498,12 @@ class _FilaPlayIn extends StatelessWidget {
                       textStyle: const TextStyle(fontSize: 11),
                     ),
                     onPressed: procesando ? null : onSimular,
-                    child: const Text('Jugar'),
+                    child: Text(t(context).jugarBtn),
                   )
                 else if (jugado)
                   const Icon(Icons.check_circle, size: 18, color: Colors.green)
                 else
-                  Text('Por jugar',
+                  Text(t(context).porJugar,
                       style: TextStyle(fontSize: 10, color: outline)),
               ],
             ),
@@ -668,35 +670,28 @@ class _BracketVisual extends StatelessWidget {
     final cajas = <Widget>[
       for (var i = 0; i < 4; i++)
         caja(oeste[i], _centroX(0, i), _centroY(0),
-            etiquetaVacia: 'Primera ronda'),
+            etiquetaVacia: t(context).rondaPrimeraRonda),
       for (var i = 0; i < 2; i++)
         caja(semisOeste[i], _centroX(1, i), _centroY(1),
-            etiquetaVacia: 'Semifinal de conferencia'),
+            etiquetaVacia: t(context).rondaSemifinalConferencia),
       caja(finalOeste, centroFinales, _centroY(2),
-          etiquetaVacia: 'Final de conferencia'),
-      caja(finalNba, centroFinales, _centroY(3), etiquetaVacia: 'Final NBA'),
+          etiquetaVacia: t(context).rondaFinalConferencia),
+      caja(finalNba, centroFinales, _centroY(3),
+          etiquetaVacia: t(context).rondaFinalNba),
       caja(finalEste, centroFinales, _centroY(4),
-          etiquetaVacia: 'Final de conferencia'),
+          etiquetaVacia: t(context).rondaFinalConferencia),
       for (var i = 0; i < 2; i++)
         caja(semisEste[i], _centroX(1, i), _centroY(5),
-            etiquetaVacia: 'Semifinal de conferencia'),
+            etiquetaVacia: t(context).rondaSemifinalConferencia),
       for (var i = 0; i < 4; i++)
         caja(este[i], _centroX(0, i), _centroY(6),
-            etiquetaVacia: 'Primera ronda'),
+            etiquetaVacia: t(context).rondaPrimeraRonda),
     ];
 
     // El nombre de cada ronda, a la izquierda y a la altura de su fila. En
     // horizontal esto era una cabecera de columnas; girado el cuadro, la
     // primera ronda ocupa todo el ancho y no queda hueco arriba.
-    const nombresDeFila = [
-      'Primera\nronda',
-      'Semifinales',
-      'Final\nOeste',
-      'FINAL\nNBA',
-      'Final\nEste',
-      'Semifinales',
-      'Primera\nronda',
-    ];
+    final nombresDeFila = t(context).nombresDeRondaBracket;
     final etiquetas = <Widget>[
       for (var fila = 0; fila < 7; fila++)
         Positioned(
@@ -817,7 +812,9 @@ class _TituloConferencia extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
-        'CONFERENCIA ${conferencia.toUpperCase()}',
+        conferencia == 'Oeste'
+            ? t(context).tituloConferenciaOeste
+            : t(context).tituloConferenciaEste,
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: 11,
@@ -1009,7 +1006,7 @@ class _CajaSerie extends StatelessWidget {
                                 size: 11, color: borderColor),
                             const SizedBox(width: 3),
                             Flexible(
-                              child: Text('Esperando al Play-In',
+                              child: Text(t(context).esperandoAlPlayIn,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                       fontSize: 9, color: borderColor)),
@@ -1022,7 +1019,7 @@ class _CajaSerie extends StatelessWidget {
                             textStyle: const TextStyle(fontSize: 10),
                           ),
                           onPressed: procesando ? null : onSimular,
-                          child: const Text('Simular'),
+                          child: Text(t(context).simular),
                         ),
                 ),
               ),
@@ -1046,7 +1043,7 @@ class _CajaSerie extends StatelessWidget {
           Icon(Icons.help_outline, size: 16, color: gris),
           const SizedBox(width: 4),
           Expanded(
-            child: Text('Por definir',
+            child: Text(t(context).porDefinir,
                 style: TextStyle(
                     fontSize: 11,
                     fontStyle: FontStyle.italic,

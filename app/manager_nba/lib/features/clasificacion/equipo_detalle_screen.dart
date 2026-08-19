@@ -8,6 +8,7 @@ import '../../domain/salarios.dart';
 import '../../domain/traspasos_repository.dart';
 import '../../shared/contraste.dart';
 import '../../shared/equipo_logo.dart';
+import '../../i18n/textos.dart';
 import '../../shared/hoja_de_propuestas.dart';
 
 /// Plantilla completa de un equipo, para consultarla desde Clasificación.
@@ -56,8 +57,9 @@ class EquipoDetalleScreen extends StatelessWidget {
               final j = plantilla[i];
               return ListTile(
                 title: Text(j.nombreFicticio),
-                subtitle: Text('${etiquetaPosicion(j)} · ${j.edad} años'),
-                trailing: Text('Media ${j.media}',
+                subtitle: Text(
+                    '${etiquetaPosicion(j)} · ${t(context).edadJugador(j.edad)}'),
+                trailing: Text(t(context).mediaJugador(j.media),
                     style: const TextStyle(fontWeight: FontWeight.bold)),
                 onTap: () =>
                     abrirFichaDeJugador(context, db, j.id, equipoUsuario),
@@ -136,9 +138,8 @@ class _FichaDeJugadorState extends State<_FichaDeJugador> {
       context: context,
       isScrollControlled: true,
       builder: (context) => HojaDePropuestas(
-        titulo: '¿Cómo fichar a ${widget.jugador.nombreFicticio}?',
-        vacio: 'No tienes con qué convencerles ahora mismo: ni tu plantilla '
-            'ni tus picks les llegan sin dejarte roto.',
+        titulo: t(context).comoFicharA(widget.jugador.nombreFicticio),
+        vacio: t(context).sinConQueConvencerles,
         propuestas: propuestas,
       ),
     );
@@ -155,15 +156,13 @@ class _FichaDeJugadorState extends State<_FichaDeJugador> {
     );
     if (!mounted) return;
     if (!hecho) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Ya ha pasado la fecha límite de traspasos: no se '
-              'pueden cerrar más operaciones esta temporada.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(t(context).fechaLimiteTraspasosPasada)));
       return;
     }
     Navigator.of(context).pop();
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content:
-            Text('Traspaso cerrado con ${elegida.equipoRival}.')));
+        content: Text(t(context).traspasoCerradoCon(elegida.equipoRival))));
   }
 
   @override
@@ -191,8 +190,9 @@ class _FichaDeJugadorState extends State<_FichaDeJugador> {
                       Text(j.nombreFicticio,
                           style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold)),
-                      Text('${etiquetaPosicion(j)} · ${j.edad} años · '
-                          'media ${j.media}'),
+                      Text('${etiquetaPosicion(j)} · '
+                          '${t(context).edadJugador(j.edad)} · '
+                          '${t(context).mediaJugador(j.media).toLowerCase()}'),
                     ],
                   ),
                 ),
@@ -201,20 +201,20 @@ class _FichaDeJugadorState extends State<_FichaDeJugador> {
             const SizedBox(height: 16),
             if (stats != null && stats.partidosJugados > 0)
               _Fila(
-                etiqueta: 'Esta temporada',
+                etiqueta: t(context).estaTemporada,
                 valor: '${(stats.puntosTotales / stats.partidosJugados).toStringAsFixed(1)} pts · '
                     '${(stats.asistenciasTotales / stats.partidosJugados).toStringAsFixed(1)} ast · '
                     '${(stats.rebotesTotales / stats.partidosJugados).toStringAsFixed(1)} reb '
                     '(${stats.partidosJugados} PJ)',
               )
             else
-              const _Fila(
-                  etiqueta: 'Esta temporada', valor: 'Todavía no ha jugado'),
+              _Fila(
+                  etiqueta: t(context).estaTemporada,
+                  valor: t(context).todaviaNoHaJugado),
             _Fila(
-              etiqueta: 'Contrato',
-              valor: '${formatearSalario(j.salario)}/año · '
-                  '${j.aniosContrato} '
-                  '${j.aniosContrato == 1 ? "temporada" : "temporadas"}',
+              etiqueta: t(context).contrato,
+              valor: '${t(context).alAnio(formatearSalario(j.salario))} · '
+                  '${t(context).anios(j.aniosContrato)}',
             ),
             const SizedBox(height: 20),
             if (!esTuyo)
@@ -229,7 +229,7 @@ class _FichaDeJugadorState extends State<_FichaDeJugador> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(Icons.swap_horiz),
-                  label: const Text('Intentar traspasar'),
+                  label: Text(t(context).intentarTraspasar),
                 ),
               ),
           ],

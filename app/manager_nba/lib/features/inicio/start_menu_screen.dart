@@ -139,21 +139,18 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
       final confirmar = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text('¿Sobrescribir la partida $slot?'),
-          content: const Text(
-            'Esa ranura ya tiene una carrera en marcha y se perderá entera: '
-            'plantillas, calendario y palmarés. Esto no se puede deshacer.',
-          ),
+          title: Text(t(context).sobrescribirLaPartidaN(slot)),
+          content: Text(t(context).sePerderaEnteraAviso),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancelar'),
+              child: Text(t(context).cancelar),
             ),
             FilledButton(
               style: FilledButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.error),
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Sobrescribir'),
+              child: Text(t(context).sobrescribirBtn),
             ),
           ],
         ),
@@ -198,7 +195,7 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
     Navigator.of(context).push(MaterialPageRoute<void>(
       builder: (context) => TeamSelectorScreen(
         db: db,
-        titulo: 'Elige tu equipo',
+        titulo: t(context).eligeTuEquipoTitulo,
         onSeleccionado: (equipo) async {
           equipoElegido = true;
           await crearFranquicia(db, equipo);
@@ -243,22 +240,18 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('¿Borrar la partida ${resumen.numero}?'),
-        content: Text(
-          'Se pierde toda la carrera de $nombre: plantillas, calendario, '
-          'palmarés, leyendas y camisetas retiradas. Esto no se puede '
-          'deshacer.',
-        ),
+        title: Text(t(context).borrarLaPartidaN(resumen.numero)),
+        content: Text(t(context).sePierdeCarreraDeAviso(nombre)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
+            child: Text(t(context).cancelar),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.error),
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Borrar'),
+            child: Text(t(context).borrarBtn),
           ),
         ],
       ),
@@ -298,7 +291,7 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
                         style: TextStyle(
                             fontSize: 30, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 4),
-                    Text(_subtitulo(hayPartidas),
+                    Text(_subtitulo(context, hayPartidas),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             color: Theme.of(context).colorScheme.outline)),
@@ -318,11 +311,13 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
     );
   }
 
-  String _subtitulo(bool hayPartidas) => switch (_vista) {
-        _Vista.menu =>
-          hayPartidas ? 'Sigue donde lo dejaste' : 'Empieza tu carrera',
-        _Vista.empezar => '¿En qué ranura quieres empezar?',
-        _Vista.cargar => 'Elige la partida que quieres cargar',
+  String _subtitulo(BuildContext context, bool hayPartidas) =>
+      switch (_vista) {
+        _Vista.menu => hayPartidas
+            ? t(context).sigueDondeLoDejaste
+            : t(context).empiezaTuCarrera,
+        _Vista.empezar => t(context).enQueRanuraQuieresEmpezar,
+        _Vista.cargar => t(context).eligeLaPartidaQueQuieresCargar,
       };
 
   /// El menú de verdad: tres opciones y nada más. Las ranuras solo salen
@@ -335,7 +330,8 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
           child: FilledButton.icon(
             onPressed: _procesando ? null : _continuarUltima,
             icon: const Icon(Icons.play_arrow),
-            label: const Text('Continuar', style: TextStyle(fontSize: 16)),
+            label: Text(t(context).continuar,
+                style: const TextStyle(fontSize: 16)),
           ),
         ),
         const SizedBox(height: 12),
@@ -348,16 +344,16 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
                     ? null
                     : () => setState(() => _vista = _Vista.empezar),
                 icon: const Icon(Icons.add),
-                label: const Text('Nueva partida',
-                    style: TextStyle(fontSize: 16)),
+                label: Text(t(context).nuevaPartidaBtn,
+                    style: const TextStyle(fontSize: 16)),
               )
             : FilledButton.icon(
                 onPressed: _procesando
                     ? null
                     : () => setState(() => _vista = _Vista.empezar),
                 icon: const Icon(Icons.add),
-                label: const Text('Nueva partida',
-                    style: TextStyle(fontSize: 16)),
+                label: Text(t(context).nuevaPartidaBtn,
+                    style: const TextStyle(fontSize: 16)),
               ),
       ),
       if (hayPartidas) ...[
@@ -369,8 +365,8 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
                 ? null
                 : () => setState(() => _vista = _Vista.cargar),
             icon: const Icon(Icons.folder_open),
-            label:
-                const Text('Cargar partida', style: TextStyle(fontSize: 16)),
+            label: Text(t(context).cargarPartidaBtn,
+                style: const TextStyle(fontSize: 16)),
           ),
         ),
       ],
@@ -398,8 +394,7 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
         Padding(
           padding: const EdgeInsets.only(bottom: 12),
           child: Text(
-            'Las tres ranuras están ocupadas: borra una para empezar de '
-            'nuevo, o continúa una de las que ya tienes.',
+            t(context).lasTresRanurasOcupadasAviso,
             textAlign: TextAlign.center,
             style: TextStyle(color: Theme.of(context).colorScheme.outline),
           ),
@@ -420,7 +415,7 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
         onPressed:
             _procesando ? null : () => setState(() => _vista = _Vista.menu),
         icon: const Icon(Icons.arrow_back),
-        label: const Text('Volver'),
+        label: Text(t(context).volver),
       ),
     ];
   }
@@ -482,7 +477,7 @@ class _FichaDeSlot extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('PARTIDA ${resumen.numero}',
+                      Text(t(context).partidaNumero(resumen.numero),
                           style: TextStyle(
                               fontSize: 10,
                               letterSpacing: 1,
@@ -522,12 +517,13 @@ class _FichaDeSlot extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    'Récord ${resumen.victorias}-${resumen.derrotas}',
+                    '${t(context).record} ${resumen.victorias}-'
+                    '${resumen.derrotas}',
                     style: const TextStyle(fontSize: 13),
                   ),
                 ),
                 IconButton(
-                  tooltip: 'Borrar esta partida',
+                  tooltip: t(context).borrarEstaPartidaTooltip,
                   onPressed: deshabilitado ? null : onBorrar,
                   icon: const Icon(Icons.delete_outline, size: 20),
                 ),
@@ -535,12 +531,12 @@ class _FichaDeSlot extends StatelessWidget {
                 if (modoEmpezar)
                   OutlinedButton(
                     onPressed: deshabilitado ? null : onEmpezar,
-                    child: const Text('Sobrescribir'),
+                    child: Text(t(context).sobrescribirBtn),
                   )
                 else
                   FilledButton(
                     onPressed: deshabilitado ? null : onContinuar,
-                    child: const Text('Continuar'),
+                    child: Text(t(context).continuar),
                   ),
               ],
             ),
@@ -564,13 +560,13 @@ class _FichaDeSlot extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('PARTIDA ${resumen.numero}',
+                  Text(t(context).partidaNumero(resumen.numero),
                       style: TextStyle(
                           fontSize: 10,
                           letterSpacing: 1,
                           fontWeight: FontWeight.bold,
                           color: outline)),
-                  Text('Ranura vacía',
+                  Text(t(context).ranuraVaciaLabel,
                       style: TextStyle(fontSize: 15, color: outline)),
                 ],
               ),
@@ -580,7 +576,7 @@ class _FichaDeSlot extends StatelessWidget {
             // que la ranura existe y está libre.
             OutlinedButton(
               onPressed: deshabilitado || !modoEmpezar ? null : onEmpezar,
-              child: const Text('Empezar'),
+              child: Text(t(context).empezarBtn),
             ),
           ],
         ),

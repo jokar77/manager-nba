@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../i18n/textos.dart';
 import '../../data/database/app_database.dart';
 import '../../shared/icono_camiseta.dart';
 import 'camisetas_retiradas_screen.dart';
@@ -26,22 +27,22 @@ class LegadoScreen extends StatelessWidget {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Legado'),
+          title: Text(t(context).tituloLegado),
           actions: [
             IconButton(
               icon: const Icon(Icons.info_outline),
-              tooltip: 'Qué significa la puntuación de carrera',
+              tooltip: t(context).explicacionPuntuacionCarreraTooltip,
               onPressed: () => mostrarExplicacionPuntuacionHof(context),
             ),
           ],
-          bottom: const TabBar(
+          bottom: TabBar(
             tabs: [
-              Tab(icon: Icon(Icons.military_tech), text: 'Hall of Fame'),
+              Tab(icon: const Icon(Icons.military_tech), text: t(context).hallOfFame),
               Tab(
-                icon: IconoCamisetaRetirada(tamano: 24),
-                text: 'Camisetas retiradas',
+                icon: const IconoCamisetaRetirada(tamano: 24),
+                text: t(context).pestanaCamisetasRetiradas,
               ),
-              Tab(icon: Icon(Icons.leaderboard), text: 'Líderes históricos'),
+              Tab(icon: const Icon(Icons.leaderboard), text: t(context).pestanaLideresHistoricos),
             ],
           ),
         ),

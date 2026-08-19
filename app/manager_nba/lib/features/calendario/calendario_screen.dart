@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../i18n/textos.dart';
 import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 
 import '../../data/calendario/generador_calendario.dart';
@@ -141,7 +143,7 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
       if (mounted) {
         await mostrarCampeonDecidido(
           context,
-          'la NBA',
+          false,
           campeon,
           esTuEquipo: campeon == widget.equipoUsuario,
           temporada: etiquetaDeTemporada(temporada.anioInicio),
@@ -232,21 +234,21 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('¿Simular hasta este día?'),
+        title: Text(t(context).confirmarSimularTitulo),
         content: Text(
           pendientes <= 1
-              ? 'Se jugará tu próximo partido.'
-              : 'Se jugarán de una vez los $pendientes partidos que te '
-                  'quedan hasta el ${fecha.day}/${fecha.month}.',
+              ? t(context).seJugaraProximoPartido
+              : t(context).seJugaranDeUnaVez(
+                  pendientes, fecha.day, fecha.month),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
+            child: Text(t(context).cancelar),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Simular'),
+            child: Text(t(context).simular),
           ),
         ],
       ),
@@ -265,7 +267,7 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
           context: context,
           builder: (context) => AlertDialog(
             title: Text(partido.fase == faseFinalCopa
-                ? 'Final NBA Cup — $enfrentamiento'
+                ? t(context).finalCupVs(enfrentamiento)
                 : enfrentamiento),
             content: Text(
               '${widget.equipoUsuario} ${partido.marcadorPropietario} - '
@@ -275,7 +277,7 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cerrar'),
+                child: Text(t(context).cerrar),
               ),
             ],
           ),
@@ -291,12 +293,12 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
       showDialog<void>(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text(_tituloEvento(evento.tipo)),
-          content: Text(_descripcionEvento(evento.tipo)),
+          title: Text(_tituloEvento(t(context), evento.tipo)),
+          content: Text(_descripcionEvento(t(context), evento.tipo)),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cerrar'),
+              child: Text(t(context).cerrar),
             ),
           ],
         ),
@@ -311,7 +313,7 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Calendario'),
+        title: Text(t(context).calendario),
         backgroundColor: colorEquipo,
         foregroundColor: textoSobre(colorEquipo),
       ),
@@ -384,25 +386,23 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
 bool _mismoDia(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month && a.day == b.day;
 
-String _tituloEvento(String tipo) {
+String _tituloEvento(Textos textos, String tipo) {
   final t = TipoEventoTemporada.desdeNombre(tipo);
   return switch (t) {
-    TipoEventoTemporada.finAgenciaLibre => 'Fin de la agencia libre',
-    TipoEventoTemporada.fechaLimiteTraspasos => 'Fecha límite de traspasos',
-    TipoEventoTemporada.allStar => 'Fin de semana de las estrellas',
+    TipoEventoTemporada.finAgenciaLibre => textos.tituloEventoFinAgenciaLibre,
+    TipoEventoTemporada.fechaLimiteTraspasos =>
+      textos.tituloEventoFechaLimiteTraspasos,
+    TipoEventoTemporada.allStar => textos.tituloEventoAllStar,
   };
 }
 
-String _descripcionEvento(String tipo) {
+String _descripcionEvento(Textos textos, String tipo) {
   final t = TipoEventoTemporada.desdeNombre(tipo);
   return switch (t) {
-    TipoEventoTemporada.finAgenciaLibre =>
-      'A partir de aquí ya no se puede fichar agentes libres.',
+    TipoEventoTemporada.finAgenciaLibre => textos.descEventoFinAgenciaLibre,
     TipoEventoTemporada.fechaLimiteTraspasos =>
-      'Último día para hacer traspasos esta temporada.',
-    TipoEventoTemporada.allStar =>
-      'No hay partido tuyo este fin de semana. Aprovecha para revisar la '
-          'Clasificación.',
+      textos.descEventoFechaLimiteTraspasos,
+    TipoEventoTemporada.allStar => textos.descEventoAllStar,
   };
 }
 
@@ -426,7 +426,7 @@ class _BotonesAvanceRapido extends StatelessWidget {
     // robaba al calendario el alto que necesita para enseñar el mes entero.
     // El verbo se sobreentiende, así que en compacto se cae.
     final compacto = tamanoDe(context).esCompacto;
-    String etiqueta(String que) => compacto ? que : 'Simular $que';
+    final textos = t(context);
 
     return Padding(
       padding: const EdgeInsets.all(8),
@@ -435,21 +435,26 @@ class _BotonesAvanceRapido extends StatelessWidget {
           Expanded(
             child: OutlinedButton(
               onPressed: habilitado ? onSimular1Partido : null,
-              child: Text(etiqueta('1 partido'), maxLines: 1),
+              child: Text(
+                  compacto ? textos.unPartido : textos.simularUnPartido,
+                  maxLines: 1),
             ),
           ),
           const SizedBox(width: 8),
           Expanded(
             child: OutlinedButton(
               onPressed: habilitado ? onSimular1Semana : null,
-              child: Text(etiqueta('1 semana'), maxLines: 1),
+              child: Text(
+                  compacto ? textos.unaSemana : textos.simularUnaSemana,
+                  maxLines: 1),
             ),
           ),
           const SizedBox(width: 8),
           Expanded(
             child: OutlinedButton(
               onPressed: habilitado ? onSimular1Mes : null,
-              child: Text(etiqueta('1 mes'), maxLines: 1),
+              child: Text(compacto ? textos.unMes : textos.simularUnMes,
+                  maxLines: 1),
             ),
           ),
         ],
@@ -458,11 +463,7 @@ class _BotonesAvanceRapido extends StatelessWidget {
   }
 }
 
-const _nombresMes = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
-];
-const _diasSemana = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+
 
 class _SeccionMes extends StatelessWidget {
   final DateTime mes;
@@ -512,14 +513,14 @@ class _SeccionMes extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.fromLTRB(12, 16, 12, 4),
           child: Text(
-            '${_nombresMes[mes.month - 1]} ${mes.year}',
+            '${t(context).nombresMeses[mes.month - 1]} ${mes.year}',
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Row(
-            children: _diasSemana
+            children: t(context).diasSemanaAbrev
                 .map((d) => Expanded(
                       child: Center(
                         child: Text(d,
@@ -639,7 +640,7 @@ class _CeldaDia extends StatelessWidget {
                       child: Text(
                         tamanoDe(context).esCompacto
                             ? '$dia'
-                            : '$dia ${_diasSemana[fecha.weekday - 1]}',
+                            : '$dia ${t(context).diasSemanaAbrev[fecha.weekday - 1]}',
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontSize: 10, color: colorTexto),
                       ),
@@ -759,7 +760,7 @@ class _PanelPlayoffs extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Playoffs',
+                Text(t(context).playoffs,
                     style:
                         TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 TextButton(
@@ -767,13 +768,13 @@ class _PanelPlayoffs extends StatelessWidget {
                     builder: (context) => PlayoffsScreen(
                         db: db, equipoUsuario: equipoUsuario),
                   )),
-                  child: const Text('Ver bracket completo'),
+                  child: Text(t(context).verBracketCompleto),
                 ),
               ],
             ),
             if (campeon != null) ...[
               BannerCampeon(
-                competicion: 'la NBA',
+                esCup: false,
                 campeon: campeon,
                 esTuEquipo: campeon == equipoUsuario,
               ),
@@ -783,7 +784,7 @@ class _PanelPlayoffs extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: procesando ? null : onEmpezarNuevaTemporada,
                   icon: const Icon(Icons.skip_next),
-                  label: const Text('Empezar la siguiente temporada'),
+                  label: Text(t(context).empezarSiguienteTemporada),
                 ),
               ),
             ]
@@ -797,28 +798,27 @@ class _PanelPlayoffs extends StatelessWidget {
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: procesando ? null : onSimularPartido,
-                  child: const Text('Simular partido de playoffs'),
+                  child: Text(t(context).simularPartidoDePlayoffs),
                 ),
               ),
             ] else if (!implicado) ...[
-              const Text('No clasificaste a los playoffs esta temporada.'),
+              Text(t(context).noClasificasteAPlayoffs),
               const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
                   onPressed: procesando ? null : onSimularTodo,
-                  child: const Text('Simular playoffs completos'),
+                  child: Text(t(context).simularPlayoffsCompletos),
                 ),
               ),
             ] else ...[
-              const Text('Tu serie está decidida — falta el resto del '
-                  'bracket para saber tu próximo rival.'),
+              Text(t(context).serieDecididaFaltaResto),
               const SizedBox(height: 8),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
                   onPressed: procesando ? null : onSimularRestoDeRonda,
-                  child: const Text('Simular el resto de la ronda'),
+                  child: Text(t(context).simularRestoDeRonda),
                 ),
               ),
             ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../i18n/textos.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/equipos_info.dart';
 import '../../domain/franquicia_repository.dart';
@@ -9,16 +10,17 @@ import '../../shared/equipo_logo.dart';
 import '../../shared/navegacion.dart';
 import '../calendario/calendario_screen.dart';
 
-String _tituloPremio(TipoPremio tipo) {
+String _tituloPremio(BuildContext context, TipoPremio tipo) {
   return switch (tipo) {
-    TipoPremio.mvp => 'MVP',
-    TipoPremio.mejorDefensor => 'Mejor Defensor',
-    TipoPremio.rookieDelAno => 'Rookie del Año',
-    TipoPremio.masMejorado => 'Jugador Más Mejorado',
-    TipoPremio.primerQuinteto => 'Primer Quinteto',
-    TipoPremio.segundoQuinteto => 'Segundo Quinteto',
-    TipoPremio.mvpAllStar => 'MVP del All-Star',
-    TipoPremio.mvpRisingStars => 'MVP del Rising Stars',
+    TipoPremio.mvp => t(context).premioMvp,
+    TipoPremio.mejorDefensor => t(context).premioMejorDefensor,
+    TipoPremio.rookieDelAno => t(context).premioRookieDelAno,
+    TipoPremio.masMejorado => t(context).premioMasMejorado,
+    TipoPremio.primerQuinteto => t(context).premioPrimerQuinteto,
+    TipoPremio.segundoQuinteto => t(context).premioSegundoQuinteto,
+    TipoPremio.mvpAllStar => t(context).premioMvpAllStar(t(context).allStar),
+    TipoPremio.mvpRisingStars =>
+      t(context).premioMvpRisingStars(t(context).risingStars),
   };
 }
 
@@ -80,7 +82,7 @@ class _PremiosScreenState extends State<PremiosScreen> {
     final db = widget.db;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Premios de la temporada'),
+        title: Text(t(context).tituloPremiosDeLaTemporada),
         actions: const [BotonMenuPrincipal()],
       ),
       body: FutureBuilder<_DatosDePremios>(
@@ -90,8 +92,8 @@ class _PremiosScreenState extends State<PremiosScreen> {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
-                child: Text('No se han podido cargar los premios.\n'
-                    '${snapshot.error}'),
+                child: Text(
+                    t(context).noSePudieronCargarPremios('${snapshot.error}')),
               ),
             );
           }
@@ -125,7 +127,7 @@ class _PremiosScreenState extends State<PremiosScreen> {
                     return [
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Text(_tituloPremio(tipo),
+                        child: Text(_tituloPremio(context, tipo),
                             style: const TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.bold)),
                       ),
@@ -144,7 +146,7 @@ class _PremiosScreenState extends State<PremiosScreen> {
                           subtitle: Text(
                               '${equipo == null ? '' : infoDe(equipo).nombreCompleto}'
                               '${jugador != null ? ' · ${jugador.posicion}' : ''}'
-                              '${stats != null ? ' · ${_lineaStats(stats)}' : ''}'),
+                              '${stats != null ? ' · ${_lineaStats(context, stats)}' : ''}'),
                         );
                       }),
                     ];
@@ -164,7 +166,7 @@ class _PremiosScreenState extends State<PremiosScreen> {
                             builder: (context) => CalendarioScreen(
                                 db: db, equipoUsuario: widget.equipoUsuario),
                           )),
-                    child: const Text('Ver calendario'),
+                    child: Text(t(context).verCalendarioBtn),
                   ),
                 ),
               ),
@@ -176,13 +178,13 @@ class _PremiosScreenState extends State<PremiosScreen> {
   }
 }
 
-String _lineaStats(EstadisticasTemporadaJugadorData stats) {
+String _lineaStats(BuildContext context, EstadisticasTemporadaJugadorData stats) {
   if (stats.partidosJugados == 0) return '';
   final pts = stats.puntosTotales / stats.partidosJugados;
   final ast = stats.asistenciasTotales / stats.partidosJugados;
   final reb = stats.rebotesTotales / stats.partidosJugados;
-  return '${pts.toStringAsFixed(1)} pts, ${ast.toStringAsFixed(1)} ast, '
-      '${reb.toStringAsFixed(1)} reb';
+  return t(context).statsPremioLinea(pts.toStringAsFixed(1),
+      ast.toStringAsFixed(1), reb.toStringAsFixed(1));
 }
 
 /// Los quintetos se calculan por puntuación combinada, pero se muestran en

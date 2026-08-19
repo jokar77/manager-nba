@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../i18n/textos.dart';
 import '../../domain/eventos_narrativos_repository.dart';
 import '../../shared/pantalla.dart';
 
@@ -47,7 +48,7 @@ Future<void> contarConsecuencia(
       actions: [
         FilledButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Entendido'),
+          child: Text(t(context).entendido),
         ),
       ],
     ),
@@ -133,9 +134,7 @@ class _FilaDeEfecto extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            efecto.partidos == 1
-                ? '1 partido'
-                : '${efecto.partidos} partidos',
+            t(context).nPartidos(efecto.partidos),
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
@@ -165,7 +164,7 @@ class TarjetaDeEfectosActivos extends StatelessWidget {
               children: [
                 const Icon(Icons.forum, size: 18),
                 const SizedBox(width: 8),
-                Text('En el vestuario',
+                Text(t(context).enElVestuario,
                     style: Theme.of(context).textTheme.titleSmall),
               ],
             ),

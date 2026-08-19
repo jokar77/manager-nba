@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../i18n/textos.dart';
 import '../data/database/app_database.dart';
 import '../domain/picks_repository.dart';
 import '../domain/posiciones.dart';
@@ -9,10 +10,11 @@ import 'equipo_logo.dart';
 /// Los nombres de un lado del traspaso, con la ficha de cada jugador entre
 /// paréntesis. Sin la media no se puede juzgar una propuesta: la lista era
 /// una fila de nombres sueltos y había que salirse a mirarlos uno a uno.
-String _conFicha(List<Jugador> jugadores, List<PickDraft> picks) => [
-      ...jugadores.map((j) =>
-          '${j.nombreFicticio} (${etiquetaPosicion(j)}, ${j.media}, '
-          '${j.edad} años)'),
+String _conFicha(
+        BuildContext context, List<Jugador> jugadores, List<PickDraft> picks) =>
+    [
+      ...jugadores.map((j) => t(context).jugadorConFicha(
+          j.nombreFicticio, etiquetaPosicion(j), j.media, j.edad)),
       ...picks.map(etiquetaDePick),
     ].join(', ');
 
@@ -63,16 +65,18 @@ class HojaDePropuestas extends StatelessWidget {
                       isThreeLine: true,
                       leading: EquipoLogo(codigoEquipo: p.equipoRival),
                       title: Text(
-                          'Recibes: '
-                          '${_conFicha(p.jugadoresQueLlegan, p.picksQueLlegan)}',
+                          t(context).recibesLabel +
+                              _conFicha(context, p.jugadoresQueLlegan,
+                                  p.picksQueLlegan),
                           style: const TextStyle(fontSize: 13)),
                       subtitle: Text(
-                          'Entregas: '
-                          '${_conFicha(p.jugadoresQueSalen, p.picksQueSalen)}',
+                          t(context).entregasLabel +
+                              _conFicha(context, p.jugadoresQueSalen,
+                                  p.picksQueSalen),
                           style: const TextStyle(fontSize: 13)),
                       trailing: FilledButton(
                         onPressed: () => Navigator.of(context).pop(p),
-                        child: const Text('Traspasar'),
+                        child: Text(t(context).traspasarBtn),
                       ),
                     );
                   },

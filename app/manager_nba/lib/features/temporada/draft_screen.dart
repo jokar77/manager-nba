@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../i18n/textos.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/draft_repository.dart';
 import '../../domain/equipos_info.dart';
@@ -30,14 +31,13 @@ class DraftScreen extends StatefulWidget {
 }
 
 /// Criterios de orden de la lista de disponibles.
-enum _Orden {
-  potencial('Potencial'),
-  mediaDesc('Media ↓'),
-  mediaAsc('Media ↑');
+enum _Orden { potencial, mediaDesc, mediaAsc }
 
-  const _Orden(this.etiqueta);
-  final String etiqueta;
-}
+String _etiquetaOrden(_Orden o, Textos textos) => switch (o) {
+      _Orden.potencial => textos.ordenPotencial,
+      _Orden.mediaDesc => textos.ordenMediaDesc,
+      _Orden.mediaAsc => textos.ordenMediaAsc,
+    };
 
 class _DraftScreenState extends State<DraftScreen> {
   final List<RookieElegido> _elegidos = [];
@@ -115,12 +115,12 @@ class _DraftScreenState extends State<DraftScreen> {
       canPop: false,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Draft'),
+          title: Text(t(context).tituloDraft),
           automaticallyImplyLeading: false,
           actions: [
             IconButton(
               icon: const Icon(Icons.groups),
-              tooltip: 'Ver tu plantilla',
+              tooltip: t(context).verTuPlantilla,
               onPressed: () => Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => RosterConfigScreen(
                   db: widget.db,
@@ -156,8 +156,8 @@ class _DraftScreenState extends State<DraftScreen> {
                           procesando: _procesando,
                           onElegir: _elegir,
                         )
-                      : const Center(
-                          child: Text('Eligiendo el resto de equipos...'))),
+                      : Center(
+                          child: Text(t(context).eligiendoElRestoDeEquipos))),
             ),
           ],
         ),
@@ -170,14 +170,14 @@ class _DraftScreenState extends State<DraftScreen> {
                     onPressed: _procesando
                         ? null
                         : () => Navigator.of(context).pop(_elegidos),
-                    child: const Text('Continuar'),
+                    child: Text(t(context).continuar),
                   ),
                 )
               : SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
                     onPressed: _procesando ? null : _simularElResto,
-                    child: const Text('Que elija la CPU por mí'),
+                    child: Text(t(context).queElijaLaCpuPorMi),
                   ),
                 ),
         ),
@@ -202,10 +202,10 @@ class _Cabecera extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (terminado) {
-      return const Padding(
-        padding: EdgeInsets.all(16),
-        child: Text('Draft completado',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+      return Padding(
+        padding: const EdgeInsets.all(16),
+        child: Text(t(context).draftCompletado,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
       );
     }
 
@@ -223,10 +223,10 @@ class _Cabecera extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Elección número $numeroDeEleccion',
+                Text(t(context).eleccionNumero(numeroDeEleccion),
                     style: TextStyle(color: textoSecundarioSobre(fondo))),
                 Text(
-                  esMiTurno ? '¡Te toca elegir!' : info.nombreCompleto,
+                  esMiTurno ? t(context).teTocaElegir : info.nombreCompleto,
                   style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -253,12 +253,13 @@ class _BarraDeOrden extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
         children: [
-          const Text('Ordenar por: '),
+          Text(t(context).ordenarPorLabel),
           const SizedBox(width: 8),
           Expanded(
             child: SegmentedButton<_Orden>(
               segments: _Orden.values
-                  .map((o) => ButtonSegment(value: o, label: Text(o.etiqueta)))
+                  .map((o) => ButtonSegment(
+                      value: o, label: Text(_etiquetaOrden(o, t(context)))))
                   .toList(),
               selected: {orden},
               onSelectionChanged: (s) => onCambiar(s.first),
@@ -300,8 +301,8 @@ class _ListaDisponibles extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('${etiquetaPosicion(p)} · ${p.edad} años · '
-                    'media ${p.media}'),
+                Text(t(context)
+                    .posicionEdadMedia(etiquetaPosicion(p), p.edad, p.media)),
                 const SizedBox(height: 3),
                 PotencialEstrellas(potencial: p.potencial),
               ],
@@ -343,7 +344,7 @@ class _ListaElegidos extends StatelessWidget {
           subtitle: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('${r.posicion} · media ${r.media} · '),
+              Text(t(context).posicionMediaSeparador(r.posicion, r.media)),
               PotencialEstrellas(potencial: r.potencial, tamano: 12),
             ],
           ),

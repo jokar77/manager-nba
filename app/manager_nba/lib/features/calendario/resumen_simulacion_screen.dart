@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../i18n/textos.dart';
 import '../../shared/icono_lesion.dart';
 
 import '../../data/database/app_database.dart';
@@ -68,7 +69,7 @@ class _ResumenSimulacionScreenState extends State<ResumenSimulacionScreen> {
       builder: (context) => ResumenTemporadaScreen(
         db: widget.db,
         equipoUsuario: widget.equipoUsuario,
-        textoBoton: 'Ver los premios',
+        textoBoton: t(context).verLosPremios,
         onContinuar: () => Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (context) => PremiosScreen(
@@ -93,8 +94,8 @@ class _ResumenSimulacionScreenState extends State<ResumenSimulacionScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(partidos.isEmpty
-            ? 'Sin partidos'
-            : '${partidos.length} partidos · $ganados-$perdidos'),
+            ? t(context).sinPartidosTitulo
+            : t(context).resumenPartidos(partidos.length, ganados, perdidos)),
         actions: const [BotonMenuPrincipal()],
       ),
       body: Column(
@@ -121,7 +122,7 @@ class _ResumenSimulacionScreenState extends State<ResumenSimulacionScreen> {
                           children: [
                             const IconoLesion(),
                             const SizedBox(width: 8),
-                            Text('Lesiones activas ahora mismo',
+                            Text(t(context).lesionesActivasAhora,
                                 style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Theme.of(context)
@@ -238,7 +239,7 @@ class _ResumenSimulacionScreenState extends State<ResumenSimulacionScreen> {
                             final proximo = proximaFechaPendiente(partidosActuales);
                             if (proximo != null) _simularHasta(proximo);
                           },
-                    child: const Text('Simular 1 partido'),
+                    child: Text(t(context).simularUnPartido),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -252,7 +253,7 @@ class _ResumenSimulacionScreenState extends State<ResumenSimulacionScreen> {
                             _simularHasta(fechaActualDeLaTemporada(partidosActuales)
                                 .add(const Duration(days: 7)));
                           },
-                    child: const Text('Simular 1 semana'),
+                    child: Text(t(context).simularUnaSemana),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -266,7 +267,7 @@ class _ResumenSimulacionScreenState extends State<ResumenSimulacionScreen> {
                             _simularHasta(fechaActualDeLaTemporada(partidosActuales)
                                 .add(const Duration(days: 30)));
                           },
-                    child: const Text('Simular 1 mes'),
+                    child: Text(t(context).simularUnMes),
                   ),
                 ),
               ],

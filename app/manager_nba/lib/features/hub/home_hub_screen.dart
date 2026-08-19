@@ -316,11 +316,10 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
                     color: const Color(0xFFD64550),
                     titulo: textos.ofertasRecibidas,
                     subtitulo: estado.ofertas == 0
-                        ? 'Nadie te ha propuesto nada por ahora'
+                        ? textos.nadieTePropuestoNadaAhora
                         : estado.ofertas == 1
-                            ? 'Un equipo quiere a uno de tus jugadores'
-                            : '${estado.ofertas} equipos han preguntado por '
-                                'jugadores tuyos',
+                            ? textos.unEquipoQuiereAUnoDeTusJugadores
+                            : textos.nEquiposHanPreguntado(estado.ofertas),
                     insignia: estado.ofertas == 0 ? null : '${estado.ofertas}',
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) =>
@@ -343,8 +342,8 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
                     color: const Color(0xFFB07D2B),
                     titulo: textos.nbaCup,
                     subtitulo: estado.copaSembrada
-                        ? 'Cuadro y resultados de la Copa'
-                        : 'Se desbloquea al terminar la fase de grupos',
+                        ? textos.cuadroYResultadosDeLaCopa(textos.nbaCup)
+                        : textos.seDesbloqueaAlTerminarFaseDeGrupos,
                     deshabilitado: !estado.copaSembrada,
                     onTap: !estado.copaSembrada
                         ? null
@@ -377,8 +376,8 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
                     color: const Color(0xFFD4A017),
                     titulo: textos.premios,
                     subtitulo: estado.temporadaCompleta
-                        ? 'Premios de fin de temporada'
-                        : 'Se desbloquea al terminar la temporada regular',
+                        ? textos.premiosDeFinDeTemporadaSubtitulo
+                        : textos.seDesbloqueaAlTerminarTemporadaRegular,
                     deshabilitado: !estado.temporadaCompleta,
                     onTap: !estado.temporadaCompleta
                         ? null
@@ -392,8 +391,8 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
                     color: const Color(0xFFE2622C),
                     titulo: textos.playoffs,
                     subtitulo: estado.temporadaCompleta
-                        ? 'Bracket de eliminatorias'
-                        : 'Se desbloquea al terminar la temporada regular',
+                        ? textos.bracketDeEliminatorias
+                        : textos.seDesbloqueaAlTerminarTemporadaRegular,
                     deshabilitado: !estado.temporadaCompleta,
                     onTap: !estado.temporadaCompleta
                         ? null
@@ -407,7 +406,8 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
                     icono: Icons.military_tech,
                     color: const Color(0xFF8E6BC9),
                     titulo: textos.legado,
-                    subtitulo: 'Hall of Fame y camisetas retiradas',
+                    subtitulo: textos.hallOfFameYCamisetasRetiradasSubtitulo(
+                        textos.hallOfFame, textos.pestanaCamisetasRetiradas),
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
                       builder: (context) =>
                           LegadoScreen(db: db, equipoUsuario: equipo),
@@ -526,7 +526,7 @@ class _CabeceraEquipo extends StatelessWidget {
                   _SeparadorDeDato(color: secundario),
                   Expanded(
                     child: _Dato(
-                      etiqueta: 'Salarial',
+                      etiqueta: t(context).salarialLabel,
                       valor: formatearSalario(estado.masaSalarial),
                       color: estado.masaSalarial > topeSalarial
                           ? const Color(0xFFFFC5C5)

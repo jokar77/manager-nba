@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../i18n/textos.dart';
 /// La cruz blanca sobre fondo rojo con la que se marcan las lesiones en
 /// todas partes.
 ///
@@ -16,7 +17,7 @@ class IconoLesion extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'Lesión',
+      label: t(context).lesionLabel,
       child: Container(
         width: tamano,
         height: tamano,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../i18n/textos.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/carrera_repository.dart';
 import '../../domain/lideres_historicos_repository.dart';
@@ -35,10 +36,10 @@ class _LideresHistoricosBodyState extends State<LideresHistoricosBody> {
           length: 3,
           child: Column(
             children: [
-              const TabBar(tabs: [
-                Tab(text: 'Puntos'),
-                Tab(text: 'Asistencias'),
-                Tab(text: 'Rebotes'),
+              TabBar(tabs: [
+                Tab(text: t(context).ordenPuntos),
+                Tab(text: t(context).ordenAsistencias),
+                Tab(text: t(context).ordenRebotes),
               ]),
               const _LeyendaDeColor(),
               Expanded(
@@ -73,7 +74,7 @@ class _LeyendaDeColor extends StatelessWidget {
           Icon(Icons.circle, size: 10, color: _colorDeActivo(context)),
           const SizedBox(width: 8),
           Text(
-            'En activo: todavía puede subir puestos',
+            t(context).enActivoLeyenda,
             style: TextStyle(
                 fontSize: 12, color: Theme.of(context).colorScheme.outline),
           ),
@@ -97,10 +98,10 @@ class _ListaDeLideres extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (lideres.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Text('Todavía no hay estadísticas que mostrar.',
+          padding: const EdgeInsets.all(24),
+          child: Text(t(context).todaviaNoHayEstadisticas,
               textAlign: TextAlign.center),
         ),
       );

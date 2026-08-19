@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../i18n/textos.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/carrera_repository.dart';
 import '../../domain/equipos_info.dart';
@@ -114,10 +115,10 @@ class _CarreraJugadorScreenState extends State<CarreraJugadorScreen> {
               padding: const EdgeInsets.all(16),
               children: [
                 if (!widget.esHistoriaReal)
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 12),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
                     child: Text(
-                      'No llegó a completar ninguna temporada contigo.',
+                      t(context).noLlegoACompletarNingunaTemporada,
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -149,9 +150,9 @@ class _CarreraJugadorScreenState extends State<CarreraJugadorScreen> {
                     if (c.vieneDeAntes && real == null)
                       _AntesDeTuPartida(carrera: c),
                     _Bloque(
-                      titulo: 'Trayectoria',
-                      hijos: _trayectoriaUnificada(
-                          c, etapasReales, widget.equipoDestacado, temporada),
+                      titulo: t(context).tituloTrayectoria,
+                      hijos: _trayectoriaUnificada(context, c, etapasReales,
+                          widget.equipoDestacado, temporada),
                     ),
                     _PalmaresBloque(db: widget.db, carrera: c, real: real),
                   ],
@@ -167,7 +168,7 @@ class _CarreraJugadorScreenState extends State<CarreraJugadorScreen> {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => Navigator.of(context).pop(false),
-                      child: const Text('No retirar el dorsal'),
+                      child: Text(t(context).noRetirarElDorsal),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -175,7 +176,7 @@ class _CarreraJugadorScreenState extends State<CarreraJugadorScreen> {
                     child: FilledButton.icon(
                       onPressed: () => Navigator.of(context).pop(true),
                       icon: const Icon(Icons.checkroom),
-                      label: const Text('Retirar su camiseta'),
+                      label: Text(t(context).retirarSuCamiseta),
                     ),
                   ),
                 ],
@@ -211,11 +212,13 @@ typedef _Etapa = ({
 /// tu partida salía dos veces seguidas con el mismo escudo, una con "2025-26
 /// a 2025-26" y otra con "temporada 1".
 List<Widget> _trayectoriaUnificada(
+  BuildContext context,
   CarreraJugador c,
   List<EtapaReal> etapasReales,
   String? equipoDestacado,
   TemporadaData? temporadaActual,
 ) {
+  final textos = t(context);
   final etapas = <_Etapa>[
     for (final e in [...etapasReales]
       ..sort((a, b) => a.primeraTemporada.compareTo(b.primeraTemporada)))
@@ -229,13 +232,13 @@ List<Widget> _trayectoriaUnificada(
         asistencias: e.asistenciasPorPartido * e.partidos,
         rebotes: e.rebotesPorPartido * e.partidos,
         trofeos: <String>[
-          if (e.anillos > 0)
-            '${e.anillos} anillo${e.anillos == 1 ? '' : 's'}',
-          if (e.mvpFinales > 0) '${e.mvpFinales} MVP de Finales',
-          if (e.mvp > 0) '${e.mvp} MVP',
+          if (e.anillos > 0) textos.anillos(e.anillos),
+          if (e.mvpFinales > 0)
+            textos.vecesConEtiqueta(e.mvpFinales, textos.mvpFinalesCorto),
+          if (e.mvp > 0) textos.vecesConEtiqueta(e.mvp, textos.premioMvp),
           if (e.mejorDefensor > 0) '${e.mejorDefensor} DPOY',
-          if (e.allStar > 0) '${e.allStar} All-Star',
-          if (e.quintetos > 0) '${e.quintetos} quintetos All-NBA',
+          if (e.allStar > 0) textos.vecesConEtiqueta(e.allStar, textos.allStar),
+          if (e.quintetos > 0) textos.quintetosAllNba(e.quintetos),
         ],
       ),
     for (final e in c.etapas)
@@ -259,7 +262,8 @@ List<Widget> _trayectoriaUnificada(
         // equipo aparecía en su historial como si hubiera pasado por ahí sin
         // pena ni gloria, mientras que lo que había hecho de verdad en la
         // NBA sí se veía. Justo al revés de lo que interesa en una partida.
-        trofeos: _trofeosDeLaEtapa(c, e.desdeTemporada, e.hastaTemporada),
+        trofeos:
+            _trofeosDeLaEtapa(textos, c, e.desdeTemporada, e.hastaTemporada),
       ),
   ];
 
@@ -285,10 +289,10 @@ List<Widget> _trayectoriaUnificada(
   }
 
   if (unidas.isEmpty) {
-    return const [
+    return [
       Padding(
-        padding: EdgeInsets.symmetric(vertical: 8),
-        child: Text('No llegó a completar ninguna temporada contigo.'),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Text(textos.noLlegoACompletarNingunaTemporada),
       )
     ];
   }
@@ -328,8 +332,8 @@ class _ResumenUnificado extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Text('$temporadas temporadas · ${carrera.posicion} · '
-                '$partidos partidos'),
+            Text(t(context).resumenCarreraTotales(
+                temporadas, carrera.posicion, partidos)),
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -341,7 +345,8 @@ class _ResumenUnificado extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Totales: $puntos pts · $asistencias ast · $rebotes reb',
+              t(context).totalesCarreraLinea(
+                  '$puntos', '$asistencias', '$rebotes'),
               style: TextStyle(
                   fontSize: 12,
                   color: Theme.of(context).colorScheme.outline),
@@ -381,8 +386,8 @@ class _PalmaresBloqueState extends State<_PalmaresBloque> {
         String? etiquetaDe(int numero) =>
             actual == null ? null : etiquetaTemporadaDesde(actual, numero);
         return _Bloque(
-          titulo: 'Palmarés',
-          hijos: _palmares(widget.carrera, widget.real, etiquetaDe),
+          titulo: t(context).tituloPalmares,
+          hijos: _palmares(t(context), widget.carrera, widget.real, etiquetaDe),
         );
       },
     );
@@ -395,6 +400,7 @@ class _PalmaresBloqueState extends State<_PalmaresBloque> {
   /// solo existen en Kaggle; Rookie del Año y Más Mejorado solo se calculan
   /// dentro de la partida) se quedan como una fila propia.
   List<Widget> _palmares(
+    Textos textos,
     CarreraJugador c,
     CarreraReal? real,
     String? Function(int) etiquetaDe,
@@ -426,48 +432,52 @@ class _PalmaresBloqueState extends State<_PalmaresBloque> {
           etiqueta: etiqueta, icono: icono, color: color, veces: veces, anios: anios));
     }
 
-    agregar('Campeón de la NBA', Icons.emoji_events, Colors.amber.shade700,
+    agregar(textos.premioCampeonDeLaNba, Icons.emoji_events,
+        Colors.amber.shade700,
         vecesSim: c.anillos.length, vecesReal: real?.anillos ?? 0);
-    agregar('NBA Cup', Icons.military_tech, Colors.blueAccent,
+    agregar(textos.nbaCup, Icons.military_tech, Colors.blueAccent,
         vecesSim: c.copas.length);
-    agregar('MVP', Icons.star, Colors.amber,
+    agregar(textos.premioMvp, Icons.star, Colors.amber,
         vecesSim: c.vecesGano(TipoPremio.mvp),
         vecesReal: real?.mvp ?? 0,
         temporadasSim: c.temporadasDeGano(TipoPremio.mvp),
         aniosReales: real?.aniosMvp ?? const []);
-    agregar('MVP de las Finales', Icons.workspace_premium,
+    agregar(textos.mvpDeLasFinalesLabel, Icons.workspace_premium,
         Colors.amber.shade800,
         vecesReal: real?.mvpFinales ?? 0,
         aniosReales: real?.aniosMvpFinales ?? const []);
-    agregar('Mejor Defensor', Icons.shield, Colors.blueGrey,
+    agregar(textos.premioMejorDefensor, Icons.shield, Colors.blueGrey,
         vecesSim: c.vecesGano(TipoPremio.mejorDefensor),
         vecesReal: real?.mejorDefensor ?? 0,
         temporadasSim: c.temporadasDeGano(TipoPremio.mejorDefensor),
         aniosReales: real?.aniosMejorDefensor ?? const []);
-    agregar('All-Star', Icons.people, Colors.redAccent,
+    agregar(textos.allStar, Icons.people, Colors.redAccent,
         vecesReal: real?.allStar ?? 0);
-    agregar('Primer quinteto', Icons.looks_one, Colors.deepPurple,
+    agregar(textos.premioPrimerQuinteto, Icons.looks_one, Colors.deepPurple,
         vecesSim: c.vecesGano(TipoPremio.primerQuinteto),
         vecesReal: real?.primerQuinteto ?? 0);
-    agregar('Segundo quinteto', Icons.looks_two, Colors.deepPurple.shade200,
+    agregar(textos.premioSegundoQuinteto, Icons.looks_two,
+        Colors.deepPurple.shade200,
         vecesSim: c.vecesGano(TipoPremio.segundoQuinteto),
         vecesReal: real?.segundoQuinteto ?? 0);
-    agregar('Tercer quinteto', Icons.looks_3, Colors.deepPurple.shade100,
+    agregar(textos.premioTercerQuinteto, Icons.looks_3,
+        Colors.deepPurple.shade100,
         vecesReal: real?.tercerQuinteto ?? 0);
-    agregar('Máximo anotador', Icons.local_fire_department, Colors.orange,
+    agregar(textos.premioMaximoAnotador, Icons.local_fire_department,
+        Colors.orange,
         vecesReal: real?.titulosDeAnotacion ?? 0,
         aniosReales: real?.aniosMaximoAnotador ?? const []);
-    agregar('Rookie del Año', Icons.auto_awesome, Colors.teal,
+    agregar(textos.premioRookieDelAno, Icons.auto_awesome, Colors.teal,
         vecesSim: c.vecesGano(TipoPremio.rookieDelAno),
         temporadasSim: c.temporadasDeGano(TipoPremio.rookieDelAno));
-    agregar('Más Mejorado', Icons.trending_up, Colors.green,
+    agregar(textos.premioMasMejoradoCorto, Icons.trending_up, Colors.green,
         vecesSim: c.vecesGano(TipoPremio.masMejorado),
         temporadasSim: c.temporadasDeGano(TipoPremio.masMejorado));
 
     if (filas.isEmpty) {
-      filas.add(const ListTile(
+      filas.add(ListTile(
         dense: true,
-        title: Text('Sin títulos ni premios individuales.'),
+        title: Text(textos.sinTitulosNiPremiosIndividuales),
       ));
     }
     return filas;
@@ -486,15 +496,14 @@ class _TarjetaResumen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Text('${carrera.temporadasTotales} temporadas · '
-                '${carrera.posicion} · ${carrera.partidos} partidos'),
+            Text(t(context).resumenCarreraTotales(
+                carrera.temporadasTotales, carrera.posicion,
+                carrera.partidos)),
             if (carrera.temporadasPrevias > 0)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
-                  '${carrera.temporadasPrevias} de ellas antes de que '
-                  'cogieras el mando: de esas no hay estadísticas, las '
-                  'medias de abajo son las de tu era.',
+                  t(context).temporadasPreviasAviso(carrera.temporadasPrevias),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       fontSize: 12,
@@ -512,8 +521,8 @@ class _TarjetaResumen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Totales: ${carrera.puntos} pts · ${carrera.asistencias} ast · '
-              '${carrera.rebotes} reb',
+              t(context).totalesCarreraLinea('${carrera.puntos}',
+                  '${carrera.asistencias}', '${carrera.rebotes}'),
               style: TextStyle(
                   fontSize: 12,
                   color: Theme.of(context).colorScheme.outline),
@@ -548,15 +557,14 @@ class _AntesDeTuPartida extends StatelessWidget {
               children: [
                 Icon(Icons.history, size: 18, color: outline),
                 const SizedBox(width: 8),
-                const Text('Antes de tu partida',
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(t(context).antesDeTuPartidaTitulo,
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
               ],
             ),
             const SizedBox(height: 8),
             Text(
-              '${carrera.temporadasPrevias} '
-              '${carrera.temporadasPrevias == 1 ? "temporada" : "temporadas"} '
-              'ya jugadas cuando cogiste el equipo.',
+              t(context).temporadasYaJugadasCuandoCogisteElEquipo(
+                  carrera.temporadasPrevias),
               style: const TextStyle(fontSize: 13),
             ),
             const SizedBox(height: 8),
@@ -569,8 +577,7 @@ class _AntesDeTuPartida extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'Su producción de referencia al empezar la partida. De aquellos '
-              'años no hay estadísticas partido a partido.',
+              t(context).produccionDeReferenciaAviso,
               style: TextStyle(fontSize: 11, color: outline),
             ),
           ],
@@ -632,9 +639,7 @@ class _CarreraRealBloqueState extends State<_CarreraRealBloque> {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
-                'De ${widget.nombreReal} no hay estadísticas de carrera: es '
-                'de una época anterior a la que cubren los datos del juego. '
-                'Su sitio en la historia está, los números no.',
+                t(context).sinEstadisticasDeCarreraAviso(widget.nombreReal),
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Theme.of(context).colorScheme.outline),
               ),
@@ -651,9 +656,9 @@ class _CarreraRealBloqueState extends State<_CarreraRealBloque> {
               children: [
                 Text(
                   widget.soloEsteEquipo == null
-                      ? 'Su carrera en la NBA real'
-                      : 'Con ${infoDe(widget.soloEsteEquipo!).nombreCompleto} '
-                          'en la NBA real',
+                      ? t(context).suCarreraEnLaNbaReal
+                      : t(context).conEquipoEnLaNbaReal(
+                          infoDe(widget.soloEsteEquipo!).nombreCompleto),
                   style: const TextStyle(
                       fontWeight: FontWeight.bold, fontSize: 16),
                 ),
@@ -661,7 +666,7 @@ class _CarreraRealBloqueState extends State<_CarreraRealBloque> {
                 if (carrera != null) ...[
                   _ResumenReal(carrera: carrera),
                   const Divider(height: 24),
-                  ..._trofeosDeCarrera(carrera),
+                  ..._trofeosDeCarrera(t(context), carrera),
                 ],
                 for (final etapa in etapas) _EtapaRealFila(etapa: etapa),
               ],
@@ -672,7 +677,7 @@ class _CarreraRealBloqueState extends State<_CarreraRealBloque> {
     );
   }
 
-  List<Widget> _trofeosDeCarrera(CarreraReal c) {
+  List<Widget> _trofeosDeCarrera(Textos textos, CarreraReal c) {
     final filas = <Widget>[];
 
     void agregar(String etiqueta, int veces, IconData icono, Color color,
@@ -692,28 +697,31 @@ class _CarreraRealBloqueState extends State<_CarreraRealBloque> {
       ));
     }
 
-    agregar('Campeón de la NBA', c.anillos, Icons.emoji_events,
+    agregar(textos.premioCampeonDeLaNba, c.anillos, Icons.emoji_events,
         Colors.amber.shade700);
-    agregar('MVP', c.mvp, Icons.star, Colors.amber, anios: c.aniosMvp);
-    agregar('MVP de las Finales', c.mvpFinales, Icons.workspace_premium,
-        Colors.amber.shade800, anios: c.aniosMvpFinales);
-    agregar('Mejor Defensor', c.mejorDefensor, Icons.shield, Colors.blueGrey,
-        anios: c.aniosMejorDefensor);
-    agregar('All-Star', c.allStar, Icons.people, Colors.redAccent);
-    agregar('Primer quinteto', c.primerQuinteto, Icons.looks_one,
+    agregar(textos.premioMvp, c.mvp, Icons.star, Colors.amber,
+        anios: c.aniosMvp);
+    agregar(textos.mvpDeLasFinalesLabel, c.mvpFinales,
+        Icons.workspace_premium, Colors.amber.shade800,
+        anios: c.aniosMvpFinales);
+    agregar(textos.premioMejorDefensor, c.mejorDefensor, Icons.shield,
+        Colors.blueGrey, anios: c.aniosMejorDefensor);
+    agregar(textos.allStar, c.allStar, Icons.people, Colors.redAccent);
+    agregar(textos.premioPrimerQuinteto, c.primerQuinteto, Icons.looks_one,
         Colors.deepPurple);
-    agregar('Segundo quinteto', c.segundoQuinteto, Icons.looks_two,
+    agregar(textos.premioSegundoQuinteto, c.segundoQuinteto, Icons.looks_two,
         Colors.deepPurple.shade200);
-    agregar('Tercer quinteto', c.tercerQuinteto, Icons.looks_3,
+    agregar(textos.premioTercerQuinteto, c.tercerQuinteto, Icons.looks_3,
         Colors.deepPurple.shade100);
-    agregar('Máximo anotador', c.titulosDeAnotacion, Icons.local_fire_department,
-        Colors.orange, anios: c.aniosMaximoAnotador);
+    agregar(textos.premioMaximoAnotador, c.titulosDeAnotacion,
+        Icons.local_fire_department, Colors.orange,
+        anios: c.aniosMaximoAnotador);
 
     if (filas.isEmpty) {
-      filas.add(const ListTile(
+      filas.add(ListTile(
         dense: true,
         contentPadding: EdgeInsets.zero,
-        title: Text('Sin títulos ni premios en su carrera NBA.'),
+        title: Text(textos.sinTitulosNiPremiosCarreraNba),
       ));
     }
     return filas;
@@ -731,7 +739,7 @@ class _ResumenReal extends StatelessWidget {
     return Column(
       children: [
         Text(
-          '${carrera.temporadas} temporadas · ${carrera.partidos} partidos',
+          t(context).temporadasPartidos(carrera.temporadas, carrera.partidos),
           style: TextStyle(color: outline),
         ),
         const SizedBox(height: 10),
@@ -745,8 +753,8 @@ class _ResumenReal extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          'Totales: ${carrera.puntos} pts · ${carrera.asistencias} ast · '
-          '${carrera.rebotes} reb',
+          t(context).totalesCarreraLinea('${carrera.puntos}',
+              '${carrera.asistencias}', '${carrera.rebotes}'),
           style: TextStyle(fontSize: 12, color: outline),
         ),
       ],
@@ -762,14 +770,16 @@ class _EtapaRealFila extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final outline = Theme.of(context).colorScheme.outline;
+    final textos = t(context);
     final trofeos = <String>[
-      if (etapa.anillos > 0) '${etapa.anillos} anillo'
-          '${etapa.anillos == 1 ? '' : 's'}',
-      if (etapa.mvpFinales > 0) '${etapa.mvpFinales} MVP de Finales',
-      if (etapa.mvp > 0) '${etapa.mvp} MVP',
+      if (etapa.anillos > 0) textos.anillos(etapa.anillos),
+      if (etapa.mvpFinales > 0)
+        textos.vecesConEtiqueta(etapa.mvpFinales, textos.mvpFinalesCorto),
+      if (etapa.mvp > 0) textos.vecesConEtiqueta(etapa.mvp, textos.premioMvp),
       if (etapa.mejorDefensor > 0) '${etapa.mejorDefensor} DPOY',
-      if (etapa.allStar > 0) '${etapa.allStar} All-Star',
-      if (etapa.quintetos > 0) '${etapa.quintetos} quintetos All-NBA',
+      if (etapa.allStar > 0)
+        textos.vecesConEtiqueta(etapa.allStar, textos.allStar),
+      if (etapa.quintetos > 0) textos.quintetosAllNba(etapa.quintetos),
     ];
 
     return Padding(
@@ -786,9 +796,10 @@ class _EtapaRealFila extends StatelessWidget {
                 Text(nombreDeEquipoEnFicha(etapa.equipo),
                     style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text(
-                  '${etiquetaTemporadaReal(etapa.primeraTemporada)} a '
-                  '${etiquetaTemporadaReal(etapa.ultimaTemporada)} · '
-                  '${etapa.partidos} partidos',
+                  textos.rangoTemporadasPartidos(
+                      etiquetaTemporadaReal(etapa.primeraTemporada),
+                      etiquetaTemporadaReal(etapa.ultimaTemporada),
+                      etapa.partidos),
                   style: TextStyle(fontSize: 12, color: outline),
                 ),
                 if (trofeos.isNotEmpty)
@@ -909,8 +920,9 @@ class _FilaEtapa extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final outline = Theme.of(context).colorScheme.outline;
-    String temporada(int anio) =>
-        sinAnioReal ? 'temporada $anio' : etiquetaDeTemporada(anio);
+    String temporada(int anio) => sinAnioReal
+        ? t(context).temporadaMinuscula(anio)
+        : etiquetaDeTemporada(anio);
     final rango = etapa.desdeAnio == etapa.hastaAnio
         ? temporada(etapa.desdeAnio)
         : '${temporada(etapa.desdeAnio)} a ${temporada(etapa.hastaAnio)}';
@@ -927,7 +939,7 @@ class _FilaEtapa extends StatelessWidget {
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('$rango · $partidos partidos'),
+          Text(t(context).rangoPartidos(rango, partidos)),
           if (etapa.trofeos.isNotEmpty)
             Text(etapa.trofeos.join(' · '),
                 style: TextStyle(fontSize: 12, color: outline)),
@@ -949,7 +961,8 @@ class _FilaEtapa extends StatelessWidget {
 /// Los títulos y premios que [c] ganó entre las temporadas [desde] y
 /// [hasta] de tu partida, con el mismo formato que los de la carrera real
 /// para que las dos mitades del historial se lean igual.
-List<String> _trofeosDeLaEtapa(CarreraJugador c, int desde, int hasta) {
+List<String> _trofeosDeLaEtapa(
+    Textos textos, CarreraJugador c, int desde, int hasta) {
   bool enLaEtapa(int temporada) => temporada >= desde && temporada <= hasta;
   int cuantos(List<int> temporadas) => temporadas.where(enLaEtapa).length;
   int premio(TipoPremio tipo) =>
@@ -966,13 +979,15 @@ List<String> _trofeosDeLaEtapa(CarreraJugador c, int desde, int hasta) {
       premio(TipoPremio.primerQuinteto) + premio(TipoPremio.segundoQuinteto);
 
   return <String>[
-    if (anillos > 0) '$anillos anillo${anillos == 1 ? '' : 's'}',
-    if (copas > 0) '$copas NBA Cup${copas == 1 ? '' : 's'}',
-    if (mvp > 0) '$mvp MVP',
+    if (anillos > 0) textos.anillos(anillos),
+    if (copas > 0) textos.copasGanadas(copas, textos.nbaCup),
+    if (mvp > 0) textos.vecesConEtiqueta(mvp, textos.premioMvp),
     if (dpoy > 0) '$dpoy DPOY',
-    if (rookie > 0) 'Rookie del Año',
-    if (mejorado > 0) '$mejorado veces Más Mejorado',
-    if (allStar > 0) '$allStar MVP del All-Star',
-    if (quintetos > 0) '$quintetos quintetos All-NBA',
+    if (rookie > 0) textos.premioRookieDelAno,
+    if (mejorado > 0)
+      textos.vecesConEtiqueta(mejorado, textos.premioMasMejoradoCorto),
+    if (allStar > 0)
+      textos.vecesConEtiqueta(allStar, textos.premioMvpAllStar(textos.allStar)),
+    if (quintetos > 0) textos.quintetosAllNba(quintetos),
   ];
 }

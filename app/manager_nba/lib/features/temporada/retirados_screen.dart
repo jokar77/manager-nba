@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' show BooleanExpressionOperators;
 import 'package:flutter/material.dart';
 
+import '../../i18n/textos.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/camisetas_repository.dart';
 import '../../domain/carrera_repository.dart';
@@ -119,7 +120,7 @@ class _RetiradosScreenState extends State<RetiradosScreen> {
     if (!mounted) return;
     setState(() => _retiradasEnEstaSesion.add(jugador.jugadorId));
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('Camiseta de ${jugador.nombre} retirada.'),
+      content: Text(t(context).camisetaDeXRetirada(jugador.nombre)),
     ));
   }
 
@@ -133,16 +134,16 @@ class _RetiradosScreenState extends State<RetiradosScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Se retiran'),
+        title: Text(t(context).tituloSeRetiran),
         automaticallyImplyLeading: false,
       ),
       body: _cargando
           ? const Center(child: CircularProgressIndicator())
           : (propios.isEmpty && resto.isEmpty)
-              ? const Center(
+              ? Center(
                   child: Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Text('Esta temporada no se retira nadie.',
+                    padding: const EdgeInsets.all(24),
+                    child: Text(t(context).estaTemporadaNoSeRetiraNadie,
                         textAlign: TextAlign.center),
                   ),
                 )
@@ -150,7 +151,7 @@ class _RetiradosScreenState extends State<RetiradosScreen> {
                   padding: const EdgeInsets.all(16),
                   children: [
                     if (propios.isNotEmpty) ...[
-                      const _Titulo('Tu equipo'),
+                      _Titulo(t(context).tuEquipoLabel),
                       ...propios.map((c) => _FilaRetirado(
                             cambio: c,
                             camisetaRetirada:
@@ -163,7 +164,7 @@ class _RetiradosScreenState extends State<RetiradosScreen> {
                       const SizedBox(height: 16),
                     ],
                     if (resto.isNotEmpty) ...[
-                      const _Titulo('Resto de la liga'),
+                      _Titulo(t(context).restoDeLaLiga),
                       ...resto.map((c) => _FilaRetirado(cambio: c)),
                     ],
                   ],
@@ -174,7 +175,7 @@ class _RetiradosScreenState extends State<RetiradosScreen> {
           width: double.infinity,
           child: FilledButton(
             onPressed: widget.onContinuar,
-            child: const Text('Continuar'),
+            child: Text(t(context).continuar),
           ),
         ),
       ),
@@ -212,13 +213,13 @@ class _FilaRetirado extends StatelessWidget {
   Widget build(BuildContext context) {
     final esAgenteLibre = !esFranquicia(cambio.equipo);
     final procedencia = esAgenteLibre
-        ? 'Agencia libre'
+        ? t(context).tituloAgenciaLibre
         : infoDe(cambio.equipo).nombreCompleto;
     final aviso = !camisetaRetirada
         ? ''
         : retiradaAutomatica
-            ? ' · su camiseta ya se ha retirado sola (leyenda real)'
-            : ' · camiseta retirada';
+            ? t(context).suCamisetaYaRetiradaSola
+            : t(context).camisetaRetiradaSufijo;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 6),
@@ -227,8 +228,8 @@ class _FilaRetirado extends StatelessWidget {
             ? const Icon(Icons.person_off)
             : EquipoLogo(codigoEquipo: cambio.equipo, tamano: 32),
         title: Text(cambio.nombre),
-        subtitle: Text('$procedencia · se retira con ${cambio.edad} años y '
-            'media ${cambio.mediaAntes}$aviso'),
+        subtitle: Text(t(context).seRetiraConEdadYMedia(
+            procedencia, cambio.edad, cambio.mediaAntes, aviso)),
         trailing: onTap == null
             ? null
             : (camisetaRetirada

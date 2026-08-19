@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../i18n/textos.dart';
 /// Cuántas estrellas (de 5, en pasos de media) le corresponden a un
 /// potencial numérico.
 ///
@@ -27,13 +28,14 @@ double estrellasDePotencial(int potencial) => switch (potencial) {
 /// hace falta texto (p. ej. en un tooltip o una lista sin espacio para
 /// dibujar iconos). Se queda en las mismas 5 bandas de siempre: la media
 /// estrella afina el dibujo, no crea una categoría nueva.
-String etiquetaDePotencial(int potencial) {
+String etiquetaDePotencial(BuildContext context, int potencial) {
+  final textos = t(context);
   final estrellas = estrellasDePotencial(potencial);
-  if (estrellas >= 5) return 'Elite';
-  if (estrellas >= 4) return 'Muy alto';
-  if (estrellas >= 3) return 'Alto';
-  if (estrellas >= 2) return 'Medio';
-  return 'Bajo';
+  if (estrellas >= 5) return textos.potencialElite;
+  if (estrellas >= 4) return textos.potencialMuyAlto;
+  if (estrellas >= 3) return textos.potencialAlto;
+  if (estrellas >= 2) return textos.potencialMedio;
+  return textos.potencialBajo;
 }
 
 /// Las cinco estrellas del potencial de un prospecto, rellenas hasta donde
@@ -55,7 +57,8 @@ class PotencialEstrellas extends StatelessWidget {
     final mediaEstrella = estrellas - llenas >= 0.5;
     final color = Theme.of(context).colorScheme.primary;
     return Tooltip(
-      message: 'Potencial: ${etiquetaDePotencial(potencial)}',
+      message: t(context)
+          .potencialTooltip(etiquetaDePotencial(context, potencial)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

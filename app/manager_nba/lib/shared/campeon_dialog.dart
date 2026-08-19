@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../domain/equipos_info.dart';
+import '../i18n/textos.dart';
 import 'confeti.dart';
 import 'contraste.dart';
 import 'equipo_logo.dart';
@@ -22,7 +23,7 @@ import 'equipo_logo.dart';
 /// cuando se pulsa.
 Future<bool> mostrarCampeonDecidido(
   BuildContext context,
-  String competicion,
+  bool esCup,
   String campeon, {
   bool esTuEquipo = false,
   String? etiquetaAccionExtra,
@@ -38,7 +39,7 @@ Future<bool> mostrarCampeonDecidido(
   final resultado = await showDialog<bool>(
     context: context,
     builder: (context) => _DialogoCampeon(
-      competicion: competicion,
+      esCup: esCup,
       campeon: campeon,
       esTuEquipo: esTuEquipo,
       etiquetaAccionExtra: etiquetaAccionExtra,
@@ -51,14 +52,18 @@ Future<bool> mostrarCampeonDecidido(
 }
 
 /// "Campeones de la NBA", no "X es campeón de la NBA": el titular es del
-/// equipo, en plural, como se dice de verdad.
-String tituloDeCampeon(String competicion, {String? temporada}) {
-  final base = 'Campeones de $competicion';
+/// equipo, en plural, como se dice de verdad. Se pide [esCup] (y no un
+/// nombre de competición suelto) porque la frase entera cambia de
+/// estructura de idioma a idioma —"NBA-Meister" en alemán no es
+/// "Campeones de" + nombre— así que hacen falta dos frases hechas, una por
+/// competición, no una plantilla con el nombre pegado.
+String tituloDeCampeon(BuildContext context, bool esCup, {String? temporada}) {
+  final base = esCup ? t(context).campeonesDeLaCup : t(context).campeonesDeLaNba;
   return temporada == null ? base : '$base $temporada';
 }
 
 class _DialogoCampeon extends StatelessWidget {
-  final String competicion;
+  final bool esCup;
   final String campeon;
 
   /// Si el título que se acaba de ganar es un anillo. La NBA Cup NO lo es,
@@ -71,7 +76,7 @@ class _DialogoCampeon extends StatelessWidget {
   final Widget? detalle;
 
   const _DialogoCampeon({
-    required this.competicion,
+    required this.esCup,
     required this.campeon,
     required this.esTuEquipo,
     required this.daAnillo,
@@ -115,8 +120,8 @@ class _DialogoCampeon extends StatelessWidget {
                       const SizedBox(height: 12),
                       Text(
                         esTuEquipo
-                            ? '¡CAMPEONES!'
-                            : tituloDeCampeon(competicion,
+                            ? t(context).exclamacionCampeones
+                            : tituloDeCampeon(context, esCup,
                                 temporada: temporada),
                         textAlign: TextAlign.center,
                         style: TextStyle(
@@ -129,7 +134,8 @@ class _DialogoCampeon extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(
                         esTuEquipo
-                            ? tituloDeCampeon(competicion, temporada: temporada)
+                            ? tituloDeCampeon(context, esCup,
+                                temporada: temporada)
                             : nombre,
                         textAlign: TextAlign.center,
                         style: TextStyle(
@@ -155,14 +161,10 @@ class _DialogoCampeon extends StatelessWidget {
                             const SizedBox(height: 4),
                             Text(
                               !esTuEquipo
-                                  ? '$nombre se lleva el título.'
+                                  ? t(context).seLlevaElTitulo(nombre)
                                   : daAnillo
-                                      ? '¡Enhorabuena! Lo has conseguido: el '
-                                          'anillo es vuestro. La próxima '
-                                          'temporada toca defenderlo.'
-                                      : '¡Enhorabuena! Habéis ganado la NBA '
-                                          'Cup. El anillo es otra historia: '
-                                          'la temporada sigue.',
+                                      ? t(context).enhorabuenaAnillo
+                                      : t(context).enhorabuenaCup,
                               style: TextStyle(
                                   color:
                                       Theme.of(context).colorScheme.onSurface),
@@ -190,7 +192,9 @@ class _DialogoCampeon extends StatelessWidget {
                         ),
                       FilledButton(
                         onPressed: () => Navigator.of(context).pop(false),
-                        child: Text(esTuEquipo ? '¡A celebrarlo!' : 'Cerrar'),
+                        child: Text(esTuEquipo
+                            ? t(context).aCelebrarlo
+                            : t(context).cerrar),
                       ),
                     ],
                   ),
@@ -246,13 +250,13 @@ class TarjetaMvpDeFinales extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('MVP de las Finales · $nombre',
+                Text(t(context).mvpDeLasFinales(nombre),
                     style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text(
                   '${puntos.toStringAsFixed(1)} pts · '
                   '${asistencias.toStringAsFixed(1)} ast · '
                   '${rebotes.toStringAsFixed(1)} reb '
-                  'en $partidos ${partidos == 1 ? "partido" : "partidos"}',
+                  '${t(context).partidosDeSerie(partidos)}',
                   style: const TextStyle(fontSize: 12),
                 ),
               ],
@@ -268,14 +272,14 @@ class TarjetaMvpDeFinales extends StatelessWidget {
 /// Banner fijo de "esta competición ya tiene campeón", el que se queda en
 /// la pantalla del bracket. Mismo criterio de contraste que el diálogo.
 class BannerCampeon extends StatelessWidget {
-  final String competicion;
+  final bool esCup;
   final String campeon;
   final bool esTuEquipo;
   final String? temporada;
 
   const BannerCampeon({
     super.key,
-    required this.competicion,
+    required this.esCup,
     required this.campeon,
     this.esTuEquipo = false,
     this.temporada,
@@ -315,7 +319,7 @@ class BannerCampeon extends StatelessWidget {
                       color: sobreFondo),
                 ),
                 Text(
-                  tituloDeCampeon(competicion, temporada: temporada),
+                  tituloDeCampeon(context, esCup, temporada: temporada),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       fontSize: 13, color: textoSecundarioSobre(fondo)),

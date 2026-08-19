@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sim_engine/sim_engine.dart' as sim;
+
+import '../../i18n/textos.dart';import 'package:sim_engine/sim_engine.dart' as sim;
 
 import '../../domain/equipos_info.dart';
 import '../../shared/contraste.dart';
@@ -16,7 +17,7 @@ class BoxscoreScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Resultado del partido')),
+      appBar: AppBar(title: Text(t(context).tituloResultadoPartido)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -115,8 +116,13 @@ class _ParcialesCuartos extends StatelessWidget {
     // Los 4 primeros periodos son siempre los cuartos; si el partido llegó
     // a empate, le siguen una o más prórrogas ("P1", "P2"...).
     final numPeriodos = boxscore.parcialesLocal.length;
-    final etiquetas = List.generate(numPeriodos,
-        (i) => i < 4 ? 'Q${i + 1}' : 'P${i - 3}');
+    final prefijoCuarto = t(context).prefijoCuarto;
+    final prefijoProrroga = t(context).prefijoProrroga;
+    final etiquetas = List.generate(
+        numPeriodos,
+        (i) => i < 4
+            ? '$prefijoCuarto${i + 1}'
+            : '$prefijoProrroga${i - 3}');
 
     return Card(
       child: Padding(
@@ -129,7 +135,7 @@ class _ParcialesCuartos extends StatelessWidget {
           columns: [
             const DataColumn(label: Text('')),
             ...etiquetas.map((e) => DataColumn(label: Text(e), numeric: true)),
-            const DataColumn(label: Text('Total'), numeric: true),
+            DataColumn(label: Text(t(context).columnaTotal), numeric: true),
           ],
           rows: [
             _filaParciales(boxscore.equipoLocal, boxscore.parcialesLocal,
@@ -199,12 +205,12 @@ class _TablaEquipo extends StatelessWidget {
             else
               DataTable(
                 columnSpacing: 20,
-                columns: const [
-                  DataColumn(label: Text('Jugador')),
-                  DataColumn(label: Text('Min'), numeric: true),
-                  DataColumn(label: Text('Pts'), numeric: true),
-                  DataColumn(label: Text('Ast'), numeric: true),
-                  DataColumn(label: Text('Reb'), numeric: true),
+                columns: [
+                  DataColumn(label: Text(t(context).columnaJugador)),
+                  DataColumn(label: Text(t(context).columnaMin), numeric: true),
+                  DataColumn(label: Text(t(context).columnaPts), numeric: true),
+                  DataColumn(label: Text(t(context).columnaAst), numeric: true),
+                  DataColumn(label: Text(t(context).columnaReb), numeric: true),
                 ],
                 rows: ordenadas.map((s) {
                   return DataRow(cells: [
@@ -263,8 +269,9 @@ class _TablaCompacta extends StatelessWidget {
     return Column(
       children: [
         fila(
-          'Jugador',
-          const ['Min', 'Pts', 'Ast', 'Reb'],
+          t(context).columnaJugador,
+          [t(context).columnaMin, t(context).columnaPts,
+              t(context).columnaAst, t(context).columnaReb],
           estilo: TextStyle(fontSize: 12, color: outline),
         ),
         const Divider(height: 1),

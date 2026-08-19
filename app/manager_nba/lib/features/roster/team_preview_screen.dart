@@ -6,6 +6,8 @@ import '../../domain/entrenadores_repository.dart';
 import '../../domain/equipos_info.dart';
 import '../../shared/equipo_logo.dart';
 import '../../shared/contraste.dart';
+import '../../i18n/textos.dart';
+import '../../shared/entrenador_ui.dart';
 import '../../shared/medias_jugador.dart';
 
 /// Plantilla completa de un equipo antes de confirmarlo: nombre, posición
@@ -81,7 +83,7 @@ class TeamPreviewScreen extends StatelessWidget {
                           MediasAtaqueDefensa.de(j, compacto: true),
                         ],
                       ),
-                      trailing: Text('Media ${j.media}',
+                      trailing: Text(t(context).mediaJugador(j.media),
                           style: const TextStyle(fontWeight: FontWeight.bold)),
                     );
                   },
@@ -96,14 +98,14 @@ class TeamPreviewScreen extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Volver'),
+                    child: Text(t(context).volver),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: FilledButton(
                     onPressed: onElegir,
-                    child: const Text('Elegir este equipo'),
+                    child: Text(t(context).elegirEsteEquipo),
                   ),
                 ),
               ],
@@ -138,11 +140,11 @@ class _EntrenadorDelEquipo extends StatelessWidget {
               leading: const Icon(Icons.sports),
               title: Text(e.nombreFicticio),
               subtitle: Text(
-                '${e.edad} años · '
-                '${estiloDeEntrenador(ataque: e.atrAtaque, defensa: e.atrDefensa, desarrollo: e.atrDesarrollo)}'
-                '${e.anillos > 0 ? ' · ${e.anillos} anillo${e.anillos > 1 ? 's' : ''}' : ''}',
+                '${t(context).edadJugador(e.edad)} · '
+                '${etiquetaDeEstilo(t(context), estiloDeEntrenador(ataque: e.atrAtaque, defensa: e.atrDefensa, desarrollo: e.atrDesarrollo))}'
+                '${e.anillos > 0 ? ' · ${t(context).anillos(e.anillos)}' : ''}',
               ),
-              trailing: Text('Media ${mediaDe(e)}',
+              trailing: Text(t(context).mediaJugador(mediaDe(e)),
                   style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),

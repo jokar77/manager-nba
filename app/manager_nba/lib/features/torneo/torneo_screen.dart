@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../i18n/textos.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/equipos_info.dart';
 import '../../domain/nueva_temporada_repository.dart';
@@ -50,7 +51,7 @@ class _TorneoScreenState extends State<TorneoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('NBA Cup')),
+      appBar: AppBar(title: Text(t(context).nbaCup)),
       body: FutureBuilder<List<SerieTorneo>>(
         future: _seriesFuture,
         builder: (context, snapshot) {
@@ -59,9 +60,9 @@ class _TorneoScreenState extends State<TorneoScreen> {
           }
           final series = snapshot.data!;
           if (series.isEmpty) {
-            return const Center(
-                child: Text('Los cuartos de la NBA Cup se siembran en '
-                    'cuanto termina la fase de grupos de toda la liga.'));
+            return Center(
+                child: Text(t(context)
+                    .cuartosCopaSeSiembranAviso(t(context).nbaCup)));
           }
 
           final finalCup =
@@ -71,18 +72,16 @@ class _TorneoScreenState extends State<TorneoScreen> {
             children: [
               if (finalCup?.ganador != null)
                 BannerCampeon(
-                  competicion: 'la NBA Cup',
+                  esCup: true,
                   campeon: finalCup!.ganador!,
                   esTuEquipo: finalCup.ganador == widget.equipoUsuario,
                   temporada: _temporada,
                 )
               else
-                const Padding(
-                  padding: EdgeInsets.all(12),
+                Padding(
+                  padding: const EdgeInsets.all(12),
                   child: Text(
-                    'La Final se juega desde el calendario: si eres '
-                    'finalista la tienes marcada como un día más de tu '
-                    'temporada.',
+                    t(context).finalSeJuegaDesdeCalendarioAviso,
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -168,22 +167,22 @@ class _BracketCopa extends StatelessWidget {
     final cajas = <Widget>[
       for (var i = 0; i < 2; i++)
         caja(cuartosOeste[i], 0, _slot / 2 + i * _slot,
-            etiquetaVacia: 'Cuartos de final'),
+            etiquetaVacia: t(context).cuartosDeFinalLabel),
       caja(_buscar('Oeste', 'semis'), _colWidth, centro,
-          etiquetaVacia: 'Semifinal'),
+          etiquetaVacia: t(context).semifinalLabel),
       caja(_buscar('Final', 'final'), finalX, centro,
-          etiquetaVacia: 'Final de la NBA Cup'),
+          etiquetaVacia: t(context).finalDeLaCopaLabel(t(context).nbaCup)),
       caja(_buscar('Este', 'semis'), finalX + _colWidth, centro,
-          etiquetaVacia: 'Semifinal'),
+          etiquetaVacia: t(context).semifinalLabel),
       for (var i = 0; i < 2; i++)
         caja(cuartosEste[i], finalX + 2 * _colWidth, _slot / 2 + i * _slot,
-            etiquetaVacia: 'Cuartos de final'),
+            etiquetaVacia: t(context).cuartosDeFinalLabel),
     ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(
+        SizedBox(
           width: anchoTotal,
           child: Column(
             children: [
@@ -206,11 +205,21 @@ class _BracketCopa extends StatelessWidget {
               SizedBox(height: 4),
               Row(
                 children: [
-                  SizedBox(width: _colWidth, child: _RondaCopa('Cuartos')),
-                  SizedBox(width: _colWidth, child: _RondaCopa('Semifinal')),
-                  SizedBox(width: _boxWidth, child: _RondaCopa('Final')),
-                  SizedBox(width: _colWidth, child: _RondaCopa('Semifinal')),
-                  SizedBox(width: _colWidth, child: _RondaCopa('Cuartos')),
+                  SizedBox(
+                      width: _colWidth,
+                      child: _RondaCopa(t(context).cuartosRondaLabel)),
+                  SizedBox(
+                      width: _colWidth,
+                      child: _RondaCopa(t(context).semifinalLabel)),
+                  SizedBox(
+                      width: _boxWidth,
+                      child: _RondaCopa(t(context).finalRondaLabel)),
+                  SizedBox(
+                      width: _colWidth,
+                      child: _RondaCopa(t(context).semifinalLabel)),
+                  SizedBox(
+                      width: _colWidth,
+                      child: _RondaCopa(t(context).cuartosRondaLabel)),
                 ],
               ),
             ],
@@ -315,7 +324,9 @@ class _TituloConferenciaCopa extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(
-        'CONFERENCIA ${conferencia.toUpperCase()}',
+        conferencia == 'Oeste'
+            ? t(context).tituloConferenciaOeste
+            : t(context).tituloConferenciaEste,
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: 11,
@@ -399,7 +410,7 @@ class _CajaCopa extends StatelessWidget {
             _fila(context, serie.equipoA),
             _fila(context, serie.equipoB),
             if (serie.ganador == null)
-              Text('Pendiente',
+              Text(t(context).pendienteLabel,
                   style: TextStyle(fontSize: 9, color: borderColor)),
           ],
         ),

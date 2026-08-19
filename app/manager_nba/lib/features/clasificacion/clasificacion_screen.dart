@@ -4,17 +4,17 @@ import '../../data/database/app_database.dart';
 import '../../domain/conferencias.dart';
 import '../../domain/equipos_info.dart';
 import '../../shared/contraste.dart';
+import '../../i18n/textos.dart';
 import '../../shared/equipo_logo.dart';
 import 'equipo_detalle_screen.dart';
 
-enum _OrdenJugadores {
-  puntos('Puntos'),
-  asistencias('Asistencias'),
-  rebotes('Rebotes');
+enum _OrdenJugadores { puntos, asistencias, rebotes }
 
-  const _OrdenJugadores(this.etiqueta);
-  final String etiqueta;
-}
+String _etiquetaOrden(_OrdenJugadores o, Textos textos) => switch (o) {
+      _OrdenJugadores.puntos => textos.ordenPuntos,
+      _OrdenJugadores.asistencias => textos.ordenAsistencias,
+      _OrdenJugadores.rebotes => textos.ordenRebotes,
+    };
 
 /// Clasificación consultable en cualquier momento: equipos (víctorias/
 /// derrotas por conferencia) y líderes de jugadores por la temporada
@@ -36,10 +36,10 @@ class ClasificacionScreen extends StatelessWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Clasificación'),
-          bottom: const TabBar(tabs: [
-            Tab(text: 'Equipos'),
-            Tab(text: 'Jugadores'),
+          title: Text(t(context).clasificacion),
+          bottom: TabBar(tabs: [
+            Tab(text: t(context).pestanaEquipos),
+            Tab(text: t(context).pestanaJugadores),
           ]),
         ),
         body: TabBarView(children: [
@@ -96,7 +96,10 @@ class _TablaEquipos extends StatelessWidget {
         return ListView(
           padding: const EdgeInsets.only(bottom: 24),
           children: ['Este', 'Oeste'].expand((conferencia) sync* {
-            yield _CabeceraConferencia(conferencia: conferencia);
+            yield _CabeceraConferencia(
+                titulo: conferencia == 'Este'
+                    ? t(context).tituloConferenciaEste
+                    : t(context).tituloConferenciaOeste);
             final equipos = porConferencia[conferencia] ?? [];
             for (var i = 0; i < equipos.length; i++) {
               yield _FilaEquipo(
@@ -111,8 +114,8 @@ class _TablaEquipos extends StatelessWidget {
               if (i + 1 == _ultimoDePlayoffs || i + 1 == _ultimoDePlayIn) {
                 yield _Frontera(
                   texto: i + 1 == _ultimoDePlayoffs
-                      ? 'Play-in'
-                      : 'Fuera de playoffs',
+                      ? t(context).fronteraPlayIn
+                      : t(context).fronteraFueraDePlayoffs,
                 );
               }
             }
@@ -124,9 +127,9 @@ class _TablaEquipos extends StatelessWidget {
 }
 
 class _CabeceraConferencia extends StatelessWidget {
-  final String conferencia;
+  final String titulo;
 
-  const _CabeceraConferencia({required this.conferencia});
+  const _CabeceraConferencia({required this.titulo});
 
   @override
   Widget build(BuildContext context) {
@@ -135,7 +138,7 @@ class _CabeceraConferencia extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
       child: Row(
         children: [
-          Text('CONFERENCIA ${conferencia.toUpperCase()}',
+          Text(titulo,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 12,
@@ -380,7 +383,8 @@ class _LideresJugadoresState extends State<_LideresJugadores> {
           padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
           child: SegmentedButton<_OrdenJugadores>(
             segments: _OrdenJugadores.values
-                .map((o) => ButtonSegment(value: o, label: Text(o.etiqueta)))
+                .map((o) => ButtonSegment(
+                    value: o, label: Text(_etiquetaOrden(o, t(context)))))
                 .toList(),
             selected: {_orden},
             onSelectionChanged: (s) => setState(() => _orden = s.first),
@@ -403,8 +407,7 @@ class _LideresJugadoresState extends State<_LideresJugadores> {
                         b.rebotes.compareTo(a.rebotes),
                     });
               if (lineas.isEmpty) {
-                return const Center(
-                    child: Text('Todavía no se ha jugado ningún partido'));
+                return Center(child: Text(t(context).sinPartidosJugados));
               }
               return ListView.builder(
                 padding: const EdgeInsets.only(bottom: 24),

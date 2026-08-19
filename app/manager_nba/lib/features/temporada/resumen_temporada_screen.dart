@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../i18n/textos.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/equipos_info.dart';
 import '../../domain/resumen_temporada_repository.dart';
@@ -19,14 +20,14 @@ class ResumenTemporadaScreen extends StatefulWidget {
   /// Texto del botón de abajo. Cuando se llega aquí encadenado desde el
   /// final de la temporada lleva a los premios; abierto desde el menú, se
   /// limita a cerrar.
-  final String textoBoton;
+  final String? textoBoton;
   final VoidCallback? onContinuar;
 
   const ResumenTemporadaScreen({
     super.key,
     required this.db,
     required this.equipoUsuario,
-    this.textoBoton = 'Cerrar',
+    this.textoBoton,
     this.onContinuar,
   });
 
@@ -45,19 +46,19 @@ class _ResumenTemporadaScreenState extends State<ResumenTemporadaScreen> {
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Resumen de la temporada')),
+            appBar: AppBar(title: Text(t(context).tituloResumenDeLaTemporada)),
             body: Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
-                child: Text('No se ha podido cargar el resumen.\n'
-                    '${snapshot.error}'),
+                child: Text(
+                    t(context).noSePudoCargarResumen('${snapshot.error}')),
               ),
             ),
           );
         }
         if (!snapshot.hasData) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Resumen de la temporada')),
+            appBar: AppBar(title: Text(t(context).tituloResumenDeLaTemporada)),
             body: const Center(child: CircularProgressIndicator()),
           );
         }
@@ -67,13 +68,13 @@ class _ResumenTemporadaScreenState extends State<ResumenTemporadaScreen> {
           child: Scaffold(
             appBar: AppBar(
               title: Text(resumen.etiquetaTemporada.isEmpty
-                  ? 'Resumen de la temporada'
-                  : 'Temporada ${resumen.etiquetaTemporada}'),
+                  ? t(context).tituloResumenDeLaTemporada
+                  : t(context).temporadaConEtiqueta(resumen.etiquetaTemporada)),
               actions: const [BotonMenuPrincipal()],
-              bottom: const TabBar(tabs: [
-                Tab(text: 'Balance'),
-                Tab(text: 'Clasificación'),
-                Tab(text: 'Jugadores'),
+              bottom: TabBar(tabs: [
+                Tab(text: t(context).pestanaBalance),
+                Tab(text: t(context).clasificacion),
+                Tab(text: t(context).pestanaJugadores),
               ]),
             ),
             body: TabBarView(children: [
@@ -90,7 +91,7 @@ class _ResumenTemporadaScreenState extends State<ResumenTemporadaScreen> {
                   child: FilledButton(
                     onPressed: widget.onContinuar ??
                         () => Navigator.of(context).pop(),
-                    child: Text(widget.textoBoton),
+                    child: Text(widget.textoBoton ?? t(context).cerrar),
                   ),
                 ),
               ),
@@ -124,38 +125,41 @@ class _Balance extends StatelessWidget {
 
     final fichas = <({String titulo, String valor, String? nota})>[
       (
-        titulo: 'Puesto en el ${resumen.conferencia}',
-        valor: '${resumen.puestoEnConferencia}º',
-        nota: '${resumen.puestoEnLaLiga}º de la liga',
+        titulo: t(context).puestoEnConferencia(resumen.conferencia == 'Oeste'
+            ? t(context).conferenciaOeste
+            : t(context).conferenciaEste),
+        valor: t(context).puestoValor(resumen.puestoEnConferencia),
+        nota: t(context).puestoEnLaLigaNota(resumen.puestoEnLaLiga),
       ),
       (
-        titulo: 'Puntos por partido',
+        titulo: t(context).puntosPorPartidoLabel,
         valor: resumen.puntosFavorPorPartido.toStringAsFixed(1),
-        nota: 'encajados ${resumen.puntosContraPorPartido.toStringAsFixed(1)}',
+        nota: t(context).encajadosLabel(
+            resumen.puntosContraPorPartido.toStringAsFixed(1)),
       ),
       (
-        titulo: 'Diferencia',
+        titulo: t(context).diferenciaLabel,
         valor: '${resumen.diferenciaPorPartido >= 0 ? '+' : ''}'
             '${resumen.diferenciaPorPartido.toStringAsFixed(1)}',
-        nota: 'por partido',
+        nota: t(context).porPartidoLabel,
       ),
       (
-        titulo: 'Mejor racha',
+        titulo: t(context).mejorRachaLabel,
         valor: '${resumen.mejorRachaGanando}',
-        nota: 'victorias seguidas',
+        nota: t(context).victoriasSeguidasLabel,
       ),
       (
-        titulo: 'Peor racha',
+        titulo: t(context).peorRachaLabel,
         valor: '${resumen.peorRachaPerdiendo}',
-        nota: 'derrotas seguidas',
+        nota: t(context).derrotasSeguidasLabel,
       ),
       (
-        titulo: 'Mejor victoria',
+        titulo: t(context).mejorVictoriaLabel,
         valor: texto(resumen.mejorVictoria),
         nota: null,
       ),
       (
-        titulo: 'Peor derrota',
+        titulo: t(context).peorDerrotaLabel,
         valor: texto(resumen.peorDerrota),
         nota: null,
       ),
@@ -182,9 +186,14 @@ class _Balance extends StatelessWidget {
                           style: tema.textTheme.displaySmall
                               ?.copyWith(fontWeight: FontWeight.bold)),
                       Text(
-                        '${resumen.partidosJugados} partidos · '
-                        '${(resumen.partidosJugados == 0 ? 0 : resumen.victorias / resumen.partidosJugados * 100).round()}% '
-                        'de victorias',
+                        t(context).partidosJugadosVictoriasPct(
+                            resumen.partidosJugados,
+                            (resumen.partidosJugados == 0
+                                    ? 0
+                                    : resumen.victorias /
+                                        resumen.partidosJugados *
+                                        100)
+                                .round()),
                         style: TextStyle(color: tema.colorScheme.outline),
                       ),
                     ],
@@ -258,7 +267,7 @@ class _Clasificacion extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (resumen.clasificacion.isEmpty) {
-      return const Center(child: Text('Todavía no hay clasificación.'));
+      return Center(child: Text(t(context).todaviaNoHayClasificacion));
     }
 
     // En pantalla ancha caben las dos conferencias una al lado de la otra;
@@ -319,7 +328,10 @@ class _TablaDeConferencia extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             color: tema.colorScheme.surfaceContainerHighest,
-            child: Text('CONFERENCIA ${conferencia.toUpperCase()}',
+            child: Text(
+                conferencia == 'Oeste'
+                    ? t(context).tituloConferenciaOeste
+                    : t(context).tituloConferenciaEste,
                 style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
@@ -428,7 +440,7 @@ class _TablaDeJugadores extends StatelessWidget {
     final outline = Theme.of(context).colorScheme.outline;
     final jugados = resumen.jugadores.where((j) => j.partidosJugados > 0);
     if (jugados.isEmpty) {
-      return const Center(child: Text('Todavía no hay estadísticas.'));
+      return Center(child: Text(t(context).todaviaNoHayEstadisticas));
     }
 
     Widget fila(String nombre, String subtitulo, List<String> valores,
@@ -466,13 +478,17 @@ class _TablaDeJugadores extends StatelessWidget {
 
     return ListView(
       children: [
-        fila('Jugador', '', const ['PJ', 'Pts', 'Ast', 'Reb'],
+        fila(
+            t(context).columnaJugador,
+            '',
+            [t(context).columnaPJ, t(context).columnaPts,
+                t(context).columnaAst, t(context).columnaReb],
             esCabecera: true),
         const Divider(height: 1),
         for (final j in jugados)
           fila(
             j.nombre,
-            '${j.posicion} · media ${j.media}',
+            t(context).posicionMedia(j.posicion, j.media),
             [
               '${j.partidosJugados}',
               j.puntos.toStringAsFixed(1),

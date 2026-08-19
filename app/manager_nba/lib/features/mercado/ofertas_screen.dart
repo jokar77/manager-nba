@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../i18n/textos.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/entrenadores_repository.dart' show formatearMillones;
 import '../../domain/equipos_info.dart';
@@ -58,17 +59,17 @@ class _OfertasScreenState extends State<OfertasScreen> {
     final confirmado = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('¿Cerramos el traspaso?'),
-        content: Text('Se van ${oferta.resumenQuePiden} y llegan '
-            '${oferta.resumenQueOfrecen}.'),
+        title: Text(t(context).cerramosElTraspaso),
+        content: Text(t(context).seVanYLlegan(
+            oferta.resumenQuePiden, oferta.resumenQueOfrecen)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
+            child: Text(t(context).cancelar),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Aceptar'),
+            child: Text(t(context).aceptar),
           ),
         ],
       ),
@@ -78,8 +79,8 @@ class _OfertasScreenState extends State<OfertasScreen> {
     await aceptarOferta(widget.db, oferta,
         equipoUsuario: widget.equipoUsuario);
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Traspaso cerrado con ${oferta.equipoOfertante}.')));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(t(context).traspasoCerradoCon(oferta.equipoOfertante))));
     await _cargar();
   }
 
@@ -114,16 +115,15 @@ class _OfertasScreenState extends State<OfertasScreen> {
   Widget build(BuildContext context) {
     final ofertas = _ofertas;
     return Scaffold(
-      appBar: AppBar(title: const Text('Ofertas recibidas')),
+      appBar: AppBar(title: Text(t(context).tituloOfertasRecibidasScreen)),
       body: ofertas == null
           ? const Center(child: CircularProgressIndicator())
           : ofertas.isEmpty
-              ? const Center(
+              ? Center(
                   child: Padding(
-                    padding: EdgeInsets.all(32),
+                    padding: const EdgeInsets.all(32),
                     child: Text(
-                      'Ahora mismo nadie te ha pedido nada. Sigue simulando: '
-                      'las ofertas llegan durante la temporada.',
+                      t(context).nadieTePideNadaAhora,
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -186,14 +186,14 @@ class _Navegador extends StatelessWidget {
           IconButton.filledTonal(
             onPressed: indice > 0 ? onAnterior : null,
             icon: const Icon(Icons.chevron_left),
-            tooltip: 'Oferta anterior',
+            tooltip: t(context).ofertaAnterior,
           ),
-          Text('Oferta ${indice + 1} de $total',
+          Text(t(context).ofertaNDeM(indice + 1, total),
               style: const TextStyle(fontWeight: FontWeight.bold)),
           IconButton.filledTonal(
             onPressed: indice < total - 1 ? onSiguiente : null,
             icon: const Icon(Icons.chevron_right),
-            tooltip: 'Oferta siguiente',
+            tooltip: t(context).ofertaSiguiente,
           ),
         ],
       ),
@@ -207,19 +207,22 @@ class _Navegador extends StatelessWidget {
 /// ciegas; sin el contrato, era aceptar un sueldo a ciegas — que es peor,
 /// porque un traspaso te ata a esa nómina varios años y puede dejarte sin
 /// espacio salarial para el resto del mercado.
-String _lineaJugador(Jugador j) =>
-    '${j.nombreFicticio} · ${etiquetaPosicion(j)} · ${j.media} · '
-    '${j.ptsPg.toStringAsFixed(1)} pts, '
-    '${j.astPg.toStringAsFixed(1)} ast, '
-    '${j.trbPg.toStringAsFixed(1)} reb'
-    ' · ${_contratoDe(j)}';
+String _lineaJugador(BuildContext context, Jugador j) =>
+    t(context).lineaJugadorOferta(
+        j.nombreFicticio,
+        etiquetaPosicion(j),
+        j.media,
+        j.ptsPg.toStringAsFixed(1),
+        j.astPg.toStringAsFixed(1),
+        j.trbPg.toStringAsFixed(1),
+        _contratoDe(context, j));
 
 /// El contrato en una línea: "3 años · 40,0M al año".
-String _contratoDe(Jugador j) {
+String _contratoDe(BuildContext context, Jugador j) {
   final anios = j.aniosContrato <= 1
-      ? 'Último año'
-      : '${j.aniosContrato} años';
-  return '$anios · ${formatearMillones(j.salario)} al año';
+      ? t(context).ultimoAnioContrato
+      : t(context).aniosDeContrato(j.aniosContrato);
+  return t(context).contratoAnioMillones(anios, formatearMillones(j.salario));
 }
 
 class _TarjetaOferta extends StatelessWidget {
@@ -258,16 +261,16 @@ class _TarjetaOferta extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             _Bloque(
-              titulo: 'Te piden',
+              titulo: t(context).tePiden,
               icono: Icons.arrow_upward,
-              lineas: [for (final j in oferta.tePiden) _lineaJugador(j)],
+              lineas: [for (final j in oferta.tePiden) _lineaJugador(context, j)],
             ),
             const SizedBox(height: 8),
             _Bloque(
-              titulo: 'Te ofrecen',
+              titulo: t(context).teOfrecen,
               icono: Icons.arrow_downward,
               lineas: [
-                for (final j in oferta.teOfrecen) _lineaJugador(j),
+                for (final j in oferta.teOfrecen) _lineaJugador(context, j),
                 for (final p in oferta.teOfrecenPicks) etiquetaDePick(p),
               ],
             ),
@@ -277,7 +280,7 @@ class _TarjetaOferta extends StatelessWidget {
               child: TextButton.icon(
                 onPressed: onContraofertar,
                 icon: const Icon(Icons.edit, size: 18),
-                label: const Text('Contraofertar'),
+                label: Text(t(context).contraofertar),
               ),
             ),
             Row(
@@ -285,14 +288,14 @@ class _TarjetaOferta extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: onRechazar,
-                    child: const Text('Rechazar'),
+                    child: Text(t(context).rechazar),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: FilledButton(
                     onPressed: onAceptar,
-                    child: const Text('Aceptar'),
+                    child: Text(t(context).aceptar),
                   ),
                 ),
               ],

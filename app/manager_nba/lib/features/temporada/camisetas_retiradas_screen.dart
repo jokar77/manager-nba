@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../i18n/textos.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/camisetas_repository.dart';
 import '../../domain/carrera_repository.dart';
@@ -24,7 +25,7 @@ class CamisetasRetiradasScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Camisetas retiradas')),
+      appBar: AppBar(title: Text(t(context).pestanaCamisetasRetiradas)),
       body: CamisetasRetiradasBody(db: db, equipoUsuario: equipoUsuario),
     );
   }
@@ -82,8 +83,8 @@ class _CamisetasRetiradasBodyState extends State<CamisetasRetiradasBody> {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
-              child: Text('No se han podido cargar las camisetas '
-                  'retiradas.\n${snapshot.error}'),
+              child: Text(
+                  t(context).noSePudieronCargarCamisetas('${snapshot.error}')),
             ),
           );
         }
@@ -99,12 +100,11 @@ class _CamisetasRetiradasBodyState extends State<CamisetasRetiradasBody> {
         String etiquetaTemporada(int numero) => etiquetaDeTemporada(
             actual.anioInicio - (actual.numero - numero));
         if (porEquipo.isEmpty) {
-          return const Center(
+          return Center(
             child: Padding(
-              padding: EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
               child: Text(
-                'Todavía no hay ninguna camiseta retirada en la liga. '
-                'Cuando se retire una leyenda podrás honrarla.',
+                t(context).todaviaNoHayCamisetaEnLiga,
                 textAlign: TextAlign.center,
               ),
             ),
@@ -129,16 +129,16 @@ class _CamisetasRetiradasBodyState extends State<CamisetasRetiradasBody> {
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
               child: DropdownButtonFormField<String>(
-                decoration: const InputDecoration(
-                  labelText: 'Franquicia',
+                decoration: InputDecoration(
+                  labelText: t(context).franquiciaLabel,
                   isDense: true,
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                 ),
                 initialValue: _filtro,
                 items: [
-                  const DropdownMenuItem(
+                  DropdownMenuItem(
                     value: _todaLaLiga,
-                    child: Text('Toda la liga'),
+                    child: Text(t(context).todaLaLigaOpcion),
                   ),
                   // Tu equipo sale aunque no tenga ninguna todavía: es el
                   // que abres por defecto y tiene que poder elegirse.
@@ -175,8 +175,8 @@ class _CamisetasRetiradasBodyState extends State<CamisetasRetiradasBody> {
                       child: Padding(
                         padding: const EdgeInsets.all(24),
                         child: Text(
-                          '${nombreDeEquipoEnFicha(_filtro)} todavía no ha '
-                          'retirado ninguna camiseta.',
+                          t(context).equipoTodaviaNoHaRetirado(
+                              nombreDeEquipoEnFicha(_filtro)),
                           textAlign: TextAlign.center,
                         ),
                       ),
@@ -247,7 +247,7 @@ class _BloqueEquipo extends StatelessWidget {
                   ),
                 ),
                 if (esTuEquipo)
-                  Text('TU EQUIPO',
+                  Text(t(context).tuEquipoBadge,
                       style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -269,8 +269,9 @@ class _BloqueEquipo extends StatelessWidget {
                 // legado_historico_repository.dart): ninguna temporada
                 // jugada de verdad llega nunca a valer 0.
                 subtitle: Text(c.temporada == 0
-                    ? 'Retirada real de la franquicia'
-                    : 'Retirada en la ${etiquetaTemporada(c.temporada)}'),
+                    ? t(context).retiradaRealDeLaFranquicia
+                    : t(context)
+                        .retiradaEnLaTemporada(etiquetaTemporada(c.temporada))),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () async {
                   // Para ficha, no para Hall of Fame: una leyenda que se

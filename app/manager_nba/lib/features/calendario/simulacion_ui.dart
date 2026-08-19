@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../i18n/textos.dart';
+
 import '../../data/database/app_database.dart';
 import '../../domain/allstar_repository.dart';
 import '../../domain/calendario_repository.dart';
@@ -326,19 +328,16 @@ Future<void> _avisarDeOfertasEntrantes(
   final verlas = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text(sinVer == 1 ? 'Te ha llegado una oferta' : 'Tienes ofertas'),
-      content: Text(sinVer == 1
-          ? 'Un equipo ha preguntado por uno de tus jugadores y te ha '
-              'puesto una propuesta sobre la mesa.'
-          : 'Hay $sinVer equipos que han preguntado por jugadores tuyos.'),
+      title: Text(t(context).ofertaTitulo(sinVer)),
+      content: Text(t(context).ofertaMensaje(sinVer)),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Más tarde'),
+          child: Text(t(context).masTarde),
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(true),
-          child: Text(sinVer == 1 ? 'Ver la oferta' : 'Ver las ofertas'),
+          child: Text(t(context).verOfertaBoton(sinVer)),
         ),
       ],
     ),
@@ -376,25 +375,24 @@ Future<bool?> _mostrarDialogoDeadline(
   EventosTemporadaData evento,
 ) {
   final esAgenciaLibre = esFechaLimiteDeAgenciaLibre(evento);
-  final titulo =
-      esAgenciaLibre ? 'Fin de la agencia libre' : 'Fecha límite de traspasos';
   return showDialog<bool>(
     context: context,
     barrierDismissible: false,
     builder: (context) => AlertDialog(
-      title: Text(titulo),
-      content: const Text(
-        'Has llegado a esta fecha límite de la temporada. ¿Sigues '
-        'simulando o paras para hacer movimientos?',
-      ),
+      title: Text(esAgenciaLibre
+          ? t(context).tituloEventoFinAgenciaLibre
+          : t(context).tituloEventoFechaLimiteTraspasos),
+      content: Text(t(context).preguntaSeguirSimulando),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: Text(esAgenciaLibre ? 'Ir a Agencia libre' : 'Ir a Traspasos'),
+          child: Text(esAgenciaLibre
+              ? t(context).irAAgenciaLibre
+              : t(context).irATraspasos),
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('Seguir simulando'),
+          child: Text(t(context).seguirSimulando),
         ),
       ],
     ),
@@ -445,8 +443,8 @@ Future<bool> _avisarSiHuboAllStar(
   if (!context.mounted) return true;
 
   if (boxscore == null) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text('ALL STAR WEEKEND'),
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(t(context).allStarWeekendMayus),
     ));
     return true;
   }
@@ -458,21 +456,21 @@ Future<bool> _avisarSiHuboAllStar(
   final verPartido = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('ALL STAR WEEKEND'),
-      content: Text(
-        'Se ha jugado el All-Star. ${ganaEste ? "El Este" : "El Oeste"} se '
-        'lleva el partido por ${boxscore.marcadorLocal}-'
-        '${boxscore.marcadorVisitante}.'
-        '${mvp == null ? "" : "\n\nMVP del partido: ${mvp.nombreFicticio}."}',
-      ),
+      title: Text(t(context).allStarWeekendMayus),
+      content: Text(t(context).resultadoAllStar(
+        esteGana: ganaEste,
+        local: boxscore.marcadorLocal,
+        visitante: boxscore.marcadorVisitante,
+        mvp: mvp?.nombreFicticio,
+      )),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Seguir simulando'),
+          child: Text(t(context).seguirSimulando),
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('Ver el fin de semana'),
+          child: Text(t(context).verFinDeSemana),
         ),
       ],
     ),
@@ -500,8 +498,7 @@ Future<void> _avisarFinalDeCopaProgramada(
 ) async {
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
     duration: const Duration(seconds: 6),
-    content: Text('¡A la Final de la NBA Cup! La juegas el '
-        '${_fechaCorta(fecha)}: simula hasta ese día.'),
+    content: Text(t(context).finalCupProgramada(_fechaCorta(context, fecha))),
   ));
 }
 
@@ -518,13 +515,13 @@ Future<void> _avisarCampeonDeCopa(
   if (!context.mounted) return;
   final verEstadisticas = await mostrarCampeonDecidido(
     context,
-    'la NBA Cup',
+    true,
     campeon,
     // La Cup no da anillo: es un título de diciembre.
     daAnillo: false,
     esTuEquipo: campeon == equipoUsuario,
     temporada: etiquetaDeTemporada(temporada.anioInicio),
-    etiquetaAccionExtra: serieId == null ? null : 'Ver estadísticas',
+    etiquetaAccionExtra: serieId == null ? null : t(context).verEstadisticas,
   );
 
   if (verEstadisticas && serieId != null && context.mounted) {
@@ -533,10 +530,6 @@ Future<void> _avisarCampeonDeCopa(
   }
 }
 
-const _mesesCortos = [
-  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
-];
-
-String _fechaCorta(DateTime f) => '${f.day} de ${_mesesCortos[f.month - 1]}';
+String _fechaCorta(BuildContext context, DateTime f) =>
+    t(context).fechaCorta(f.day, f.month);
 

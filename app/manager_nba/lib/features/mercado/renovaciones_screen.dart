@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../i18n/textos.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/contratos_repository.dart';
 import '../../domain/posiciones.dart';
@@ -63,7 +64,7 @@ class _RenovacionesScreenState extends State<RenovacionesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Renovaciones'),
+        title: Text(t(context).tituloRenovaciones),
         automaticallyImplyLeading: false,
       ),
       body: _cargando
@@ -73,12 +74,11 @@ class _RenovacionesScreenState extends State<RenovacionesScreen> {
                 _BarraDeTope(espacio: _espacio),
                 Expanded(
                   child: _vencen.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: Padding(
-                            padding: EdgeInsets.all(24),
+                            padding: const EdgeInsets.all(24),
                             child: Text(
-                              'No se te acaba ningún contrato: la plantilla '
-                              'sigue atada un año más.',
+                              t(context).ningunContratoSeAcaba,
                               textAlign: TextAlign.center,
                             ),
                           ),
@@ -102,8 +102,8 @@ class _RenovacionesScreenState extends State<RenovacionesScreen> {
           child: FilledButton(
             onPressed: widget.onContinuar,
             child: Text(_vencen.isEmpty
-                ? 'Continuar'
-                : 'Continuar (${_vencen.length} se van a la agencia libre)'),
+                ? t(context).continuar
+                : t(context).continuarConNAgenciaLibre(_vencen.length)),
           ),
         ),
       ),
@@ -125,10 +125,9 @@ class _BarraDeTope extends StatelessWidget {
       color: (pasado ? Colors.red : Colors.green).withValues(alpha: 0.15),
       child: Text(
         pasado
-            ? 'Estás ${formatearSalario(-espacio)} por encima del tope: solo '
-                'puedes ofrecer contratos del mínimo.'
-            : 'Te quedan ${formatearSalario(espacio)} bajo el tope de '
-                '${formatearSalario(topeSalarial)}.',
+            ? t(context).porEncimaDelTope(formatearSalario(-espacio))
+            : t(context).teQuedanBajoElTope(
+                formatearSalario(espacio), formatearSalario(topeSalarial)),
         textAlign: TextAlign.center,
         style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
       ),
@@ -153,18 +152,17 @@ class _FilaRenovacion extends StatelessWidget {
       child: ListTile(
         title: Text(jugador.nombreFicticio,
             style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text('${etiquetaPosicion(jugador)} · ${jugador.edad} años · '
-            'media ${jugador.media}\n'
-            'Cobraba ${formatearSalario(jugador.salario)} · '
-            'pide ${formatearSalario(pide)}'),
+        subtitle: Text(t(context).subtituloRenovacion(
+            etiquetaPosicion(jugador), jugador.edad, jugador.media,
+            formatearSalario(jugador.salario), formatearSalario(pide))),
         isThreeLine: true,
         trailing: sinOfertas
-            ? const Text('Se acabó\nla negociación',
+            ? Text(t(context).seAcaboLaNegociacion,
                 textAlign: TextAlign.right,
-                style: TextStyle(fontSize: 11, color: Colors.red))
+                style: const TextStyle(fontSize: 11, color: Colors.red))
             : FilledButton(
                 onPressed: onNegociar,
-                child: Text('Ofrecer ($ofertasRestantes)'),
+                child: Text(t(context).ofrecerConN(ofertasRestantes)),
               ),
       ),
     );
@@ -213,15 +211,15 @@ class _DialogoDeOfertaState extends State<_DialogoDeOferta> {
     );
 
     return AlertDialog(
-      title: Text('Oferta a ${widget.jugador.nombreFicticio}'),
+      title: Text(t(context).ofertaA(widget.jugador.nombreFicticio)),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Pide ${formatearSalario(pide)} al año',
+          Text(t(context).pideAlAnio(formatearSalario(pide)),
               style: TextStyle(color: Theme.of(context).colorScheme.outline)),
           const SizedBox(height: 16),
-          Text('Sueldo: ${formatearSalario(_salario.round())}',
+          Text(t(context).sueldoLabel(formatearSalario(_salario.round())),
               style: const TextStyle(fontWeight: FontWeight.bold)),
           Slider(
             value: _salario,
@@ -236,15 +234,14 @@ class _DialogoDeOfertaState extends State<_DialogoDeOferta> {
             height: 32,
             child: Text(
               ratio < 0.75
-                  ? 'Se lo va a tomar como un insulto.'
+                  ? t(context).insultoOferta
                   : probabilidad < 0.25
-                      ? 'Muy improbable que la acepte así: el sueldo, los años '
-                          'o ambos se quedan cortos.'
+                      ? t(context).ofertaImprobable
                       : probabilidad < 0.6
-                          ? 'Se lo puede pensar; no las tiene todas consigo.'
+                          ? t(context).ofertaSePuedePensar
                           : probabilidad < 0.9
-                              ? 'Es probable que acepte.'
-                              : 'Prácticamente seguro que dice que sí.',
+                              ? t(context).ofertaProbableAceptar
+                              : t(context).ofertaSeguraAceptar,
               style: TextStyle(
                 fontSize: 12,
                 color: ratio < 0.75 || probabilidad < 0.25
@@ -256,7 +253,7 @@ class _DialogoDeOfertaState extends State<_DialogoDeOferta> {
           const SizedBox(height: 16),
           Row(
             children: [
-              const Text('Años: '),
+              Text(t(context).aniosLabelDosPuntos),
               IconButton(
                 icon: const Icon(Icons.remove_circle_outline),
                 onPressed: _enviando || _anios <= 1
@@ -278,11 +275,11 @@ class _DialogoDeOfertaState extends State<_DialogoDeOferta> {
       actions: [
         TextButton(
           onPressed: _enviando ? null : () => Navigator.of(context).pop(),
-          child: const Text('Cancelar'),
+          child: Text(t(context).cancelar),
         ),
         FilledButton(
           onPressed: _enviando ? null : _enviar,
-          child: const Text('Ofrecer'),
+          child: Text(t(context).ofrecer),
         ),
       ],
     );
