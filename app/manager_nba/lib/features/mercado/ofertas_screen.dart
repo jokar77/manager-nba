@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../data/database/app_database.dart';
+import '../../domain/entrenadores_repository.dart' show formatearMillones;
 import '../../domain/equipos_info.dart';
 import '../../domain/ofertas_repository.dart';
 import '../../domain/picks_repository.dart';
@@ -201,13 +202,25 @@ class _Navegador extends StatelessWidget {
 }
 
 /// Un jugador de la oferta con lo que hace falta para juzgarla: quién es,
-/// dónde juega, su nivel y lo que produce por partido. Sin los promedios,
-/// decidir un traspaso era comparar dos números de media a ciegas.
+/// dónde juega, su nivel, lo que produce por partido y LO QUE COBRA. Sin
+/// los promedios, decidir un traspaso era comparar dos números de media a
+/// ciegas; sin el contrato, era aceptar un sueldo a ciegas — que es peor,
+/// porque un traspaso te ata a esa nómina varios años y puede dejarte sin
+/// espacio salarial para el resto del mercado.
 String _lineaJugador(Jugador j) =>
     '${j.nombreFicticio} · ${etiquetaPosicion(j)} · ${j.media} · '
     '${j.ptsPg.toStringAsFixed(1)} pts, '
     '${j.astPg.toStringAsFixed(1)} ast, '
-    '${j.trbPg.toStringAsFixed(1)} reb';
+    '${j.trbPg.toStringAsFixed(1)} reb'
+    ' · ${_contratoDe(j)}';
+
+/// El contrato en una línea: "3 años · 40,0M al año".
+String _contratoDe(Jugador j) {
+  final anios = j.aniosContrato <= 1
+      ? 'Último año'
+      : '${j.aniosContrato} años';
+  return '$anios · ${formatearMillones(j.salario)} al año';
+}
 
 class _TarjetaOferta extends StatelessWidget {
   final OfertaEntrante oferta;

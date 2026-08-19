@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/database/app_database.dart';
 import '../../domain/entrenadores_repository.dart';
+import '../../domain/equipos_especiales.dart' show esFranquicia;
 import '../../domain/equipos_info.dart';
 import '../../domain/salarios.dart' show topeSalarial;
 import '../../i18n/textos.dart';
@@ -13,10 +14,21 @@ class EntrenadorScreen extends StatefulWidget {
   final AppDatabase db;
   final String equipoUsuario;
 
+  /// Con esto puesto la pantalla es un TRÁMITE OBLIGATORIO: aparece una
+  /// barra abajo con un botón de seguir que no se activa hasta que hay
+  /// alguien en el banquillo, y otro para firmar al mejor que acepte el
+  /// mínimo. Es lo que se usa en la pretemporada y cuando te quedas sin
+  /// entrenador a mitad de año — jugar sin entrenador no es una opción, del
+  /// mismo modo que no lo es salir a la pista con doce jugadores.
+  ///
+  /// Sin esto es la pantalla normal, a la que se entra desde el menú.
+  final VoidCallback? onContinuar;
+
   const EntrenadorScreen({
     super.key,
     required this.db,
     required this.equipoUsuario,
+    this.onContinuar,
   });
 
   @override
@@ -31,6 +43,11 @@ class _Candidato {
   final int aniosQuePide;
   final bool aceptariaSuPrecio;
 
+  /// La franquicia que dirige ahora mismo, o null si está sin equipo.
+  /// Robarle el entrenador a otro cuesta más de convencer y deja a ese
+  /// equipo buscando sustituto, así que hay que decirlo.
+  final String? dirigeA;
+
   /// Cuánto proyecto le falta si le ofreces exactamente lo que pide. Sirve
   /// para saber si el dinero puede arreglarlo o no hay nada que hacer.
   final double loQueFalta;
@@ -41,6 +58,7 @@ class _Candidato {
     required this.aniosQuePide,
     required this.aceptariaSuPrecio,
     required this.loQueFalta,
+    this.dirigeA,
   });
 
   /// Ni con el máximo de dinero y años se le convence.
@@ -79,7 +97,7 @@ class _EntrenadorScreenState extends State<EntrenadorScreen> {
     final equipo = widget.equipoUsuario;
 
     final candidatos = <_Candidato>[];
-    for (final e in await leerEntrenadoresLibres(db)) {
+    for (final e in await leerEntrenadoresFichablesPor(db, equipo)) {
       final respuesta = await valorarOfertaDe(db, e, equipo);
       candidatos.add(_Candidato(
         entrenador: e,
@@ -87,6 +105,7 @@ class _EntrenadorScreenState extends State<EntrenadorScreen> {
         aniosQuePide: aniosQuePide(e),
         aceptariaSuPrecio: respuesta.acepta,
         loQueFalta: respuesta.loQueFalta,
+        dirigeA: esFranquicia(e.equipo) ? e.equipo : null,
       ));
     }
 
@@ -150,10 +169,26 @@ class _EntrenadorScreenState extends State<EntrenadorScreen> {
     if (mounted) _recargar();
   }
 
+  /// Firma al mejor que acepte el mínimo. Es la salida que impide que el
+  /// trámite obligatorio se convierta en una trampa: siempre hay alguien.
+  Future<void> _ficharPorElMinimo() async {
+    final resultado =
+        await ficharEntrenadorPorElMinimo(widget.db, widget.equipoUsuario);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(resultado.mensaje)));
+    if (resultado.firmado) _recargar();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final obligatorio = widget.onContinuar != null;
     return Scaffold(
-      appBar: AppBar(title: Text(t(context).entrenador)),
+      appBar: AppBar(
+        title: Text(t(context).entrenador),
+        // En modo trámite no se puede salir con "atrás": hay que fichar.
+        automaticallyImplyLeading: !obligatorio,
+      ),
       body: FutureBuilder<_EstadoDelBanquillo>(
         future: _futuro,
         builder: (context, snapshot) {
@@ -162,9 +197,28 @@ class _EntrenadorScreenState extends State<EntrenadorScreen> {
           }
           final estado = snapshot.data!;
           final tope = estado.presupuesto.libre;
+          final libres = estado.libres.where((c) => c.dirigeA == null).toList();
+          final conEquipo =
+              estado.libres.where((c) => c.dirigeA != null).toList();
+
+          Widget lista(List<_Candidato> cs) => Column(
+                children: cs
+                    .map((c) => _FilaCandidato(
+                          candidato: c,
+                          cabeEnElPresupuesto: c.pide <= tope,
+                          onNegociar: () => _negociar(c, tope),
+                        ))
+                    .toList(),
+              );
+
           return ListView(
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
             children: [
+              if (obligatorio && estado.actual == null)
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 12),
+                  child: _AvisoObligatorio(),
+                ),
               _BanquilloActual(
                 entrenador: estado.actual,
                 equipo: widget.equipoUsuario,
@@ -186,21 +240,95 @@ class _EntrenadorScreenState extends State<EntrenadorScreen> {
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 8),
-              if (estado.libres.isEmpty)
+              if (libres.isEmpty)
                 const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
+                  padding: EdgeInsets.symmetric(vertical: 16),
                   child: Center(
                       child: Text('No hay ningún entrenador sin equipo')),
                 )
               else
-                ...estado.libres.map((c) => _FilaCandidato(
-                      candidato: c,
-                      cabeEnElPresupuesto: c.pide <= tope,
-                      onNegociar: () => _negociar(c, tope),
-                    )),
+                lista(libres),
+              if (conEquipo.isNotEmpty) ...[
+                const SizedBox(height: 24),
+                Text('Dirigiendo a otro equipo',
+                    style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 4),
+                Text(
+                  'Se les puede hacer una oferta, pero tienen trabajo: hace '
+                  'falta bastante más para convencerles, y el equipo al que '
+                  'se lo quites buscará sustituto en el acto.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 8),
+                lista(conEquipo),
+              ],
             ],
           );
         },
+      ),
+      bottomNavigationBar: obligatorio
+          ? SafeArea(
+              child: FutureBuilder<_EstadoDelBanquillo>(
+                future: _futuro,
+                builder: (context, snapshot) {
+                  final tieneEntrenador = snapshot.data?.actual != null;
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+                    child: Row(
+                      children: [
+                        if (!tieneEntrenador) ...[
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: _ficharPorElMinimo,
+                              child: const Text('Fichar por el mínimo'),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        Expanded(
+                          child: FilledButton(
+                            onPressed:
+                                tieneEntrenador ? widget.onContinuar : null,
+                            child: Text(t(context).continuar),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            )
+          : null,
+    );
+  }
+}
+
+/// El cartel de "de aquí no se sale sin entrenador".
+class _AvisoObligatorio extends StatelessWidget {
+  const _AvisoObligatorio();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: Theme.of(context).colorScheme.errorContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            Icon(Icons.warning_amber,
+                color: Theme.of(context).colorScheme.onErrorContainer),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'No puedes jugar sin entrenador. Ficha a alguien para '
+                'seguir: si no te convence nadie o no te llega el '
+                'presupuesto, siempre puedes firmar a uno por el mínimo.',
+                style: TextStyle(
+                    color: Theme.of(context).colorScheme.onErrorContainer),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -667,6 +795,13 @@ class _FilaCandidato extends StatelessWidget {
       children: [
         Text(e.nombreFicticio,
             style: Theme.of(context).textTheme.titleSmall),
+        if (candidato.dirigeA != null)
+          Text(
+            'Dirige a ${infoDe(candidato.dirigeA!).apodo}',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontStyle: FontStyle.italic,
+                color: Theme.of(context).colorScheme.primary),
+          ),
         Text(
           '${e.edad} años · '
           '${estiloDeEntrenador(ataque: e.atrAtaque, defensa: e.atrDefensa, desarrollo: e.atrDesarrollo)}'

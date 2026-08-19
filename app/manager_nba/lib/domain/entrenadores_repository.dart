@@ -7,6 +7,7 @@ import '../data/database/app_database.dart';
 import 'contratos_repository.dart' show masaSalarial;
 import 'draft_repository.dart' show nombreFicticioUnico;
 import 'entrenadores.dart';
+import 'equipos_info.dart' show infoDe;
 import 'equipos_especiales.dart';
 import 'salarios.dart' show topeSalarial;
 
@@ -33,6 +34,25 @@ Future<List<Entrenador>> leerEntrenadoresLibres(AppDatabase db) async {
         ..where((t) => t.equipo.equals(equipoAgenciaLibre)))
       .get();
   return libres..sort((a, b) => mediaDe(b).compareTo(mediaDe(a)));
+}
+
+/// Todos a los que [equipo] puede hacerles una oferta: los que están sin
+/// trabajo y también los que dirigen a OTRA franquicia.
+///
+/// Los segundos salen después de los primeros aunque sean mejores, y no por
+/// orden: son dos decisiones distintas. Fichar a un parado es rutina;
+/// llevarte al entrenador de otro equipo cuesta bastante más de convencer
+/// (ver [primaPorTenerEquipo]) y deja al otro equipo sin banquillo.
+Future<List<Entrenador>> leerEntrenadoresFichablesPor(
+  AppDatabase db,
+  String equipo,
+) async {
+  final libres = await leerEntrenadoresLibres(db);
+  final conEquipo = (await db.select(db.entrenadores).get())
+      .where((e) => esFranquicia(e.equipo) && e.equipo != equipo)
+      .toList()
+    ..sort((a, b) => mediaDe(b).compareTo(mediaDe(a)));
+  return [...libres, ...conEquipo];
 }
 
 /// La media de un entrenador, con el mismo criterio en toda la app.
@@ -225,12 +245,21 @@ Future<ResultadoDeFichaje> contratarEntrenador(
   final candidato = await (db.select(db.entrenadores)
         ..where((t) => t.id.equals(entrenadorId)))
       .getSingleOrNull();
-  if (candidato == null || candidato.equipo != equipoAgenciaLibre) {
+  // Se puede fichar a un parado y también robarle el entrenador a otra
+  // franquicia — eso último cuesta bastante más de convencer, y de eso se
+  // encarga [valorarOfertaDe]. Lo único imposible es fichar a un retirado o
+  // a quien ya dirige a este mismo equipo.
+  if (candidato == null ||
+      candidato.equipo == equipo ||
+      !(esFranquicia(candidato.equipo) ||
+          candidato.equipo == equipoAgenciaLibre)) {
     return const ResultadoDeFichaje(
       motivo: MotivoDeRechazo.yaTieneEquipo,
-      mensaje: 'Ya ha firmado por otro equipo.',
+      mensaje: 'Ese entrenador ya no está disponible.',
     );
   }
+  final equipoDelQueViene =
+      esFranquicia(candidato.equipo) ? candidato.equipo : null;
 
   final tope = await maximoQuePuedesOfrecer(db, equipo);
   if (salario > tope) {
@@ -249,8 +278,12 @@ Future<ResultadoDeFichaje> contratarEntrenador(
       mensaje: respuesta.loQueFalta > maxPuntosQueCompraElDinero
           ? '${candidato.nombreFicticio} no dirigiría a este equipo ni por '
               'todo el dinero del mundo: le falta proyecto.'
-          : '${candidato.nombreFicticio} rechaza la oferta. Con más dinero o '
-              'más años quizá se lo piense.',
+          : equipoDelQueViene != null
+              ? '${candidato.nombreFicticio} está a gusto donde está y '
+                  'rechaza la oferta. Con más dinero o más años quizá se lo '
+                  'piense.'
+              : '${candidato.nombreFicticio} rechaza la oferta. Con más dinero '
+                  'o más años quizá se lo piense.',
     );
   }
 
@@ -268,10 +301,87 @@ Future<ResultadoDeFichaje> contratarEntrenador(
     ));
   });
 
+  // Al equipo del que te lo llevas no se le deja tirado a mitad de
+  // temporada: busca sustituto en el acto, igual que hacen en el verano.
+  // Sin esto, robar un entrenador dejaba a un rival dirigiendo sin nadie
+  // durante meses, que es una ventaja gratis y encima invisible.
+  String? sustituto;
+  if (equipoDelQueViene != null) {
+    sustituto = await _contratarAlMejorQueAcepte(db, equipoDelQueViene);
+  }
+
+  final firma = '${candidato.nombreFicticio} firma por $anios '
+      '${anios == 1 ? 'temporada' : 'temporadas'} y '
+      '${formatearMillones(salario)} al año.';
   return ResultadoDeFichaje(
-    mensaje: '${candidato.nombreFicticio} firma por $anios '
-        '${anios == 1 ? 'temporada' : 'temporadas'} y '
-        '${formatearMillones(salario)} al año.',
+    mensaje: equipoDelQueViene == null
+        ? firma
+        : '$firma Deja ${infoDe(equipoDelQueViene).apodo}'
+            '${sustituto == null ? ' sin entrenador.' : ', que ficha a $sustituto.'}',
+  );
+}
+
+/// Ficha al mejor entrenador libre que acepte el sueldo MÍNIMO.
+///
+/// Es la salida de emergencia: tener entrenador es obligatorio para jugar,
+/// igual que tener trece jugadores, así que siempre tiene que quedar una
+/// opción que no dependa ni del presupuesto ni de lo bueno que sea tu
+/// proyecto. Lo que sale de aquí no es bueno —a un entrenador de prestigio
+/// no le compensa el mínimo ni en el mejor equipo de la liga—, pero es
+/// alguien.
+///
+/// Se recorre de mejor a peor y se firma al primero que diga que sí, así que
+/// un equipo atractivo se lleva a alguien algo mejor que uno en la ruina.
+Future<ResultadoDeFichaje> ficharEntrenadorPorElMinimo(
+  AppDatabase db,
+  String equipo,
+) async {
+  Future<ResultadoDeFichaje?> intentar() async {
+    for (final candidato in await leerEntrenadoresLibres(db)) {
+      final resultado = await contratarEntrenador(db, candidato.id, equipo,
+          salario: salarioMinimoEntrenador, anios: 1);
+      if (resultado.firmado) return resultado;
+    }
+    return null;
+  }
+
+  final primerIntento = await intentar();
+  if (primerIntento != null) return primerIntento;
+
+  // Nadie del mercado actual acepta: se saca gente nueva (entrenadores de
+  // primer trabajo, que es justo quien acepta el mínimo) y se prueba otra
+  // vez.
+  await generarEntrenadoresSiFaltan(db);
+  final segundoIntento = await intentar();
+  if (segundoIntento != null) return segundoIntento;
+
+  // Y si ni aun así: se firma igual, sin preguntar. Esto no es una
+  // negociación — es la última red de la que cuelga que la partida pueda
+  // seguir. Tener entrenador es obligatorio para jugar, así que esta
+  // función NO puede fallar; devolver un "no ha podido ser" dejaría al
+  // usuario encerrado en una pantalla de la que no se sale.
+  final libres = await leerEntrenadoresLibres(db);
+  if (libres.isEmpty) {
+    return const ResultadoDeFichaje(
+      motivo: MotivoDeRechazo.noLeConvenceLaOferta,
+      mensaje: 'No queda ni un entrenador en el mercado.',
+    );
+  }
+  final ultimo = libres.last;
+  await db.transaction(() async {
+    await despedirEntrenador(db, equipo);
+    await (db.update(db.entrenadores)..where((t) => t.id.equals(ultimo.id)))
+        .write(EntrenadoresCompanion(
+      equipo: Value(equipo),
+      salario: const Value(salarioMinimoEntrenador),
+      aniosContrato: const Value(1),
+      equipoQuePagaFiniquito: const Value(null),
+      aniosDeFiniquito: const Value(0),
+    ));
+  });
+  return ResultadoDeFichaje(
+    mensaje: '${ultimo.nombreFicticio} coge el puesto por el mínimo y una '
+        'temporada.',
   );
 }
 
@@ -288,6 +398,9 @@ Future<RespuestaDelEntrenador> valorarOfertaDe(
   final media = await mediaDeLosCincoMejores(db, equipo);
   final record = await recordDeEstaTemporada(db, equipo);
   return valorarOferta(
+    // Si ya está dirigiendo a alguien, hay que convencerle de dejar un
+    // trabajo, no de coger uno.
+    yaTieneEquipo: esFranquicia(entrenador.equipo) && entrenador.equipo != equipo,
     mediaDelEntrenador: mediaDe(entrenador),
     desarrolloDelEntrenador: entrenador.atrDesarrollo,
     mediaDelEquipo: media,

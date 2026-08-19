@@ -108,6 +108,24 @@ int aniosPedidosPorEntrenador({required int media, required int edad}) {
 const _mediaDeEquipoNeutra = 84.0;
 const _cuantoMasPideElBueno = 0.22;
 
+/// Lo que se resiste a moverse un entrenador que YA está dirigiendo a otro
+/// equipo. No se le puede fichar como a uno parado: tiene trabajo, y para
+/// dejarlo el proyecto nuevo tiene que ser claramente mejor.
+///
+/// Dos puntos, medidos sobre el recorrido real de la liga (las medias de los
+/// cinco mejores van de 82 a 90). Con esta prima, y contando que el sueldo
+/// tiene un techo de 18M que a los mejores ya les deja sin margen de
+/// subida:
+///
+///   el mejor de la liga (media 90) .. le valen 6 de 30 proyectos, y el
+///                                     dinero no le mueve: ya cobra el techo
+///   uno muy bueno (media 88) ........ 9 de 30 a su precio, 14 pagando más
+///   uno del montón (media 62) ....... se lo lleva cualquiera
+///
+/// Sin prima, pagando el máximo se lo llevaba cualquiera de los 30: robar
+/// entrenadores salía gratis y la decisión desaparecía.
+const primaPorTenerEquipo = 2.0;
+
 /// Lo que se rebaja un formador de jóvenes: es justo el trabajo que sabe
 /// hacer, y sin esta excepción los equipos en reconstrucción no podrían
 /// fichar nunca a quien más falta les hace. Dos puntos sobre un recorrido de
@@ -149,10 +167,12 @@ const edadMaximaDeEntrenador = 77;
 double exigenciaDeProyecto({
   required int mediaDelEntrenador,
   required int desarrolloDelEntrenador,
+  bool yaTieneEquipo = false,
 }) {
   var exigencia = _mediaDeEquipoNeutra +
       (mediaDelEntrenador - 76) * _cuantoMasPideElBueno;
   if (desarrolloDelEntrenador >= 80) exigencia -= _rebajaDelFormador;
+  if (yaTieneEquipo) exigencia += primaPorTenerEquipo;
   return exigencia;
 }
 
@@ -221,10 +241,12 @@ RespuestaDelEntrenador valorarOferta({
   required int salarioPedido,
   required int aniosOfrecidos,
   required int aniosPedidos,
+  bool yaTieneEquipo = false,
 }) {
   final exigencia = exigenciaDeProyecto(
     mediaDelEntrenador: mediaDelEntrenador,
     desarrolloDelEntrenador: desarrolloDelEntrenador,
+    yaTieneEquipo: yaTieneEquipo,
   );
   final ofrecido = mediaDelEquipo +
       tironDelRecord(victorias, derrotas) +

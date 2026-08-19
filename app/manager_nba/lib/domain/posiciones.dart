@@ -129,6 +129,22 @@ String etiquetaPosicion(Jugador jugador) => jugador.posicionSecundaria == null
 /// mejor (hace falta un ~11% más de media para compensar la penalización),
 /// así que ni se sienta talento ni se montan disparates tipo pívot de
 /// base.
+///
+/// Y se reparte **por niveles**: primero los cinco titulares y solo después
+/// los suplentes. Esto no es un detalle de implementación, es el arreglo de
+/// un bug que se veía en el juego. En una sola pasada el reparto llenaba
+/// los diez huecos en orden de valor sin distinguir titular de suplente, y
+/// pasaba esto:
+///
+///   base natural de 90 ....... se lleva el puesto de base titular
+///   base-escolta de 85 ....... su mejor pareja que queda es base SUPLENTE,
+///                              y como va antes en la lista, ahí cae
+///   escolta natural de 79 .... se queda de escolta TITULAR
+///
+/// O sea: un 79 de titular y un 85 de suplente, que es justo lo que se
+/// reportó. Repartiendo por niveles, el de 85 compite por el puesto de
+/// escolta titular (82,6 contra 80) y lo gana; el de 79 pasa a ser su
+/// suplente, que es donde le corresponde.
 Map<String, List<Jugador>> repartirPorPuestos(
   List<Jugador> plantilla, {
   int porPuesto = 2,
@@ -160,12 +176,16 @@ Map<String, List<Jugador>> repartirPorPuestos(
   });
 
   final usados = <int>{};
-  for (final pareja in parejas) {
-    if (usados.contains(pareja.jugador.id)) continue;
-    final hueco = porPuestoAsignado[pareja.puesto]!;
-    if (hueco.length >= porPuesto) continue;
-    hueco.add(pareja.jugador);
-    usados.add(pareja.jugador.id);
+  // Una pasada por nivel: en la primera solo se pueden ocupar los cinco
+  // puestos de titular, en la segunda los de suplente, y así.
+  for (var nivel = 1; nivel <= porPuesto; nivel++) {
+    for (final pareja in parejas) {
+      if (usados.contains(pareja.jugador.id)) continue;
+      final hueco = porPuestoAsignado[pareja.puesto]!;
+      if (hueco.length >= nivel) continue;
+      hueco.add(pareja.jugador);
+      usados.add(pareja.jugador.id);
+    }
   }
 
   return porPuestoAsignado;

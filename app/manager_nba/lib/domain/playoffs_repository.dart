@@ -199,10 +199,16 @@ Future<List<Serie>> seriesJugablesAhora(AppDatabase db) async {
 /// con este partido se llega a `victoriasNecesarias`, se marca ganador y
 /// se genera lo que toque a continuación (siguiente partido de play-in,
 /// siguiente ronda, o la final NBA).
+/// [semilla] hace el partido reproducible. Sin ella el resultado es
+/// distinto en cada ejecución, que es lo que se quiere jugando — pero no en
+/// un test: tres "tests inestables" distintos han salido de que los
+/// playoffs no se pudieran repetir. Quien quiera un resultado repetible que
+/// la pase.
 Future<Serie> simularPartidoDeSerie(
   AppDatabase db,
   int serieId, {
   String? equipoUsuario,
+  int? semilla,
 }) async {
   final serie =
       await (db.select(db.seriesPlayoffs)..where((t) => t.id.equals(serieId)))
@@ -236,6 +242,9 @@ Future<Serie> simularPartidoDeSerie(
   final boxscore = sim.simularPartido(
     local: aEsLocal ? equipoA : equipoB,
     visitante: aEsLocal ? equipoB : equipoA,
+    // Se mezcla con el número de partido para que los siete de una serie no
+    // salgan todos idénticos con la misma semilla.
+    seed: semilla == null ? null : semilla + serieId * 101 + numeroPartido,
   );
   final ganaA = aEsLocal
       ? boxscore.marcadorLocal > boxscore.marcadorVisitante
@@ -316,14 +325,19 @@ Future<void> simularRondaPlayoffsCompleta(AppDatabase db) async {
 
 /// Simula partidos hasta que TODO — play-in, playoffs y final NBA — tenga
 /// un ganador, es decir, hasta que se conozca el campeón de la temporada.
-Future<void> simularPlayoffsCompletos(AppDatabase db) async {
+/// Con [semilla] los playoffs enteros son reproducibles. Es lo que permite
+/// que un test que cierra varias temporadas dé siempre el mismo resultado.
+Future<void> simularPlayoffsCompletos(AppDatabase db, {int? semilla}) async {
+  var vuelta = 0;
   while (true) {
     // Ronda a ronda, respetando el orden: el play-in primero.
     final jugables = await seriesJugablesAhora(db);
     if (jugables.isEmpty) break;
     for (final serie in jugables) {
-      await simularPartidoDeSerie(db, serie.id);
+      await simularPartidoDeSerie(db, serie.id,
+          semilla: semilla == null ? null : semilla + vuelta * 7919);
     }
+    vuelta++;
   }
 }
 

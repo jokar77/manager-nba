@@ -2,22 +2,28 @@ import 'dart:async';
 
 import 'package:manager_nba/domain/slots_repository.dart';
 
-/// Red de seguridad para toda la suite: sustituye el almacén de ranuras
-/// (ficheros SQLite reales vía `path_provider`) por uno en memoria antes de
-/// que se ejecute ningún test de este directorio.
+/// Flutter llama a este fichero UNA vez por cada fichero de test, antes de
+/// ejecutarlo. Aquí se deja el almacén de partidas en memoria para todos.
 ///
-/// Hace falta porque el registro compartido de campeones
-/// (`campeones_repository.dart`) vive ahí, y se toca en cuanto se resuelve
-/// un campeón de la NBA o de la NBA Cup — algo a lo que puede llegar
-/// cualquier test que simule un tramo de temporada lo bastante largo, no
-/// solo los que prueban playoffs o el torneo directamente. Sin esto,
-/// `path_provider` revienta con un `MissingPluginException` fuera de una
-/// app real.
+/// Sin esto hay una carrera entre ficheros de test que costó tres
+/// "tests inestables" distintos antes de encontrarla:
 ///
-/// Los tests que necesitan aislar el palmarés entre sí (uno por caso, no
-/// compartido con el resto del archivo) siguen creando su propio
-/// `AlmacenDeSlotsEnMemoria` en su `setUp`, que sencillamente sustituye a
-/// este por la duración de ese test.
+/// `almacenDeSlots` vale por defecto [AlmacenDeSlotsEnDisco], que es lo
+/// correcto para la app. Pero cualquier test que llegue a `registrarCampeon`
+/// —o sea, cualquiera que simule unos playoffs— acaba llamando a
+/// `abrirAjustes()`, y eso abre el fichero SQLite de verdad
+/// (`manager_nba_ajustes.sqlite`). `flutter test` ejecuta varios ficheros de
+/// test A LA VEZ en procesos distintos, así que dos ficheros cualesquiera
+/// que simulen playoffs se ponían a escribir en el MISMO fichero al mismo
+/// tiempo.
+///
+/// De ahí el síntoma que despistaba: el test pasaba ocho de ocho veces
+/// ejecutado solo y caía en la tanda completa. No era aleatoriedad de la
+/// simulación —eso también existe, y está documentado aparte—: era una
+/// carrera por un fichero compartido.
+///
+/// Los ficheros que ya montan su propio [AlmacenDeSlotsEnMemoria] siguen
+/// funcionando igual: lo sustituyen después de esto.
 Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   almacenDeSlots = AlmacenDeSlotsEnMemoria();
   await testMain();

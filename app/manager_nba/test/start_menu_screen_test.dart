@@ -5,7 +5,6 @@ import 'package:manager_nba/data/importer/jugadores_importer.dart';
 import 'package:manager_nba/domain/franquicia_repository.dart';
 import 'package:manager_nba/domain/slots_repository.dart';
 import 'package:manager_nba/features/inicio/start_menu_screen.dart';
-import 'package:manager_nba/i18n/textos.dart';
 import 'package:manager_nba/main.dart' show routeObserver;
 
 void main() {
@@ -43,11 +42,7 @@ void main() {
 
     await tester.pumpWidget(MaterialApp(
       navigatorObservers: [routeObserver],
-      home: StartMenuScreen(
-        ajustesDb: abrirAjustes(),
-        temaNotifier: ValueNotifier(ThemeMode.system),
-        idiomaNotifier: ValueNotifier(Idioma.espanol),
-      ),
+      home: const StartMenuScreen(),
     ));
     await tester.pump();
     await tester.pump();

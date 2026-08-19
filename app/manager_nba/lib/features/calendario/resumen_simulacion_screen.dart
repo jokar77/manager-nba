@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../shared/icono_lesion.dart';
+
 import '../../data/database/app_database.dart';
 import '../../domain/calendario_repository.dart';
 import '../../shared/navegacion.dart';
@@ -115,21 +117,42 @@ class _ResumenSimulacionScreenState extends State<ResumenSimulacionScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Lesiones activas ahora mismo',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.error)),
+                        Row(
+                          children: [
+                            const IconoLesion(),
+                            const SizedBox(width: 8),
+                            Text('Lesiones activas ahora mismo',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .error)),
+                          ],
+                        ),
                         const SizedBox(height: 6),
                         ..._resultado.lesionesActivas.map((l) => Padding(
                               padding: const EdgeInsets.symmetric(vertical: 2),
-                              child: Text(
-                                '${l.nombreJugador}: ${l.motivo} '
-                                '(${l.partidosEstimados} partidos, vuelve el '
-                                '${_formatearFecha(l.vuelve)})',
-                                style: TextStyle(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Padding(
+                                    padding: EdgeInsets.only(top: 2),
+                                    child: IconoLesion(tamano: 14),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      '${l.nombreJugador}: ${l.motivo} '
+                                      '(${l.partidosEstimados} partidos, '
+                                      'vuelve el '
+                                      '${_formatearFecha(l.vuelve)})',
+                                      style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface),
+                                    ),
+                                  ),
+                                ],
                               ),
                             )),
                       ],

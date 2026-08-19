@@ -10,6 +10,7 @@ import 'package:manager_nba/domain/calendario_repository.dart';
 import 'package:manager_nba/domain/draft_repository.dart';
 import 'package:manager_nba/domain/equipos_especiales.dart';
 import 'package:manager_nba/domain/franquicia_repository.dart';
+import 'package:manager_nba/domain/salarios.dart';
 import 'package:manager_nba/domain/nueva_temporada_repository.dart';
 
 void main() {
@@ -286,5 +287,50 @@ void main() {
     expect(europa / total, inInclusiveRange(0.10, 0.40));
     expect(africa / total, inInclusiveRange(0.01, 0.15));
     expect(africa, lessThan(europa));
+  });
+
+
+  test('el sueldo de rookie va por el puesto del draft, no por su media '
+      'del dia 1', () {
+    // El bug tal y como se midio (lista parte 11, punto 20): un numero 1
+    // del draft cobraba una mediana de 3,2M, porque el sueldo salia de su
+    // media al draftear (72-76, tipico de un chaval de 19 anos) y no de
+    // donde fue elegido. El numero 1 real cobra ~12,5M.
+    expect(salarioDeRookiePrimeraRonda(0.0), 12500000,
+        reason: 'el numero 1 tiene que cobrar la escala completa');
+    expect(salarioDeRookiePrimeraRonda(1.0), salarioMinimo,
+        reason: 'el final de la ronda cobra el minimo');
+    // Concava: la caida es mas brusca al principio de la ronda que al
+    // final, como en la escala real.
+    final mitad = salarioDeRookiePrimeraRonda(0.5);
+    expect(mitad, greaterThan(salarioMinimo));
+    expect(mitad, lessThan(salarioDeRookiePrimeraRonda(0.0)));
+
+    final generados = generarClaseDeDraft(
+      anioDraft: 2027,
+      cantidad: 60,
+      nombresYaUsados: <String>{},
+      random: Random(11),
+    );
+    final numeroUno = generados.first.companion.salario.value;
+    expect(numeroUno, 12500000,
+        reason: 'el que sale del generador tiene que usar la misma escala');
+  });
+
+  test('el año 1 de un rookie de primera ronda cuesta más que el de '
+      'segunda, para la misma clase', () {
+    final generados = generarClaseDeDraft(
+      anioDraft: 2027,
+      cantidad: 60,
+      nombresYaUsados: <String>{},
+      random: Random(23),
+    );
+    final primeraRonda = generados.take(30).map((p) => p.companion.salario.value);
+    final segundaRonda = generados.skip(30).map((p) => p.companion.salario.value);
+    final mediaPrimera =
+        primeraRonda.reduce((a, b) => a + b) / primeraRonda.length;
+    final mediaSegunda =
+        segundaRonda.reduce((a, b) => a + b) / segundaRonda.length;
+    expect(mediaPrimera, greaterThan(mediaSegunda));
   });
 }

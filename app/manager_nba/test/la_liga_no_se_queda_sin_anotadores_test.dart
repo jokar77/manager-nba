@@ -26,7 +26,9 @@ Future<void> _cerrarDeGolpe(AppDatabase db, Random rng) async {
     ));
   }
   await sembrarPlayoffs(db);
-  await simularPlayoffsCompletos(db);
+  // Con semilla: si no, los playoffs salen distintos en cada ejecución
+  // y el test deja de ser repetible (ver playoffs_repository.dart).
+  await simularPlayoffsCompletos(db, semilla: rng.nextInt(1 << 30));
 }
 
 void main() {
@@ -109,14 +111,34 @@ void main() {
     final medias = enEquipos.map((j) => j.media).toList()
       ..sort((a, b) => b.compareTo(a));
 
-    // Sigue habiendo un anotador de referencia. Con el código viejo: 21,4.
-    expect(pts.first, greaterThan(26.0),
+    // OJO: este test PARECE determinista por el `Random(20260805)` de
+    // arriba, pero no lo es. `simularPlayoffsCompletos` llama a
+    // `simularPartido` SIN semilla (ver playoffs_repository.dart), así que
+    // cada ejecución juega unos playoffs distintos y quince veranos
+    // encadenados amplifican esa diferencia. La semilla solo controla los
+    // récords inventados y el verano.
+    //
+    // Por eso los listones van donde van. Medido sobre 8 ejecuciones:
+    //
+    //   mejor anotador ..... entre 26,4 y 28,9   (la regresión daba 21,4)
+    //   anotadores de 25+ .. entre 4 y 15        (la regresión daba 0)
+    //
+    // El listón anterior de "6 anotadores" caía DENTRO de ese rango sano y
+    // el test fallaba aproximadamente 1 de cada 8 veces sin que nada
+    // estuviera roto. Es el mismo error que ya se cometió en
+    // `realismo_estadisticas_test.dart`: poner el umbral dentro de la
+    // distribución normal en vez de en el hueco que hay entre lo sano y la
+    // regresión.
+    //
+    // Con 25,0 y 3 hay margen por los dos lados: lo peor que se ha medido
+    // sano (26,4 y 4) sigue pasando, y la regresión (21,4 y 0) sigue
+    // fallando.
+    expect(pts.first, greaterThan(25.0),
         reason: 'el mejor anotador de la liga promedia '
             '${pts.first.toStringAsFixed(1)} puntos tras 15 veranos');
 
-    // Y no es uno suelto: hay un grupo de anotadores. Antes: cero.
     final anotadores = pts.where((p) => p > 25).length;
-    expect(anotadores, greaterThanOrEqualTo(6),
+    expect(anotadores, greaterThanOrEqualTo(3),
         reason: 'solo $anotadores jugadores por encima de 25 puntos');
 
     // El otro lado: la curva y el estilo se multiplican, así que hay que

@@ -51,7 +51,9 @@ Future<void> _cerrarTemporada(AppDatabase db, Random rng) async {
   });
 
   await sembrarPlayoffs(db);
-  await simularPlayoffsCompletos(db);
+  // Con semilla: si no, los playoffs salen distintos en cada ejecución
+  // y el test deja de ser repetible (ver playoffs_repository.dart).
+  await simularPlayoffsCompletos(db, semilla: rng.nextInt(1 << 30));
 }
 
 void main() {

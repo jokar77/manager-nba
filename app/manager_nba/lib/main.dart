@@ -7,6 +7,7 @@ import 'domain/slots_repository.dart';
 import 'features/inicio/start_menu_screen.dart';
 import 'i18n/textos.dart';
 import 'shared/pantalla.dart';
+import 'shared/preferencias.dart';
 
 void main() {
   // Los ajustes son de la app y viven en su propio fichero; cada partida
@@ -32,30 +33,21 @@ class ManagerNbaApp extends StatefulWidget {
 }
 
 class _ManagerNbaAppState extends State<ManagerNbaApp> {
-  final _temaNotifier = ValueNotifier<ThemeMode>(ThemeMode.light);
-
-  /// El idioma vive aquí arriba, igual que el tema: cambiarlo tiene que
-  /// repintar la app entera al momento, no solo la pantalla de ajustes.
-  final _idiomaNotifier = ValueNotifier<Idioma>(Idioma.espanol);
-
-  @override
-  void dispose() {
-    _temaNotifier.dispose();
-    _idiomaNotifier.dispose();
-    super.dispose();
-  }
+  // El tema y el idioma son globales (ver shared/preferencias.dart): la
+  // pantalla de Ajustes se abre desde dos sitios y tiene que dar igual
+  // desde cuál. Aquí solo se escuchan para repintar la app entera.
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<Idioma>(
-      valueListenable: _idiomaNotifier,
+      valueListenable: idiomaNotifier,
       builder: (context, idioma, _) => _conTema(idioma),
     );
   }
 
   Widget _conTema(Idioma idioma) {
     return ValueListenableBuilder<ThemeMode>(
-      valueListenable: _temaNotifier,
+      valueListenable: temaNotifier,
       builder: (context, modo, _) {
         return MaterialApp(
           title: 'Manager NBA',
@@ -105,11 +97,7 @@ class _ManagerNbaAppState extends State<ManagerNbaApp> {
               child: conIdioma,
             );
           },
-          home: _ArranqueScreen(
-            ajustesDb: widget.ajustesDb,
-            temaNotifier: _temaNotifier,
-            idiomaNotifier: _idiomaNotifier,
-          ),
+          home: _ArranqueScreen(ajustesDb: widget.ajustesDb),
         );
       },
     );
@@ -122,14 +110,8 @@ class _ManagerNbaAppState extends State<ManagerNbaApp> {
 /// porque cada partida tiene su propia liga.
 class _ArranqueScreen extends StatefulWidget {
   final AppDatabase ajustesDb;
-  final ValueNotifier<ThemeMode> temaNotifier;
-  final ValueNotifier<Idioma> idiomaNotifier;
 
-  const _ArranqueScreen({
-    required this.ajustesDb,
-    required this.temaNotifier,
-    required this.idiomaNotifier,
-  });
+  const _ArranqueScreen({required this.ajustesDb});
 
   @override
   State<_ArranqueScreen> createState() => _ArranqueScreenState();
@@ -147,8 +129,8 @@ class _ArranqueScreenState extends State<_ArranqueScreen> {
   Future<void> _prepararArranque() async {
     await migrarPartidaSinSlots();
     final modoOscuro = await leerModoOscuro(widget.ajustesDb);
-    widget.temaNotifier.value = modoOscuro ? ThemeMode.dark : ThemeMode.light;
-    widget.idiomaNotifier.value = await leerIdioma(widget.ajustesDb);
+    temaNotifier.value = modoOscuro ? ThemeMode.dark : ThemeMode.light;
+    idiomaNotifier.value = await leerIdioma(widget.ajustesDb);
   }
 
   @override
@@ -167,11 +149,7 @@ class _ArranqueScreenState extends State<_ArranqueScreen> {
           );
         }
 
-        return StartMenuScreen(
-          ajustesDb: widget.ajustesDb,
-          temaNotifier: widget.temaNotifier,
-          idiomaNotifier: widget.idiomaNotifier,
-        );
+        return const StartMenuScreen();
       },
     );
   }

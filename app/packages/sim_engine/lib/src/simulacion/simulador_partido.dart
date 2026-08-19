@@ -279,7 +279,13 @@ List<EstadisticasJugador> _statsEquipo(
     final multiplicadorRol = jep.esEstrellaAtaque
         ? PesosAtributos.multiplicadorEstrellaIndividual
         : 1.0;
-    final ruido = 0.85 + random.nextDouble() * 0.3; // 0.85 - 1.15
+    // Gaussiano y no uniforme: las noches malas y las buenas de verdad son
+    // colas, no un rango plano. Ver PesosAtributos.sigmaRuidoAnotacion para
+    // los números medidos.
+    final ruido = max(
+      PesosAtributos.minRuidoAnotacion,
+      1 + _ruidoGaussiano(random) * PesosAtributos.sigmaRuidoAnotacion,
+    );
     final peso = max(
       priorPts *
           multiplicadorAtributo *

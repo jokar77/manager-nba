@@ -107,7 +107,7 @@ class PretemporadaScreen extends StatelessWidget {
             ),
           if (resumen.retiradosLiga.isNotEmpty)
             _Seccion(
-              titulo: 'Se retiran en el resto de la liga',
+              titulo: 'También se retiran',
               icono: Icons.exit_to_app,
               hijos: [
                 ListTile(

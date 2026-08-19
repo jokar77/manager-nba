@@ -855,7 +855,8 @@ class _ColumnaEquipo extends StatelessWidget {
                             style: const TextStyle(fontSize: 13)),
                         subtitle: Text(
                             '${etiquetaPosicion(j)} · ${j.media} · '
-                            '${formatearSalario(j.salario)}',
+                            '${formatearSalario(j.salario)} · '
+                            '${_aniosDeContrato(j)}',
                             style: const TextStyle(fontSize: 11)),
                         trailing: IconButton(
                           icon: const Icon(Icons.search, size: 18),
@@ -963,7 +964,8 @@ class _ColumnaEquipo extends StatelessWidget {
                   clave: 'j${j.id}',
                   titulo: j.nombreFicticio,
                   subtitulo: '${etiquetaPosicion(j)} · ${j.media} · '
-                      '${formatearSalario(j.salario)}',
+                      '${formatearSalario(j.salario)} · '
+                      '${_aniosDeContrato(j)}',
                   movimientos: movimientos,
                   variosDestinos: variosDestinos,
                   onAlternar: () => onAlternarJugador(j),
@@ -1162,3 +1164,11 @@ class _Fila extends StatelessWidget {
     );
   }
 }
+
+
+/// Los años que le quedan de contrato, para la línea de cada jugador.
+///
+/// El sueldo solo no basta para juzgar un traspaso: 40M con un año por
+/// delante y 40M con cinco son operaciones completamente distintas.
+String _aniosDeContrato(Jugador j) =>
+    j.aniosContrato <= 1 ? 'último año' : '${j.aniosContrato} años';

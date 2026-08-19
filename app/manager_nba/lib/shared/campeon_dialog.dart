@@ -28,6 +28,7 @@ Future<bool> mostrarCampeonDecidido(
   String? etiquetaAccionExtra,
   String? temporada,
   Widget? detalle,
+  bool daAnillo = true,
 }) async {
   if (esTuEquipo) {
     // En escritorio no hace nada; en un móvil, el anillo se nota.
@@ -43,6 +44,7 @@ Future<bool> mostrarCampeonDecidido(
       etiquetaAccionExtra: etiquetaAccionExtra,
       temporada: temporada,
       detalle: detalle,
+      daAnillo: daAnillo,
     ),
   );
   return resultado ?? false;
@@ -58,6 +60,11 @@ String tituloDeCampeon(String competicion, {String? temporada}) {
 class _DialogoCampeon extends StatelessWidget {
   final String competicion;
   final String campeon;
+
+  /// Si el título que se acaba de ganar es un anillo. La NBA Cup NO lo es,
+  /// y decirle a alguien que ha ganado el anillo cuando ha ganado la Cup
+  /// —en diciembre, con la temporada a medias— es sencillamente falso.
+  final bool daAnillo;
   final bool esTuEquipo;
   final String? etiquetaAccionExtra;
   final String? temporada;
@@ -67,6 +74,7 @@ class _DialogoCampeon extends StatelessWidget {
     required this.competicion,
     required this.campeon,
     required this.esTuEquipo,
+    required this.daAnillo,
     this.etiquetaAccionExtra,
     this.temporada,
     this.detalle,
@@ -146,11 +154,15 @@ class _DialogoCampeon extends StatelessWidget {
                                     fontWeight: FontWeight.bold)),
                             const SizedBox(height: 4),
                             Text(
-                              esTuEquipo
-                                  ? '¡Enhorabuena! Lo has conseguido: el anillo '
-                                      'es vuestro. La próxima temporada toca '
-                                      'defenderlo.'
-                                  : '$nombre se lleva el título.',
+                              !esTuEquipo
+                                  ? '$nombre se lleva el título.'
+                                  : daAnillo
+                                      ? '¡Enhorabuena! Lo has conseguido: el '
+                                          'anillo es vuestro. La próxima '
+                                          'temporada toca defenderlo.'
+                                      : '¡Enhorabuena! Habéis ganado la NBA '
+                                          'Cup. El anillo es otra historia: '
+                                          'la temporada sigue.',
                               style: TextStyle(
                                   color:
                                       Theme.of(context).colorScheme.onSurface),

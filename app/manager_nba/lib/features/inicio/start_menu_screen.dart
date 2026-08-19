@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../data/database/app_database.dart';
 import '../../data/importer/entrenadores_importer.dart';
 import '../../data/importer/jugadores_importer.dart';
 import '../../domain/entrenadores_repository.dart';
@@ -28,18 +27,7 @@ import '../../shared/navegacion.dart';
 /// Una ranura ocupada enseña equipo, temporada, récord y anillos, y desde
 /// ella se continúa o se borra. Una vacía solo ofrece empezar.
 class StartMenuScreen extends StatefulWidget {
-  /// La base de datos de ajustes (tema e idioma): es de la app, no de
-  /// ninguna partida, y sobrevive a borrar cualquier ranura.
-  final AppDatabase ajustesDb;
-  final ValueNotifier<ThemeMode> temaNotifier;
-  final ValueNotifier<Idioma> idiomaNotifier;
-
-  const StartMenuScreen({
-    super.key,
-    required this.ajustesDb,
-    required this.temaNotifier,
-    required this.idiomaNotifier,
-  });
+  const StartMenuScreen({super.key});
 
   @override
   State<StartMenuScreen> createState() => _StartMenuScreenState();
@@ -391,11 +379,7 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
         height: 52,
         child: OutlinedButton.icon(
           onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => AjustesScreen(
-              db: widget.ajustesDb,
-              temaNotifier: widget.temaNotifier,
-              idiomaNotifier: widget.idiomaNotifier,
-            ),
+            builder: (context) => const AjustesScreen(),
           )),
           icon: const Icon(Icons.settings),
           label: Text(t(context).ajustes, style: const TextStyle(fontSize: 16)),

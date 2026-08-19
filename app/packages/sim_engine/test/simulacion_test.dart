@@ -263,7 +263,18 @@ void main() {
       final rival = _equipoUniforme('Rival');
       final local = _equipoUniforme('Local', idEstrellaAtaque: 'Local-0');
 
-      const nMuestras = 80;
+      // Ochocientos partidos y no ochenta, que es con los que empezó esto.
+      // Al ensanchar la variación de anotación entre partidos
+      // (`sigmaRuidoAnotacion`, ~7,5 puntos de desviación como en la NBA
+      // real), ochenta muestras dejaron de bastar para que la ventaja de la
+      // estrella asomara por encima del ruido: salió 22,63 contra 22,70 y
+      // el test cayó sin que nada estuviera roto.
+      //
+      // La cuenta: con una desviación de ~7,5 puntos, el error típico de la
+      // media con n muestras es 7,5/raíz(n). Con 80 son 0,84 puntos, del
+      // tamaño del efecto que se quiere medir; con 800 son 0,27, así que la
+      // ventaja se ve holgada.
+      const nMuestras = 800;
       var totalEstrella = 0.0;
       var totalCompanero = 0.0;
       for (var seed = 0; seed < nMuestras; seed++) {
@@ -277,7 +288,11 @@ void main() {
             .puntos;
       }
 
-      expect(totalEstrella / nMuestras, greaterThan(totalCompanero / nMuestras));
+      final estrella = totalEstrella / nMuestras;
+      final companero = totalCompanero / nMuestras;
+      expect(estrella, greaterThan(companero),
+          reason: 'la estrella promedia ${estrella.toStringAsFixed(2)} y su '
+              'compañero ${companero.toStringAsFixed(2)}');
     });
 
     test('un jugador que no juega (0 minutos) no aparece en el boxscore', () {

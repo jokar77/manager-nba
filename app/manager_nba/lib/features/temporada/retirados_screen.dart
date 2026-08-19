@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show BooleanExpressionOperators;
 import 'package:flutter/material.dart';
 
 import '../../data/database/app_database.dart';
@@ -58,8 +59,18 @@ class _RetiradosScreenState extends State<RetiradosScreen> {
       setState(() => _cargando = false);
       return;
     }
+    // OJO al filtro por equipo, que faltaba y era el bug: sin él, un
+    // jugador al que otra franquicia ya le había retirado la camiseta
+    // —cosa que pasa sola con las leyendas reales, que cuelgan del techo
+    // donde hicieron historia— contaba como "ya retirada" también aquí, y
+    // la opción de retirársela en TU equipo no aparecía nunca.
+    //
+    // Son cosas distintas: que a alguien le retiren la camiseta en Nueva
+    // Orleans no quita que se la merezca también en el tuyo.
     final ya = await (widget.db.select(widget.db.camisetasRetiradas)
-          ..where((t) => t.jugadorId.isIn(propios)))
+          ..where((t) =>
+              t.jugadorId.isIn(propios) &
+              t.equipo.equals(widget.equipoUsuario)))
         .get();
     if (!mounted) return;
     setState(() {

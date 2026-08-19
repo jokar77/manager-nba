@@ -52,3 +52,24 @@ Future<Set<String>> equiposConTituloDelUsuario(String tipo) async {
       .get();
   return filas.map((c) => c.equipo).toSet();
 }
+
+/// Los títulos que [equipo] ha ganado EN ESTA PARTIDA: anillos de la NBA y
+/// NBA Cups.
+///
+/// Ojo, no es lo mismo que [equiposConTituloDelUsuario]: aquella pregunta
+/// "¿has ganado esto alguna vez, en cualquier ranura?" y sirve para los
+/// trofeos del selector de equipos. Esta pregunta "¿qué lleva ganado esta
+/// franquicia en esta carrera?", que es lo que tiene sentido enseñar en la
+/// cabecera mientras juegas.
+Future<({int anillos, int copas})> titulosEnLaPartida(
+  AppDatabase db,
+  String equipo,
+) async {
+  final filas = await (db.select(db.historialCampeones)
+        ..where((t) => t.equipo.equals(equipo)))
+      .get();
+  return (
+    anillos: filas.where((c) => c.tipo == 'nba').length,
+    copas: filas.where((c) => c.tipo == 'ist').length,
+  );
+}

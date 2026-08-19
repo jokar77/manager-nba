@@ -146,6 +146,27 @@ class PesosAtributos {
   /// se llega a la primera.
   static const double sigmaRuidoProrroga = 4.5;
 
+  /// Cuánto varía de un partido a otro lo que anota un jugador, como
+  /// desviación típica sobre su reparto normal.
+  ///
+  /// Es lo que hace que un anotador de 30 haga 38 un día y 21 al siguiente,
+  /// que es como se comporta la NBA de verdad. Medido con 2.000 partidos de
+  /// un anotador de 32 puntos de media:
+  ///
+  ///   ruido uniforme de +-15% (lo que había) ... desviación 4,0
+  ///   este ruido gaussiano ..................... desviación ~7,5
+  ///   la NBA real .............................. 7-8
+  ///
+  /// Con el ruido viejo, de esos 2.000 partidos solo UNO bajaba de 20
+  /// puntos. Una estrella que nunca tiene una mala noche no se parece a un
+  /// jugador de baloncesto, se parece a una media.
+  static const double sigmaRuidoAnotacion = 0.27;
+
+  /// Suelo del multiplicador de ruido. Sin él, la cola izquierda de la
+  /// campana puede dar un peso negativo y romper el reparto; y además un
+  /// jugador siempre anota algo.
+  static const double minRuidoAnotacion = 0.15;
+
   static const int marcadorProrrogaMinimo = 2;
   static const int marcadorProrrogaMaximo = 30;
 }

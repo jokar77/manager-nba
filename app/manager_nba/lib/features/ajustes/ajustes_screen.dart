@@ -2,27 +2,30 @@ import 'package:flutter/material.dart';
 
 import '../../data/database/app_database.dart';
 import '../../domain/ajustes_repository.dart';
+import '../../domain/slots_repository.dart';
 import '../../i18n/textos.dart';
+import '../../shared/preferencias.dart';
 
-/// Ajustes: modo claro/oscuro e idioma. Los dos se guardan en la base de
-/// ajustes de la app (no en la de cada partida) y se aplican al momento.
+/// Ajustes: modo claro/oscuro e idioma.
+///
+/// No recibe ni la base de datos ni los notificadores a propósito. Los coge
+/// siempre de donde tiene que cogerlos —[abrirAjustes], que es la base de la
+/// APP y no la de la partida, y los notificadores globales de
+/// `shared/preferencias.dart`—, así que da igual desde dónde se abra: desde
+/// el menú de inicio o desde dentro de una partida se comporta igual.
+///
+/// Antes se le pasaba todo por el constructor y desde el menú de la partida
+/// se le pasaba la base equivocada y ningún notificador: cambiar el idioma
+/// ahí dentro no hacía nada de nada.
 class AjustesScreen extends StatefulWidget {
-  final AppDatabase db;
-  final ValueNotifier<ThemeMode>? temaNotifier;
-  final ValueNotifier<Idioma>? idiomaNotifier;
-
-  const AjustesScreen({
-    super.key,
-    required this.db,
-    this.temaNotifier,
-    this.idiomaNotifier,
-  });
+  const AjustesScreen({super.key});
 
   @override
   State<AjustesScreen> createState() => _AjustesScreenState();
 }
 
 class _AjustesScreenState extends State<AjustesScreen> {
+  late final AppDatabase _db = abrirAjustes();
   bool _modoOscuro = false;
   Idioma _idioma = Idioma.espanol;
   bool _cargando = true;
@@ -34,8 +37,8 @@ class _AjustesScreenState extends State<AjustesScreen> {
   }
 
   Future<void> _cargar() async {
-    final activo = await leerModoOscuro(widget.db);
-    final idioma = await leerIdioma(widget.db);
+    final activo = await leerModoOscuro(_db);
+    final idioma = await leerIdioma(_db);
     if (!mounted) return;
     setState(() {
       _modoOscuro = activo;
@@ -46,16 +49,16 @@ class _AjustesScreenState extends State<AjustesScreen> {
 
   Future<void> _cambiarModoOscuro(bool activo) async {
     setState(() => _modoOscuro = activo);
-    await guardarModoOscuro(widget.db, activo);
-    widget.temaNotifier?.value = activo ? ThemeMode.dark : ThemeMode.light;
+    await guardarModoOscuro(_db, activo);
+    temaNotifier.value = activo ? ThemeMode.dark : ThemeMode.light;
   }
 
   Future<void> _cambiarIdioma(Idioma idioma) async {
     setState(() => _idioma = idioma);
-    await guardarIdioma(widget.db, idioma);
-    // Esto repinta la app entera, no solo esta pantalla: el idioma vive en
-    // el notificador de main.dart, por encima de todas las rutas.
-    widget.idiomaNotifier?.value = idioma;
+    await guardarIdioma(_db, idioma);
+    // Esto repinta la app entera, no solo esta pantalla: el idioma cuelga
+    // por encima de todas las rutas, en el `MaterialApp` de `main.dart`.
+    idiomaNotifier.value = idioma;
   }
 
   @override

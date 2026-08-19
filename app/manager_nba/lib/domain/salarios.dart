@@ -57,6 +57,29 @@ int salarioEstimado({required int media, required int edad}) {
   return (bruto * factorEdad).round().clamp(salarioMinimo, salarioMaximo);
 }
 
+/// El sueldo de un rookie de primera ronda, POR PUESTO DEL DRAFT, como en
+/// la escala real de la NBA — no por la media que trae el día 1.
+///
+/// [posicionRelativa] es 0,0 para el número 1 y 1,0 para el último de la
+/// ronda. Sin esta función, `salarioEstimado` se aplicaba con la media de
+/// draft (típicamente 72-76 incluso para el número 1, porque un prospecto
+/// de 19 años nunca trae una media alta), y con el descuento por edad
+/// (factor 0,45 bajo 22 años) el número 1 del draft acababa cobrando una
+/// MEDIANA de 3,2M — el sueldo real del número 1 de verdad ronda los
+/// 12,5M. Medido sobre 300 clases: con la fórmula vieja, un equipo con
+/// varios rookies de primera ronda que despegan se quedaba con decenas de
+/// millones de tope sin gastar solo porque a sus futuras estrellas se les
+/// pagaba como a jugadores de banquillo.
+///
+/// La curva: 12,5M en el número 1, bajando hasta el mínimo hacia el final
+/// de la ronda — la misma forma cóncava que la escala real.
+int salarioDeRookiePrimeraRonda(double posicionRelativa) {
+  const techo = 12500000;
+  final bruto = salarioMinimo +
+      (techo - salarioMinimo) * pow(1 - posicionRelativa, 1.7);
+  return (bruto.round() ~/ 100000) * 100000;
+}
+
 /// Años de contrato estimados cuando no se conocen: los jóvenes con
 /// proyección firman largo, los veteranos año a año.
 int aniosContratoEstimados({required int edad}) {

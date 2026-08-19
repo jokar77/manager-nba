@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../data/database/app_database.dart';
+import '../../domain/campeones_repository.dart';
 import '../../domain/conferencias.dart';
 import '../../domain/contratos_repository.dart';
 import '../../domain/entrenadores_repository.dart';
@@ -50,6 +51,10 @@ class _EstadoDelHub {
   final bool copaSembrada;
   final int ofertas;
   final int temporada;
+
+  /// El año de verdad de esta temporada ("2030-31"). "Temporada 5" no le
+  /// dice nada a nadie: lo que sitúa una carrera es el año.
+  final String anioTemporada;
   final int victorias;
   final int derrotas;
   final int masaSalarial;
@@ -58,6 +63,12 @@ class _EstadoDelHub {
   /// mira un mánager al abrir el juego: si estás dentro de playoffs o no.
   final int puestoConferencia;
   final String conferencia;
+
+  /// Lo que lleva ganado tu franquicia EN ESTA CARRERA. Un palmarés que
+  /// no se ve no motiva a nadie: si has ganado dos anillos, eso tiene que
+  /// estar en la cabecera del equipo, no escondido en Legado.
+  final int anillos;
+  final int copas;
 
   /// Quién ocupa tu banquillo, y su media. Null si está vacante.
   final String? entrenador;
@@ -68,11 +79,14 @@ class _EstadoDelHub {
     required this.copaSembrada,
     required this.ofertas,
     required this.temporada,
+    required this.anioTemporada,
     required this.victorias,
     required this.derrotas,
     required this.masaSalarial,
     required this.puestoConferencia,
     required this.conferencia,
+    this.anillos = 0,
+    this.copas = 0,
     this.entrenador,
     this.mediaEntrenador = 0,
   });
@@ -82,6 +96,7 @@ class _EstadoDelHub {
     copaSembrada: false,
     ofertas: 0,
     temporada: 1,
+    anioTemporada: '',
     victorias: 0,
     derrotas: 0,
     masaSalarial: 0,
@@ -100,6 +115,7 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
     final copaSembrada = (await leerSeriesTorneo(widget.db)).isNotEmpty;
     final ofertas = (await ofertasPendientes(widget.db, widget.equipo)).length;
     final temporada = await leerTemporada(widget.db);
+    final titulos = await titulosEnLaPartida(widget.db, widget.equipo);
     final record = await (widget.db.select(widget.db.resultadoTemporada)
           ..where((t) => t.equipo.equals(widget.equipo)))
         .getSingleOrNull();
@@ -128,6 +144,9 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
     final entrenador = await leerEntrenadorDe(widget.db, widget.equipo);
 
     return _EstadoDelHub(
+      anioTemporada: etiquetaDeTemporada(temporada.anioInicio),
+      anillos: titulos.anillos,
+      copas: titulos.copas,
       temporadaCompleta: completa,
       copaSembrada: copaSembrada,
       ofertas: ofertas,
@@ -204,7 +223,7 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
                     tooltip: textos.ajustes,
                     onPressed: () =>
                         Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => AjustesScreen(db: db),
+                      builder: (context) => const AjustesScreen(),
                     )),
                   ),
                 ],
@@ -440,11 +459,22 @@ class _CabeceraEquipo extends StatelessWidget {
                                 color: secundario,
                                 fontSize: 13,
                                 letterSpacing: 0.3)),
-                        Text('${t(context).temporada} ${estado.temporada}',
+                        Text(
+                            estado.anioTemporada.isEmpty
+                                ? '${t(context).temporada} ${estado.temporada}'
+                                : '${estado.anioTemporada}  ·  '
+                                    '${t(context).temporada} '
+                                    '${estado.temporada}',
                             style: TextStyle(
                                 color: sobre,
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600)),
+                        if (estado.anillos > 0 || estado.copas > 0)
+                          _Palmares(
+                            anillos: estado.anillos,
+                            copas: estado.copas,
+                            color: sobre,
+                          ),
                       ],
                     ),
                   ),
@@ -677,6 +707,56 @@ class _AccesoMenu extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+
+/// Los títulos de tu franquicia en la cabecera: anillos y NBA Cups.
+///
+/// Iconos distintos y no dos trofeos iguales, que es lo que se hizo ya en
+/// el selector de equipos: el anillo lleva copa dorada y la Cup una medalla
+/// en otro tono. No son los trofeos reales —esos no se pueden usar— pero se
+/// distinguen de un vistazo.
+class _Palmares extends StatelessWidget {
+  final int anillos;
+  final int copas;
+  final Color color;
+
+  const _Palmares({
+    required this.anillos,
+    required this.copas,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 3),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (anillos > 0) ...[
+            const Icon(Icons.emoji_events, size: 15, color: Color(0xFFFFC94D)),
+            const SizedBox(width: 3),
+            Text(
+              anillos == 1 ? '1 anillo' : '$anillos anillos',
+              style: TextStyle(
+                  color: color, fontSize: 12, fontWeight: FontWeight.w600),
+            ),
+          ],
+          if (anillos > 0 && copas > 0) const SizedBox(width: 10),
+          if (copas > 0) ...[
+            const Icon(Icons.military_tech, size: 15, color: Color(0xFFB9C6D6)),
+            const SizedBox(width: 3),
+            Text(
+              copas == 1 ? '1 NBA Cup' : '$copas NBA Cups',
+              style: TextStyle(
+                  color: color, fontSize: 12, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ],
       ),
     );
   }

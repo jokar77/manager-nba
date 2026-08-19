@@ -10,7 +10,9 @@ import '../../domain/tipo_evento_temporada.dart';
 import '../../domain/tipo_premio.dart';
 import '../../shared/campeon_dialog.dart';
 import '../allstar/allstar_screen.dart';
+import '../../domain/entrenadores_repository.dart';
 import '../mercado/agencia_libre_screen.dart';
+import '../mercado/entrenador_screen.dart';
 import '../mercado/ofertas_screen.dart';
 import '../mercado/traspasos_screen.dart';
 import '../partido/serie_boxscores_screen.dart';
@@ -58,6 +60,40 @@ DateTime fechaActualDeLaTemporada(List<PartidosCalendarioData> partidos) {
   return jugados.map((p) => p.fecha).reduce((a, b) => a.isAfter(b) ? a : b);
 }
 
+/// ¿Ha llegado ya la fecha del All-Star, mirando hasta [hasta]?
+///
+/// Suelto y público para poder probarlo: es donde estaba el bug, y montar
+/// un diálogo entero para comprobar una comparación de fechas no compensa.
+bool allStarYaAlcanzado(
+  List<EventosTemporadaData> eventosAllStar,
+  DateTime hasta,
+) =>
+    eventosAllStar.any((e) => !e.fecha.isAfter(hasta));
+
+/// Si el banquillo está vacío, lleva a la pantalla de entrenadores y no
+/// deja seguir hasta que haya alguien. Devuelve si se puede jugar.
+///
+/// Está aquí y no en el Calendario porque hay dos caminos que simulan
+/// (`CalendarioScreen` y `ResumenSimulacionScreen`) y el aviso tiene que
+/// salir en los dos.
+Future<bool> _asegurarQueHayEntrenador(
+  BuildContext context,
+  AppDatabase db,
+  String equipoUsuario,
+) async {
+  if (await leerEntrenadorDe(db, equipoUsuario) != null) return true;
+  if (!context.mounted) return false;
+  await Navigator.of(context).push(MaterialPageRoute<void>(
+    builder: (context) => EntrenadorScreen(
+      db: db,
+      equipoUsuario: equipoUsuario,
+      onContinuar: () => Navigator.of(context).pop(),
+    ),
+  ));
+  if (!context.mounted) return false;
+  return await leerEntrenadorDe(db, equipoUsuario) != null;
+}
+
 /// Simula hasta [diaObjetivo] (pausando en fechas límite sin resolver, con
 /// opción de ir a Traspasos) y arma un resumen listo para pintar. Lo usan
 /// tanto `CalendarioScreen` como `ResumenSimulacionScreen`, para no
@@ -68,6 +104,18 @@ Future<ResultadoLoteSimulado> simularHastaConDialogo(
   String equipoUsuario,
   DateTime diaObjetivo,
 ) async {
+  // Nada de simular con el banquillo vacío. Si acabas de despedir a tu
+  // entrenador, aquí se te manda a buscar uno antes de seguir: es el mismo
+  // listón que la plantilla mínima, y va a la agencia DE ENTRENADORES, no
+  // a la de jugadores.
+  if (!await _asegurarQueHayEntrenador(context, db, equipoUsuario)) {
+    return const ResultadoLoteSimulado(
+      partidos: [],
+      lesionesActivas: [],
+      temporadaTerminada: false,
+    );
+  }
+
   final acumulados = <PartidoSimuladoInfo>[];
   final lesionesAcumuladas = <NuevaLesion>[];
   var temporadaTerminada = false;
@@ -125,9 +173,12 @@ Future<ResultadoLoteSimulado> simularHastaConDialogo(
     // se miraba al final del lote entero, así que simulando "hasta el final
     // de la temporada" el All-Star de febrero te saltaba en abril, pegado a
     // los premios y sin nada que ver ya.
+    //
+    // Se le pasa la META de la etapa y NO los partidos que se han jugado en
+    // ella. Ver el porqué en _avisarSiHuboAllStar: mirar los partidos era
+    // justamente lo que hacía que el aviso no saliera nunca.
     if (context.mounted && !allStarYaAvisado) {
-      allStarYaAvisado =
-          await _avisarSiHuboAllStar(context, db, tramo.simulados);
+      allStarYaAvisado = await _avisarSiHuboAllStar(context, db, metaParcial);
     }
 
     if (tramo.simulados.isNotEmpty) {
@@ -326,17 +377,33 @@ Future<bool?> _mostrarDialogoDeadline(
 Future<bool> _avisarSiHuboAllStar(
   BuildContext context,
   AppDatabase db,
-  List<PartidoSimuladoInfo> simulados,
+  DateTime hasta,
 ) async {
-  if (simulados.isEmpty) return false;
-  final desde = simulados.map((p) => p.fecha).reduce((a, b) => a.isBefore(b) ? a : b);
-  final hasta = simulados.map((p) => p.fecha).reduce((a, b) => a.isAfter(b) ? a : b);
   final eventos = await leerEventos(db);
-  final huboAllStar = eventos.any((e) =>
-      e.tipo == TipoEventoTemporada.allStar.name &&
-      !e.fecha.isBefore(desde) &&
-      !e.fecha.isAfter(hasta));
-  if (!huboAllStar) return false;
+  final allStar = eventos
+      .where((e) => e.tipo == TipoEventoTemporada.allStar.name)
+      .toList();
+  if (allStar.isEmpty) return false;
+
+  // ¿Ha llegado ya su fecha? Y ojo con cómo se pregunta esto.
+  //
+  // Antes se miraba si la fecha del All-Star caía entre el primer y el
+  // último partido JUGADO en esta etapa, y por eso el aviso dejó de salir:
+  // el All-Star es precisamente el fin de semana en el que NO se juega.
+  // Desde que la simulación avanza por etapas de siete días, el parón cae
+  // entero en el hueco entre los partidos de una etapa y los de la
+  // siguiente, así que no quedaba dentro del rango de ninguna de las dos y
+  // no lo detectaba nadie. Y si una etapa caía toda dentro del parón, la
+  // lista de partidos venía vacía y se salía por la primera línea.
+  //
+  // Ahora se compara con la META de la etapa, que avanza aunque no se
+  // juegue nada.
+  if (!allStarYaAlcanzado(allStar, hasta)) return false;
+
+  // Ya jugado = ya se avisó en otra tanda (o la partida viene de antes de
+  // este arreglo). Se devuelve true para no volver a mirarlo, pero sin
+  // sacar un aviso de algo que el usuario ya vio.
+  if (await leerBoxscoreAllStar(db) != null) return true;
 
   // El fin de semana entero: primero los jóvenes, luego las estrellas.
   await jugarRisingStarsSiHaceFalta(db);
@@ -387,29 +454,21 @@ Future<bool> _avisarSiHuboAllStar(
 
 /// Has llegado a la Final de la NBA Cup: se te programa como un día más de
 /// tu calendario, así que no hay que ir a ningún menú aparte.
+///
+/// Va en una barra abajo y no en un diálogo a propósito: es una FECHA que
+/// apuntar, no una decisión. Un diálogo a pantalla completa que hay que
+/// cerrar a mano para enterarte de que tienes un partido el día 14 corta la
+/// simulación por nada — el aviso gordo se guarda para el campeón, que sí
+/// es un acontecimiento.
 Future<void> _avisarFinalDeCopaProgramada(
   BuildContext context,
   DateTime fecha,
-) {
-  return showDialog<void>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('¡A la Final de la NBA Cup!'),
-      content: Text(
-        'Los cuartos y la semifinal ya se han jugado (cuentan para tu '
-        'récord, como cualquier otro partido) y has llegado a la Final. '
-        'La tienes marcada en el calendario el ${_fechaCorta(fecha)}: '
-        'simula hasta ese día para jugarla. Es un partido extra, no suma '
-        'ni victoria ni derrota a tu temporada.',
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Vale'),
-        ),
-      ],
-    ),
-  );
+) async {
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    duration: const Duration(seconds: 6),
+    content: Text('¡A la Final de la NBA Cup! La juegas el '
+        '${_fechaCorta(fecha)}: simula hasta ese día.'),
+  ));
 }
 
 /// Ya hay campeón de la NBA Cup (lo hayas ganado tú o no): se anuncia y se
@@ -427,6 +486,8 @@ Future<void> _avisarCampeonDeCopa(
     context,
     'la NBA Cup',
     campeon,
+    // La Cup no da anillo: es un título de diciembre.
+    daAnillo: false,
     esTuEquipo: campeon == equipoUsuario,
     temporada: etiquetaDeTemporada(temporada.anioInicio),
     etiquetaAccionExtra: serieId == null ? null : 'Ver estadísticas',

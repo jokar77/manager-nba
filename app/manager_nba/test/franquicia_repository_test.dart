@@ -211,6 +211,77 @@ void main() {
         reason: 'el de 71 es justo el que sobra');
   });
 
+  test('un base-escolta de 85 sale de TITULAR aunque ya haya un base mejor: '
+      'no se queda de suplente detrás de un escolta de 79', () async {
+    // El caso tal y como lo contó el usuario (lista parte 11, punto 5).
+    //
+    // El reparto llenaba los diez huecos —titulares y suplentes— en una
+    // sola pasada, en orden de valor. Con un base de 90 ya colocado, la
+    // siguiente mejor pareja del base-escolta de 85 era "base SUPLENTE"
+    // (86,0) y ahí caía, antes de que a nadie le llegara el turno del
+    // puesto de escolta titular. Resultado: el 79 de titular y el 85 de
+    // suplente.
+    final reales = await plantillaDe('DEN');
+    Jugador conFicha(int i, int media, String posicion, String? secundaria) =>
+        reales[i].copyWith(
+            media: media,
+            posicion: posicion,
+            posicionSecundaria: Value(secundaria));
+
+    final baseTitular = conFicha(0, 90, 'PG', 'SG');
+    final baseEscolta = conFicha(1, 85, 'PG', 'SG');
+    final escoltaFlojo = conFicha(2, 79, 'SG', 'SF');
+    final plantilla = [
+      baseTitular,
+      baseEscolta,
+      escoltaFlojo,
+      conFicha(3, 70, 'SG', 'PG'),
+      conFicha(4, 78, 'SF', 'PF'),
+      conFicha(5, 74, 'SF', 'SG'),
+      conFicha(6, 77, 'PF', 'C'),
+      conFicha(7, 73, 'PF', 'SF'),
+      conFicha(8, 76, 'C', 'PF'),
+      conFicha(9, 72, 'C', 'PF'),
+    ];
+
+    final reparto = repartirPorPuestos(plantilla);
+
+    expect(reparto['PG']![0].id, baseTitular.id);
+    expect(reparto['SG']![0].id, baseEscolta.id,
+        reason: 'el de 85 juega cómodo de escolta y es mejor que el de 79: '
+            'le corresponde el puesto de titular');
+    expect(reparto['SG']![1].id, escoltaFlojo.id,
+        reason: 'el de 79 es su suplente, no su titular');
+    expect(reparto['PG']![1].id, isNot(baseEscolta.id),
+        reason: 'un 85 no puede acabar de suplente mientras un 79 es titular');
+  });
+
+  test('los cinco titulares son siempre los cinco que más rinden: ningún '
+      'suplente rinde más que el titular de otro puesto', () async {
+    // La versión general del bug anterior, sobre la plantilla de verdad.
+    for (final equipo in ['DEN', 'BOS', 'OKC', 'SAS']) {
+      final plantilla = await plantillaDe(equipo);
+      final reparto = repartirPorPuestos(plantilla);
+
+      double rinde(Jugador j, String puesto) =>
+          j.media * factorDePuesto(j, puesto);
+
+      for (final puesto in posicionesEquipo) {
+        final suplente = reparto[puesto]![1];
+        // Un suplente solo puede rendir más que un titular de OTRO puesto
+        // si moverlo allí le costaría la penalización — o sea, si donde
+        // rinde de verdad es justo en el puesto que ya ocupa su titular.
+        for (final otro in posicionesEquipo) {
+          if (otro == puesto) continue;
+          final titular = reparto[otro]![0];
+          expect(rinde(suplente, otro), lessThanOrEqualTo(rinde(titular, otro)),
+              reason: '$equipo: ${suplente.nombreFicticio} rendiría más de '
+                  '$otro que ${titular.nombreFicticio}, que es el titular');
+        }
+      }
+    }
+  });
+
   test('un natural conserva su puesto frente a alguien de fuera solo algo '
       'mejor, pero no frente a uno mucho mejor', () async {
     final plantilla = await plantillaDe('DEN');

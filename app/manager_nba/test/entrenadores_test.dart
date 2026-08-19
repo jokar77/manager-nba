@@ -188,33 +188,44 @@ void main() {
 
   test('un formador de jóvenes hace crecer más a un chaval que uno malo',
       () async {
-    // Se mide sobre la MISMA semilla y el mismo jugador: lo único que
-    // cambia entre las dos pasadas es el entrenador.
-    Future<int> mediaTrasUnVerano(int desarrollo) async {
-      final db = AppDatabase.forTesting(NativeDatabase.memory());
-      final id = await db.into(db.jugadores).insert(JugadoresCompanion.insert(
-            nombreFicticio: 'Proyecto',
-            nombreReal: '',
-            posicion: 'SF',
-            equipo: 'UTA',
-            edad: 20,
-            media: 65,
-            potencial: 90,
-            atrTiro3: 65,
-            atrAtaque: 65,
-            atrDefensa: 65,
-            ptsPg: 8,
-            astPg: 2,
-            trbPg: 4,
-            factorLongevidad: 1.0,
-            edadRetiro: 38,
-          ));
-      await envejecerLiga(db,
-          random: Random(7), desarrolloPorEquipo: {'UTA': desarrollo});
-      final tras = await (db.select(db.jugadores)..where((t) => t.id.equals(id)))
-          .getSingle();
-      await db.close();
-      return tras.media;
+    // Sobre VARIAS semillas y promediando, no una sola: desde que el
+    // desarrollo puede estancarse un verano entero (ver
+    // `probabilidadDeEstancarse` en progresion_repository.dart), una
+    // semilla suelta puede caer justo en ese estanco y comparar 65 contra
+    // 65 no dice nada del entrenador. Con el promedio de varias semillas
+    // el estanco se diluye y lo que queda es el efecto real.
+    Future<double> mediaTrasUnVerano(int desarrollo) async {
+      var suma = 0;
+      const semillas = 20;
+      for (var semilla = 0; semilla < semillas; semilla++) {
+        final db = AppDatabase.forTesting(NativeDatabase.memory());
+        final id = await db.into(db.jugadores).insert(JugadoresCompanion.insert(
+              nombreFicticio: 'Proyecto',
+              nombreReal: '',
+              posicion: 'SF',
+              equipo: 'UTA',
+              edad: 20,
+              media: 65,
+              potencial: 90,
+              atrTiro3: 65,
+              atrAtaque: 65,
+              atrDefensa: 65,
+              ptsPg: 8,
+              astPg: 2,
+              trbPg: 4,
+              factorLongevidad: 1.0,
+              edadRetiro: 38,
+            ));
+        await envejecerLiga(db,
+            random: Random(semilla),
+            desarrolloPorEquipo: {'UTA': desarrollo});
+        final tras =
+            await (db.select(db.jugadores)..where((t) => t.id.equals(id)))
+                .getSingle();
+        suma += tras.media;
+        await db.close();
+      }
+      return suma / semillas;
     }
 
     final conElMejor = await mediaTrasUnVerano(93);
@@ -627,6 +638,175 @@ void main() {
       expect(await leerEntrenadorDe(db, equipo), isNotNull,
           reason: '$equipo se ha quedado sin banquillo');
     }
+
+    await db.close();
+  });
+  // -------------------------------------------------------------------------
+  // Fichar a un entrenador que ya tiene equipo (lista parte 11, punto 3)
+  // -------------------------------------------------------------------------
+
+  test('el mercado incluye a los que dirigen a otro equipo, pero no al tuyo '
+      'ni a los retirados', () async {
+    final db = await _ligaConEntrenadores('DEN');
+
+    final fichables = await leerEntrenadoresFichablesPor(db, 'DEN');
+    final equipos = fichables.map((e) => e.equipo).toSet();
+
+    expect(equipos.contains('DEN'), isFalse,
+        reason: 'no tiene sentido ficharte a tu propio entrenador');
+    expect(equipos.contains(equipoAgenciaLibre), isTrue);
+    expect(equipos.where(esFranquicia).length, 29,
+        reason: 'los otros 29 banquillos deben poder tantearse');
+    expect(fichables.where((e) => e.equipo == equipoRetirados), isEmpty);
+
+    // Y los libres van primero: son la opción normal, no la excepcional.
+    final primerConEquipo = fichables.indexWhere((e) => esFranquicia(e.equipo));
+    final ultimoLibre =
+        fichables.lastIndexWhere((e) => e.equipo == equipoAgenciaLibre);
+    expect(ultimoLibre, lessThan(primerConEquipo));
+
+    await db.close();
+  });
+
+  test('robarle el entrenador a otro equipo cuesta más de convencer que '
+      'fichar al mismo estando libre', () async {
+    final db = await _ligaConEntrenadores('DEN');
+
+    final deOtroEquipo = (await db.select(db.entrenadores).get())
+        .firstWhere((e) => e.equipo == 'BOS');
+
+    final conTrabajo = await valorarOfertaDe(db, deOtroEquipo, 'DEN');
+
+    // El mismo entrenador, pero parado.
+    await despedirEntrenador(db, 'BOS');
+    final libre = (await db.select(db.entrenadores).get())
+        .firstWhere((e) => e.id == deOtroEquipo.id);
+    final sinTrabajo = await valorarOfertaDe(db, libre, 'DEN');
+
+    expect(conTrabajo.loQueFalta - sinTrabajo.loQueFalta,
+        closeTo(primaPorTenerEquipo, 0.001),
+        reason: 'la diferencia tiene que ser exactamente la prima');
+
+    await db.close();
+  });
+
+  test('si le convences, cambia de equipo y al que se queda sin él le buscan '
+      'sustituto en el acto', () async {
+    final db = await _ligaConEntrenadores('DEN');
+
+    // Denver empieza pasado de tope, y este test no va del tope: se le baja
+    // la masa salarial para que pueda pagar lo que haga falta.
+    await (db.update(db.jugadores)..where((t) => t.equipo.equals('DEN')))
+        .write(const JugadoresCompanion(salario: Value(1000000)));
+
+    // Uno flojo de otro equipo: con dinero de sobra se le convence.
+    final victima = (await db.select(db.entrenadores).get())
+        .where((e) => esFranquicia(e.equipo) && e.equipo != 'DEN')
+        .reduce((a, b) => mediaDe(a) < mediaDe(b) ? a : b);
+    final equipoRobado = victima.equipo;
+
+    final resultado = await contratarEntrenador(db, victima.id, 'DEN',
+        salario: salarioMaximoEntrenador, anios: aniosQuePide(victima) + 1);
+
+    expect(resultado.firmado, isTrue, reason: resultado.mensaje);
+    expect((await leerEntrenadorDe(db, 'DEN'))!.id, victima.id);
+    expect(await leerEntrenadorDe(db, equipoRobado), isNotNull,
+        reason: 'dejar a un rival sin entrenador durante meses sería una '
+            'ventaja gratis e invisible');
+    expect((await leerEntrenadorDe(db, equipoRobado))!.id,
+        isNot(victima.id));
+
+    await db.close();
+  });
+
+  test('al que te roban NO se le paga finiquito: se ha ido él', () async {
+    final db = await _ligaConEntrenadores('DEN');
+    await (db.update(db.jugadores)..where((t) => t.equipo.equals('DEN')))
+        .write(const JugadoresCompanion(salario: Value(1000000)));
+    final victima = (await db.select(db.entrenadores).get())
+        .where((e) => esFranquicia(e.equipo) && e.equipo != 'DEN')
+        .reduce((a, b) => mediaDe(a) < mediaDe(b) ? a : b);
+    final equipoRobado = victima.equipo;
+
+    await contratarEntrenador(db, victima.id, 'DEN',
+        salario: salarioMaximoEntrenador, anios: aniosQuePide(victima) + 1);
+
+    final presupuesto = await presupuestoDe(db, equipoRobado);
+    expect(presupuesto.finiquitos, 0);
+
+    await db.close();
+  });
+
+  test('no puedes ficharte a tu propio entrenador', () async {
+    final db = await _ligaConEntrenadores('DEN');
+    final mio = (await leerEntrenadorDe(db, 'DEN'))!;
+
+    final resultado = await contratarEntrenador(db, mio.id, 'DEN',
+        salario: salarioMinimoEntrenador, anios: 2);
+
+    expect(resultado.firmado, isFalse);
+    expect(resultado.motivo, MotivoDeRechazo.yaTieneEquipo);
+
+    await db.close();
+  });
+
+  // -------------------------------------------------------------------------
+  // Fichar por el mínimo (lista parte 11, punto 2)
+  // -------------------------------------------------------------------------
+
+  test('fichar por el mínimo siempre encuentra a alguien y cobra el mínimo',
+      () async {
+    final db = await _ligaConEntrenadores('DEN');
+    await despedirEntrenador(db, 'DEN');
+    expect(await leerEntrenadorDe(db, 'DEN'), isNull);
+
+    final resultado = await ficharEntrenadorPorElMinimo(db, 'DEN');
+
+    expect(resultado.firmado, isTrue, reason: resultado.mensaje);
+    final fichado = await leerEntrenadorDe(db, 'DEN');
+    expect(fichado, isNotNull);
+    expect(fichado!.salario, salarioMinimoEntrenador);
+
+    await db.close();
+  });
+
+  test('fichar por el mínimo funciona incluso con el mercado vacío: es la '
+      'red de la que cuelga que se pueda seguir jugando', () async {
+    final db = await _ligaConEntrenadores('DEN');
+    await despedirEntrenador(db, 'DEN');
+
+    // Se vacía el mercado a mano: sin esta red, quedarte sin entrenador y
+    // sin candidatos te dejaría encerrado en una pantalla obligatoria de la
+    // que no se sale.
+    await (db.delete(db.entrenadores)
+          ..where((t) => t.equipo.equals(equipoAgenciaLibre)))
+        .go();
+    expect(await leerEntrenadoresLibres(db), isEmpty);
+
+    final resultado = await ficharEntrenadorPorElMinimo(db, 'DEN');
+
+    expect(resultado.firmado, isTrue, reason: resultado.mensaje);
+    expect(await leerEntrenadorDe(db, 'DEN'), isNotNull);
+
+    await db.close();
+  });
+
+  test('un equipo pasadísimo de tope puede fichar por el mínimo igualmente',
+      () async {
+    final db = await _ligaConEntrenadores('DEN');
+    await despedirEntrenador(db, 'DEN');
+
+    // Se infla la masa salarial hasta pasarse del tope de largo.
+    await (db.update(db.jugadores)..where((t) => t.equipo.equals('DEN')))
+        .write(const JugadoresCompanion(salario: Value(30000000)));
+
+    final presupuesto = await presupuestoDe(db, 'DEN');
+    expect(presupuesto.espacioEnElTope, lessThan(0));
+    expect(presupuesto.libre, salarioMinimoEntrenador,
+        reason: 'pasado de tope, solo el mínimo');
+
+    final resultado = await ficharEntrenadorPorElMinimo(db, 'DEN');
+    expect(resultado.firmado, isTrue, reason: resultado.mensaje);
 
     await db.close();
   });

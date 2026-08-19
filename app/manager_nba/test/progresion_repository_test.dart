@@ -216,4 +216,35 @@ void main() {
       expect((await tras(1, ficha)).retirado, isTrue);
     });
   });
+
+
+  test('a veces un joven no mejora nada en el verano: el potencial no se '
+      'alcanza siempre', () async {
+    // Lo que se pidió arreglar (lista parte 11, punto 22): antes el salto
+    // anual era siempre positivo, sin ni una excepción posible antes de
+    // los 27 años. Con hasta ocho veranos de margen, casi cualquiera
+    // acababa cerca de su potencial — no había sitio para un bust de
+    // verdad, uno de esos prospectos que simplemente no despega.
+    var estancados = 0;
+    const muestras = 200;
+    for (var semilla = 0; semilla < muestras; semilla++) {
+      final db2 = AppDatabase.forTesting(NativeDatabase.memory());
+      final id = await db2.into(db2.jugadores).insert(
+          _veterano(nombre: 'Proyecto', edad: 20, media: 65, potencial: 90));
+      await envejecerLiga(db2, random: Random(semilla));
+      final despues =
+          await (db2.select(db2.jugadores)..where((t) => t.id.equals(id)))
+              .getSingle();
+      if (despues.media == 65) estancados++;
+      await db2.close();
+    }
+
+    // La probabilidad de estancarse es probabilidadDeEstancarse (16%): con
+    // 200 muestras el margen de sobra evita que el test sea frágil, pero
+    // sigue exigiendo que el mecanismo exista de verdad.
+    expect(estancados, greaterThan(0),
+        reason: 'en 200 intentos, ni uno solo se ha estancado');
+    expect(estancados / muestras, lessThan(0.30),
+        reason: 'estancarse tiene que ser la excepción, no la norma');
+  });
 }

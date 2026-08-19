@@ -215,10 +215,14 @@ List<ProspectoDraft> generarClaseDeDraft({
         factorLongevidad: 0.9 + rng.nextDouble() * 0.25,
         edadRetiro: edad + 10 + rng.nextInt(11),
         draftYear: Value(anioDraft),
-        // La escala de rookie va por lo que es, no por lo que promete:
-        // `salarioEstimado` ya descuenta un 45% por debajo de 22 años, así
-        // que sale entre el mínimo y ~3,5M según el puesto del draft.
-        salario: Value(salarioEstimado(media: media, edad: edad)),
+        // La escala de rookie va por el PUESTO del draft, como en la NBA
+        // real: un numero 1 cobra de franquicia desde el primer dia,
+        // gane lo que gane esa temporada. Los de segunda ronda
+        // (posicionRelativa >= 0,5) van por lo que son, porque ahi no
+        // hay escala real que seguir.
+        salario: Value(posicionRelativa < 0.5
+            ? salarioDeRookiePrimeraRonda(posicionRelativa)
+            : salarioEstimado(media: media, edad: edad)),
         aniosContrato: Value(aniosDeRookie),
       ),
     ));

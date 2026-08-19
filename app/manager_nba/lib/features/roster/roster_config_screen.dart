@@ -7,6 +7,8 @@ import '../../domain/franquicia_repository.dart';
 import '../../domain/lesiones_repository.dart';
 import '../../domain/picks_repository.dart';
 import '../../domain/posiciones.dart';
+import '../../shared/icono_lesion.dart';
+import '../../shared/medias_jugador.dart';
 
 class _AsignacionPuesto {
   int? titularId;
@@ -384,6 +386,17 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
                       onCambiarEstrellaDefensa: (id) =>
                           setState(() => _estrellaDefensaId = id),
                     ),
+                    _AtaqueYDefensaDelEquipo(
+                      titulares: [
+                        for (final posicion in posicionesEquipo)
+                          if (_asignaciones[posicion]?.titularId != null)
+                            jugadoresPorId[_asignaciones[posicion]!.titularId!]!,
+                      ],
+                      rotacion: [
+                        for (final id in _todosLosAsignados)
+                          if (jugadoresPorId[id] != null) jugadoresPorId[id]!,
+                      ],
+                    ),
                     Padding(
                       padding: const EdgeInsets.all(12),
                       child: SizedBox(
@@ -532,13 +545,25 @@ class _HuecoJugador extends StatelessWidget {
           ? '$etiqueta: — elegir jugador —'
           : '$etiqueta: ${jugador!.nombreFicticio} '
               '(${etiquetaPosicion(jugador!)}, media ${jugador!.media})'),
-      subtitle: lineaAviso == null
+      // El ataque y la defensa van aquí y no en el título: dos jugadores de
+      // la misma media pueden ser cosas muy distintas, y sin verlo la
+      // alineación se hace a ciegas.
+      subtitle: jugador == null && lineaAviso == null
           ? null
-          : Text(lineaAviso,
-              style:
-                  TextStyle(color: lesionado ? Colors.red : Colors.orange)),
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (jugador != null)
+                  MediasAtaqueDefensa.de(jugador!, compacto: true),
+                if (lineaAviso != null)
+                  Text(lineaAviso,
+                      style: TextStyle(
+                          color: lesionado ? Colors.red : Colors.orange)),
+              ],
+            ),
       trailing: lesionado
-          ? const Icon(Icons.local_hospital, color: Colors.red)
+          ? const IconoLesion()
           : (fueraDePosicion
               ? const Icon(Icons.warning_amber, color: Colors.orange)
               : const Icon(Icons.chevron_right)),
@@ -716,6 +741,81 @@ class _HojaDePicks extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+
+/// El ataque y la defensa de tu quinteto y de la rotación entera.
+///
+/// Es lo que faltaba para poder decidir: viendo solo medias sueltas no se
+/// sabe si el equipo que estás montando defiende o no defiende.
+class _AtaqueYDefensaDelEquipo extends StatelessWidget {
+  final List<Jugador> titulares;
+  final List<Jugador> rotacion;
+
+  const _AtaqueYDefensaDelEquipo({
+    required this.titulares,
+    required this.rotacion,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (titulares.isEmpty) return const SizedBox.shrink();
+    final quinteto = mediasDe(titulares);
+    final todos = mediasDe(rotacion);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
+      child: Card(
+        margin: EdgeInsets.zero,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Ataque y defensa',
+                  style: Theme.of(context).textTheme.titleSmall),
+              const SizedBox(height: 8),
+              _Linea(
+                  etiqueta: 'Quinteto inicial',
+                  ataque: quinteto.ataque,
+                  defensa: quinteto.defensa),
+              const SizedBox(height: 4),
+              _Linea(
+                  etiqueta: 'Rotación completa',
+                  ataque: todos.ataque,
+                  defensa: todos.defensa),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Linea extends StatelessWidget {
+  final String etiqueta;
+  final int ataque;
+  final int defensa;
+
+  const _Linea({
+    required this.etiqueta,
+    required this.ataque,
+    required this.defensa,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Text(etiqueta,
+              style: Theme.of(context).textTheme.bodySmall),
+        ),
+        const SizedBox(width: 8),
+        MediasAtaqueDefensa(ataque: ataque, defensa: defensa),
+      ],
     );
   }
 }

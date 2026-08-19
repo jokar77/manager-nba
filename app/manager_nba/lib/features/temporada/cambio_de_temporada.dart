@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/draft_repository.dart';
 import '../../domain/nueva_temporada_repository.dart';
+import '../../domain/entrenadores_repository.dart';
 import '../mercado/agencia_libre_screen.dart';
+import '../mercado/entrenador_screen.dart';
 import '../mercado/renovaciones_screen.dart';
 import 'camisetas_nuevas_screen.dart';
 import 'draft_screen.dart';
@@ -90,6 +92,26 @@ Future<bool> ejecutarCambioDeTemporada(
 
   final resumen = await finalizarPretemporada(db, cierre, rookies);
   if (!context.mounted) return false;
+
+  // 4.5) El banquillo, ANTES que la agencia libre de jugadores. Si tu
+  // entrenador se retiró o se le acabó el contrato, lo primero que hay que
+  // resolver es quién dirige: sin entrenador no se juega, igual que no se
+  // juega con doce jugadores. Y va primero porque el sueldo del entrenador
+  // sale de la misma masa salarial que los fichajes — saber lo que te
+  // cuesta el banquillo antes de repartir el resto es el orden que tiene
+  // sentido.
+  final sinEntrenador = await leerEntrenadorDe(db, equipoUsuario) == null;
+  if (!context.mounted) return false;
+  if (sinEntrenador) {
+    await Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (context) => EntrenadorScreen(
+        db: db,
+        equipoUsuario: equipoUsuario,
+        onContinuar: () => Navigator.of(context).pop(),
+      ),
+    ));
+    if (!context.mounted) return false;
+  }
 
   // 5) Agencia libre: obligatorio dejar la plantilla lista para jugar. Es
   // TU ventana de mercado: hasta que no sales de aquí, los otros 29 no

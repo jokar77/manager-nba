@@ -251,7 +251,15 @@ List<Widget> _trayectoriaUnificada(
         puntos: e.puntosPorPartido * e.partidos,
         asistencias: e.asistenciasPorPartido * e.partidos,
         rebotes: e.rebotesPorPartido * e.partidos,
-        trofeos: const <String>[],
+        // Lo que ganó CONTIGO, en la etapa en la que lo ganó.
+        //
+        // Esto estaba a `const []` fijo, y era el bug: las etapas de la
+        // carrera real listaban sus anillos y sus MVPs, y las de tu partida
+        // salían siempre sin nada. Un jugador que ganaba dos anillos en tu
+        // equipo aparecía en su historial como si hubiera pasado por ahí sin
+        // pena ni gloria, mientras que lo que había hecho de verdad en la
+        // NBA sí se veía. Justo al revés de lo que interesa en una partida.
+        trofeos: _trofeosDeLaEtapa(c, e.desdeTemporada, e.hastaTemporada),
       ),
   ];
 
@@ -935,4 +943,36 @@ class _FilaEtapa extends StatelessWidget {
       ),
     );
   }
+}
+
+
+/// Los títulos y premios que [c] ganó entre las temporadas [desde] y
+/// [hasta] de tu partida, con el mismo formato que los de la carrera real
+/// para que las dos mitades del historial se lean igual.
+List<String> _trofeosDeLaEtapa(CarreraJugador c, int desde, int hasta) {
+  bool enLaEtapa(int temporada) => temporada >= desde && temporada <= hasta;
+  int cuantos(List<int> temporadas) => temporadas.where(enLaEtapa).length;
+  int premio(TipoPremio tipo) =>
+      cuantos(c.premiosPorTemporada[tipo] ?? const []);
+
+  final anillos = cuantos(c.anillos);
+  final copas = cuantos(c.copas);
+  final mvp = premio(TipoPremio.mvp);
+  final dpoy = premio(TipoPremio.mejorDefensor);
+  final rookie = premio(TipoPremio.rookieDelAno);
+  final mejorado = premio(TipoPremio.masMejorado);
+  final allStar = premio(TipoPremio.mvpAllStar);
+  final quintetos =
+      premio(TipoPremio.primerQuinteto) + premio(TipoPremio.segundoQuinteto);
+
+  return <String>[
+    if (anillos > 0) '$anillos anillo${anillos == 1 ? '' : 's'}',
+    if (copas > 0) '$copas NBA Cup${copas == 1 ? '' : 's'}',
+    if (mvp > 0) '$mvp MVP',
+    if (dpoy > 0) '$dpoy DPOY',
+    if (rookie > 0) 'Rookie del Año',
+    if (mejorado > 0) '$mejorado veces Más Mejorado',
+    if (allStar > 0) '$allStar MVP del All-Star',
+    if (quintetos > 0) '$quintetos quintetos All-NBA',
+  ];
 }

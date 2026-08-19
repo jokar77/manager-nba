@@ -21,6 +21,13 @@ const _edadFinDeCrecimiento = 27;
 /// Edad a partir de la cual el declive se acelera de verdad.
 const _edadDeclive = 31;
 
+/// Probabilidad de que un jugador joven no mejore NADA en un verano
+/// concreto. No es un castigo aparte: es la misma temporada de
+/// progresión, tirando a que salga 0. Con esto ni todo el mundo llega a
+/// su potencial ni deja de haber estrellas — solo dejan de ser un
+/// destino garantizado.
+const probabilidadDeEstancarse = 0.16;
+
 /// Suelo de media: por muy mayor que sea, un jugador en activo no baja de
 /// aquí (si bajara tanto, ya se habría retirado).
 const _mediaMinima = 45;
@@ -207,6 +214,18 @@ int _mediaTrasUnAno(
     // rápido suben (un proyecto explota, un jugador ya hecho apenas mejora).
     // Aquí, y solo aquí, entra el entrenador: acelera o frena el salto, pero
     // no puede subir a nadie por encima de su potencial.
+    //
+    // Y aquí también entra la posibilidad de que el verano no traiga NADA:
+    // sin esto, el salto siempre era positivo (22%-48% del margen, cada
+    // año, sin excepción) y con hasta ocho veranos por delante (de 19 a
+    // 27), casi cualquiera acababa cerca de su potencial. Medido: el
+    // número 1 del draft llegaba a 90+ de media dentro de su contrato de
+    // rookie el 20% de las veces — no es una barbaridad, pero el
+    // crecimiento en sí NUNCA podía fallar, y eso es justo lo que no pasa
+    // en la vida real: hay prospectos que se estancan un año, o varios.
+    // Con [probabilidadDeEstancarse] algunos veranos no traen ni un punto,
+    // sin tocar el resto de la curva.
+    if (rng.nextDouble() < probabilidadDeEstancarse) return j.media;
     final margen = (techo - j.media).clamp(0, 40);
     final salto =
         (margen * (0.22 + rng.nextDouble() * 0.26) * factorEntrenador).round();
