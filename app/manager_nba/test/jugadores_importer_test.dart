@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -58,6 +59,73 @@ void main() {
       // sean un relleno absurdo.
       expect(jugador.media, inInclusiveRange(70, 99));
     }
+  });
+
+  test('la cuenta de jugadores del dataset está al día', () async {
+    // `jugadoresUtilizablesDelDataset` es la salida barata del relleno: si
+    // se queda desfasado al cambiar el asset, el relleno deja de dispararse
+    // y las partidas viejas se vuelven a quedar sin los jugadores nuevos,
+    // en silencio y sin que nada falle. De ahí este test.
+    await importarJugadoresSiHaceFalta(db);
+    final filas = await db.select(db.jugadores).get();
+    expect(filas.length, jugadoresUtilizablesDelDataset,
+        reason: 'ha cambiado jugadores.json: sube '
+            'jugadoresUtilizablesDelDataset a ${filas.length}');
+  });
+
+  test('una partida ya empezada recupera a los jugadores que el dataset '
+      'ganó después', () async {
+    // El caso real: se añadió a Kyrie Irving al dataset y en una carrera ya
+    // en marcha seguía sin aparecer, porque `importarJugadoresSiHaceFalta`
+    // se sale en cuanto ve la tabla con datos.
+    await importarJugadoresSiHaceFalta(db);
+    // Se simula la partida vieja borrándolo, que es exactamente el estado
+    // en el que se quedaron las carreras empezadas antes del arreglo.
+    await (db.delete(db.jugadores)
+          ..where((t) => t.nombreReal.equals('Kyrie Irving')))
+        .go();
+    expect(
+        await (db.select(db.jugadores)
+              ..where((t) => t.nombreReal.equals('Kyrie Irving')))
+            .getSingleOrNull(),
+        isNull);
+
+    // Volver a llamar al import normal NO lo arregla: es el bug.
+    await importarJugadoresSiHaceFalta(db);
+    expect(
+        await (db.select(db.jugadores)
+              ..where((t) => t.nombreReal.equals('Kyrie Irving')))
+            .getSingleOrNull(),
+        isNull,
+        reason: 'el import normal no toca una tabla que ya tiene datos');
+
+    final anadidos = await anadirJugadoresQueFaltenDelDataset(db);
+    expect(anadidos, 1);
+    final kyrie = await (db.select(db.jugadores)
+          ..where((t) => t.nombreReal.equals('Kyrie Irving')))
+        .getSingleOrNull();
+    expect(kyrie, isNotNull);
+    expect(kyrie!.equipo, 'DAL');
+
+    // Y es idempotente: llamarla otra vez no lo duplica.
+    expect(await anadirJugadoresQueFaltenDelDataset(db), 0);
+  });
+
+  test('pasada la primera temporada ya no se rellena: la liga ha cambiado',
+      () async {
+    await importarJugadoresSiHaceFalta(db);
+    await (db.delete(db.jugadores)
+          ..where((t) => t.nombreReal.equals('Kyrie Irving')))
+        .go();
+
+    // Una carrera por la temporada 4: meter ahí a alguien con la edad y la
+    // media del dataset original sería inventarse un fichaje, no restaurar
+    // lo que faltaba.
+    await db.into(db.temporada).insertOnConflictUpdate(
+        const TemporadaCompanion(
+            id: Value(0), numero: Value(4), anioInicio: Value(2029)));
+
+    expect(await anadirJugadoresQueFaltenDelDataset(db), 0);
   });
 
   test('normaliza posiciones con espacio no separable ("SG / PG" -> "SG")',

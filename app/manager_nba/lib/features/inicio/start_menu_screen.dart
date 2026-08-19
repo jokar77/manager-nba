@@ -105,6 +105,11 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
     // el legado real, lo consigue ahora mismo (no vuelve a hacer nada si ya
     // lo tenía).
     await importarLegadoHistoricoSiHaceFalta(db);
+    // Y los jugadores que el dataset haya ganado desde que empezó esta
+    // partida: `importarJugadoresSiHaceFalta` se sale en cuanto ve la tabla
+    // con datos, así que sin esto una carrera en marcha no vería nunca a
+    // los que se añadieron después (ver el porqué en el importador).
+    await anadirJugadoresQueFaltenDelDataset(db);
     // Lo mismo con los entrenadores: una partida empezada antes de que
     // existieran se los encuentra aquí, y los banquillos que se hayan
     // quedado sin cubrir se rellenan.

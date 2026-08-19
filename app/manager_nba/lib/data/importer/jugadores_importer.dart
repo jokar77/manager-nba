@@ -12,6 +12,17 @@ import '../database/app_database.dart';
 const _rutaAssetJugadores = 'assets/data/jugadores.json';
 const _rutaAssetDatosReales = 'assets/data/datos_reales.json';
 
+/// Cuántos jugadores del asset pasan el filtro de [_camposObligatorios] y
+/// acaban en una partida nueva.
+///
+/// **Hay que subirlo al cambiar `jugadores.json`.** Es lo que permite saber
+/// con UNA cuenta barata si a una partida vieja le faltan jugadores, sin
+/// tener que leer y parsear los 300 KB del asset en cada arranque (ver
+/// [anadirJugadoresQueFaltenDelDataset]). Si se queda desfasado no se rompe
+/// nada, simplemente el relleno deja de dispararse — por eso hay un test
+/// que lo compara con el asset de verdad y falla si no cuadran.
+const jugadoresUtilizablesDelDataset = 586;
+
 /// Campos que deben venir informados para poder simular con un jugador.
 /// Unos ~59 jugadores del dataset (prospectos de un draft aún no jugado,
 /// ej. Cameron Boozer) solo traen `media`/`potencial`/`edad_retiro` y
@@ -61,7 +72,78 @@ Future<void> importarJugadoresSiHaceFalta(AppDatabase db,
       .cast<Map<String, dynamic>>()
       .where((mapa) => _camposObligatorios.every((c) => mapa[c] != null));
 
-  final companions = utilizables.map((mapa) {
+  final companions =
+      utilizables.map((mapa) => _companionDe(mapa, reales, rng)).toList();
+
+  await db.batch((batch) {
+    batch.insertAll(db.jugadores, companions);
+  });
+}
+
+/// Añade al vuelo los jugadores del dataset que NO estén ya en la partida.
+///
+/// Hace falta porque [importarJugadoresSiHaceFalta] se sale en cuanto ve la
+/// tabla con datos: una carrera ya empezada no vuelve a mirar el asset
+/// nunca más. Así que cuando el dataset gana jugadores —como pasó con los
+/// cuatro que se habían perdido la temporada entera por lesión, Kyrie
+/// Irving entre ellos— las partidas en curso se quedaban sin ellos para
+/// siempre, aunque la actualización sí llegara.
+///
+/// **Solo en la primera temporada.** Más adelante la liga ya no se parece
+/// al dataset: todo el mundo ha envejecido, alguno se ha retirado y ha
+/// habido traspasos. Meter ahí a un jugador con la edad y la media del
+/// asset original no sería restaurar lo que faltaba, sería inventarse un
+/// fichaje caído del cielo con cinco años menos de los que le tocan. Si tu
+/// carrera va por la temporada 4, la forma de tenerlos es empezar una
+/// partida nueva.
+///
+/// Devuelve cuántos se han añadido.
+Future<int> anadirJugadoresQueFaltenDelDataset(AppDatabase db,
+    {Random? random}) async {
+  final temporada = await (db.select(db.temporada)..where((t) => t.id.equals(0)))
+      .getSingleOrNull();
+  if (temporada != null && temporada.numero > 1) return 0;
+
+  // Salida barata, y es la que importa: esto corre en CADA "continuar
+  // partida". Contar filas es una consulta; leer y parsear los 300 KB del
+  // asset no, y sería un peaje en el arranque de todas las partidas para
+  // atrapar un caso que se da una vez en la vida de cada una. Es el mismo
+  // patrón que usan los otros backfills de esta pantalla (ver
+  // `_importarCamisetasRetiradasReales`): comprobar antes de leer.
+  final cuantosHay = await db.jugadores.count().getSingle();
+  if (cuantosHay >= jugadoresUtilizablesDelDataset) return 0;
+
+  final yaEstan = (await db.select(db.jugadores).get())
+      .map((j) => j.nombreReal)
+      .toSet();
+
+  final crudo = await rootBundle.loadString(_rutaAssetJugadores);
+  final lista = jsonDecode(crudo) as List<dynamic>;
+  final reales = jsonDecode(await rootBundle.loadString(_rutaAssetDatosReales))
+      as Map<String, dynamic>;
+
+  final rng = random ?? Random();
+  final faltan = lista
+      .cast<Map<String, dynamic>>()
+      .where((mapa) => _camposObligatorios.every((c) => mapa[c] != null))
+      .where((mapa) => !yaEstan.contains(mapa['nombre_real'] as String))
+      .map((mapa) => _companionDe(mapa, reales, rng))
+      .toList();
+  if (faltan.isEmpty) return 0;
+
+  await db.batch((batch) {
+    batch.insertAll(db.jugadores, faltan);
+  });
+  return faltan.length;
+}
+
+/// Una fila de la tabla `jugadores` a partir de su entrada del dataset.
+JugadoresCompanion _companionDe(
+  Map<String, dynamic> mapa,
+  Map<String, dynamic> reales,
+  Random rng,
+) {
+  {
     final posicionCruda = mapa['posicion'] as String;
     final posicion = normalizarPosicion(posicionCruda);
     final astPg = (mapa['ast_pg'] as num).toDouble();
@@ -114,11 +196,7 @@ Future<void> importarJugadoresSiHaceFalta(AppDatabase db,
       temporadasPrevias: Value(_temporadasPrevias(mapa)),
       prestigioPrevio: Value(_prestigioPrevio(mapa)),
     );
-  }).toList();
-
-  await db.batch((batch) {
-    batch.insertAll(db.jugadores, companions);
-  });
+  }
 }
 
 /// Misma distribución triangular (min 34, moda 37, max 42) que usaba el

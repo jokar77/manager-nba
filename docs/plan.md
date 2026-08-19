@@ -21,16 +21,25 @@ https://jokar77.github.io/manager-nba/
 
 ## ESTADO DE LA PUBLICACIÓN
 
-Último commit publicado: **`f8abae8`** ("Entrenadores con contrato y el
-juego en siete idiomas"), en verde.
+Publicando **`manager-nba-v10`**, que se lleva de una tacada todo lo que
+había commiteado sin publicar: los eventos narrativos (punto 23), las
+traducciones de las pantallas que quedaban, Kyrie y los otros tres
+lesionados que faltaban del dataset, el Hall of Fame de los recién
+inducidos, el bracket de móvil (punto 16) y el dinero como segundo eje de
+los eventos.
 
-Ya commiteados y verificados: los eventos narrativos (punto 23) y el
-bracket de móvil (punto 16), con lo que **la lista parte 11 queda
-entera**: los únicos dos que siguen abiertos (7 y 17) están a la espera
-de un ejemplo concreto del usuario, no de trabajo. Verificado en local:
-`flutter analyze` limpio en los dos paquetes, **414 tests** de la app +
+**Cuidado con esto, que casi se cuela:** la versión de `sw.js` se había
+quedado en `v9` desde los eventos narrativos, y encima había CUATRO
+commits que cambian el juego. Como `guardarLoQueFalte` no vuelve a pedir
+lo que ya tiene, cualquiera con el juego ya cacheado habría seguido
+viendo la versión vieja — con todo el trabajo publicado y sin que se
+notara nada. El aviso en mayúsculas de `web/sw.js` está por algo: **subir
+la versión es parte de publicar, no un detalle**.
+
+Con la lista parte 11 entera: los únicos dos que siguen abiertos (7 y 17)
+están a la espera de un ejemplo concreto del usuario, no de trabajo.
+Verificado en local: `flutter analyze` limpio, **425 tests** de la app +
 **19** de `sim_engine` en verde, y `flutter build web` correcto.
-`web/sw.js` en **`CACHE = manager-nba-v9`**.
 
 **El 16 (bracket diminuto en móvil) ya está hecho**, y sin necesitar la
 captura que se estaba esperando: se podía MEDIR. El cuadro mide 714 de
@@ -240,6 +249,48 @@ esos no existen porque no jugaron.
 Vigilado por un test nuevo en `jugadores_importer_test.dart` que
 comprueba que los cuatro siguen en su equipo, para que una regeneración
 del dataset no los vuelva a dejar fuera en silencio.
+
+**Añadirlo al dataset no bastaba, y esto es lo importante.** Después de
+publicarlo, Kyrie seguía sin aparecer en Dallas. Dos causas encadenadas,
+las dos del tipo "el arreglo estaba bien pero no llegaba":
+
+1. **La caché.** `web/sw.js` seguía en `v9` mientras se publicaban cuatro
+   commits. Como `guardarLoQueFalte` no vuelve a pedir lo que ya tiene
+   guardado, el navegador conservaba el `jugadores.json` viejo. Subir la
+   versión del service worker es PARTE de publicar, no un detalle.
+2. **Las partidas ya empezadas nunca releen el dataset.**
+   `importarJugadoresSiHaceFalta` se sale en cuanto ve la tabla con datos,
+   y al continuar partida no se llama con `forzar`. O sea que una carrera
+   en marcha no vería jamás a un jugador añadido después, por muchas
+   actualizaciones que le llegaran.
+
+Lo segundo se arregla con `anadirJugadoresQueFaltenDelDataset`, al lado de
+los backfills que ya había para el legado real y los entrenadores. **Solo
+en la primera temporada**: más adelante la liga ya no se parece al
+dataset —todos han envejecido, alguno se ha retirado, ha habido
+traspasos— y meter ahí a alguien con la edad y la media del asset
+original no sería restaurar lo que faltaba, sería inventarse un fichaje
+con cinco años menos de los que le tocan. Si tu carrera va por la
+temporada 4, la forma de tenerlos es empezar una partida nueva.
+
+Los dos tests que lo vigilan reproducen el caso de verdad: borran a Kyrie
+de una partida ya importada, comprueban que **el import normal NO lo
+arregla** (que es el bug) y que el backfill sí, sin duplicar al llamarlo
+dos veces.
+
+**Y el primer intento del relleno estaba mal hecho**, que lo cazó el test
+de `start_menu_screen`: leía y parseaba los 300 KB del asset en CADA
+"continuar partida". El test pasó de tardar segundos a colgarse diez
+minutos, y eso no era una molestia del test — era el aviso de que se
+había metido un peaje en el arranque de todas las partidas para atrapar
+un caso que se da una vez en la vida de cada una.
+
+Arreglado con la misma forma que ya usaban los otros backfills de esa
+pantalla: **comprobar barato antes de leer**. Una cuenta de filas contra
+`jugadoresUtilizablesDelDataset` (586) y, si cuadra, no se toca el asset.
+La constante tiene su propio test contra el JSON de verdad, porque si se
+desfasa el relleno deja de dispararse en silencio: no falla nada, solo
+que las partidas viejas se vuelven a quedar sin los jugadores nuevos.
 
 **¿Faltaba alguien más?** Se barrió de dos formas, y no: (1) cruzando
 `datos_reales.json` (444 jugadores con equipo y salario reales) contra el
