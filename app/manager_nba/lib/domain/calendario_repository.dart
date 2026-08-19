@@ -7,6 +7,7 @@ import '../features/partido/alineacion_automatica.dart';
 import 'agencia_libre_repository.dart';
 import 'entrenadores_repository.dart';
 import 'fin_temporada_repository.dart';
+import 'eventos_narrativos_repository.dart' show gastarUnPartidoDeEfectos;
 import 'forma_repository.dart';
 import 'franquicia_repository.dart';
 import 'lesiones_repository.dart';
@@ -183,6 +184,12 @@ Future<ResultadoTramo> simularTramo(
         boxscore: resultado.boxscore,
       ));
       lesionesNuevas.addAll(resultado.lesiones);
+      // Un partido menos de vida para lo que dejó la última decisión de
+      // vestuario. Va aquí, dentro del bucle de TUS partidos, y no en el de
+      // la CPU: la duración de un efecto se cuenta en partidos tuyos, que
+      // es lo que hace que "diez partidos de buen rollo" signifique lo
+      // mismo simules día a día o mes a mes.
+      await gastarUnPartidoDeEfectos(db);
     }
 
     final equiposQuery = db.selectOnly(db.resultadoTemporada)

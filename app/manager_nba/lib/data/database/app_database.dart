@@ -32,6 +32,7 @@ part 'app_database.g.dart';
   PicksDraft,
   OfertasTraspaso,
   Entrenadores,
+  EfectosDeEvento,
 ])
 class AppDatabase extends _$AppDatabase {
   /// Abre la partida guardada con el nombre [nombre]. Cada partida vive por
@@ -44,7 +45,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 22;
+  int get schemaVersion => 23;
 
   /// CUIDADO AL TOCAR ESTO: aquí se decide si una actualización del juego
   /// conserva las partidas guardadas o se las lleva por delante.
@@ -84,6 +85,17 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(
                 entrenadores, entrenadores.equipoQuePagaFiniquito);
             await m.addColumn(entrenadores, entrenadores.aniosDeFiniquito);
+          }
+
+          // 22 -> 23: los eventos narrativos. Una tabla nueva para los
+          // efectos en marcha y una columna nueva con las claves de los que
+          // ya han salido esta temporada. Las dos cosas son aditivas: una
+          // partida en curso sigue igual, simplemente empieza sin ningun
+          // efecto activo y sin ningun evento visto, que es exactamente el
+          // estado correcto.
+          if (from < 23) {
+            await m.createTable(efectosDeEvento);
+            await m.addColumn(temporada, temporada.eventosVistos);
           }
         },
       );

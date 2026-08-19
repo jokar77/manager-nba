@@ -9,6 +9,7 @@ import 'agencia_libre_repository.dart';
 import 'dorsales_repository.dart';
 import 'entrenadores_repository.dart';
 import 'equipos_especiales.dart';
+import 'eventos_narrativos_repository.dart' show multiplicadorDeEventos;
 import 'forma_repository.dart';
 import 'jugador_mapping.dart';
 import 'lesiones_repository.dart';
@@ -449,6 +450,15 @@ Future<sim.EquipoPartido> construirEquipoUsuarioParaFecha(
   final lesionados = await jugadoresFueraDeJuegoEn(db, fecha);
   final penalizacionLeve = await factoresLesionLeveEn(db, fecha);
   final formas = await leerFormas(db);
+  // Lo que haya dejado la última decisión de vestuario (ver
+  // `eventos_narrativos_repository.dart`). Se aplica AQUÍ, en el único
+  // sitio por el que pasa tu equipo para jugar cualquier competición —liga,
+  // playoffs y NBA Cup—, así que un evento se nota en las tres sin tener
+  // que acordarse de engancharlo en cada una.
+  //
+  // Y solo aquí: los eventos son decisiones tuyas y los otros 29 equipos no
+  // las tienen, así que sus alineaciones no lo miran.
+  final animo = await multiplicadorDeEventos(db);
   final plantilla = await (db.select(db.jugadores)
         ..where((t) => t.equipo.equals(equipoUsuario)))
       .get();
@@ -468,7 +478,8 @@ Future<sim.EquipoPartido> construirEquipoUsuarioParaFecha(
       esEstrellaAtaque: esEstrellaAtaque,
       esEstrellaDefensa: esEstrellaDefensa,
       factorForma: (formas[jugadorRow.id] ?? 1.0) *
-          (penalizacionLeve[jugadorRow.id] ?? 1.0),
+          (penalizacionLeve[jugadorRow.id] ?? 1.0) *
+          animo,
     );
   }
 

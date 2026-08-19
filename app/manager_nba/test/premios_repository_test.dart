@@ -192,7 +192,17 @@ void main() {
             'del Año por seguir siendo joven');
 
     await db.close();
-  });
+    // Este test simula DOS temporadas de 82 partidos enteras, y eso son
+    // unos 27 segundos él solo. El tope por defecto de `flutter test` son
+    // 30, así que llevaba tiempo justo al borde: pasaba ejecutado en
+    // solitario y caía de vez en cuando en la tanda completa, donde varios
+    // ficheros corren a la vez y la máquina va más cargada.
+    //
+    // Costó encontrarlo porque el síntoma no se parecía a lo que era: en el
+    // resumen de la tanda salía como un test rojo cualquiera, y solo
+    // pidiendo el informe expandido se veía que no fallaba ninguna
+    // aserción — era un TimeoutException.
+  }, timeout: const Timeout(Duration(minutes: 5)));
 }
 
 /// Como [_guardarRotacionAutomatica] pero forzando a [jugadorId] como

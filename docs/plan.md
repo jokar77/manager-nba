@@ -24,12 +24,16 @@ https://jokar77.github.io/manager-nba/
 Último commit publicado: **`f8abae8`** ("Entrenadores con contrato y el
 juego en siete idiomas"), en verde.
 
-**Sin commitear todavía**: la lista parte 11 casi entera (23 de los 24
-puntos; solo queda el 23, eventos narrativos, que es una funcionalidad
-nueva y no un arreglo). Verificado en local: `flutter analyze` limpio en
-los dos paquetes, **388 tests** de la app + **19** de `sim_engine` en
-verde (dos tandas completas seguidas), y `flutter build web` correcto.
-`web/sw.js` en **`CACHE = manager-nba-v8`**.
+**Sin commitear todavía**: los eventos narrativos (punto 23), con lo que
+la lista parte 11 queda ENTERA. Verificado en local: `flutter analyze`
+limpio en los dos paquetes, **414 tests** de la app + **19** de
+`sim_engine` en verde, y `flutter build web` correcto. `web/sw.js` en
+**`CACHE = manager-nba-v9`**.
+
+**Esquema de base de datos en la 23**, con migración aditiva (tabla
+`EfectosDeEvento` + columna `Temporada.eventosVistos`): las partidas
+guardadas siguen intactas y simplemente empiezan sin ningún efecto activo,
+que es el estado correcto.
 
 Última publicación CONFIRMADA en verde: `9035f88` (caché v6). Si `f8abae8`
 salió verde, la web ya lleva el dinero de los entrenadores y los idiomas.
@@ -141,7 +145,7 @@ Marcar aquí según se vayan cerrando.
 | 20 | Espacios salariales mal: en la temporada 5-6 se tienen cinco titulares de +90 y aún sobran 10M | |
 | 21 | Igual que el 12, visto desde el retiro | HECHO (mismo arreglo) |
 | 22 | Las medias suben demasiado al avanzar temporadas; el potencial no puede alcanzarse siempre | HECHO |
-| 23 | Eventos narrativos aleatorios con decisión y consecuencias (cena de equipo = más química, menos energía) | |
+| 23 | Eventos narrativos aleatorios con decisión y consecuencias (cena de equipo = más química, menos energía) | HECHO |
 | 24 | Si mi equipo ha ganado títulos, que salgan en la cabecera del equipo | HECHO |
 
 ### Lo hecho en esta tanda, con el porqué
@@ -343,6 +347,85 @@ contratos. Queda pendiente de que el usuario mande un ejemplo concreto
 —una oferta real que le pareciera absurda— la proxima vez que le pase:
 inventar un arreglo sin ese dato es el mismo error que ya se ha pagado
 varias veces en este proyecto (ver la seccion de tests inestables).
+
+## Punto 23 — Eventos narrativos (hecho)
+
+Cosas que pasan alrededor del equipo durante la temporada, con una decisión
+que tiene consecuencias de verdad en la pista. El ejemplo que pidió el
+usuario ("cena de equipo = más química, menos energía") está tal cual en el
+catálogo, con esos dos efectos y esos dos signos.
+
+**Cómo está montado.** Tres piezas:
+
+- `lib/domain/eventos_narrativos.dart` — Dart puro: el catálogo (10
+  eventos), las condiciones de cuándo puede salir cada uno y los topes. Sin
+  base de datos, así que se puede probar entero sin montar una partida.
+- `lib/domain/eventos_narrativos_repository.dart` — disparar, resolver,
+  leer lo activo y gastarlo partido a partido.
+- `lib/features/temporada/evento_narrativo_dialog.dart` — el diálogo de
+  decisión, el de consecuencia y la tarjeta del menú principal.
+
+**Dónde se engancha.** Un solo sitio:
+`construirEquipoUsuarioParaFecha` es el único punto por el que pasa tu
+equipo para jugar CUALQUIER competición (liga, playoffs y NBA Cup), así que
+multiplicando ahí el estado de forma por el efecto de vestuario se nota en
+las tres sin tener que acordarse de engancharlo en cada una. Y solo ahí:
+los eventos son decisiones tuyas y los otros 29 equipos no las tienen.
+
+**Cuántos por temporada.** `maxEventosPorTemporada = 5`, a petición
+expresa del usuario ("que no me salgan más de 5 x temporada"). Con
+`probabilidadDeEventoPorPartido = 0,035` salen de media unos 2,9 por
+temporada de 82 partidos, así que el tope de 5 es el que manda y quedarse
+en el tope es raro, no lo normal.
+
+**La calibración, medida (y la primera versión estaba muy pasada).** Se
+simularon temporadas completas de 82 partidos con un efecto fijo puesto
+todo el año:
+
+| factor | victorias de 82 |
+|---|---|
+| 0,96 | 32,8 |
+| 1,00 | 49,4 |
+| 1,04 | 62,6 |
+
+O sea **3,7 victorias por cada 1%**. La simulación es muy sensible al
+rendimiento de equipo (ya se sabía, ver el arrastre de la forma en
+`forma_repository.dart`), así que los ±4% que se habían puesto a ojo hacían
+que UNA respuesta de un diálogo valiera más que todo el sistema de
+entrenadores junto (5,6 victorias del mejor al peor). Recalibrado a ±2%
+como máximo y tope duro en ±3%: el efecto más fuerte del catálogo vale
+~1,1 victorias, y una temporada de decisiones buenas frente a una de
+decisiones malas anda por las 4. Se nota, pero por debajo del entrenador,
+que es como tiene que ser.
+
+**El test que más ha servido.** `ninguna opción es gratis`: comprueba que
+dentro de cada evento la opción con más ganancia acumulada tenga también
+algún inconveniente. **Cazó cinco fallos de diseño propios** —eventos donde
+una respuesta era todo ventajas y por tanto no había nada que decidir— y
+los cinco se arreglaron cambiando el EVENTO, no el test.
+
+### El "test inestable" que resultó no serlo
+
+`premios_repository_test.dart` llevaba tiempo cayendo de vez en cuando en
+la tanda completa y pasando siempre en solitario. Se había apuntado como
+aleatoriedad de la simulación. **No lo era**: pidiendo el informe expandido
+(`flutter test --reporter expanded`) se vio que no fallaba ninguna
+aserción — era un `TimeoutException` a los 30 segundos.
+
+Ese test simula DOS temporadas de 82 partidos, unos 27 segundos él solo, y
+el tope por defecto de `flutter test` son 30. Llevaba desde siempre justo
+al borde. Arreglado poniéndole 5 minutos, como ya tienen los otros tests
+que simulan temporadas.
+
+Lección: **en el resumen de la tanda un timeout se ve exactamente igual que
+una aserción rota**. Si un test "falla sin decir qué esperaba", pedir el
+informe expandido antes de buscar la causa en el código.
+
+De paso se abarató el coste por partido de los efectos: la primera versión
+abría una transacción y hacía dos sentencias en cada partido tuyo. Ahora es
+una sola sentencia sin transacción (las filas agotadas se limpian al
+resolver el siguiente evento y al pasar de año, que son momentos donde da
+igual lo que cueste). La tanda completa bajó de 3:51 a 2:22.
 
 ### Segundo test inestable encontrado (y por qué se repite el error)
 

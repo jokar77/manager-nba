@@ -168,6 +168,16 @@ class Temporada extends Table {
   IntColumn get ofertasGeneradasEstaTemporada =>
       integer().withDefault(const Constant(0))();
 
+  /// Las claves de los eventos narrativos que ya han salido esta temporada,
+  /// separadas por comas. Es lo que evita que te salga la misma cena de
+  /// equipo tres veces el mismo ano.
+  ///
+  /// Va como texto y no como tabla aparte a proposito: son un punado de
+  /// cadenas cortas que solo se leen enteras y se resetean cada verano. Una
+  /// tabla para esto seria mas ceremonia que dato (mismo criterio que las
+  /// listas de ids de `OfertasTraspaso`).
+  TextColumn get eventosVistos => text().withDefault(const Constant(''))();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -406,6 +416,29 @@ class FormaTemporadaJugador extends Table {
 
   @override
   Set<Column> get primaryKey => {jugadorId};
+}
+
+/// Un efecto de vestuario en marcha: lo que ha dejado una decision tuya en
+/// un evento narrativo (ver `eventos_narrativos.dart`).
+///
+/// Solo tiene filas de TU equipo: los eventos son decisiones tuyas y los
+/// otros 29 no las tienen. Cada partido que juegas se le descuenta uno a
+/// `partidosRestantes`, y al llegar a cero la fila se borra — por eso la
+/// duracion va en partidos y no en fechas: asi "diez partidos de buen
+/// rollo" dura lo mismo simules dia a dia o mes a mes.
+class EfectosDeEvento extends Table {
+  IntColumn get id => integer().autoIncrement()();
+
+  /// Que evento lo produjo. Solo para poder contarlo; no se usa como clave.
+  TextColumn get clave => text()();
+
+  /// Como se llama en pantalla ("Buen rollo en el vestuario").
+  TextColumn get etiqueta => text()();
+
+  /// Multiplicador sobre el estado de forma de cada jugador del equipo.
+  RealColumn get factor => real()();
+
+  IntColumn get partidosRestantes => integer()();
 }
 
 /// El boxscore completo (serializado en JSON) de un partido simulado

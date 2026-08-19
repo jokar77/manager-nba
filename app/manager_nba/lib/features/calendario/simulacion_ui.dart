@@ -11,8 +11,10 @@ import '../../domain/tipo_premio.dart';
 import '../../shared/campeon_dialog.dart';
 import '../allstar/allstar_screen.dart';
 import '../../domain/entrenadores_repository.dart';
+import '../../domain/eventos_narrativos_repository.dart';
 import '../mercado/agencia_libre_screen.dart';
 import '../mercado/entrenador_screen.dart';
+import '../temporada/evento_narrativo_dialog.dart';
 import '../mercado/ofertas_screen.dart';
 import '../mercado/traspasos_screen.dart';
 import '../partido/serie_boxscores_screen.dart';
@@ -69,6 +71,29 @@ bool allStarYaAlcanzado(
   DateTime hasta,
 ) =>
     eventosAllStar.any((e) => !e.fecha.isAfter(hasta));
+
+/// Plantea un evento de vestuario si toca, y aplica lo que se decida.
+///
+/// El evento se apunta como "ya visto" solo al resolverlo (ver
+/// `resolverEvento`), así que si la app se cierra con el diálogo abierto no
+/// se pierde: vuelve a salir.
+Future<void> _plantearEventoNarrativo(
+  BuildContext context,
+  AppDatabase db,
+  String equipoUsuario,
+  int partidosSimulados,
+) async {
+  final evento = await eventoQueSalta(db,
+      equipoUsuario: equipoUsuario, partidosSimulados: partidosSimulados);
+  if (evento == null || !context.mounted) return;
+
+  final opcion = await plantearEvento(context, evento);
+  if (opcion == null) return;
+
+  await resolverEvento(db, evento, opcion);
+  if (!context.mounted) return;
+  await contarConsecuencia(context, evento, opcion);
+}
 
 /// Si el banquillo está vacío, lleva a la pantalla de entrenadores y no
 /// deja seguir hasta que haya alguien. Devuelve si se puede jugar.
@@ -179,6 +204,15 @@ Future<ResultadoLoteSimulado> simularHastaConDialogo(
     // justamente lo que hacía que el aviso no saliera nunca.
     if (context.mounted && !allStarYaAvisado) {
       allStarYaAvisado = await _avisarSiHuboAllStar(context, db, metaParcial);
+    }
+
+    // Los eventos de vestuario, en la etapa en la que caen y como mucho uno
+    // por etapa. Igual que las ofertas: pararte en noviembre por algo que
+    // pasa en noviembre, no soltarte cuatro diálogos seguidos al final de
+    // un "simular hasta el final de temporada".
+    if (context.mounted && tramo.simulados.isNotEmpty) {
+      await _plantearEventoNarrativo(
+          context, db, equipoUsuario, tramo.simulados.length);
     }
 
     if (tramo.simulados.isNotEmpty) {

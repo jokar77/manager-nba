@@ -13,6 +13,7 @@ import 'entrenadores_repository.dart';
 import 'leyendas.dart';
 import 'draft_repository.dart';
 import 'equipos_especiales.dart';
+import 'eventos_narrativos_repository.dart' show limpiarEventosDeLaTemporada;
 import 'forma_repository.dart';
 import 'franquicia_repository.dart';
 import 'hall_fama_repository.dart';
@@ -303,7 +304,15 @@ Future<ResumenPretemporada> finalizarPretemporada(
         // temporada anterior se quedaría tal cual, y el tope de la season
         // nueva nacería ya agotado.
         ofertasGeneradasEstaTemporada: const Value(0),
+        // Y lo mismo con los eventos narrativos ya vistos: si no se
+        // resetean aquí, el verano siguiente empezaría con la lista llena y
+        // no saltaría ni uno en toda la temporada.
+        eventosVistos: const Value(''),
       ));
+
+  // Un verano entero borra cualquier bronca de vestuario y cualquier racha
+  // de buen rollo: los efectos activos no cruzan de un año al siguiente.
+  await limpiarEventosDeLaTemporada(db);
 
   // La rotación guardada puede apuntar a retirados o a gente que ya no
   // está en el equipo: se deja una válida hecha, editable como siempre.

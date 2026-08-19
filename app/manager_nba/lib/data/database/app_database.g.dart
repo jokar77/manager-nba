@@ -7032,12 +7032,25 @@ class $TemporadaTable extends Temporada
         requiredDuringInsert: false,
         defaultValue: const Constant(0),
       );
+  static const VerificationMeta _eventosVistosMeta = const VerificationMeta(
+    'eventosVistos',
+  );
+  @override
+  late final GeneratedColumn<String> eventosVistos = GeneratedColumn<String>(
+    'eventos_vistos',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
     numero,
     anioInicio,
     ofertasGeneradasEstaTemporada,
+    eventosVistos,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -7077,6 +7090,15 @@ class $TemporadaTable extends Temporada
         ),
       );
     }
+    if (data.containsKey('eventos_vistos')) {
+      context.handle(
+        _eventosVistosMeta,
+        eventosVistos.isAcceptableOrUnknown(
+          data['eventos_vistos']!,
+          _eventosVistosMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -7102,6 +7124,10 @@ class $TemporadaTable extends Temporada
         DriftSqlType.int,
         data['${effectivePrefix}ofertas_generadas_esta_temporada'],
       )!,
+      eventosVistos: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}eventos_vistos'],
+      )!,
     );
   }
 
@@ -7124,11 +7150,22 @@ class TemporadaData extends DataClass implements Insertable<TemporadaData> {
   /// "como mucho 3 a la vez sin resolver". Se pone a 0 en cada cambio de
   /// año.
   final int ofertasGeneradasEstaTemporada;
+
+  /// Las claves de los eventos narrativos que ya han salido esta temporada,
+  /// separadas por comas. Es lo que evita que te salga la misma cena de
+  /// equipo tres veces el mismo ano.
+  ///
+  /// Va como texto y no como tabla aparte a proposito: son un punado de
+  /// cadenas cortas que solo se leen enteras y se resetean cada verano. Una
+  /// tabla para esto seria mas ceremonia que dato (mismo criterio que las
+  /// listas de ids de `OfertasTraspaso`).
+  final String eventosVistos;
   const TemporadaData({
     required this.id,
     required this.numero,
     required this.anioInicio,
     required this.ofertasGeneradasEstaTemporada,
+    required this.eventosVistos,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -7139,6 +7176,7 @@ class TemporadaData extends DataClass implements Insertable<TemporadaData> {
     map['ofertas_generadas_esta_temporada'] = Variable<int>(
       ofertasGeneradasEstaTemporada,
     );
+    map['eventos_vistos'] = Variable<String>(eventosVistos);
     return map;
   }
 
@@ -7148,6 +7186,7 @@ class TemporadaData extends DataClass implements Insertable<TemporadaData> {
       numero: Value(numero),
       anioInicio: Value(anioInicio),
       ofertasGeneradasEstaTemporada: Value(ofertasGeneradasEstaTemporada),
+      eventosVistos: Value(eventosVistos),
     );
   }
 
@@ -7163,6 +7202,7 @@ class TemporadaData extends DataClass implements Insertable<TemporadaData> {
       ofertasGeneradasEstaTemporada: serializer.fromJson<int>(
         json['ofertasGeneradasEstaTemporada'],
       ),
+      eventosVistos: serializer.fromJson<String>(json['eventosVistos']),
     );
   }
   @override
@@ -7175,6 +7215,7 @@ class TemporadaData extends DataClass implements Insertable<TemporadaData> {
       'ofertasGeneradasEstaTemporada': serializer.toJson<int>(
         ofertasGeneradasEstaTemporada,
       ),
+      'eventosVistos': serializer.toJson<String>(eventosVistos),
     };
   }
 
@@ -7183,12 +7224,14 @@ class TemporadaData extends DataClass implements Insertable<TemporadaData> {
     int? numero,
     int? anioInicio,
     int? ofertasGeneradasEstaTemporada,
+    String? eventosVistos,
   }) => TemporadaData(
     id: id ?? this.id,
     numero: numero ?? this.numero,
     anioInicio: anioInicio ?? this.anioInicio,
     ofertasGeneradasEstaTemporada:
         ofertasGeneradasEstaTemporada ?? this.ofertasGeneradasEstaTemporada,
+    eventosVistos: eventosVistos ?? this.eventosVistos,
   );
   TemporadaData copyWithCompanion(TemporadaCompanion data) {
     return TemporadaData(
@@ -7200,6 +7243,9 @@ class TemporadaData extends DataClass implements Insertable<TemporadaData> {
       ofertasGeneradasEstaTemporada: data.ofertasGeneradasEstaTemporada.present
           ? data.ofertasGeneradasEstaTemporada.value
           : this.ofertasGeneradasEstaTemporada,
+      eventosVistos: data.eventosVistos.present
+          ? data.eventosVistos.value
+          : this.eventosVistos,
     );
   }
 
@@ -7210,15 +7256,21 @@ class TemporadaData extends DataClass implements Insertable<TemporadaData> {
           ..write('numero: $numero, ')
           ..write('anioInicio: $anioInicio, ')
           ..write(
-            'ofertasGeneradasEstaTemporada: $ofertasGeneradasEstaTemporada',
+            'ofertasGeneradasEstaTemporada: $ofertasGeneradasEstaTemporada, ',
           )
+          ..write('eventosVistos: $eventosVistos')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, numero, anioInicio, ofertasGeneradasEstaTemporada);
+  int get hashCode => Object.hash(
+    id,
+    numero,
+    anioInicio,
+    ofertasGeneradasEstaTemporada,
+    eventosVistos,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -7227,7 +7279,8 @@ class TemporadaData extends DataClass implements Insertable<TemporadaData> {
           other.numero == this.numero &&
           other.anioInicio == this.anioInicio &&
           other.ofertasGeneradasEstaTemporada ==
-              this.ofertasGeneradasEstaTemporada);
+              this.ofertasGeneradasEstaTemporada &&
+          other.eventosVistos == this.eventosVistos);
 }
 
 class TemporadaCompanion extends UpdateCompanion<TemporadaData> {
@@ -7235,23 +7288,27 @@ class TemporadaCompanion extends UpdateCompanion<TemporadaData> {
   final Value<int> numero;
   final Value<int> anioInicio;
   final Value<int> ofertasGeneradasEstaTemporada;
+  final Value<String> eventosVistos;
   const TemporadaCompanion({
     this.id = const Value.absent(),
     this.numero = const Value.absent(),
     this.anioInicio = const Value.absent(),
     this.ofertasGeneradasEstaTemporada = const Value.absent(),
+    this.eventosVistos = const Value.absent(),
   });
   TemporadaCompanion.insert({
     this.id = const Value.absent(),
     this.numero = const Value.absent(),
     required int anioInicio,
     this.ofertasGeneradasEstaTemporada = const Value.absent(),
+    this.eventosVistos = const Value.absent(),
   }) : anioInicio = Value(anioInicio);
   static Insertable<TemporadaData> custom({
     Expression<int>? id,
     Expression<int>? numero,
     Expression<int>? anioInicio,
     Expression<int>? ofertasGeneradasEstaTemporada,
+    Expression<String>? eventosVistos,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -7259,6 +7316,7 @@ class TemporadaCompanion extends UpdateCompanion<TemporadaData> {
       if (anioInicio != null) 'anio_inicio': anioInicio,
       if (ofertasGeneradasEstaTemporada != null)
         'ofertas_generadas_esta_temporada': ofertasGeneradasEstaTemporada,
+      if (eventosVistos != null) 'eventos_vistos': eventosVistos,
     });
   }
 
@@ -7267,6 +7325,7 @@ class TemporadaCompanion extends UpdateCompanion<TemporadaData> {
     Value<int>? numero,
     Value<int>? anioInicio,
     Value<int>? ofertasGeneradasEstaTemporada,
+    Value<String>? eventosVistos,
   }) {
     return TemporadaCompanion(
       id: id ?? this.id,
@@ -7274,6 +7333,7 @@ class TemporadaCompanion extends UpdateCompanion<TemporadaData> {
       anioInicio: anioInicio ?? this.anioInicio,
       ofertasGeneradasEstaTemporada:
           ofertasGeneradasEstaTemporada ?? this.ofertasGeneradasEstaTemporada,
+      eventosVistos: eventosVistos ?? this.eventosVistos,
     );
   }
 
@@ -7294,6 +7354,9 @@ class TemporadaCompanion extends UpdateCompanion<TemporadaData> {
         ofertasGeneradasEstaTemporada.value,
       );
     }
+    if (eventosVistos.present) {
+      map['eventos_vistos'] = Variable<String>(eventosVistos.value);
+    }
     return map;
   }
 
@@ -7304,8 +7367,9 @@ class TemporadaCompanion extends UpdateCompanion<TemporadaData> {
           ..write('numero: $numero, ')
           ..write('anioInicio: $anioInicio, ')
           ..write(
-            'ofertasGeneradasEstaTemporada: $ofertasGeneradasEstaTemporada',
+            'ofertasGeneradasEstaTemporada: $ofertasGeneradasEstaTemporada, ',
           )
+          ..write('eventosVistos: $eventosVistos')
           ..write(')'))
         .toString();
   }
@@ -11559,6 +11623,367 @@ class EntrenadoresCompanion extends UpdateCompanion<Entrenador> {
   }
 }
 
+class $EfectosDeEventoTable extends EfectosDeEvento
+    with TableInfo<$EfectosDeEventoTable, EfectosDeEventoData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $EfectosDeEventoTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _claveMeta = const VerificationMeta('clave');
+  @override
+  late final GeneratedColumn<String> clave = GeneratedColumn<String>(
+    'clave',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _etiquetaMeta = const VerificationMeta(
+    'etiqueta',
+  );
+  @override
+  late final GeneratedColumn<String> etiqueta = GeneratedColumn<String>(
+    'etiqueta',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _factorMeta = const VerificationMeta('factor');
+  @override
+  late final GeneratedColumn<double> factor = GeneratedColumn<double>(
+    'factor',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _partidosRestantesMeta = const VerificationMeta(
+    'partidosRestantes',
+  );
+  @override
+  late final GeneratedColumn<int> partidosRestantes = GeneratedColumn<int>(
+    'partidos_restantes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    clave,
+    etiqueta,
+    factor,
+    partidosRestantes,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'efectos_de_evento';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<EfectosDeEventoData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('clave')) {
+      context.handle(
+        _claveMeta,
+        clave.isAcceptableOrUnknown(data['clave']!, _claveMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_claveMeta);
+    }
+    if (data.containsKey('etiqueta')) {
+      context.handle(
+        _etiquetaMeta,
+        etiqueta.isAcceptableOrUnknown(data['etiqueta']!, _etiquetaMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_etiquetaMeta);
+    }
+    if (data.containsKey('factor')) {
+      context.handle(
+        _factorMeta,
+        factor.isAcceptableOrUnknown(data['factor']!, _factorMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_factorMeta);
+    }
+    if (data.containsKey('partidos_restantes')) {
+      context.handle(
+        _partidosRestantesMeta,
+        partidosRestantes.isAcceptableOrUnknown(
+          data['partidos_restantes']!,
+          _partidosRestantesMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_partidosRestantesMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  EfectosDeEventoData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return EfectosDeEventoData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      clave: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}clave'],
+      )!,
+      etiqueta: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}etiqueta'],
+      )!,
+      factor: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}factor'],
+      )!,
+      partidosRestantes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}partidos_restantes'],
+      )!,
+    );
+  }
+
+  @override
+  $EfectosDeEventoTable createAlias(String alias) {
+    return $EfectosDeEventoTable(attachedDatabase, alias);
+  }
+}
+
+class EfectosDeEventoData extends DataClass
+    implements Insertable<EfectosDeEventoData> {
+  final int id;
+
+  /// Que evento lo produjo. Solo para poder contarlo; no se usa como clave.
+  final String clave;
+
+  /// Como se llama en pantalla ("Buen rollo en el vestuario").
+  final String etiqueta;
+
+  /// Multiplicador sobre el estado de forma de cada jugador del equipo.
+  final double factor;
+  final int partidosRestantes;
+  const EfectosDeEventoData({
+    required this.id,
+    required this.clave,
+    required this.etiqueta,
+    required this.factor,
+    required this.partidosRestantes,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['clave'] = Variable<String>(clave);
+    map['etiqueta'] = Variable<String>(etiqueta);
+    map['factor'] = Variable<double>(factor);
+    map['partidos_restantes'] = Variable<int>(partidosRestantes);
+    return map;
+  }
+
+  EfectosDeEventoCompanion toCompanion(bool nullToAbsent) {
+    return EfectosDeEventoCompanion(
+      id: Value(id),
+      clave: Value(clave),
+      etiqueta: Value(etiqueta),
+      factor: Value(factor),
+      partidosRestantes: Value(partidosRestantes),
+    );
+  }
+
+  factory EfectosDeEventoData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return EfectosDeEventoData(
+      id: serializer.fromJson<int>(json['id']),
+      clave: serializer.fromJson<String>(json['clave']),
+      etiqueta: serializer.fromJson<String>(json['etiqueta']),
+      factor: serializer.fromJson<double>(json['factor']),
+      partidosRestantes: serializer.fromJson<int>(json['partidosRestantes']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'clave': serializer.toJson<String>(clave),
+      'etiqueta': serializer.toJson<String>(etiqueta),
+      'factor': serializer.toJson<double>(factor),
+      'partidosRestantes': serializer.toJson<int>(partidosRestantes),
+    };
+  }
+
+  EfectosDeEventoData copyWith({
+    int? id,
+    String? clave,
+    String? etiqueta,
+    double? factor,
+    int? partidosRestantes,
+  }) => EfectosDeEventoData(
+    id: id ?? this.id,
+    clave: clave ?? this.clave,
+    etiqueta: etiqueta ?? this.etiqueta,
+    factor: factor ?? this.factor,
+    partidosRestantes: partidosRestantes ?? this.partidosRestantes,
+  );
+  EfectosDeEventoData copyWithCompanion(EfectosDeEventoCompanion data) {
+    return EfectosDeEventoData(
+      id: data.id.present ? data.id.value : this.id,
+      clave: data.clave.present ? data.clave.value : this.clave,
+      etiqueta: data.etiqueta.present ? data.etiqueta.value : this.etiqueta,
+      factor: data.factor.present ? data.factor.value : this.factor,
+      partidosRestantes: data.partidosRestantes.present
+          ? data.partidosRestantes.value
+          : this.partidosRestantes,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EfectosDeEventoData(')
+          ..write('id: $id, ')
+          ..write('clave: $clave, ')
+          ..write('etiqueta: $etiqueta, ')
+          ..write('factor: $factor, ')
+          ..write('partidosRestantes: $partidosRestantes')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, clave, etiqueta, factor, partidosRestantes);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is EfectosDeEventoData &&
+          other.id == this.id &&
+          other.clave == this.clave &&
+          other.etiqueta == this.etiqueta &&
+          other.factor == this.factor &&
+          other.partidosRestantes == this.partidosRestantes);
+}
+
+class EfectosDeEventoCompanion extends UpdateCompanion<EfectosDeEventoData> {
+  final Value<int> id;
+  final Value<String> clave;
+  final Value<String> etiqueta;
+  final Value<double> factor;
+  final Value<int> partidosRestantes;
+  const EfectosDeEventoCompanion({
+    this.id = const Value.absent(),
+    this.clave = const Value.absent(),
+    this.etiqueta = const Value.absent(),
+    this.factor = const Value.absent(),
+    this.partidosRestantes = const Value.absent(),
+  });
+  EfectosDeEventoCompanion.insert({
+    this.id = const Value.absent(),
+    required String clave,
+    required String etiqueta,
+    required double factor,
+    required int partidosRestantes,
+  }) : clave = Value(clave),
+       etiqueta = Value(etiqueta),
+       factor = Value(factor),
+       partidosRestantes = Value(partidosRestantes);
+  static Insertable<EfectosDeEventoData> custom({
+    Expression<int>? id,
+    Expression<String>? clave,
+    Expression<String>? etiqueta,
+    Expression<double>? factor,
+    Expression<int>? partidosRestantes,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (clave != null) 'clave': clave,
+      if (etiqueta != null) 'etiqueta': etiqueta,
+      if (factor != null) 'factor': factor,
+      if (partidosRestantes != null) 'partidos_restantes': partidosRestantes,
+    });
+  }
+
+  EfectosDeEventoCompanion copyWith({
+    Value<int>? id,
+    Value<String>? clave,
+    Value<String>? etiqueta,
+    Value<double>? factor,
+    Value<int>? partidosRestantes,
+  }) {
+    return EfectosDeEventoCompanion(
+      id: id ?? this.id,
+      clave: clave ?? this.clave,
+      etiqueta: etiqueta ?? this.etiqueta,
+      factor: factor ?? this.factor,
+      partidosRestantes: partidosRestantes ?? this.partidosRestantes,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (clave.present) {
+      map['clave'] = Variable<String>(clave.value);
+    }
+    if (etiqueta.present) {
+      map['etiqueta'] = Variable<String>(etiqueta.value);
+    }
+    if (factor.present) {
+      map['factor'] = Variable<double>(factor.value);
+    }
+    if (partidosRestantes.present) {
+      map['partidos_restantes'] = Variable<int>(partidosRestantes.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('EfectosDeEventoCompanion(')
+          ..write('id: $id, ')
+          ..write('clave: $clave, ')
+          ..write('etiqueta: $etiqueta, ')
+          ..write('factor: $factor, ')
+          ..write('partidosRestantes: $partidosRestantes')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -11606,6 +12031,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $EntrenadoresTable entrenadores = $EntrenadoresTable(this);
+  late final $EfectosDeEventoTable efectosDeEvento = $EfectosDeEventoTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -11637,6 +12065,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     picksDraft,
     ofertasTraspaso,
     entrenadores,
+    efectosDeEvento,
   ];
 }
 
@@ -15362,6 +15791,7 @@ typedef $$TemporadaTableCreateCompanionBuilder =
       Value<int> numero,
       required int anioInicio,
       Value<int> ofertasGeneradasEstaTemporada,
+      Value<String> eventosVistos,
     });
 typedef $$TemporadaTableUpdateCompanionBuilder =
     TemporadaCompanion Function({
@@ -15369,6 +15799,7 @@ typedef $$TemporadaTableUpdateCompanionBuilder =
       Value<int> numero,
       Value<int> anioInicio,
       Value<int> ofertasGeneradasEstaTemporada,
+      Value<String> eventosVistos,
     });
 
 class $$TemporadaTableFilterComposer
@@ -15397,6 +15828,11 @@ class $$TemporadaTableFilterComposer
 
   ColumnFilters<int> get ofertasGeneradasEstaTemporada => $composableBuilder(
     column: $table.ofertasGeneradasEstaTemporada,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get eventosVistos => $composableBuilder(
+    column: $table.eventosVistos,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -15429,6 +15865,11 @@ class $$TemporadaTableOrderingComposer
     column: $table.ofertasGeneradasEstaTemporada,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get eventosVistos => $composableBuilder(
+    column: $table.eventosVistos,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$TemporadaTableAnnotationComposer
@@ -15453,6 +15894,11 @@ class $$TemporadaTableAnnotationComposer
 
   GeneratedColumn<int> get ofertasGeneradasEstaTemporada => $composableBuilder(
     column: $table.ofertasGeneradasEstaTemporada,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get eventosVistos => $composableBuilder(
+    column: $table.eventosVistos,
     builder: (column) => column,
   );
 }
@@ -15492,11 +15938,13 @@ class $$TemporadaTableTableManager
                 Value<int> numero = const Value.absent(),
                 Value<int> anioInicio = const Value.absent(),
                 Value<int> ofertasGeneradasEstaTemporada = const Value.absent(),
+                Value<String> eventosVistos = const Value.absent(),
               }) => TemporadaCompanion(
                 id: id,
                 numero: numero,
                 anioInicio: anioInicio,
                 ofertasGeneradasEstaTemporada: ofertasGeneradasEstaTemporada,
+                eventosVistos: eventosVistos,
               ),
           createCompanionCallback:
               ({
@@ -15504,11 +15952,13 @@ class $$TemporadaTableTableManager
                 Value<int> numero = const Value.absent(),
                 required int anioInicio,
                 Value<int> ofertasGeneradasEstaTemporada = const Value.absent(),
+                Value<String> eventosVistos = const Value.absent(),
               }) => TemporadaCompanion.insert(
                 id: id,
                 numero: numero,
                 anioInicio: anioInicio,
                 ofertasGeneradasEstaTemporada: ofertasGeneradasEstaTemporada,
+                eventosVistos: eventosVistos,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -17773,6 +18223,212 @@ typedef $$EntrenadoresTableProcessedTableManager =
       Entrenador,
       PrefetchHooks Function()
     >;
+typedef $$EfectosDeEventoTableCreateCompanionBuilder =
+    EfectosDeEventoCompanion Function({
+      Value<int> id,
+      required String clave,
+      required String etiqueta,
+      required double factor,
+      required int partidosRestantes,
+    });
+typedef $$EfectosDeEventoTableUpdateCompanionBuilder =
+    EfectosDeEventoCompanion Function({
+      Value<int> id,
+      Value<String> clave,
+      Value<String> etiqueta,
+      Value<double> factor,
+      Value<int> partidosRestantes,
+    });
+
+class $$EfectosDeEventoTableFilterComposer
+    extends Composer<_$AppDatabase, $EfectosDeEventoTable> {
+  $$EfectosDeEventoTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get clave => $composableBuilder(
+    column: $table.clave,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get etiqueta => $composableBuilder(
+    column: $table.etiqueta,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get factor => $composableBuilder(
+    column: $table.factor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get partidosRestantes => $composableBuilder(
+    column: $table.partidosRestantes,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$EfectosDeEventoTableOrderingComposer
+    extends Composer<_$AppDatabase, $EfectosDeEventoTable> {
+  $$EfectosDeEventoTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get clave => $composableBuilder(
+    column: $table.clave,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get etiqueta => $composableBuilder(
+    column: $table.etiqueta,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get factor => $composableBuilder(
+    column: $table.factor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get partidosRestantes => $composableBuilder(
+    column: $table.partidosRestantes,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$EfectosDeEventoTableAnnotationComposer
+    extends Composer<_$AppDatabase, $EfectosDeEventoTable> {
+  $$EfectosDeEventoTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get clave =>
+      $composableBuilder(column: $table.clave, builder: (column) => column);
+
+  GeneratedColumn<String> get etiqueta =>
+      $composableBuilder(column: $table.etiqueta, builder: (column) => column);
+
+  GeneratedColumn<double> get factor =>
+      $composableBuilder(column: $table.factor, builder: (column) => column);
+
+  GeneratedColumn<int> get partidosRestantes => $composableBuilder(
+    column: $table.partidosRestantes,
+    builder: (column) => column,
+  );
+}
+
+class $$EfectosDeEventoTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $EfectosDeEventoTable,
+          EfectosDeEventoData,
+          $$EfectosDeEventoTableFilterComposer,
+          $$EfectosDeEventoTableOrderingComposer,
+          $$EfectosDeEventoTableAnnotationComposer,
+          $$EfectosDeEventoTableCreateCompanionBuilder,
+          $$EfectosDeEventoTableUpdateCompanionBuilder,
+          (
+            EfectosDeEventoData,
+            BaseReferences<
+              _$AppDatabase,
+              $EfectosDeEventoTable,
+              EfectosDeEventoData
+            >,
+          ),
+          EfectosDeEventoData,
+          PrefetchHooks Function()
+        > {
+  $$EfectosDeEventoTableTableManager(
+    _$AppDatabase db,
+    $EfectosDeEventoTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$EfectosDeEventoTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$EfectosDeEventoTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$EfectosDeEventoTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> clave = const Value.absent(),
+                Value<String> etiqueta = const Value.absent(),
+                Value<double> factor = const Value.absent(),
+                Value<int> partidosRestantes = const Value.absent(),
+              }) => EfectosDeEventoCompanion(
+                id: id,
+                clave: clave,
+                etiqueta: etiqueta,
+                factor: factor,
+                partidosRestantes: partidosRestantes,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String clave,
+                required String etiqueta,
+                required double factor,
+                required int partidosRestantes,
+              }) => EfectosDeEventoCompanion.insert(
+                id: id,
+                clave: clave,
+                etiqueta: etiqueta,
+                factor: factor,
+                partidosRestantes: partidosRestantes,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$EfectosDeEventoTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $EfectosDeEventoTable,
+      EfectosDeEventoData,
+      $$EfectosDeEventoTableFilterComposer,
+      $$EfectosDeEventoTableOrderingComposer,
+      $$EfectosDeEventoTableAnnotationComposer,
+      $$EfectosDeEventoTableCreateCompanionBuilder,
+      $$EfectosDeEventoTableUpdateCompanionBuilder,
+      (
+        EfectosDeEventoData,
+        BaseReferences<
+          _$AppDatabase,
+          $EfectosDeEventoTable,
+          EfectosDeEventoData
+        >,
+      ),
+      EfectosDeEventoData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -17840,4 +18496,6 @@ class $AppDatabaseManager {
       $$OfertasTraspasoTableTableManager(_db, _db.ofertasTraspaso);
   $$EntrenadoresTableTableManager get entrenadores =>
       $$EntrenadoresTableTableManager(_db, _db.entrenadores);
+  $$EfectosDeEventoTableTableManager get efectosDeEvento =>
+      $$EfectosDeEventoTableTableManager(_db, _db.efectosDeEvento);
 }

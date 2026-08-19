@@ -5,6 +5,7 @@ import '../../domain/campeones_repository.dart';
 import '../../domain/conferencias.dart';
 import '../../domain/contratos_repository.dart';
 import '../../domain/entrenadores_repository.dart';
+import '../../domain/eventos_narrativos_repository.dart';
 import '../../domain/equipos_info.dart';
 import '../../main.dart' show routeObserver;
 import '../../domain/fin_temporada_repository.dart';
@@ -19,6 +20,7 @@ import '../clasificacion/clasificacion_screen.dart';
 import '../playoffs/playoffs_screen.dart';
 import '../premios/premios_screen.dart';
 import '../roster/roster_config_screen.dart';
+import '../temporada/evento_narrativo_dialog.dart';
 import '../temporada/legado_screen.dart';
 import '../temporada/resumen_temporada_screen.dart';
 import '../torneo/torneo_screen.dart';
@@ -70,6 +72,11 @@ class _EstadoDelHub {
   final int anillos;
   final int copas;
 
+  /// Lo que hay activo en el vestuario ahora mismo (ver
+  /// `eventos_narrativos.dart`). Vacío casi siempre; cuando hay algo, es lo
+  /// primero que quieres ver al abrir el juego.
+  final List<EfectoDeEvento> efectosDeVestuario;
+
   /// Quién ocupa tu banquillo, y su media. Null si está vacante.
   final String? entrenador;
   final int mediaEntrenador;
@@ -87,6 +94,7 @@ class _EstadoDelHub {
     required this.conferencia,
     this.anillos = 0,
     this.copas = 0,
+    this.efectosDeVestuario = const [],
     this.entrenador,
     this.mediaEntrenador = 0,
   });
@@ -147,6 +155,7 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
       anioTemporada: etiquetaDeTemporada(temporada.anioInicio),
       anillos: titulos.anillos,
       copas: titulos.copas,
+      efectosDeVestuario: await leerEfectosActivos(widget.db),
       temporadaCompleta: completa,
       copaSembrada: copaSembrada,
       ofertas: ofertas,
@@ -240,6 +249,8 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
                 sliver: SliverList.list(children: [
+                  TarjetaDeEfectosActivos(
+                      efectos: estado.efectosDeVestuario),
                   _AccesoMenu(
                     icono: Icons.calendar_month,
                     color: const Color(0xFF3D7BFF),
