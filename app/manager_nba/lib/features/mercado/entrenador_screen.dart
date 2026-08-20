@@ -6,6 +6,7 @@ import '../../domain/equipos_especiales.dart' show esFranquicia;
 import '../../domain/equipos_info.dart';
 import '../../domain/salarios.dart' show topeSalarial;
 import '../../i18n/textos.dart';
+import '../../shared/estilo.dart';
 import '../../shared/barra_de_club.dart';
 import '../../shared/entrenador_ui.dart';
 import '../../shared/pantalla.dart';
@@ -149,15 +150,14 @@ class _EntrenadorScreenState extends State<EntrenadorScreen> {
                 actual.aniosContrato, formatearMillones(coste))
             : t(context).despedirSinContrato),
         actions: [
-          TextButton(
+          BotonDialogoSecundario(
+            texto: t(context).cancelar,
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(t(context).cancelar),
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.error),
+          BotonDialogoPrincipal(
+            texto: t(context).despedir,
+            color: Estilo.de(context).mal,
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text(t(context).despedir),
           ),
         ],
       ),
@@ -401,7 +401,7 @@ class _DialogoDeNegociacionState extends State<_DialogoDeNegociacion> {
     final sinPresupuesto = widget.tope < salarioMinimoEntrenador;
 
     return AlertDialog(
-      title: Text(e.nombreFicticio),
+      title: Text(mayus(e.nombreFicticio)),
       content: SizedBox(
         // Alto fijo: sin esto el diálogo cambia de tamaño al mover el
         // deslizador, que es un tirón muy feo (ya pasó con las ofertas de
@@ -470,13 +470,13 @@ class _DialogoDeNegociacionState extends State<_DialogoDeNegociacion> {
         ),
       ),
       actions: [
-        TextButton(
+        BotonDialogoSecundario(
+          texto: t(context).cancelar,
           onPressed: _enviando ? null : () => Navigator.of(context).pop(),
-          child: Text(t(context).cancelar),
         ),
-        FilledButton(
+        BotonDialogoPrincipal(
+          texto: t(context).ofrecer,
           onPressed: _enviando || sinPresupuesto ? null : _ofrecer,
-          child: Text(t(context).ofrecer),
         ),
       ],
     );

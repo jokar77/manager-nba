@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
+import '../../shared/estilo.dart';
 
 import '../../data/database/app_database.dart';
 import '../../domain/allstar_repository.dart';
@@ -331,13 +332,13 @@ Future<void> _avisarDeOfertasEntrantes(
       title: Text(t(context).ofertaTitulo(sinVer)),
       content: Text(t(context).ofertaMensaje(sinVer)),
       actions: [
-        TextButton(
+        BotonDialogoSecundario(
+          texto: t(context).masTarde,
           onPressed: () => Navigator.of(context).pop(false),
-          child: Text(t(context).masTarde),
         ),
-        FilledButton(
+        BotonDialogoPrincipal(
+          texto: t(context).verOfertaBoton(sinVer),
           onPressed: () => Navigator.of(context).pop(true),
-          child: Text(t(context).verOfertaBoton(sinVer)),
         ),
       ],
     ),
@@ -384,15 +385,15 @@ Future<bool?> _mostrarDialogoDeadline(
           : t(context).tituloEventoFechaLimiteTraspasos),
       content: Text(t(context).preguntaSeguirSimulando),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: Text(esAgenciaLibre
+        BotonDialogoSecundario(
+          texto: esAgenciaLibre
               ? t(context).irAAgenciaLibre
-              : t(context).irATraspasos),
+              : t(context).irATraspasos,
+          onPressed: () => Navigator.of(context).pop(false),
         ),
-        FilledButton(
+        BotonDialogoPrincipal(
+          texto: t(context).seguirSimulando,
           onPressed: () => Navigator.of(context).pop(true),
-          child: Text(t(context).seguirSimulando),
         ),
       ],
     ),
@@ -464,13 +465,13 @@ Future<bool> _avisarSiHuboAllStar(
         mvp: mvp?.nombreFicticio,
       )),
       actions: [
-        TextButton(
+        BotonDialogoSecundario(
+          texto: t(context).seguirSimulando,
           onPressed: () => Navigator.of(context).pop(false),
-          child: Text(t(context).seguirSimulando),
         ),
-        FilledButton(
+        BotonDialogoPrincipal(
+          texto: t(context).verFinDeSemana,
           onPressed: () => Navigator.of(context).pop(true),
-          child: Text(t(context).verFinDeSemana),
         ),
       ],
     ),

@@ -298,13 +298,13 @@ class _DialogoDeOfertaState extends State<_DialogoDeOferta> {
         ],
       ),
       actions: [
-        TextButton(
+        BotonDialogoSecundario(
+          texto: t(context).cancelar,
           onPressed: _enviando ? null : () => Navigator.of(context).pop(),
-          child: Text(t(context).cancelar),
         ),
-        FilledButton(
+        BotonDialogoPrincipal(
+          texto: t(context).ofrecer,
           onPressed: _enviando ? null : _enviar,
-          child: Text(t(context).ofrecer),
         ),
       ],
     );

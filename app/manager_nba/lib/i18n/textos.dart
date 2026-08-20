@@ -687,4 +687,10 @@ abstract class Textos {
 
   /// Rotulo de la primera seccion del menu principal.
   String get tuFranquiciaSeccion;
+
+  // --- Tarjeta de próximo partido (menú principal) ------------------------
+  String get proximoPartidoTitulo;
+  String get enCasaLabel;
+  String get fueraLabel;
+  String get vsAbreviatura;
 }

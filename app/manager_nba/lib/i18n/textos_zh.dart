@@ -1078,4 +1078,16 @@ class TextosZh extends Textos {
 
   @override
   String get tuFranquiciaSeccion => '你的球队';
+
+  @override
+  String get proximoPartidoTitulo => '下一场比赛';
+
+  @override
+  String get enCasaLabel => '主场';
+
+  @override
+  String get fueraLabel => '客场';
+
+  @override
+  String get vsAbreviatura => 'VS';
 }

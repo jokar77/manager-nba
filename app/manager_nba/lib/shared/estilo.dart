@@ -1045,3 +1045,61 @@ class BarraNeutraAppBar extends StatelessWidget
     );
   }
 }
+
+/// La acción principal de la fila de un `AlertDialog`: "Aceptar",
+/// "Guardar", "Borrar"...
+///
+/// El diálogo ya hereda del tema (`temaDeApp`) la forma cortada y la letra
+/// condensada — lo único que el tema no puede forzar por sí solo es la
+/// mayúscula, porque eso depende del texto que traiga cada `Text`. Esto es
+/// ese último paso, para que "Cancelar"/"Aceptar" combinen con el resto de
+/// botones del juego (que sí van todos en mayúsculas).
+///
+/// El tamaño se deja al de Material a propósito: una fila de acciones de
+/// diálogo es compacta y pegada a la esquina, no un botón a todo lo ancho
+/// como los de una pantalla.
+class BotonDialogoPrincipal extends StatelessWidget {
+  final String texto;
+  final VoidCallback? onPressed;
+
+  /// Para acciones destructivas ("Borrar"): pásale `Estilo.de(context).mal`.
+  final Color? color;
+
+  const BotonDialogoPrincipal({
+    super.key,
+    required this.texto,
+    required this.onPressed,
+    this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FilledButton(
+      onPressed: onPressed,
+      style: color == null
+          ? null
+          : FilledButton.styleFrom(backgroundColor: color),
+      child: Text(mayus(texto)),
+    );
+  }
+}
+
+/// La acción secundaria de un `AlertDialog`: "Cancelar", "Ahora no"...
+class BotonDialogoSecundario extends StatelessWidget {
+  final String texto;
+  final VoidCallback? onPressed;
+
+  const BotonDialogoSecundario({
+    super.key,
+    required this.texto,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextButton(
+      onPressed: onPressed,
+      child: Text(mayus(texto)),
+    );
+  }
+}

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
+import '../../shared/estilo.dart';
 import '../../shared/barra_de_club.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/entrenadores_repository.dart' show formatearMillones;
@@ -64,13 +65,13 @@ class _OfertasScreenState extends State<OfertasScreen> {
         content: Text(t(context).seVanYLlegan(
             oferta.resumenQuePiden, oferta.resumenQueOfrecen)),
         actions: [
-          TextButton(
+          BotonDialogoSecundario(
+            texto: t(context).cancelar,
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(t(context).cancelar),
           ),
-          FilledButton(
+          BotonDialogoPrincipal(
+            texto: t(context).aceptar,
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text(t(context).aceptar),
           ),
         ],
       ),

@@ -11,6 +11,7 @@ import '../../domain/salarios.dart';
 import '../../domain/tipo_evento_temporada.dart';
 import '../../domain/traspasos_repository.dart';
 import '../../shared/equipo_logo.dart';
+import '../../shared/estilo.dart';
 import '../../shared/hoja_de_propuestas.dart';
 import '../../shared/pantalla.dart';
 
@@ -318,13 +319,13 @@ class _TraspasosScreenState extends State<TraspasosScreen> {
           title: Text(t(context).teVasAQuedarCorto),
           content: Text(t(context).avisoLoCierras(aviso)),
           actions: [
-            TextButton(
+            BotonDialogoSecundario(
+              texto: t(context).mejorNo,
               onPressed: () => Navigator.of(context).pop(false),
-              child: Text(t(context).mejorNo),
             ),
-            FilledButton(
+            BotonDialogoPrincipal(
+              texto: t(context).cerrarloIgual,
               onPressed: () => Navigator.of(context).pop(true),
-              child: Text(t(context).cerrarloIgual),
             ),
           ],
         ),

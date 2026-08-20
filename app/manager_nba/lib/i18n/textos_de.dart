@@ -1074,4 +1074,16 @@ class TextosDe extends Textos {
 
   @override
   String get tuFranquiciaSeccion => 'Dein Franchise';
+
+  @override
+  String get proximoPartidoTitulo => 'Nächstes Spiel';
+
+  @override
+  String get enCasaLabel => 'Heim';
+
+  @override
+  String get fueraLabel => 'Auswärts';
+
+  @override
+  String get vsAbreviatura => 'VS';
 }

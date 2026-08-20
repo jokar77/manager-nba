@@ -147,15 +147,14 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
           title: Text(t(context).sobrescribirLaPartidaN(slot)),
           content: Text(t(context).sePerderaEnteraAviso),
           actions: [
-            TextButton(
+            BotonDialogoSecundario(
+              texto: t(context).cancelar,
               onPressed: () => Navigator.of(context).pop(false),
-              child: Text(t(context).cancelar),
             ),
-            FilledButton(
-              style: FilledButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.error),
+            BotonDialogoPrincipal(
+              texto: t(context).sobrescribirBtn,
+              color: Estilo.de(context).mal,
               onPressed: () => Navigator.of(context).pop(true),
-              child: Text(t(context).sobrescribirBtn),
             ),
           ],
         ),
@@ -248,15 +247,14 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
         title: Text(t(context).borrarLaPartidaN(resumen.numero)),
         content: Text(t(context).sePierdeCarreraDeAviso(nombre)),
         actions: [
-          TextButton(
+          BotonDialogoSecundario(
+            texto: t(context).cancelar,
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(t(context).cancelar),
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.error),
+          BotonDialogoPrincipal(
+            texto: t(context).borrarBtn,
+            color: Estilo.de(context).mal,
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text(t(context).borrarBtn),
           ),
         ],
       ),

@@ -3269,19 +3269,10 @@ El rediseño en sí está **completo**: no queda ningún `AppBar` de Material,
 506 tests en verde, `flutter analyze` limpio, la web compila. Lo que sigue
 abierto es más pequeño:
 
-1. **Los `AlertDialog` no se han rehecho a mano.** Heredan del tema
-   (`temaDeApp` en `estilo.dart`) la esquina cortada, el panel y la letra
-   condensada del título, así que son coherentes — pero sus botones siguen
-   siendo `TextButton`/`FilledButton` de Material tal cual, sin pasar por
-   `BotonPrincipal`/`BotonPerfilado`. Si en algún momento se quiere el
-   mismo acabado exacto que el resto de la interfaz, hay que revisarlos uno
-   a uno (son bastantes: confirmaciones de borrado, el diálogo de fichaje,
-   el de renovación, el de traspaso...).
-2. **No hay ninguna pantalla nueva de contenido**, solo el aspecto de las
-   que ya existían. La tarjeta de "próximo partido" en el hub, que se
-   sugirió al principio del rediseño, sigue sin construirse — encaja con el
-   estilo pero es funcionalidad nueva, no un cambio visual, y no se ha
-   pedido.
+1. ~~Los `AlertDialog` no se han rehecho a mano.~~ **Hecho después:** ver
+   la sexta tanda, más abajo.
+2. ~~No hay ninguna pantalla nueva de contenido.~~ **Hecho después:** la
+   tarjeta de próximo partido, ver la sexta tanda.
 3. **Verificación solo automática, nunca visual.** Todo lo anterior se
    comprobó con `flutter analyze`, la suite de tests (incluida
    `tema_claro_y_oscuro_test.dart`, que mide contraste WCAG con números) y
@@ -3310,3 +3301,85 @@ Estos son anteriores al rediseño y siguen sin resolver:
 - Ítem 7 de la lista de bugs (ofertas de la CPU poco realistas):
   investigado, no se encontró fallo — pendiente de un ejemplo concreto del
   usuario para poder reproducirlo.
+
+## Sexta tanda: diálogos, tarjeta de próximo partido, y dos bugs de camino
+
+### Un bug de despliegue que no era del rediseño
+
+Al publicar el rediseño (`75bdb8c`) **se me olvidó subir la versión de
+caché del service worker**. El propio `sw.js` lo advierte en mayúsculas en
+un comentario, y me lo salté igual: sin subir `CACHE`, quien ya tuviera el
+juego guardado se queda con el código viejo para siempre, porque no hay
+motivo para que el navegador pida nada nuevo. Se notó porque el usuario
+veía el rediseño en el ordenador (sesión sin caché previa) pero **el
+iPhone seguía enseñando el juego de antes** — no es que no cargara, es que
+cargaba lo de siempre.
+
+Arreglado en `f243cfe`: caché a `v11`, y de paso la tipografía Saira
+Condensed añadida a la lista de precarga (se me había quedado fuera).
+Verificado sirviendo la compilación real en local antes de publicar: los
+cuatro ficheros nuevos existen exactamente en las rutas que pide el
+service worker (`assets/assets/fonts/...`, con el mismo doble `assets/`
+que ya usaba `jugadores.json` — a la primera lo puse mal, sin el prefijo
+doblado, y el propio chequeo lo cazó antes de subir nada).
+
+### Los 17 `AlertDialog` del juego
+
+Todos pasan ahora por dos piezas nuevas: `BotonDialogoPrincipal` y
+`BotonDialogoSecundario` (`shared/estilo.dart`). Por dentro siguen siendo
+`FilledButton`/`TextButton` de Material — el tamaño se deja al de Material
+a propósito, porque una fila de acciones de diálogo es compacta y pegada a
+la esquina, no un botón a todo lo ancho como los de una pantalla — y lo
+único que añaden es la mayúscula, que el tema no puede forzar por sí solo
+porque depende del texto de cada `Text`.
+
+Las acciones destructivas ("Borrar", "Despedir") usan `Estilo.de(context).mal`
+en vez de `Theme.of(context).colorScheme.error`, para que el rojo sea
+exactamente el mismo en todo el juego.
+
+**Confirmado el error de la tanda anterior sobre mayúsculas**, con un caso
+más: el nombre de un entrenador en su diálogo de oferta (`Text(e.nombreFicticio)`)
+es un nombre propio — como los de club y jugador, va en mayúsculas — y se
+me había quedado sin tocar.
+
+### La tarjeta de próximo partido
+
+Va lo primero en el menú principal, antes que la de efectos de vestuario:
+rival, si es en casa o fuera, la fecha, y un botón para simular sin salir
+del hub. Solo se enseña si hay un partido pendiente — con la temporada
+regular completa, o durante playoffs (que no tienen fila en
+`PartidosCalendario`), desaparece sola, igual que la de efectos.
+
+Reutiliza el mismo camino que "Simular 1 partido" del Calendario
+(`simularHastaConDialogo`), sin diálogo de confirmación: apunta a un único
+partido concreto y no hay nada que decidir. Si el partido se juega de
+verdad, empuja directo a `ResumenSimulacionScreen`, como en cualquier otro
+sitio del juego.
+
+**Un bug real, cazado por el test que se escribió para esta tarjeta y no
+por mí mirando el código:** el callback `onSimulado`, que recarga el
+estado del hub tras simular, estaba escrito `setState(() => _estadoFuture
+= _cargarEstado())`. La flecha hace que el argumento de `setState` sea el
+valor de la propia asignación —el `Future` de `_cargarEstado()`—, y
+`setState` revienta con "callback argument returned a Future". Es
+exactamente el fallo que el comentario de `didPopNext`, dos pantallas más
+abajo en el mismo fichero, ya advertía por escrito. Lo arreglé mal la
+primera vez (puse el cuerpo del callback *externo* en bloque, pero dejé la
+flecha en el que se le pasa a `setState` por dentro) y el test lo volvió a
+cazar. Arreglado copiando el patrón exacto de `didPopNext`: bloque también
+dentro de `setState`.
+
+Cuatro claves de i18n nuevas en los siete idiomas (`proximoPartidoTitulo`,
+`enCasaLabel`, `fueraLabel`, `vsAbreviatura`). Al escribirlas se rompió el
+fichero francés por un apóstrofe sin escapar (`'À l'extérieur'`) — se
+evitó el problema pasando esa cadena a comillas dobles en vez de pelearse
+con el escape.
+
+Test nuevo dedicado, `tarjeta_proximo_partido_test.dart`: que la tarjeta
+enseña el rival y el rótulo correcto de casa/fuera, que desaparece sin
+partidos pendientes, y que tocar "Simular" de verdad simula y actualiza el
+récord sin salir del menú (comparando el número de partidos jugados antes
+y después, no una cifra fija).
+
+Verificación: `flutter analyze` limpio, **509 tests en verde** (3 nuevos de
+la tarjeta) y la web compila.

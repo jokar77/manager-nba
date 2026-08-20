@@ -1074,4 +1074,16 @@ class TextosPt extends Textos {
 
   @override
   String get tuFranquiciaSeccion => 'A tua franquia';
+
+  @override
+  String get proximoPartidoTitulo => 'Próximo jogo';
+
+  @override
+  String get enCasaLabel => 'Em casa';
+
+  @override
+  String get fueraLabel => 'Fora';
+
+  @override
+  String get vsAbreviatura => 'VS';
 }

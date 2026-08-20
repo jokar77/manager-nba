@@ -124,13 +124,16 @@ void main() {
     expect(find.text('¿Borrar la partida 1?'), findsOneWidget);
 
     // Cancelar no borra nada.
-    await tester.tap(find.text('Cancelar'));
+    // También en mayúsculas: es un BotonDialogoSecundario.
+    await tester.tap(find.text('CANCELAR'));
     await tester.pump();
     expect(find.textContaining('DENVER'), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.delete_outline).first);
     await tester.pump();
-    await tester.tap(find.widgetWithText(FilledButton, 'Borrar'));
+    // El botón de confirmar borrado va en mayúsculas desde que se
+    // convirtió a `BotonDialogoPrincipal` (ver shared/estilo.dart).
+    await tester.tap(find.widgetWithText(FilledButton, 'BORRAR'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 

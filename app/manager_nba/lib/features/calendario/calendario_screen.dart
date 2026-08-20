@@ -243,13 +243,13 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
                   pendientes, fecha.day, fecha.month),
         ),
         actions: [
-          TextButton(
+          BotonDialogoSecundario(
+            texto: t(context).cancelar,
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(t(context).cancelar),
           ),
-          FilledButton(
+          BotonDialogoPrincipal(
+            texto: t(context).simular,
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text(t(context).simular),
           ),
         ],
       ),
@@ -276,9 +276,9 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
               textAlign: TextAlign.center,
             ),
             actions: [
-              TextButton(
+              BotonDialogoSecundario(
+                texto: t(context).cerrar,
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text(t(context).cerrar),
               ),
             ],
           ),
@@ -297,9 +297,9 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
           title: Text(_tituloEvento(t(context), evento.tipo)),
           content: Text(_descripcionEvento(t(context), evento.tipo)),
           actions: [
-            TextButton(
+            BotonDialogoSecundario(
+              texto: t(context).cerrar,
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(t(context).cerrar),
             ),
           ],
         ),

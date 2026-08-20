@@ -193,9 +193,9 @@ void mostrarExplicacionPuntuacionHof(BuildContext context) {
         child: Text(t(context).explicacionPuntuacionCarreraTexto),
       ),
       actions: [
-        TextButton(
+        BotonDialogoSecundario(
+          texto: t(context).entendido,
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(t(context).entendido),
         ),
       ],
     ),

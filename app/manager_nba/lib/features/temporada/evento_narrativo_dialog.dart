@@ -57,9 +57,9 @@ Future<void> contarConsecuencia(
         ],
       ),
       actions: [
-        FilledButton(
+        BotonDialogoPrincipal(
+          texto: t(context).entendido,
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(t(context).entendido),
         ),
       ],
     ),

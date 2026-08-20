@@ -16,6 +16,9 @@ import '../../domain/torneo_repository.dart';
 import '../ajustes/ajustes_screen.dart';
 import '../allstar/allstar_screen.dart';
 import '../calendario/calendario_screen.dart';
+import '../calendario/resumen_simulacion_screen.dart';
+import '../calendario/simulacion_ui.dart';
+import '../../domain/calendario_repository.dart';
 import '../clasificacion/clasificacion_screen.dart';
 import '../playoffs/playoffs_screen.dart';
 import '../premios/premios_screen.dart';
@@ -45,6 +48,22 @@ class HomeHubScreen extends StatefulWidget {
 
   @override
   State<HomeHubScreen> createState() => _HomeHubScreenState();
+}
+
+/// El próximo partido pendiente de tu calendario: lo justo para pintar la
+/// tarjeta y para poder simularlo sin ir al Calendario.
+class _ProximoPartido {
+  final String rival;
+  final DateTime fecha;
+  final bool esLocal;
+  final bool esTorneoTemporada;
+
+  const _ProximoPartido({
+    required this.rival,
+    required this.fecha,
+    required this.esLocal,
+    required this.esTorneoTemporada,
+  });
 }
 
 /// Lo que hace falta para pintar el menú: en qué punto está la temporada,
@@ -82,6 +101,12 @@ class _EstadoDelHub {
   final String? entrenador;
   final int mediaEntrenador;
 
+  /// El próximo partido pendiente de tu calendario. Null si no hay ninguno
+  /// —temporada regular completa, o playoffs, que se juegan por su propia
+  /// pestaña y no tienen fila en `PartidosCalendario`—: entonces la tarjeta
+  /// no se enseña, igual que la de efectos de vestuario cuando está vacía.
+  final _ProximoPartido? proximoPartido;
+
   const _EstadoDelHub({
     required this.temporadaCompleta,
     required this.copaSembrada,
@@ -98,6 +123,7 @@ class _EstadoDelHub {
     this.efectosDeVestuario = const [],
     this.entrenador,
     this.mediaEntrenador = 0,
+    this.proximoPartido,
   });
 
   static const vacio = _EstadoDelHub(
@@ -177,6 +203,21 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
 
     final entrenador = await leerEntrenadorDe(widget.db, widget.equipo);
 
+    // El primero sin jugar, ordenado por fecha. No hace falta pasar por
+    // `proximaFechaPendiente` (que solo devuelve la fecha): aquí hace falta
+    // la fila entera, para saber contra quién y si es en casa.
+    final partidos = await leerPartidos(widget.db, widget.equipo);
+    final pendientes = partidos.where((p) => !p.jugado).toList()
+      ..sort((a, b) => a.fecha.compareTo(b.fecha));
+    final proximoPartido = pendientes.isEmpty
+        ? null
+        : _ProximoPartido(
+            rival: pendientes.first.rival,
+            fecha: pendientes.first.fecha,
+            esLocal: pendientes.first.esLocal,
+            esTorneoTemporada: pendientes.first.esTorneoTemporada,
+          );
+
     return _EstadoDelHub(
       anioTemporada: etiquetaDeTemporada(temporada.anioInicio),
       anillos: titulos.anillos,
@@ -193,6 +234,7 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
       conferencia: conferencia,
       entrenador: entrenador?.nombreFicticio,
       mediaEntrenador: entrenador == null ? 0 : mediaDe(entrenador),
+      proximoPartido: proximoPartido,
     );
   }
 
@@ -445,6 +487,23 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
         SliverPadding(
           padding: EdgeInsets.fromLTRB(margen, 0, margen, 28),
           sliver: SliverList.list(children: [
+            if (estado.proximoPartido != null)
+              _TarjetaProximoPartido(
+                db: widget.db,
+                equipoUsuario: widget.equipo,
+                partido: estado.proximoPartido!,
+                // El closure que se le PASA a setState tiene que ser de
+                // bloque, no de flecha: `setState(() => x = y)` hace que el
+                // argumento devuelva el valor de la asignación (el propio
+                // Future de `_cargarEstado()`), y setState revienta con
+                // "callback argument returned a Future" — el mismo fallo
+                // que ya advertía `didPopNext` más abajo en este fichero.
+                onSimulado: () {
+                  setState(() {
+                    _estadoFuture = _cargarEstado();
+                  });
+                },
+              ),
             TarjetaDeEfectosActivos(efectos: estado.efectosDeVestuario),
             ..._secciones(e, estado, acento,
                 columnasFichas: compacto ? 2 : 4,
@@ -480,6 +539,19 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(32, 30, 32, 32),
                 sliver: SliverList.list(children: [
+                  if (estado.proximoPartido != null)
+                    _TarjetaProximoPartido(
+                      db: widget.db,
+                      equipoUsuario: widget.equipo,
+                      partido: estado.proximoPartido!,
+                      // Ver el comentario de la otra copia de este
+                      // callback, arriba en _unaColumna.
+                      onSimulado: () {
+                        setState(() {
+                          _estadoFuture = _cargarEstado();
+                        });
+                      },
+                    ),
                   TarjetaDeEfectosActivos(efectos: estado.efectosDeVestuario),
                   ..._secciones(e, estado, acento,
                       columnasFichas: 4,
@@ -1271,3 +1343,183 @@ class _Chapa extends StatelessWidget {
     );
   }
 }
+
+/// El próximo partido, con un botón para simularlo sin salir del menú.
+///
+/// Solo se enseña si hay uno: con la temporada regular completa, o durante
+/// los playoffs (que se juegan por su cuadro, no tienen fila en
+/// `PartidosCalendario`), el estado no trae ninguno y la tarjeta desaparece
+/// — el mismo patrón que la de efectos de vestuario.
+///
+/// Es un `StatefulWidget` propio, no una función del hub, porque necesita
+/// su propio "está simulando" para deshabilitarse mientras dura: el hub no
+/// tiene por qué saber que esta tarjeta está ocupada.
+class _TarjetaProximoPartido extends StatefulWidget {
+  final AppDatabase db;
+  final String equipoUsuario;
+  final _ProximoPartido partido;
+
+  /// Se llama al terminar de simular (haya habido partido o no) para que el
+  /// hub recargue el récord y el siguiente partido pendiente.
+  final VoidCallback onSimulado;
+
+  const _TarjetaProximoPartido({
+    required this.db,
+    required this.equipoUsuario,
+    required this.partido,
+    required this.onSimulado,
+  });
+
+  @override
+  State<_TarjetaProximoPartido> createState() =>
+      _TarjetaProximoPartidoState();
+}
+
+class _TarjetaProximoPartidoState extends State<_TarjetaProximoPartido> {
+  bool _simulando = false;
+
+  Future<void> _simular() async {
+    if (_simulando) return;
+    setState(() => _simulando = true);
+
+    // El mismo camino que "Simular 1 partido" del Calendario: sin diálogo
+    // de confirmación, porque apunta a un único partido concreto y no hay
+    // nada que decidir (a diferencia de "simular hasta" una fecha lejana,
+    // que sí puede arrastrar varios).
+    final resultado = await simularHastaConDialogo(
+        context, widget.db, widget.equipoUsuario, widget.partido.fecha);
+    if (!mounted) return;
+    setState(() => _simulando = false);
+    widget.onSimulado();
+
+    if (resultado.partidos.isNotEmpty && context.mounted) {
+      await Navigator.of(context).push(MaterialPageRoute<void>(
+        builder: (context) => ResumenSimulacionScreen(
+          db: widget.db,
+          equipoUsuario: widget.equipoUsuario,
+          resultado: resultado,
+        ),
+      ));
+      // Al volver del resumen puede haber más de un partido simulado (una
+      // oferta te paró a media semana, por ejemplo): se recarga otra vez.
+      widget.onSimulado();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final e = Estilo.de(context);
+    final textos = t(context);
+    final tuInfo = infoDe(widget.equipoUsuario);
+    final rivalInfo = infoDe(widget.partido.rival);
+    final acento = acentoDeEquipo(tuInfo.colorPrimario, tuInfo.colorSecundario);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: PanelCortado(
+        fondo: e.panel,
+        corte: 16,
+        borde: Border(
+          left: BorderSide(color: acento, width: 3),
+          top: BorderSide(color: e.linea),
+          right: BorderSide(color: e.linea),
+          bottom: BorderSide(color: e.linea),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 13),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                      widget.partido.esLocal
+                          ? Icons.home
+                          : Icons.flight_takeoff,
+                      size: 13,
+                      color: acento),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      mayus(
+                          '${textos.proximoPartidoTitulo} · '
+                          '${widget.partido.esLocal ? textos.enCasaLabel : textos.fueraLabel}'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: rotulo(e, tamano: 10, color: acento),
+                    ),
+                  ),
+                  if (widget.partido.esTorneoTemporada) ...[
+                    const Icon(Icons.emoji_events,
+                        size: 14, color: Color(0xFFE0A81E)),
+                    const SizedBox(width: 6),
+                  ],
+                  Text(_fechaCorta(widget.partido.fecha),
+                      style: TextStyle(fontSize: 11, color: e.textoTenue)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        PlacaEquipo(
+                          codigo: widget.equipoUsuario,
+                          primario: tuInfo.colorPrimario,
+                          secundario: tuInfo.colorSecundario,
+                          tamano: 40,
+                        ),
+                        const SizedBox(height: 5),
+                        Text(mayus(tuInfo.apodo),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: titular(e, tamano: 13)),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: Text(textos.vsAbreviatura,
+                        style: cifra(e, tamano: 15, color: e.textoRotulo)),
+                  ),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        PlacaEquipo(
+                          codigo: widget.partido.rival,
+                          primario: rivalInfo.colorPrimario,
+                          secundario: rivalInfo.colorSecundario,
+                          tamano: 40,
+                        ),
+                        const SizedBox(height: 5),
+                        Text(mayus(rivalInfo.apodo),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                            style: titular(e, tamano: 13)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              BotonPrincipal(
+                texto: textos.simularUnPartido,
+                icono: Icons.play_arrow,
+                color: acento,
+                alto: 44,
+                onTap: _simulando ? null : _simular,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+String _fechaCorta(DateTime fecha) =>
+    '${fecha.day.toString().padLeft(2, '0')}/'
+    '${fecha.month.toString().padLeft(2, '0')}';
