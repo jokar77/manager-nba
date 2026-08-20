@@ -87,6 +87,18 @@ flutter:
     - assets/data/legado_real_scoring.json
     - assets/data/camisetas_futuras.json
 
+  # La tipografía de los titulares del rediseño. Solo dos pesos, que son
+  # los únicos que usa `familiaTitular` (ver lib/shared/estilo.dart): 190 KB
+  # en total. Saira Condensed es SIL Open Font License; la licencia va al
+  # lado, en assets/fonts/OFL.txt.
+  fonts:
+    - family: Saira Condensed
+      fonts:
+        - asset: assets/fonts/SairaCondensed-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/SairaCondensed-ExtraBold.ttf
+          weight: 800
+
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

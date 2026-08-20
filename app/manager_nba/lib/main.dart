@@ -6,6 +6,7 @@ import 'domain/ajustes_repository.dart';
 import 'domain/slots_repository.dart';
 import 'features/inicio/start_menu_screen.dart';
 import 'i18n/textos.dart';
+import 'shared/estilo.dart';
 import 'shared/pantalla.dart';
 import 'shared/preferencias.dart';
 
@@ -56,22 +57,14 @@ class _ManagerNbaAppState extends State<ManagerNbaApp> {
           locale: idioma.locale,
           supportedLocales: Idioma.values.map((i) => i.locale),
           localizationsDelegates: GlobalMaterialLocalizations.delegates,
-          theme: ThemeData(
-            useMaterial3: true,
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: Colors.deepOrange,
-              brightness: Brightness.light,
-            ).copyWith(surface: Colors.white),
-            scaffoldBackgroundColor: const Color(0xFFFAFAFA),
-          ),
-          darkTheme: ThemeData(
-            useMaterial3: true,
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: Colors.deepOrange,
-              brightness: Brightness.dark,
-            ).copyWith(surface: const Color(0xFF1A1A1A)),
-            scaffoldBackgroundColor: const Color(0xFF121212),
-          ),
+          // Los dos temas salen de la misma paleta del rediseño (ver
+          // shared/estilo.dart). Así las pantallas que todavía no están
+          // rehechas a mano heredan el suelo, los grises, la letra
+          // condensada de los títulos y la esquina cortada de botones y
+          // tarjetas, en vez de quedarse con el Material de fábrica al lado
+          // de las que sí lo están.
+          theme: temaDeApp(Brightness.light),
+          darkTheme: temaDeApp(Brightness.dark),
           // La densidad se decide aquí y no pantalla por pantalla. Media
           // interfaz usa `ListTile(dense: true)` e iconos de 18px, que con
           // ratón está bien —cabe más información— y con el dedo se queda

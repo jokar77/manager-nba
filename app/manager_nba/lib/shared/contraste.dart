@@ -30,3 +30,19 @@ Color colorLegibleComoTexto(Color color, BuildContext context) {
       : (hsl.lightness > 0.42 ? 0.42 : hsl.lightness);
   return hsl.withLightness(luminosidad).toColor();
 }
+
+/// El color con el que se rotula ENCIMA del color principal de un equipo.
+///
+/// Lo natural es su segundo color (el oro de Denver sobre su azul marino),
+/// pero hay clubes cuyos dos colores se parecen demasiado o que llevan negro
+/// sobre azul marino. Cuando el contraste entre los dos no da, se cae al
+/// blanco o al negro que toque.
+Color acentoDeEquipo(Color primario, Color secundario) {
+  final a = primario.computeLuminance();
+  final b = secundario.computeLuminance();
+  final claro = a > b ? a : b;
+  final oscuro = a > b ? b : a;
+  return (claro + 0.05) / (oscuro + 0.05) >= 2.2
+      ? secundario
+      : textoSobre(primario);
+}

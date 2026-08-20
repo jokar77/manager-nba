@@ -5,7 +5,7 @@ import '../../domain/conferencias.dart';
 import '../../domain/equipos_info.dart';
 import '../../shared/contraste.dart';
 import '../../i18n/textos.dart';
-import '../../shared/equipo_logo.dart';
+import '../../shared/estilo.dart';
 import 'equipo_detalle_screen.dart';
 
 enum _OrdenJugadores { puntos, asistencias, rebotes }
@@ -32,20 +32,31 @@ class ClasificacionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final info = infoDe(equipoUsuario);
+
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(t(context).clasificacion),
-          bottom: TabBar(tabs: [
-            Tab(text: t(context).pestanaEquipos),
-            Tab(text: t(context).pestanaJugadores),
-          ]),
+        body: Column(
+          children: [
+            BarraDeTitulo(
+              codigo: equipoUsuario,
+              primario: info.colorPrimario,
+              secundario: info.colorSecundario,
+              titulo: t(context).clasificacion,
+            ),
+            TabBar(tabs: [
+              Tab(text: mayus(t(context).pestanaEquipos)),
+              Tab(text: mayus(t(context).pestanaJugadores)),
+            ]),
+            Expanded(
+              child: TabBarView(children: [
+                _TablaEquipos(db: db, equipoUsuario: equipoUsuario),
+                _LideresJugadores(db: db, equipoUsuario: equipoUsuario),
+              ]),
+            ),
+          ],
         ),
-        body: TabBarView(children: [
-          _TablaEquipos(db: db, equipoUsuario: equipoUsuario),
-          _LideresJugadores(db: db, equipoUsuario: equipoUsuario),
-        ]),
       ),
     );
   }
@@ -126,6 +137,14 @@ class _TablaEquipos extends StatelessWidget {
   }
 }
 
+/// Lo que ocupan las tres columnas de cifras de la derecha. Las comparten
+/// la cabecera y las filas: cuando la cabecera fingía la alineación con
+/// espacios ("V-D    %    DIF"), cualquier cambio de ancho en las filas la
+/// dejaba descuadrada y encima podía desbordar en un móvil.
+const _anchoRecord = 52.0;
+const _anchoPorcentaje = 44.0;
+const _anchoDiferencia = 34.0;
+
 class _CabeceraConferencia extends StatelessWidget {
   final String titulo;
 
@@ -133,30 +152,33 @@ class _CabeceraConferencia extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final e = Estilo.de(context);
+    Widget columna(String texto, double ancho) => SizedBox(
+          width: ancho,
+          child: Text(texto,
+              textAlign: TextAlign.right,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: rotulo(e, tamano: 9)),
+        );
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
       child: Row(
         children: [
-          Text(titulo,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-                letterSpacing: 1.1,
-                color: Theme.of(context).colorScheme.primary,
-              )),
+          Flexible(
+            child: Text(titulo,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: titular(e, tamano: 14, color: e.marca)),
+          ),
           const SizedBox(width: 10),
-          const Expanded(child: Divider(height: 1)),
+          Expanded(child: Container(height: 1, color: e.lineaFuerte)),
           const SizedBox(width: 10),
-          Text('V-D    %    DIF',
-              style: TextStyle(
-                fontSize: 10,
-                letterSpacing: 0.4,
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: 0.5),
-              )),
+          columna('V-D', _anchoRecord),
+          columna('%', _anchoPorcentaje),
+          columna('DIF', _anchoDiferencia),
         ],
       ),
     );
@@ -225,6 +247,7 @@ class _FilaEquipo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final e = Estilo.de(context);
     final info = infoDe(resultado.equipo);
     final acento = colorLegibleComoTexto(info.colorPrimario, context);
     final jugados = resultado.victorias + resultado.derrotas;
@@ -239,58 +262,52 @@ class _FilaEquipo extends StatelessWidget {
       )),
       child: Container(
       decoration: BoxDecoration(
-        color: esTuyo
-            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.10)
-            : null,
+        // Tu equipo, con su propio color en el filo y el panel levantado:
+        // en una tabla de quince filas iguales hay que poder encontrarse de
+        // un vistazo.
+        color: esTuyo ? e.panel : null,
         border: esTuyo
             ? Border(left: BorderSide(color: acento, width: 4))
             : null,
       ),
-      padding: EdgeInsets.fromLTRB(esTuyo ? 8 : 12, 6, 12, 6),
+      padding: EdgeInsets.fromLTRB(esTuyo ? 8 : 12, 7, 12, 7),
       child: Row(
         children: [
           SizedBox(
             width: 22,
             child: Text('$puesto',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.55),
-                )),
+                style: cifra(e, tamano: 15, color: e.textoRotulo)),
           ),
           const SizedBox(width: 6),
-          EquipoLogo(codigoEquipo: resultado.equipo, tamano: 26),
+          PlacaEquipo(
+            codigo: resultado.equipo,
+            primario: info.colorPrimario,
+            secundario: info.colorSecundario,
+            tamano: 28,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(info.nombreCompleto,
+                Text(mayus(info.nombreCompleto),
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight:
-                          esTuyo ? FontWeight.bold : FontWeight.w500,
-                    )),
+                    style: titular(e,
+                        tamano: 15,
+                        color: esTuyo ? e.texto : e.textoTenue)),
                 if (jugados > 0)
                   Padding(
                     padding: const EdgeInsets.only(top: 3),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(3),
-                      child: LinearProgressIndicator(
-                        value: porcentaje,
-                        minHeight: 3,
-                        backgroundColor: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.10),
-                        valueColor: AlwaysStoppedAnimation(acento),
-                      ),
+                    // Sin esquinas redondeadas, como el resto del juego.
+                    child: LinearProgressIndicator(
+                      value: porcentaje,
+                      minHeight: 3,
+                      backgroundColor: e.lineaFuerte,
+                      valueColor: AlwaysStoppedAnimation(acento),
+                      borderRadius: BorderRadius.zero,
                     ),
                   ),
               ],
@@ -298,38 +315,31 @@ class _FilaEquipo extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           SizedBox(
-            width: 48,
+            width: _anchoRecord,
             child: Text('${resultado.victorias}-${resultado.derrotas}',
                 textAlign: TextAlign.right,
-                style: const TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.bold)),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: cifra(e, tamano: 17)),
           ),
           SizedBox(
-            width: 44,
+            width: _anchoPorcentaje,
             child: Text(
                 jugados == 0
                     ? '—'
                     : porcentaje.toStringAsFixed(3).substring(1),
                 textAlign: TextAlign.right,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.7),
-                )),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 12, color: e.textoTenue)),
           ),
           SizedBox(
-            width: 34,
+            width: _anchoDiferencia,
             child: Text(_diferencia,
                 textAlign: TextAlign.right,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.55),
-                )),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 12, color: e.textoRotulo)),
           ),
         ],
       ),
@@ -486,25 +496,27 @@ class _FilaLider extends StatelessWidget {
                 )),
           ),
           const SizedBox(width: 10),
-          EquipoLogo(codigoEquipo: linea.equipo, tamano: 22),
+          PlacaEquipo(
+            codigo: linea.equipo,
+            primario: infoDe(linea.equipo).colorPrimario,
+            secundario: infoDe(linea.equipo).colorSecundario,
+            tamano: 26,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(linea.nombre,
+                Text(mayus(linea.nombre),
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w600)),
+                    style: titular(Estilo.de(context), tamano: 15)),
                 Text('${linea.equipo} · ${linea.partidos} PJ',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 11,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.6),
-                    )),
+                        fontSize: 11, color: Estilo.de(context).textoTenue)),
               ],
             ),
           ),

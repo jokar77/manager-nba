@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
+import '../../shared/estilo.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/equipos_info.dart';
 import '../../shared/equipo_logo.dart';
@@ -38,11 +39,11 @@ class CamisetasNuevasScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(unaSola
+      appBar: BarraNeutraAppBar(
+        titulo: unaSola
             ? t(context).camisetaRetiradaSingular
-            : t(context).pestanaCamisetasRetiradas),
-        automaticallyImplyLeading: false,
+            : t(context).pestanaCamisetasRetiradas,
+        conVolver: false,
       ),
       body: ListView(
         padding: EdgeInsets.all(tamanoDe(context).esCompacto ? 12 : 24),

@@ -50,9 +50,12 @@ void main() {
 
   /// Las ranuras ya no están a la vista de entrada: el menú son tres
   /// opciones y hay que pedirlas. Esto abre la lista.
+  /// Los botones del rediseño rotulan en MAYÚSCULAS (ver `mayus` en
+  /// shared/estilo.dart); por dentro siguen siendo los de Material, así que
+  /// el tipo de widget sigue valiendo para señalarlos.
   Future<void> abrirRanuras(WidgetTester tester, String desde) async {
     await tester.tap(find.widgetWithText(
-        desde == 'Nueva partida' ? FilledButton : OutlinedButton, desde));
+        desde == 'NUEVA PARTIDA' ? FilledButton : OutlinedButton, desde));
     await tester.pump();
   }
 
@@ -63,13 +66,13 @@ void main() {
 
     // El menú corto: nada de ranuras a la vista.
     expect(find.text('Ranura vacía'), findsNothing);
-    expect(find.widgetWithText(FilledButton, 'Continuar'), findsNothing);
-    expect(find.widgetWithText(OutlinedButton, 'Cargar partida'), findsNothing);
-    expect(find.widgetWithText(FilledButton, 'Nueva partida'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'CONTINUAR'), findsNothing);
+    expect(find.widgetWithText(OutlinedButton, 'CARGAR PARTIDA'), findsNothing);
+    expect(find.widgetWithText(FilledButton, 'NUEVA PARTIDA'), findsOneWidget);
 
-    await abrirRanuras(tester, 'Nueva partida');
+    await abrirRanuras(tester, 'NUEVA PARTIDA');
     expect(find.text('Ranura vacía'), findsNWidgets(numeroDeSlots));
-    expect(find.widgetWithText(OutlinedButton, 'Empezar'),
+    expect(find.widgetWithText(OutlinedButton, 'EMPEZAR'),
         findsNWidgets(numeroDeSlots));
   });
 
@@ -79,15 +82,17 @@ void main() {
     await tester.runAsync(() => partidaEn(2, 'DEN'));
     await pump(tester);
 
-    expect(find.widgetWithText(FilledButton, 'Continuar'), findsOneWidget);
-    expect(find.widgetWithText(OutlinedButton, 'Cargar partida'),
+    expect(find.widgetWithText(FilledButton, 'CONTINUAR'), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, 'CARGAR PARTIDA'),
         findsOneWidget);
 
-    await abrirRanuras(tester, 'Cargar partida');
+    await abrirRanuras(tester, 'CARGAR PARTIDA');
     expect(find.text('PARTIDA 2'), findsOneWidget);
-    expect(find.textContaining('Denver'), findsOneWidget);
+    expect(find.textContaining('DENVER'), findsOneWidget);
     expect(find.textContaining('temporada 1'), findsOneWidget);
-    expect(find.textContaining('Récord 0-0'), findsOneWidget);
+    // El récord ya no es una frase: es un rótulo y una cifra grande.
+    expect(find.text('RÉCORD'), findsOneWidget);
+    expect(find.text('0-0'), findsOneWidget);
     expect(find.text('Ranura vacía'), findsNWidgets(numeroDeSlots - 1));
   });
 
@@ -98,11 +103,11 @@ void main() {
       await partidaEn(2, 'BOS');
     });
     await pump(tester);
-    await abrirRanuras(tester, 'Cargar partida');
+    await abrirRanuras(tester, 'CARGAR PARTIDA');
 
-    expect(find.textContaining('Denver'), findsOneWidget);
-    expect(find.textContaining('Boston'), findsOneWidget);
-    expect(find.widgetWithText(FilledButton, 'Continuar'), findsNWidgets(2));
+    expect(find.textContaining('DENVER'), findsOneWidget);
+    expect(find.textContaining('BOSTON'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'CONTINUAR'), findsNWidgets(2));
   });
 
   testWidgets('borrar una ranura pide confirmación y la deja libre sin '
@@ -112,7 +117,7 @@ void main() {
       await partidaEn(3, 'BOS');
     });
     await pump(tester);
-    await abrirRanuras(tester, 'Cargar partida');
+    await abrirRanuras(tester, 'CARGAR PARTIDA');
 
     await tester.tap(find.byIcon(Icons.delete_outline).first);
     await tester.pump();
@@ -121,7 +126,7 @@ void main() {
     // Cancelar no borra nada.
     await tester.tap(find.text('Cancelar'));
     await tester.pump();
-    expect(find.textContaining('Denver'), findsOneWidget);
+    expect(find.textContaining('DENVER'), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.delete_outline).first);
     await tester.pump();
@@ -129,8 +134,8 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.textContaining('Denver'), findsNothing);
-    expect(find.textContaining('Boston'), findsOneWidget,
+    expect(find.textContaining('DENVER'), findsNothing);
+    expect(find.textContaining('BOSTON'), findsOneWidget,
         reason: 'la otra partida es intocable');
   });
 
@@ -139,10 +144,11 @@ void main() {
     await tester.runAsync(() => partidaEn(1, 'DEN'));
     await pump(tester);
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Continuar'));
+    await tester.tap(find.widgetWithText(FilledButton, 'CONTINUAR'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text('Calendario'), findsOneWidget);
+    // El menú principal rotula sus destinos en mayúsculas.
+    expect(find.text('CALENDARIO'), findsOneWidget);
   });
 }

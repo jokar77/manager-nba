@@ -4,6 +4,7 @@ import '../../data/database/app_database.dart';
 import '../../domain/ajustes_repository.dart';
 import '../../domain/slots_repository.dart';
 import '../../i18n/textos.dart';
+import '../../shared/estilo.dart';
 import '../../shared/preferencias.dart';
 
 /// Ajustes: modo claro/oscuro e idioma.
@@ -65,7 +66,7 @@ class _AjustesScreenState extends State<AjustesScreen> {
   Widget build(BuildContext context) {
     final textos = t(context);
     return Scaffold(
-      appBar: AppBar(title: Text(textos.ajustes)),
+      appBar: BarraNeutraAppBar(titulo: textos.ajustes),
       body: _cargando
           ? const Center(child: CircularProgressIndicator())
           : ListView(

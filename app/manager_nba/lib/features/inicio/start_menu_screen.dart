@@ -16,7 +16,7 @@ import '../roster/roster_config_screen.dart';
 import '../roster/team_selector_screen.dart';
 import '../../i18n/textos.dart';
 import '../../shared/contraste.dart';
-import '../../shared/equipo_logo.dart';
+import '../../shared/estilo.dart';
 import '../../shared/navegacion.dart';
 
 /// Pantalla de arranque: las tres ranuras de guardado. Cada una es una
@@ -269,49 +269,74 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 520),
-            child: FutureBuilder<List<ResumenSlot>>(
-              future: _slotsFuture,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                final slots = snapshot.data!;
-                final hayPartidas = slots.any((s) => s.ocupada);
-                final hayHueco = slots.any((s) => !s.ocupada);
+    final e = Estilo.de(context);
 
-                return ListView(
-                  padding: const EdgeInsets.all(20),
-                  children: [
-                    const SizedBox(height: 12),
-                    const Icon(Icons.sports_basketball,
-                        size: 84, color: Colors.deepOrange),
-                    const SizedBox(height: 12),
-                    const Text('Manager NBA',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 30, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    Text(_subtitulo(context, hayPartidas),
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: Theme.of(context).colorScheme.outline)),
-                    const SizedBox(height: 20),
-                    if (_procesando) const LinearProgressIndicator(),
-                    if (_vista == _Vista.menu)
-                      ..._opcionesDelMenu(hayPartidas: hayPartidas)
-                    else
-                      ..._listaDeRanuras(slots, hayHueco: hayHueco),
-                  ],
-                );
-              },
+    return Scaffold(
+      backgroundColor: e.fondo,
+      body: Stack(
+        children: [
+          // El balón, enorme y casi transparente, saliéndose por la esquina.
+          // Es lo único decorativo de la pantalla: el resto es menú.
+          Positioned(
+            right: -70,
+            bottom: -60,
+            child: IgnorePointer(
+              child: Icon(Icons.sports_basketball,
+                  size: 360, color: e.marca.withValues(alpha: 0.07)),
             ),
           ),
-        ),
+          SafeArea(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 520),
+                child: FutureBuilder<List<ResumenSlot>>(
+                  future: _slotsFuture,
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    final slots = snapshot.data!;
+                    final hayPartidas = slots.any((s) => s.ocupada);
+                    final hayHueco = slots.any((s) => !s.ocupada);
+
+                    return ListView(
+                      padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
+                      children: [
+                        // Alineado a la izquierda y no centrado: es un menú
+                        // de juego, no una portada.
+                        Container(width: 46, height: 4, color: e.marca),
+                        const SizedBox(height: 16),
+                        Text('MANAGER NBA',
+                            style: TextStyle(
+                                fontFamily: familiaTitular,
+                                fontSize: 40,
+                                fontWeight: FontWeight.w800,
+                                height: 1,
+                                letterSpacing: -0.5,
+                                color: e.texto)),
+                        const SizedBox(height: 8),
+                        Text(_subtitulo(context, hayPartidas),
+                            style:
+                                TextStyle(fontSize: 14, color: e.textoTenue)),
+                        const SizedBox(height: 26),
+                        if (_procesando)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 14),
+                            child: LinearProgressIndicator(
+                                color: e.marca, backgroundColor: e.panel),
+                          ),
+                        if (_vista == _Vista.menu)
+                          ..._opcionesDelMenu(hayPartidas: hayPartidas)
+                        else
+                          ..._listaDeRanuras(slots, hayHueco: hayHueco),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -328,63 +353,57 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
   /// El menú de verdad: tres opciones y nada más. Las ranuras solo salen
   /// cuando hay que elegir una, que es cuando significan algo.
   List<Widget> _opcionesDelMenu({required bool hayPartidas}) {
+    final e = Estilo.de(context);
+    final textos = t(context);
     return [
       if (hayPartidas) ...[
-        SizedBox(
-          height: 52,
-          child: FilledButton.icon(
-            onPressed: _procesando ? null : _continuarUltima,
-            icon: const Icon(Icons.play_arrow),
-            label: Text(t(context).continuar,
-                style: const TextStyle(fontSize: 16)),
-          ),
+        BotonPrincipal(
+          texto: textos.continuar,
+          icono: Icons.play_arrow,
+          color: e.marca,
+          onTap: _procesando ? null : _continuarUltima,
         ),
         const SizedBox(height: 12),
       ],
-      SizedBox(
-        height: 52,
-        child: hayPartidas
-            ? OutlinedButton.icon(
-                onPressed: _procesando
-                    ? null
-                    : () => setState(() => _vista = _Vista.empezar),
-                icon: const Icon(Icons.add),
-                label: Text(t(context).nuevaPartidaBtn,
-                    style: const TextStyle(fontSize: 16)),
-              )
-            : FilledButton.icon(
-                onPressed: _procesando
-                    ? null
-                    : () => setState(() => _vista = _Vista.empezar),
-                icon: const Icon(Icons.add),
-                label: Text(t(context).nuevaPartidaBtn,
-                    style: const TextStyle(fontSize: 16)),
-              ),
-      ),
+      // Sin partidas, empezar una es LA acción de la pantalla; con partidas,
+      // la principal es seguir donde lo dejaste.
+      if (hayPartidas)
+        BotonPerfilado(
+          texto: textos.nuevaPartidaBtn,
+          icono: Icons.add,
+          color: e.texto,
+          onTap: _procesando
+              ? null
+              : () => setState(() => _vista = _Vista.empezar),
+        )
+      else
+        BotonPrincipal(
+          texto: textos.nuevaPartidaBtn,
+          icono: Icons.add,
+          color: e.marca,
+          onTap: _procesando
+              ? null
+              : () => setState(() => _vista = _Vista.empezar),
+        ),
       if (hayPartidas) ...[
         const SizedBox(height: 12),
-        SizedBox(
-          height: 52,
-          child: OutlinedButton.icon(
-            onPressed: _procesando
-                ? null
-                : () => setState(() => _vista = _Vista.cargar),
-            icon: const Icon(Icons.folder_open),
-            label: Text(t(context).cargarPartidaBtn,
-                style: const TextStyle(fontSize: 16)),
-          ),
+        BotonPerfilado(
+          texto: textos.cargarPartidaBtn,
+          icono: Icons.folder_open,
+          color: e.texto,
+          onTap: _procesando
+              ? null
+              : () => setState(() => _vista = _Vista.cargar),
         ),
       ],
       const SizedBox(height: 12),
-      SizedBox(
-        height: 52,
-        child: OutlinedButton.icon(
-          onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => const AjustesScreen(),
-          )),
-          icon: const Icon(Icons.settings),
-          label: Text(t(context).ajustes, style: const TextStyle(fontSize: 16)),
-        ),
+      BotonPerfilado(
+        texto: textos.ajustes,
+        icono: Icons.settings,
+        color: e.texto,
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => const AjustesScreen(),
+        )),
       ),
     ];
   }
@@ -416,17 +435,19 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
         const SizedBox(height: 12),
       ],
       const SizedBox(height: 8),
-      TextButton.icon(
-        onPressed:
+      BotonPerfilado(
+        texto: t(context).volver,
+        icono: Icons.arrow_back,
+        color: Estilo.de(context).textoTenue,
+        alto: 44,
+        onTap:
             _procesando ? null : () => setState(() => _vista = _Vista.menu),
-        icon: const Icon(Icons.arrow_back),
-        label: Text(t(context).volver),
       ),
     ];
   }
 }
 
-/// La tarjeta de una ranura: con partida enseña de un vistazo por dónde vas;
+/// La ficha de una ranura: con partida enseña de un vistazo por dónde vas;
 /// vacía, solo invita a empezar.
 class _FichaDeSlot extends StatelessWidget {
   final ResumenSlot resumen;
@@ -453,95 +474,141 @@ class _FichaDeSlot extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!resumen.ocupada) return _vacia(context);
 
+    final e = Estilo.de(context);
     final equipo = resumen.equipo!;
     final info = infoDe(equipo);
     final sobre = textoSobre(info.colorPrimario);
+    final secundario = textoSecundarioSobre(info.colorPrimario);
+    final acento = acentoDeEquipo(info.colorPrimario, info.colorSecundario);
+    final textos = t(context);
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      margin: EdgeInsets.zero,
+    return PanelCortado(
+      fondo: e.panel,
+      corte: 14,
+      borde: Border.all(color: e.linea),
       child: Column(
         children: [
+          // La franja de identidad, en el color del club.
           Container(
-            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  info.colorPrimario,
-                  Color.lerp(info.colorPrimario, info.colorSecundario, 0.5)!,
-                ],
+                colors: [info.colorPrimario, const Color(0xFF05070B)],
               ),
             ),
-            child: Row(
+            child: Stack(
               children: [
-                EquipoLogo(codigoEquipo: equipo, tamano: 40),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                Positioned(
+                  top: -4,
+                  right: -4,
+                  child: MonogramaFantasma(texto: equipo, tamano: 86),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
                     children: [
-                      Text(t(context).partidaNumero(resumen.numero),
-                          style: TextStyle(
-                              fontSize: 10,
-                              letterSpacing: 1,
-                              fontWeight: FontWeight.bold,
-                              color: textoSecundarioSobre(info.colorPrimario))),
-                      Text(info.nombreCompleto,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                              color: sobre)),
-                      Text(resumen.etiquetaTemporada,
-                          style: TextStyle(
-                              fontSize: 12,
-                              color:
-                                  textoSecundarioSobre(info.colorPrimario))),
+                      PlacaEquipo(
+                        codigo: equipo,
+                        primario: info.colorPrimario,
+                        secundario: info.colorSecundario,
+                        tamano: 42,
+                      ),
+                      const SizedBox(width: 11),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(mayus(textos.partidaNumero(resumen.numero)),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1.8,
+                                    color: acento)),
+                            const SizedBox(height: 2),
+                            // El nombre completo y no solo el apodo: aquí
+                            // estás eligiendo entre carreras distintas, y la
+                            // ciudad es la mitad de la identidad del club.
+                            Text(mayus(info.nombreCompleto),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    fontFamily: familiaTitular,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w800,
+                                    height: 1,
+                                    color: sobre)),
+                            const SizedBox(height: 3),
+                            Text(resumen.etiquetaTemporada,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    fontSize: 11.5, color: secundario)),
+                          ],
+                        ),
+                      ),
+                      if (resumen.titulos > 0) ...[
+                        const SizedBox(width: 8),
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.emoji_events,
+                                size: 18, color: Color(0xFFFFC94D)),
+                            Text('${resumen.titulos}',
+                                style: TextStyle(
+                                    fontFamily: familiaTitular,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w800,
+                                    color: sobre)),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
-                if (resumen.titulos > 0)
-                  Row(
-                    children: [
-                      Icon(Icons.emoji_events,
-                          size: 18, color: const Color(0xFFD4A017)),
-                      const SizedBox(width: 2),
-                      Text('${resumen.titulos}',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, color: sobre)),
-                    ],
-                  ),
               ],
             ),
           ),
+          // Y debajo, en el suelo de la app, el récord y qué se puede hacer.
           Padding(
-            padding: const EdgeInsets.fromLTRB(14, 10, 8, 8),
+            padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
             child: Row(
               children: [
                 Expanded(
-                  child: Text(
-                    '${t(context).record} ${resumen.victorias}-'
-                    '${resumen.derrotas}',
-                    style: const TextStyle(fontSize: 13),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(mayus(textos.record), style: rotulo(e, tamano: 9)),
+                      Text('${resumen.victorias}-${resumen.derrotas}',
+                          style: cifra(e, tamano: 21)),
+                    ],
                   ),
                 ),
                 IconButton(
-                  tooltip: t(context).borrarEstaPartidaTooltip,
+                  tooltip: textos.borrarEstaPartidaTooltip,
                   onPressed: deshabilitado ? null : onBorrar,
                   icon: const Icon(Icons.delete_outline, size: 20),
+                  color: e.textoRotulo,
                 ),
                 const SizedBox(width: 4),
                 if (modoEmpezar)
-                  OutlinedButton(
-                    onPressed: deshabilitado ? null : onEmpezar,
-                    child: Text(t(context).sobrescribirBtn),
+                  BotonPerfilado(
+                    texto: textos.sobrescribirBtn,
+                    color: e.mal,
+                    alto: 42,
+                    onTap: deshabilitado ? null : onEmpezar,
                   )
                 else
-                  FilledButton(
-                    onPressed: deshabilitado ? null : onContinuar,
-                    child: Text(t(context).continuar),
+                  BotonPrincipal(
+                    texto: textos.continuar,
+                    color: acentoDeEquipo(
+                        info.colorPrimario, info.colorSecundario),
+                    alto: 42,
+                    onTap: deshabilitado ? null : onContinuar,
                   ),
               ],
             ),
@@ -552,36 +619,44 @@ class _FichaDeSlot extends StatelessWidget {
   }
 
   Widget _vacia(BuildContext context) {
-    final outline = Theme.of(context).colorScheme.outline;
-    return Card(
-      margin: EdgeInsets.zero,
+    final e = Estilo.de(context);
+    final textos = t(context);
+    return PanelCortado(
+      fondo: e.panelApagado,
+      corte: 14,
+      borde: Border.all(color: e.linea),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
+        padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
         child: Row(
           children: [
-            Icon(Icons.add_circle_outline, color: outline),
+            Icon(Icons.add_circle_outline, color: e.textoRotulo),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(t(context).partidaNumero(resumen.numero),
-                      style: TextStyle(
-                          fontSize: 10,
-                          letterSpacing: 1,
-                          fontWeight: FontWeight.bold,
-                          color: outline)),
-                  Text(t(context).ranuraVaciaLabel,
-                      style: TextStyle(fontSize: 15, color: outline)),
+                  Text(mayus(textos.partidaNumero(resumen.numero)),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: rotulo(e, tamano: 9)),
+                  const SizedBox(height: 2),
+                  Text(textos.ranuraVaciaLabel,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 14, color: e.textoTenue)),
                 ],
               ),
             ),
+            const SizedBox(width: 8),
             // Cargando partida no hay nada que cargar en una ranura vacía:
             // el botón se queda a la vista pero apagado, para que se entienda
             // que la ranura existe y está libre.
-            OutlinedButton(
-              onPressed: deshabilitado || !modoEmpezar ? null : onEmpezar,
-              child: Text(t(context).empezarBtn),
+            BotonPerfilado(
+              texto: textos.empezarBtn,
+              color: e.marca,
+              alto: 42,
+              onTap: deshabilitado || !modoEmpezar ? null : onEmpezar,
             ),
           ],
         ),

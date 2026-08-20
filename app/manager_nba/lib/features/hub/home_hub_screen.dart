@@ -30,8 +30,9 @@ import '../mercado/ofertas_screen.dart';
 import '../mercado/traspasos_screen.dart';
 import '../../i18n/textos.dart';
 import '../../shared/contraste.dart';
-import '../../shared/equipo_logo.dart';
+import '../../shared/estilo.dart';
 import '../../shared/navegacion.dart';
+import '../../shared/pantalla.dart';
 
 /// Menú principal de la franquicia: calendario, tu equipo, clasificación,
 /// traspasos y — una vez completes tu temporada regular de 82 partidos —
@@ -113,6 +114,31 @@ class _EstadoDelHub {
   );
 
   int get partidosJugados => victorias + derrotas;
+}
+
+/// Un destino del menú. Tenerlos como datos y no como trece bloques de
+/// widget repetidos es lo que permite pintarlos de dos formas distintas
+/// (ficha grande o fila) según el ancho, sin duplicar los textos.
+class _Destino {
+  final IconData icono;
+  final Color color;
+  final String titulo;
+  final String subtitulo;
+  final VoidCallback? onTap;
+  final bool bloqueado;
+
+  /// Contador que se pinta a la derecha (ofertas sin resolver).
+  final String? insignia;
+
+  const _Destino({
+    required this.icono,
+    required this.color,
+    required this.titulo,
+    required this.subtitulo,
+    required this.onTap,
+    this.bloqueado = false,
+    this.insignia,
+  });
 }
 
 class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
@@ -201,424 +227,467 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
+  void _abrir(Widget Function(BuildContext) constructor, {RouteSettings? ruta}) {
+    Navigator.of(context).push(MaterialPageRoute(
+      settings: ruta,
+      builder: constructor,
+    ));
+  }
+
+  /// Los cuatro sitios donde entras cada día. Van como fichas grandes: si
+  /// todo pesa lo mismo, no hay menú, hay lista.
+  List<_Destino> _principales(_EstadoDelHub estado) {
     final db = widget.db;
     final equipo = widget.equipo;
     final textos = t(context);
-    final info = infoDe(equipo);
-    final colorEquipo = info.colorPrimario;
+    return [
+      _Destino(
+        icono: Icons.calendar_month,
+        color: const Color(0xFF3D7BFF),
+        titulo: textos.calendario,
+        subtitulo: textos.calendarioDetalle,
+        onTap: () => _abrir(
+          (context) => CalendarioScreen(db: db, equipoUsuario: equipo),
+          ruta: const RouteSettings(name: RutasPrincipales.calendario),
+        ),
+      ),
+      _Destino(
+        icono: Icons.groups,
+        color: const Color(0xFF14A38B),
+        titulo: textos.tuEquipo,
+        subtitulo: textos.tuEquipoDetalle,
+        onTap: () => _abrir((context) => RosterConfigScreen(
+              db: db,
+              equipo: equipo,
+              esConfiguracionInicial: false,
+              onGuardado: () => Navigator.of(context).pop(),
+            )),
+      ),
+      _Destino(
+        icono: Icons.leaderboard,
+        color: const Color(0xFF7A5AF8),
+        titulo: textos.clasificacion,
+        subtitulo: textos.clasificacionDetalle,
+        onTap: () => _abrir(
+            (context) => ClasificacionScreen(db: db, equipoUsuario: equipo)),
+      ),
+      _Destino(
+        icono: Icons.sports,
+        color: const Color(0xFF9C6ADE),
+        titulo: textos.entrenador,
+        subtitulo: estado.entrenador == null
+            ? textos.banquilloVacante
+            : '${estado.entrenador} · media ${estado.mediaEntrenador}',
+        onTap: () => _abrir(
+            (context) => EntrenadorScreen(db: db, equipoUsuario: equipo)),
+      ),
+    ];
+  }
+
+  List<_Destino> _mercado(_EstadoDelHub estado) {
+    final db = widget.db;
+    final equipo = widget.equipo;
+    final textos = t(context);
+    return [
+      _Destino(
+        icono: Icons.swap_horiz,
+        color: const Color(0xFFE08A1E),
+        titulo: textos.traspasos,
+        subtitulo: textos.traspasosDetalle,
+        onTap: () =>
+            _abrir((context) => TraspasosScreen(db: db, equipoUsuario: equipo)),
+      ),
+      _Destino(
+        icono: Icons.mark_email_unread,
+        color: const Color(0xFFD64550),
+        titulo: textos.ofertasRecibidas,
+        subtitulo: estado.ofertas == 0
+            ? textos.nadieTePropuestoNadaAhora
+            : estado.ofertas == 1
+                ? textos.unEquipoQuiereAUnoDeTusJugadores
+                : textos.nEquiposHanPreguntado(estado.ofertas),
+        insignia: estado.ofertas == 0 ? null : '${estado.ofertas}',
+        onTap: () =>
+            _abrir((context) => OfertasScreen(db: db, equipoUsuario: equipo)),
+      ),
+      _Destino(
+        icono: Icons.person_add,
+        color: const Color(0xFF2E9E5B),
+        titulo: textos.agenciaLibre,
+        subtitulo: textos.agenciaLibreDetalle,
+        onTap: () => _abrir(
+            (context) => AgenciaLibreScreen(db: db, equipoUsuario: equipo)),
+      ),
+    ];
+  }
+
+  List<_Destino> _competicion(_EstadoDelHub estado) {
+    final db = widget.db;
+    final equipo = widget.equipo;
+    final textos = t(context);
+    return [
+      _Destino(
+        icono: Icons.emoji_events_outlined,
+        color: const Color(0xFFB07D2B),
+        titulo: textos.nbaCup,
+        subtitulo: estado.copaSembrada
+            ? textos.cuadroYResultadosDeLaCopa(textos.nbaCup)
+            : textos.seDesbloqueaAlTerminarFaseDeGrupos,
+        bloqueado: !estado.copaSembrada,
+        onTap: !estado.copaSembrada
+            ? null
+            : () => _abrir(
+                (context) => TorneoScreen(db: db, equipoUsuario: equipo)),
+      ),
+      _Destino(
+        icono: Icons.star,
+        color: const Color(0xFF1D8FE0),
+        titulo: textos.allStar,
+        subtitulo: textos.allStarDetalle,
+        onTap: () => _abrir((context) => AllStarScreen(db: db)),
+      ),
+      _Destino(
+        icono: Icons.assessment,
+        color: const Color(0xFF2E9E7B),
+        titulo: textos.resumenTemporada,
+        subtitulo: textos.resumenTemporadaDetalle,
+        onTap: () => _abrir((context) =>
+            ResumenTemporadaScreen(db: db, equipoUsuario: equipo)),
+      ),
+      _Destino(
+        icono: Icons.emoji_events,
+        color: const Color(0xFFD4A017),
+        titulo: textos.premios,
+        subtitulo: estado.temporadaCompleta
+            ? textos.premiosDeFinDeTemporadaSubtitulo
+            : textos.seDesbloqueaAlTerminarTemporadaRegular,
+        bloqueado: !estado.temporadaCompleta,
+        onTap: !estado.temporadaCompleta
+            ? null
+            : () => _abrir(
+                (context) => PremiosScreen(db: db, equipoUsuario: equipo)),
+      ),
+      _Destino(
+        icono: Icons.sports_basketball,
+        color: const Color(0xFFE2622C),
+        titulo: textos.playoffs,
+        subtitulo: estado.temporadaCompleta
+            ? textos.bracketDeEliminatorias
+            : textos.seDesbloqueaAlTerminarTemporadaRegular,
+        bloqueado: !estado.temporadaCompleta,
+        onTap: !estado.temporadaCompleta
+            ? null
+            : () => _abrir(
+                (context) => PlayoffsScreen(db: db, equipoUsuario: equipo)),
+      ),
+    ];
+  }
+
+  List<_Destino> _legado() {
+    final db = widget.db;
+    final equipo = widget.equipo;
+    final textos = t(context);
+    return [
+      _Destino(
+        icono: Icons.military_tech,
+        color: const Color(0xFF8E6BC9),
+        titulo: textos.legado,
+        subtitulo: textos.hallOfFameYCamisetasRetiradasSubtitulo(
+            textos.hallOfFame, textos.pestanaCamisetasRetiradas),
+        onTap: () =>
+            _abrir((context) => LegadoScreen(db: db, equipoUsuario: equipo)),
+      ),
+    ];
+  }
+
+  void _abrirAjustes() => _abrir((context) => const AjustesScreen());
+
+  @override
+  Widget build(BuildContext context) {
+    final e = Estilo.de(context);
+    final info = infoDe(widget.equipo);
+    final tamano = tamanoDe(context);
 
     return Scaffold(
+      backgroundColor: e.fondo,
       body: FutureBuilder<_EstadoDelHub>(
         future: _estadoFuture,
         builder: (context, snapshot) {
           final estado = snapshot.data ?? _EstadoDelHub.vacio;
-
-          return CustomScrollView(
-            slivers: [
-              SliverAppBar(
-                pinned: true,
-                // 190 no daba: el apodo del equipo lo pinta
-                // `FlexibleSpaceBar.title` pegado abajo, y la fila de datos
-                // de la cabecera se le echaba encima. En el navegador, donde
-                // el texto se mide distinto, el solape se veía claro.
-                expandedHeight: 214,
-                backgroundColor: colorEquipo,
-                foregroundColor: textoSobre(colorEquipo),
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.settings),
-                    tooltip: textos.ajustes,
-                    onPressed: () =>
-                        Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => const AjustesScreen(),
-                    )),
-                  ),
-                ],
-                flexibleSpace: FlexibleSpaceBar(
-                  title: Text(info.apodo,
-                      style: TextStyle(
-                          color: textoSobre(colorEquipo),
-                          fontWeight: FontWeight.bold)),
-                  titlePadding:
-                      const EdgeInsetsDirectional.only(start: 16, bottom: 14),
-                  background: _CabeceraEquipo(equipo: equipo, estado: estado),
-                ),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
-                sliver: SliverList.list(children: [
-                  TarjetaDeEfectosActivos(
-                      efectos: estado.efectosDeVestuario),
-                  _AccesoMenu(
-                    icono: Icons.calendar_month,
-                    color: const Color(0xFF3D7BFF),
-                    titulo: textos.calendario,
-                    subtitulo: textos.calendarioDetalle,
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                      settings:
-                          const RouteSettings(name: RutasPrincipales.calendario),
-                      builder: (context) =>
-                          CalendarioScreen(db: db, equipoUsuario: equipo),
-                    )),
-                  ),
-                  _AccesoMenu(
-                    icono: Icons.groups,
-                    color: const Color(0xFF14A38B),
-                    titulo: textos.tuEquipo,
-                    subtitulo: textos.tuEquipoDetalle,
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => RosterConfigScreen(
-                        db: db,
-                        equipo: equipo,
-                        esConfiguracionInicial: false,
-                        onGuardado: () => Navigator.of(context).pop(),
-                      ),
-                    )),
-                  ),
-                  _AccesoMenu(
-                    icono: Icons.sports,
-                    color: const Color(0xFF9C6ADE),
-                    titulo: textos.entrenador,
-                    subtitulo: estado.entrenador == null
-                        ? textos.banquilloVacante
-                        : '${estado.entrenador} · media '
-                            '${estado.mediaEntrenador}',
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) =>
-                          EntrenadorScreen(db: db, equipoUsuario: equipo),
-                    )),
-                  ),
-                  _AccesoMenu(
-                    icono: Icons.leaderboard,
-                    color: const Color(0xFF7A5AF8),
-                    titulo: textos.clasificacion,
-                    subtitulo: textos.clasificacionDetalle,
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) =>
-                          ClasificacionScreen(db: db, equipoUsuario: equipo),
-                    )),
-                  ),
-                  _SeparadorDeSeccion(titulo: textos.mercado),
-                  _AccesoMenu(
-                    icono: Icons.swap_horiz,
-                    color: const Color(0xFFE08A1E),
-                    titulo: textos.traspasos,
-                    subtitulo: textos.traspasosDetalle,
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) =>
-                          TraspasosScreen(db: db, equipoUsuario: equipo),
-                    )),
-                  ),
-                  _AccesoMenu(
-                    icono: Icons.mark_email_unread,
-                    color: const Color(0xFFD64550),
-                    titulo: textos.ofertasRecibidas,
-                    subtitulo: estado.ofertas == 0
-                        ? textos.nadieTePropuestoNadaAhora
-                        : estado.ofertas == 1
-                            ? textos.unEquipoQuiereAUnoDeTusJugadores
-                            : textos.nEquiposHanPreguntado(estado.ofertas),
-                    insignia: estado.ofertas == 0 ? null : '${estado.ofertas}',
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) =>
-                          OfertasScreen(db: db, equipoUsuario: equipo),
-                    )),
-                  ),
-                  _AccesoMenu(
-                    icono: Icons.person_add,
-                    color: const Color(0xFF2E9E5B),
-                    titulo: textos.agenciaLibre,
-                    subtitulo: textos.agenciaLibreDetalle,
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) =>
-                          AgenciaLibreScreen(db: db, equipoUsuario: equipo),
-                    )),
-                  ),
-                  _SeparadorDeSeccion(titulo: textos.competicion),
-                  _AccesoMenu(
-                    icono: Icons.emoji_events_outlined,
-                    color: const Color(0xFFB07D2B),
-                    titulo: textos.nbaCup,
-                    subtitulo: estado.copaSembrada
-                        ? textos.cuadroYResultadosDeLaCopa(textos.nbaCup)
-                        : textos.seDesbloqueaAlTerminarFaseDeGrupos,
-                    deshabilitado: !estado.copaSembrada,
-                    onTap: !estado.copaSembrada
-                        ? null
-                        : () => Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) =>
-                                  TorneoScreen(db: db, equipoUsuario: equipo),
-                            )),
-                  ),
-                  _AccesoMenu(
-                    icono: Icons.star,
-                    color: const Color(0xFF1D8FE0),
-                    titulo: textos.allStar,
-                    subtitulo: textos.allStarDetalle,
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => AllStarScreen(db: db),
-                    )),
-                  ),
-                  _AccesoMenu(
-                    icono: Icons.assessment,
-                    color: const Color(0xFF2E9E7B),
-                    titulo: textos.resumenTemporada,
-                    subtitulo: textos.resumenTemporadaDetalle,
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => ResumenTemporadaScreen(
-                          db: db, equipoUsuario: equipo),
-                    )),
-                  ),
-                  _AccesoMenu(
-                    icono: Icons.emoji_events,
-                    color: const Color(0xFFD4A017),
-                    titulo: textos.premios,
-                    subtitulo: estado.temporadaCompleta
-                        ? textos.premiosDeFinDeTemporadaSubtitulo
-                        : textos.seDesbloqueaAlTerminarTemporadaRegular,
-                    deshabilitado: !estado.temporadaCompleta,
-                    onTap: !estado.temporadaCompleta
-                        ? null
-                        : () => Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) =>
-                                  PremiosScreen(db: db, equipoUsuario: equipo),
-                            )),
-                  ),
-                  _AccesoMenu(
-                    icono: Icons.sports_basketball,
-                    color: const Color(0xFFE2622C),
-                    titulo: textos.playoffs,
-                    subtitulo: estado.temporadaCompleta
-                        ? textos.bracketDeEliminatorias
-                        : textos.seDesbloqueaAlTerminarTemporadaRegular,
-                    deshabilitado: !estado.temporadaCompleta,
-                    onTap: !estado.temporadaCompleta
-                        ? null
-                        : () => Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) =>
-                                  PlayoffsScreen(db: db, equipoUsuario: equipo),
-                            )),
-                  ),
-                  _SeparadorDeSeccion(titulo: textos.legado),
-                  _AccesoMenu(
-                    icono: Icons.military_tech,
-                    color: const Color(0xFF8E6BC9),
-                    titulo: textos.legado,
-                    subtitulo: textos.hallOfFameYCamisetasRetiradasSubtitulo(
-                        textos.hallOfFame, textos.pestanaCamisetasRetiradas),
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) =>
-                          LegadoScreen(db: db, equipoUsuario: equipo),
-                    )),
-                  ),
-                ]),
-              ),
-            ],
-          );
+          return tamano == Tamano.amplio
+              ? _anchoDeEscritorio(e, info, estado)
+              : _unaColumna(e, info, estado, tamano);
         },
       ),
     );
   }
+
+  /// Móvil y tablet: la cabecera arriba y el menú debajo, todo en un
+  /// scroll. Lo único que cambia entre los dos es cuántas columnas caben.
+  Widget _unaColumna(
+      Estilo e, EquipoInfo info, _EstadoDelHub estado, Tamano tamano) {
+    final compacto = tamano.esCompacto;
+    final margen = compacto ? 16.0 : 28.0;
+    final acento = colorLegibleComoTexto(info.colorSecundario, context);
+
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: _CabeceraEquipo(
+            equipo: widget.equipo,
+            info: info,
+            estado: estado,
+            margen: margen,
+            columnasDeMarcador: compacto ? 3 : 4,
+            onAjustes: _abrirAjustes,
+          ),
+        ),
+        SliverPadding(
+          padding: EdgeInsets.fromLTRB(margen, 0, margen, 28),
+          sliver: SliverList.list(children: [
+            TarjetaDeEfectosActivos(efectos: estado.efectosDeVestuario),
+            ..._secciones(e, estado, acento,
+                columnasFichas: compacto ? 2 : 4,
+                columnasFilas: compacto ? 1 : 2,
+                altoFicha: compacto ? 138 : 150),
+          ]),
+        ),
+      ],
+    );
+  }
+
+  /// Escritorio: la identidad del equipo se queda fija en una columna a la
+  /// izquierda y el menú ocupa el resto. Estirar el diseño de móvil a 1600
+  /// px daría filas de un kilómetro con tres palabras dentro.
+  Widget _anchoDeEscritorio(
+      Estilo e, EquipoInfo info, _EstadoDelHub estado) {
+    final acento = colorLegibleComoTexto(info.colorSecundario, context);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(
+          width: 396,
+          child: _PanelIdentidad(
+            equipo: widget.equipo,
+            info: info,
+            estado: estado,
+            onAjustes: _abrirAjustes,
+          ),
+        ),
+        Expanded(
+          child: CustomScrollView(
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(32, 30, 32, 32),
+                sliver: SliverList.list(children: [
+                  TarjetaDeEfectosActivos(efectos: estado.efectosDeVestuario),
+                  ..._secciones(e, estado, acento,
+                      columnasFichas: 4,
+                      columnasFilas: 3,
+                      altoFicha: 190),
+                ]),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  List<Widget> _secciones(
+    Estilo e,
+    _EstadoDelHub estado,
+    Color acento, {
+    required int columnasFichas,
+    required int columnasFilas,
+    required double altoFicha,
+  }) {
+    final textos = t(context);
+    return [
+      const SizedBox(height: 16),
+      SeparadorSeccion(titulo: textos.tuFranquiciaSeccion, acento: acento),
+      const SizedBox(height: 10),
+      _rejilla(
+        _principales(estado)
+            .map((d) => _Ficha(destino: d, alto: altoFicha))
+            .toList(),
+        columnasFichas,
+        9,
+      ),
+      const SizedBox(height: 22),
+      SeparadorSeccion(titulo: textos.mercado, acento: acento),
+      const SizedBox(height: 10),
+      _rejilla(_mercado(estado).map((d) => _Fila(destino: d)).toList(),
+          columnasFilas, 7),
+      const SizedBox(height: 22),
+      SeparadorSeccion(titulo: textos.competicion, acento: acento),
+      const SizedBox(height: 10),
+      _rejilla(_competicion(estado).map((d) => _Fila(destino: d)).toList(),
+          columnasFilas, 7),
+      const SizedBox(height: 22),
+      SeparadorSeccion(titulo: textos.legado, acento: acento),
+      const SizedBox(height: 10),
+      _rejilla(
+          _legado().map((d) => _Fila(destino: d)).toList(), columnasFilas, 7),
+    ];
+  }
+
+  /// Reparte [piezas] en [columnas] columnas iguales.
+  ///
+  /// A mano y no con un GridView porque estas rejillas viven dentro de un
+  /// sliver y tienen alto conocido: un GridView anidado obligaría a
+  /// `shrinkWrap` y a pelearse con el `childAspectRatio` para conseguir lo
+  /// que aquí es una fila de `Expanded`.
+  Widget _rejilla(List<Widget> piezas, int columnas, double hueco) {
+    if (columnas <= 1) {
+      return Column(
+        children: [
+          for (var i = 0; i < piezas.length; i++) ...[
+            if (i > 0) SizedBox(height: hueco),
+            piezas[i],
+          ],
+        ],
+      );
+    }
+
+    final filas = <Widget>[];
+    for (var i = 0; i < piezas.length; i += columnas) {
+      final trozo = piezas.skip(i).take(columnas).toList();
+      filas.add(IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (var c = 0; c < columnas; c++) ...[
+              if (c > 0) SizedBox(width: hueco),
+              // Los huecos que sobran en la última fila se quedan vacíos:
+              // así las columnas siguen alineadas con las de arriba.
+              Expanded(
+                  child: c < trozo.length ? trozo[c] : const SizedBox.shrink()),
+            ],
+          ],
+        ),
+      ));
+      if (i + columnas < piezas.length) filas.add(SizedBox(height: hueco));
+    }
+    return Column(children: filas);
+  }
 }
 
-/// La franja de arriba: logo grande, nombre completo y de un vistazo cómo va
-/// la temporada (récord y masa salarial).
+/// La franja de arriba en móvil y tablet: placa del equipo, apodo grande,
+/// palmarés y el marcador con cómo va la temporada.
 class _CabeceraEquipo extends StatelessWidget {
   final String equipo;
+  final EquipoInfo info;
   final _EstadoDelHub estado;
+  final double margen;
+  final int columnasDeMarcador;
+  final VoidCallback onAjustes;
 
-  const _CabeceraEquipo({required this.equipo, required this.estado});
+  const _CabeceraEquipo({
+    required this.equipo,
+    required this.info,
+    required this.estado,
+    required this.margen,
+    required this.columnasDeMarcador,
+    required this.onAjustes,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final info = infoDe(equipo);
     final fondo = info.colorPrimario;
     final sobre = textoSobre(fondo);
-    final secundario = textoSecundarioSobre(fondo);
+    final acento = acentoDeEquipo(info.colorPrimario, info.colorSecundario);
 
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [fondo, Color.lerp(fondo, info.colorSecundario, 0.45)!],
+          // Siempre acaba casi en negro, en los dos modos: la cabecera es
+          // la banda de identidad del club, no parte del fondo de la app.
+          colors: [fondo, const Color(0xFF05070B)],
         ),
       ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          // El 58 de abajo es el hueco que se le deja al apodo del equipo,
-          // que va superpuesto en la misma franja (ver expandedHeight).
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 58),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  EquipoLogo(codigoEquipo: equipo, tamano: 46),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('$equipo · ${info.ciudad}',
-                            style: TextStyle(
-                                color: secundario,
-                                fontSize: 13,
-                                letterSpacing: 0.3)),
-                        Text(
-                            estado.anioTemporada.isEmpty
-                                ? '${t(context).temporada} ${estado.temporada}'
-                                : '${estado.anioTemporada}  ·  '
-                                    '${t(context).temporada} '
-                                    '${estado.temporada}',
-                            style: TextStyle(
-                                color: sobre,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600)),
-                        if (estado.anillos > 0 || estado.copas > 0)
-                          _Palmares(
-                            anillos: estado.anillos,
-                            copas: estado.copas,
-                            color: sobre,
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              // Cada dato en su columna y con separadores en medio: pegados
-              // el uno al otro se leían como una sola cifra larga. Los
-              // textos se recortan en vez de desbordar la franja.
-              Row(
-                children: [
-                  Expanded(
-                    child: _Dato(
-                      // El récord ya deja claro cuántos se han jugado (V+D),
-                      // así que no hace falta un dato aparte para eso.
-                      etiqueta: '${t(context).record} (${estado.partidosJugados}/82)',
-                      valor: '${estado.victorias}-${estado.derrotas}',
-                      color: sobre,
-                      colorEtiqueta: secundario,
-                    ),
-                  ),
-                  _SeparadorDeDato(color: secundario),
-                  Expanded(
-                    child: _Dato(
-                      etiqueta: estado.conferencia,
-                      valor: estado.puestoConferencia == 0
-                          ? '—'
-                          : '${estado.puestoConferencia}º',
-                      // Del 1 al 10 entras en playoffs o play-in; del 11 para
-                      // abajo, a casa. Se ve de un vistazo por el color.
-                      color: estado.puestoConferencia == 0 ||
-                              estado.puestoConferencia <= 10
-                          ? sobre
-                          : const Color(0xFFFFC5C5),
-                      colorEtiqueta: secundario,
-                    ),
-                  ),
-                  _SeparadorDeDato(color: secundario),
-                  Expanded(
-                    child: _Dato(
-                      etiqueta: t(context).salarialLabel,
-                      valor: formatearSalario(estado.masaSalarial),
-                      color: estado.masaSalarial > topeSalarial
-                          ? const Color(0xFFFFC5C5)
-                          : sobre,
-                      colorEtiqueta: secundario,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SeparadorDeDato extends StatelessWidget {
-  final Color color;
-
-  const _SeparadorDeDato({required this.color});
-
-  @override
-  Widget build(BuildContext context) => Container(
-        width: 1,
-        height: 34,
-        margin: const EdgeInsets.symmetric(horizontal: 10),
-        color: color.withValues(alpha: 0.35),
-      );
-}
-
-class _Dato extends StatelessWidget {
-  final String etiqueta;
-  final String valor;
-  final Color color;
-  final Color colorEtiqueta;
-
-  const _Dato({
-    required this.etiqueta,
-    required this.valor,
-    required this.color,
-    required this.colorEtiqueta,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(etiqueta.toUpperCase(),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-                color: colorEtiqueta, fontSize: 10, letterSpacing: 0.6)),
-        Text(valor,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-                color: color, fontSize: 17, fontWeight: FontWeight.bold)),
-      ],
-    );
-  }
-}
-
-class _SeparadorDeSeccion extends StatelessWidget {
-  final String titulo;
-
-  const _SeparadorDeSeccion({required this.titulo});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 16, 4, 8),
-      child: Row(
+      child: Stack(
         children: [
-          Text(titulo.toUpperCase(),
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.1,
-                color: Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: 0.55),
-              )),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Divider(
-              height: 1,
-              color:
-                  Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.12),
+          Positioned(top: 0, right: 0, child: CunaEsquina(color: acento)),
+          Positioned(
+            top: 2,
+            right: -8,
+            child: MonogramaFantasma(texto: equipo, tamano: 132),
+          ),
+          SafeArea(
+            bottom: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.fromLTRB(margen, 12, margen, 0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      PlacaEquipo(
+                        codigo: equipo,
+                        primario: info.colorPrimario,
+                        secundario: info.colorSecundario,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              mayus('${info.ciudad} · ${estado.conferencia}'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 2.2,
+                                  color: acento),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              mayus(info.apodo),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontFamily: familiaTitular,
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w800,
+                                  height: 0.98,
+                                  letterSpacing: -0.5,
+                                  color: sobre),
+                            ),
+                            if (estado.anillos > 0 || estado.copas > 0) ...[
+                              const SizedBox(height: 8),
+                              _Palmares(
+                                  anillos: estado.anillos,
+                                  copas: estado.copas,
+                                  acento: acento,
+                                  sobre: sobre),
+                            ],
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.settings),
+                        color: sobre,
+                        tooltip: t(context).ajustes,
+                        onPressed: onAjustes,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+                _Marcador(
+                  estado: estado,
+                  acento: acento,
+                  margen: margen,
+                  columnas: columnasDeMarcador,
+                ),
+              ],
             ),
           ),
         ],
@@ -627,93 +696,359 @@ class _SeparadorDeSeccion extends StatelessWidget {
   }
 }
 
-class _AccesoMenu extends StatelessWidget {
-  final IconData icono;
-  final String titulo;
-  final String subtitulo;
-  final VoidCallback? onTap;
-  final bool deshabilitado;
-  final Color color;
+/// La misma información que `_CabeceraEquipo`, pero en vertical para la
+/// columna fija de escritorio.
+class _PanelIdentidad extends StatelessWidget {
+  final String equipo;
+  final EquipoInfo info;
+  final _EstadoDelHub estado;
+  final VoidCallback onAjustes;
 
-  /// Contador que se pinta a la derecha (ofertas sin resolver, por ejemplo).
-  final String? insignia;
-
-  const _AccesoMenu({
-    required this.icono,
-    required this.titulo,
-    required this.subtitulo,
-    required this.onTap,
-    required this.color,
-    this.deshabilitado = false,
-    this.insignia,
+  const _PanelIdentidad({
+    required this.equipo,
+    required this.info,
+    required this.estado,
+    required this.onAjustes,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Opacity(
-      opacity: deshabilitado ? 0.45 : 1.0,
-      child: Card(
-        margin: const EdgeInsets.only(bottom: 10),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(12),
+    final fondo = info.colorPrimario;
+    final sobre = textoSobre(fondo);
+    final secundario = textoSecundarioSobre(fondo);
+    final acento = acentoDeEquipo(info.colorPrimario, info.colorSecundario);
+    final textos = t(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [fondo, const Color(0xFF05070B)],
+        ),
+        border: Border(right: BorderSide(color: acento, width: 2)),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+              top: 0,
+              right: 0,
+              child: CunaEsquina(color: acento, tamano: 190, opacidad: 0.11)),
+          Positioned(
+            left: -18,
+            bottom: -30,
+            child: MonogramaFantasma(texto: equipo, tamano: 230),
+          ),
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(30, 34, 30, 30),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  PlacaEquipo(
+                    codigo: equipo,
+                    primario: info.colorPrimario,
+                    secundario: info.colorSecundario,
+                    tamano: 84,
                   ),
-                  child: Icon(icono,
-                      size: 24, color: colorLegibleComoTexto(color, context)),
+                  const SizedBox(height: 20),
+                  Text(
+                    mayus('${info.ciudad} · ${estado.conferencia}'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 2.6,
+                        color: acento),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    mayus(info.apodo),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontFamily: familiaTitular,
+                        fontSize: 52,
+                        fontWeight: FontWeight.w800,
+                        height: 0.92,
+                        letterSpacing: -1,
+                        color: sobre),
+                  ),
+                  const SizedBox(height: 9),
+                  Text(
+                    estado.anioTemporada.isEmpty
+                        ? '${textos.temporada} ${estado.temporada}'
+                        : '${estado.anioTemporada} · '
+                            '${textos.temporada} ${estado.temporada}',
+                    style: TextStyle(fontSize: 13, color: secundario),
+                  ),
+                  if (estado.anillos > 0 || estado.copas > 0) ...[
+                    const SizedBox(height: 16),
+                    _Palmares(
+                        anillos: estado.anillos,
+                        copas: estado.copas,
+                        acento: acento,
+                        sobre: sobre),
+                  ],
+                  const SizedBox(height: 26),
+                  _MarcadorVertical(estado: estado, acento: acento),
+                  const SizedBox(height: 20),
+                  _BotonFantasma(
+                    icono: Icons.settings,
+                    texto: textos.ajustes,
+                    color: sobre,
+                    onTap: onAjustes,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// La franja de datos pegada bajo la cabecera: récord, puesto y salarial.
+class _Marcador extends StatelessWidget {
+  final _EstadoDelHub estado;
+  final Color acento;
+  final double margen;
+  final int columnas;
+
+  const _Marcador({
+    required this.estado,
+    required this.acento,
+    required this.margen,
+    required this.columnas,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final e = Estilo.de(context);
+    final datos = _datosDelMarcador(context, estado, e);
+    final visibles = datos.take(columnas).toList();
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: e.marcador,
+        border: Border(top: BorderSide(color: acento, width: 2)),
+      ),
+      // IntrinsicHeight porque el `stretch` de abajo —el que hace que los
+      // filetes separadores lleguen de arriba abajo— necesita una altura
+      // definida, y aquí dentro de un sliver no la hay.
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (var i = 0; i < visibles.length; i++)
+              Expanded(
+                child: Container(
+                  decoration: i == 0
+                      ? null
+                      : BoxDecoration(
+                          border:
+                              Border(left: BorderSide(color: e.lineaFuerte))),
+                  padding:
+                      EdgeInsets.fromLTRB(i == 0 ? margen : 14, 11, 14, 12),
+                  child: _Dato(dato: visibles[i]),
                 ),
-                const SizedBox(width: 14),
-                Expanded(
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static List<_DatoDeMarcador> _datosDelMarcador(
+      BuildContext context, _EstadoDelHub estado, Estilo e) {
+    final textos = t(context);
+    return [
+      _DatoDeMarcador(
+        etiqueta: '${textos.record} · ${estado.partidosJugados}/82',
+        valor: '${estado.victorias}-${estado.derrotas}',
+      ),
+      _DatoDeMarcador(
+        etiqueta: estado.conferencia,
+        valor: estado.puestoConferencia == 0
+            ? '—'
+            : '${estado.puestoConferencia}º',
+        // Del 1 al 10 entras en playoffs o play-in; del 11 para abajo, a
+        // casa. Se ve de un vistazo por el color.
+        color: estado.puestoConferencia == 0
+            ? null
+            : (estado.puestoConferencia <= 10 ? e.bien : e.mal),
+      ),
+      _DatoDeMarcador(
+        etiqueta: textos.salarialLabel,
+        valor: formatearSalario(estado.masaSalarial),
+        color: estado.masaSalarial > topeSalarial ? e.mal : null,
+      ),
+      _DatoDeMarcador(
+        etiqueta: textos.entrenador,
+        valor: estado.entrenador == null
+            ? '—'
+            : '${estado.entrenador} ${estado.mediaEntrenador}',
+      ),
+    ];
+  }
+}
+
+/// El marcador de la columna de escritorio: una fila por dato, con la cifra
+/// pegada a la derecha.
+class _MarcadorVertical extends StatelessWidget {
+  final _EstadoDelHub estado;
+  final Color acento;
+
+  const _MarcadorVertical({required this.estado, required this.acento});
+
+  @override
+  Widget build(BuildContext context) {
+    final e = Estilo.de(context);
+    final datos = _Marcador._datosDelMarcador(context, estado, e);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.42),
+        border: Border(top: BorderSide(color: acento, width: 2)),
+      ),
+      child: Column(
+        children: [
+          for (var i = 0; i < datos.length; i++) ...[
+            if (i > 0) Container(height: 1, color: Colors.white12),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 12, 18, 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(mayus(datos[i].etiqueta),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 1.7,
+                            color: Colors.white70)),
+                  ),
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: Text(
+                      datos[i].valor,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                          fontFamily: familiaTitular,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          height: 1,
+                          color: datos[i].color ?? Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _DatoDeMarcador {
+  final String etiqueta;
+  final String valor;
+  final Color? color;
+
+  const _DatoDeMarcador({
+    required this.etiqueta,
+    required this.valor,
+    this.color,
+  });
+}
+
+class _Dato extends StatelessWidget {
+  final _DatoDeMarcador dato;
+
+  const _Dato({required this.dato});
+
+  @override
+  Widget build(BuildContext context) {
+    final e = Estilo.de(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(mayus(dato.etiqueta),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: rotulo(e, tamano: 9)),
+        const SizedBox(height: 1),
+        Text(dato.valor,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: cifra(e, tamano: 26, color: dato.color)),
+      ],
+    );
+  }
+}
+
+/// Ficha grande: los cuatro destinos principales.
+class _Ficha extends StatelessWidget {
+  final _Destino destino;
+  final double alto;
+
+  const _Ficha({required this.destino, required this.alto});
+
+  @override
+  Widget build(BuildContext context) {
+    final e = Estilo.de(context);
+    final color = colorLegibleComoTexto(destino.color, context);
+
+    return SizedBox(
+      height: alto,
+      child: PanelCortado(
+        fondo: e.panel,
+        corte: 16,
+        borde: Border.all(color: e.linea),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: destino.onTap,
+            child: Stack(
+              children: [
+                Positioned(top: 0, left: 0, child: Container(width: 48, height: 3, color: color)),
+                Positioned(
+                  right: -14,
+                  bottom: -12,
+                  child: Icon(destino.icono,
+                      size: alto * 0.55,
+                      color: color.withValues(alpha: 0.10)),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(13, 16, 13, 13),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(titulo,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 15)),
-                      const SizedBox(height: 2),
-                      Text(subtitulo,
+                      Icon(destino.icono, size: 22, color: color),
+                      const Spacer(),
+                      Text(mayus(destino.titulo),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: titular(e, tamano: alto > 170 ? 22 : 18)),
+                      const SizedBox(height: 3),
+                      Text(destino.subtitulo,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 12.5,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurface
-                                .withValues(alpha: 0.65),
-                          )),
+                              fontSize: 11.5,
+                              height: 1.28,
+                              color: e.textoTenue)),
                     ],
                   ),
                 ),
-                if (insignia != null && !deshabilitado) ...[
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFD64550),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(insignia!,
-                        style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white)),
-                  ),
-                  const SizedBox(width: 6),
-                ],
-                if (!deshabilitado)
-                  Icon(Icons.chevron_right,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.35)),
               ],
             ),
           ),
@@ -723,6 +1058,131 @@ class _AccesoMenu extends StatelessWidget {
   }
 }
 
+/// Fila de acceso: todo lo demás.
+class _Fila extends StatelessWidget {
+  final _Destino destino;
+
+  const _Fila({required this.destino});
+
+  @override
+  Widget build(BuildContext context) {
+    final e = Estilo.de(context);
+    final color = colorLegibleComoTexto(destino.color, context);
+    final bloqueado = destino.bloqueado;
+
+    return Opacity(
+      opacity: bloqueado ? 0.5 : 1,
+      child: PanelCortado(
+        fondo: bloqueado ? e.panelApagado : e.panelSuave,
+        corte: 11,
+        borde: Border(
+          left: BorderSide(
+              color: bloqueado ? color.withValues(alpha: 0.35) : color,
+              width: 3),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: destino.onTap,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 58),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(0, 8, 12, 8),
+                child: Row(
+                  children: [
+                    SizedBox(
+                        width: 46,
+                        child: Icon(destino.icono, size: 21, color: color)),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(mayus(destino.titulo),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: titular(e, tamano: 17)),
+                          const SizedBox(height: 2),
+                          Text(destino.subtitulo,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontSize: 11.5, color: e.textoTenue)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    if (destino.insignia != null && !bloqueado)
+                      Container(
+                        constraints: const BoxConstraints(minWidth: 24),
+                        height: 24,
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(horizontal: 7),
+                        color: const Color(0xFFD64550),
+                        child: Text(destino.insignia!,
+                            style: TextStyle(
+                                fontFamily: familiaTitular,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white)),
+                      )
+                    else
+                      Icon(bloqueado ? Icons.lock_outline : Icons.chevron_right,
+                          size: bloqueado ? 16 : 18,
+                          color: e.textoRotulo),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Botón de contorno para la columna de escritorio.
+class _BotonFantasma extends StatelessWidget {
+  final IconData icono;
+  final String texto;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _BotonFantasma({
+    required this.icono,
+    required this.texto,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white.withValues(alpha: 0.07),
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          height: 46,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(border: Border.all(color: Colors.white24)),
+          child: Row(
+            children: [
+              Icon(icono, size: 18, color: color),
+              const SizedBox(width: 9),
+              Text(mayus(texto),
+                  style: TextStyle(
+                      fontFamily: familiaTitular,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.4,
+                      color: color)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 /// Los títulos de tu franquicia en la cabecera: anillos y NBA Cups.
 ///
@@ -733,40 +1193,79 @@ class _AccesoMenu extends StatelessWidget {
 class _Palmares extends StatelessWidget {
   final int anillos;
   final int copas;
-  final Color color;
+  final Color acento;
+  final Color sobre;
 
   const _Palmares({
     required this.anillos,
     required this.copas,
-    required this.color,
+    required this.acento,
+    required this.sobre,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 3),
+    final textos = t(context);
+    return Wrap(
+      spacing: 8,
+      runSpacing: 6,
+      children: [
+        if (anillos > 0)
+          _Chapa(
+            icono: Icons.emoji_events,
+            colorIcono: const Color(0xFFFFC94D),
+            borde: acento,
+            texto: textos.anillos(anillos),
+            colorTexto: sobre,
+          ),
+        if (copas > 0)
+          _Chapa(
+            icono: Icons.military_tech,
+            colorIcono: const Color(0xFFB9C6D6),
+            borde: const Color(0xFFB9C6D6),
+            texto: textos.copasGanadas(copas, textos.nbaCup),
+            colorTexto: sobre,
+          ),
+      ],
+    );
+  }
+}
+
+class _Chapa extends StatelessWidget {
+  final IconData icono;
+  final Color colorIcono;
+  final Color borde;
+  final String texto;
+  final Color colorTexto;
+
+  const _Chapa({
+    required this.icono,
+    required this.colorIcono,
+    required this.borde,
+    required this.texto,
+    required this.colorTexto,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(6, 3, 9, 3),
+      decoration: BoxDecoration(
+        color: borde.withValues(alpha: 0.14),
+        border: Border(left: BorderSide(color: borde, width: 2)),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (anillos > 0) ...[
-            const Icon(Icons.emoji_events, size: 15, color: Color(0xFFFFC94D)),
-            const SizedBox(width: 3),
-            Text(
-              anillos == 1 ? '1 anillo' : '$anillos anillos',
+          Icon(icono, size: 14, color: colorIcono),
+          const SizedBox(width: 5),
+          Text(mayus(texto),
               style: TextStyle(
-                  color: color, fontSize: 12, fontWeight: FontWeight.w600),
-            ),
-          ],
-          if (anillos > 0 && copas > 0) const SizedBox(width: 10),
-          if (copas > 0) ...[
-            const Icon(Icons.military_tech, size: 15, color: Color(0xFFB9C6D6)),
-            const SizedBox(width: 3),
-            Text(
-              copas == 1 ? '1 NBA Cup' : '$copas NBA Cups',
-              style: TextStyle(
-                  color: color, fontSize: 12, fontWeight: FontWeight.w600),
-            ),
-          ],
+                  fontFamily: familiaTitular,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.4,
+                  color: colorTexto)),
         ],
       ),
     );

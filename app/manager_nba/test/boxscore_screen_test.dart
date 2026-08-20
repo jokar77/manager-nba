@@ -46,30 +46,31 @@ void main() {
     await tester.pump();
 
     // "110"/"100" también aparecen como Total en la tabla de parciales por
-    // cuarto, así que hay que quedarse con el marcador grande (fontSize 32).
+    // cuarto, así que hay que quedarse con el marcador grande.
     Text marcadorGrande(String puntos) => tester
         .widgetList<Text>(find.text(puntos))
-        .firstWhere((t) => t.style?.fontSize == 32);
+        .firstWhere((t) => (t.style?.fontSize ?? 0) >= 30);
 
-    final textoMarcadorLocal = marcadorGrande('110');
-    expect(textoMarcadorLocal.style?.color, isNot(Colors.green));
-    expect(textoMarcadorLocal.style?.fontWeight, FontWeight.bold);
+    final local = marcadorGrande('110');
+    final visitante = marcadorGrande('100');
 
-    final textoMarcadorVisitante = marcadorGrande('100');
-    expect(textoMarcadorVisitante.style?.color, isNot(Colors.green));
-    expect(textoMarcadorVisitante.style?.fontWeight, FontWeight.normal);
+    // Lo que se vigila es que el marcador NO se pinte de verde: hubo una
+    // versión que teñía de verde al ganador y en un boxscore eso se lee
+    // como si el color fuera parte del resultado.
+    expect(local.style?.color, isNot(Colors.green));
+    expect(visitante.style?.color, isNot(Colors.green));
 
-    // "DEN"/"LAL" también aparecen en la fila de parciales por cuarto, así
-    // que hay que quedarse con el título grande de cada _TablaEquipo
-    // (fontSize 18) para comprobar su color.
+    // Y que ganador y perdedor se distingan. Desde el rediseño no es por el
+    // grosor de la letra (los dos van en la misma condensada gruesa) sino
+    // por la tinta: el ganador con la principal, el perdedor apagado.
+    expect(local.style?.color, isNot(visitante.style?.color));
+
+    // La cabecera de cada tabla lleva el color de SU club, no uno común.
     Text tituloDeTabla(String equipo) => tester
-        .widgetList<Text>(find.text(equipo))
-        .firstWhere((t) => t.style?.fontSize == 18);
+        .widget<Text>(find.text(infoDe(equipo).nombreCompleto.toUpperCase()));
 
     final tituloLocal = tituloDeTabla('DEN');
     final tituloVisitante = tituloDeTabla('LAL');
-    expect(tituloLocal.style?.color, infoDe('DEN').colorPrimario);
-    expect(tituloVisitante.style?.color, infoDe('LAL').colorPrimario);
     expect(tituloLocal.style?.color, isNot(tituloVisitante.style?.color));
   });
 }

@@ -23,6 +23,10 @@ import 'package:manager_nba/features/roster/roster_config_screen.dart';
 import 'package:manager_nba/features/temporada/legado_screen.dart';
 import 'package:manager_nba/features/temporada/resumen_temporada_screen.dart';
 
+import 'package:manager_nba/shared/estilo.dart';
+
+import 'tipografia_de_prueba.dart';
+
 /// El mismo juego tiene que poder jugarse en un iPhone en vertical, en un
 /// iPad y en una ventana de escritorio. Un desborde de layout en Flutter
 /// sale como excepción en test, así que montar cada pantalla a los tres
@@ -39,6 +43,10 @@ const _tamanos = <String, Size>{
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  // Con la fuente de verdad, no con la de relleno: si no, lo que se mide
+  // aquí no es lo que se ve (ver tipografia_de_prueba.dart).
+  setUpAll(cargarTipografiaDelJuego);
 
   late AppDatabase db;
   late AlmacenDeSlotsEnMemoria almacen;
@@ -83,7 +91,8 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(MaterialApp(home: pantalla));
+    await tester.pumpWidget(
+        MaterialApp(theme: temaDeApp(Brightness.light), home: pantalla));
     for (var i = 0; i < 6; i++) {
       await tester.pump(const Duration(milliseconds: 100));
     }
@@ -246,7 +255,9 @@ void main() {
         tester.renderObject<RenderBox>(find.byType(Scrollable).first);
     final grid = tester.renderObject<RenderBox>(find.byType(GridView).first);
     final cabecera = tester.renderObject<RenderBox>(find
-        .textContaining(RegExp(r'(Octubre|Noviembre|Diciembre) \d{4}'))
+        // En mayúsculas desde el rediseño: la cabecera de mes usa el
+        // mismo separador de sección que el resto del juego.
+        .textContaining(RegExp(r'(OCTUBRE|NOVIEMBRE|DICIEMBRE) \d{4}'))
         .first);
 
     // La rejilla, el nombre del mes y la fila de iniciales de los días.

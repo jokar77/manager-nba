@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/equipos_info.dart';
 import '../../i18n/textos.dart';
+import '../../shared/estilo.dart';
 import '../../domain/nueva_temporada_repository.dart';
 import '../../domain/playoffs_repository.dart';
 import '../../shared/campeon_dialog.dart';
@@ -132,9 +133,25 @@ class _PlayoffsScreenState extends State<PlayoffsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final info = infoDe(widget.equipoUsuario);
+
     return Scaffold(
-      appBar: AppBar(title: Text(t(context).playoffs)),
-      body: FutureBuilder<List<Serie>>(
+      body: Column(
+        children: [
+          BarraDeTitulo(
+            codigo: widget.equipoUsuario,
+            primario: info.colorPrimario,
+            secundario: info.colorSecundario,
+            titulo: t(context).playoffs,
+          ),
+          Expanded(child: _cuerpo(context)),
+        ],
+      ),
+    );
+  }
+
+  Widget _cuerpo(BuildContext context) {
+    return FutureBuilder<List<Serie>>(
         future: _seriesFuture,
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
@@ -286,7 +303,6 @@ class _PlayoffsScreenState extends State<PlayoffsScreen> {
             ],
           );
         },
-      ),
     );
   }
 }
@@ -515,30 +531,37 @@ class _FilaPlayIn extends StatelessWidget {
   }
 
   Widget _equipo(BuildContext context, String equipo, int seed) {
+    final e = Estilo.de(context);
     final gana = serie.ganador == equipo;
     final perdio = serie.ganador != null && !gana;
     return Row(
       children: [
         SizedBox(
-          width: 18,
+          width: 16,
           child: Text('$seed',
               style: TextStyle(
-                  fontSize: 10,
-                  color: Theme.of(context).colorScheme.outline)),
+                  fontFamily: familiaTitular,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: e.textoRotulo)),
         ),
         EquipoLogo(codigoEquipo: equipo, tamano: 18),
         const SizedBox(width: 5),
         Expanded(
           child: Text(
-            infoDe(equipo).apodo,
+            mayus(infoDe(equipo).apodo),
+            maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 12,
-              fontWeight: gana ? FontWeight.bold : FontWeight.normal,
+              fontFamily: familiaTitular,
+              fontSize: 13,
+              // El que gana la serie va en negrita; al que cae se le tacha,
+              // que es como se lee un cuadro de eliminatorias de verdad.
+              fontWeight: gana ? FontWeight.w800 : FontWeight.w700,
+              height: 1.05,
               decoration: perdio ? TextDecoration.lineThrough : null,
-              color: perdio
-                  ? Theme.of(context).colorScheme.outline
-                  : null,
+              decorationColor: e.textoRotulo,
+              color: perdio ? e.textoRotulo : e.texto,
             ),
           ),
         ),

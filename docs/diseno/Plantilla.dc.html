@@ -1,0 +1,358 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Archivo:wght@400;500;600;700&display=swap">
+  <style>
+    body {
+      margin: 0;
+      background: #0A0C10;
+      color: #F2F5F9;
+      font-family: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      --eq: #0E2240;
+      --ac: #FEC524;
+    }
+    a { color: #FEC524; }
+    a:hover { color: #FFDA63; }
+    .cond { font-family: 'Saira Condensed', 'Arial Narrow', Arial, sans-serif; }
+    .bloque { background: #10141B; border: 1px solid rgba(255,255,255,0.06); border-left: 3px solid var(--ac); }
+    .rot { font-size: 9px; font-weight: 700; letter-spacing: 1.7px; text-transform: uppercase; color: rgba(242,245,249,0.42); }
+    .nom { font-size: 19px; font-weight: 700; letter-spacing: 0.2px; text-transform: uppercase; line-height: 1.02; }
+    .meta { font-size: 11px; color: rgba(242,245,249,0.5); margin-top: 2px; }
+    .badge {
+      width: 46px; height: 46px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      clip-path: polygon(0 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%);
+      font-size: 24px; font-weight: 800; line-height: 1;
+    }
+    .chip { display: inline-flex; align-items: center; padding: 2px 6px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.3px; }
+    .step { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; padding: 0; }
+  </style>
+</helmet>
+
+<div class="pantalla" style="--eq: {{equipo}}; --ac: {{acento}}; width: 390px; position: relative; background: #0A0C10; padding-bottom: 20px">
+
+  <!-- ===== BARRA ===== -->
+  <div style="position: relative; overflow: hidden; background: linear-gradient(112deg, var(--eq) 0%, #05070B 132%); padding: 44px 14px 0">
+    <div style="position: absolute; top: 0; right: 0; width: 110px; height: 110px; background: var(--ac); opacity: 0.13; clip-path: polygon(100% 0, 100% 100%, 0 0)"></div>
+
+    <div style="position: relative; display: flex; align-items: center; gap: 10px; height: 46px">
+      <button type="button" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); color: #F2F5F9; cursor: pointer; padding: 0; flex-shrink: 0">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m15 5-7 7 7 7"/></svg>
+      </button>
+      <div style="flex-grow: 1; min-width: 0">
+        <div style="font-size: 9px; font-weight: 600; letter-spacing: 2px; color: var(--ac); text-transform: uppercase">Denver Nuggits</div>
+        <div class="cond" style="font-size: 25px; font-weight: 800; line-height: 1; text-transform: uppercase">Tu equipo</div>
+      </div>
+      <button type="button" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); color: #F2F5F9; cursor: pointer; padding: 0; flex-shrink: 0">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="7" y="4" width="12" height="16" rx="2"/><path d="M4 7v11a2 2 0 0 0 2 2h9"/></svg>
+      </button>
+    </div>
+
+    <!-- pestañas -->
+    <div style="position: relative; display: flex; gap: 0; margin: 12px -14px 0">
+      <div style="flex-grow: 1; height: 44px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.35); border-bottom: 3px solid var(--ac)">
+        <span class="cond" style="font-size: 17px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase">Alineación</span>
+      </div>
+      <div style="flex-grow: 1; height: 44px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.35); border-bottom: 3px solid rgba(255,255,255,0.08)">
+        <span class="cond" style="font-size: 17px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: rgba(242,245,249,0.45)">Estadísticas</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ATAQUE Y DEFENSA DEL QUINTETO ===== -->
+  <div style="background: #05070B; border-top: 2px solid var(--ac); padding: 12px 14px 13px">
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <div class="rot">Tu quinteto titular</div>
+      <div class="rot" style="color: rgba(242,245,249,0.32)">Rotación de 10 · 86 / 80</div>
+    </div>
+    <div style="display: flex; gap: 14px; margin-top: 8px">
+      <div style="flex-grow: 1">
+        <div style="display: flex; align-items: baseline; justify-content: space-between">
+          <span style="font-size: 10px; font-weight: 700; letter-spacing: 1.2px; color: #E08A1E">ATAQUE</span>
+          <span class="cond" style="font-size: 21px; font-weight: 800; color: #EFA43C">86</span>
+        </div>
+        <div style="height: 5px; background: rgba(255,255,255,0.07); margin-top: 3px"><div style="width: 86%; height: 5px; background: #E08A1E"></div></div>
+      </div>
+      <div style="flex-grow: 1">
+        <div style="display: flex; align-items: baseline; justify-content: space-between">
+          <span style="font-size: 10px; font-weight: 700; letter-spacing: 1.2px; color: #3D7BFF">DEFENSA</span>
+          <span class="cond" style="font-size: 21px; font-weight: 800; color: #6094FF">82</span>
+        </div>
+        <div style="height: 5px; background: rgba(255,255,255,0.07); margin-top: 3px"><div style="width: 82%; height: 5px; background: #3D7BFF"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ALINEAR AUTOMÁTICAMENTE ===== -->
+  <div style="padding: 12px 14px 0">
+    <button type="button" style="width: 100%; height: 46px; display: flex; align-items: center; justify-content: center; gap: 9px; background: transparent; border: 1px solid rgba(254,197,36,0.45); color: var(--ac); cursor: pointer; padding: 0; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="m12 3 1.8 4.7L18.5 9.5 13.8 11.3 12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="m19 15 .8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>
+      <span class="cond" style="font-size: 18px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase">Alinear automáticamente</span>
+    </button>
+  </div>
+
+  <!-- ===== BASE ===== -->
+  <div class="bloque" style="margin: 12px 14px 0">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 9px 12px 8px; border-bottom: 1px solid rgba(255,255,255,0.06)">
+      <div class="cond" style="font-size: 17px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase">Base</div>
+      <div class="rot">PG</div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 11px; padding: 11px 12px">
+      <div class="badge cond" style="background: #48C98A; color: #06180F">89</div>
+      <div style="flex-grow: 1; min-width: 0">
+        <div style="display: flex; align-items: center; gap: 6px">
+          <span class="rot" style="color: var(--ac)">Titular</span>
+        </div>
+        <div class="cond nom">Yamal Mulray</div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 4px">
+          <span class="chip" style="background: rgba(224,138,30,0.18); color: #EFA43C">ATA 95</span>
+          <span class="chip" style="background: rgba(61,123,255,0.18); color: #6094FF">DEF 82</span>
+          <span class="meta" style="margin: 0">28 años · #27</span>
+        </div>
+      </div>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(242,245,249,0.32)" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0"><path d="m9 5 7 7-7 7"/></svg>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 12px 11px">
+      <div class="rot" style="flex-grow: 1">Minutos</div>
+      <button type="button" class="step"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F2F5F9" stroke-width="2" stroke-linecap="round"><path d="M6 12h12"/></svg></button>
+      <div class="cond" style="width: 46px; text-align: center; font-size: 22px; font-weight: 800">34</div>
+      <button type="button" class="step"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F2F5F9" stroke-width="2" stroke-linecap="round"><path d="M6 12h12M12 6v12"/></svg></button>
+      <div class="meta" style="width: 74px; text-align: right; margin: 0">suplente 14</div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 11px; padding: 11px 12px; background: rgba(255,255,255,0.02); border-top: 1px solid rgba(255,255,255,0.06)">
+      <div class="badge cond" style="width: 38px; height: 38px; font-size: 19px; background: #59616D; color: #E7ECF3">72</div>
+      <div style="flex-grow: 1; min-width: 0">
+        <span class="rot">Suplente</span>
+        <div class="cond nom" style="font-size: 16px">Tyuz Junes</div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 3px">
+          <span class="chip" style="background: rgba(224,138,30,0.14); color: rgba(239,164,60,0.85); font-size: 10px">ATA 57</span>
+          <span class="chip" style="background: rgba(61,123,255,0.14); color: rgba(96,148,255,0.85); font-size: 10px">DEF 49</span>
+          <span class="meta" style="margin: 0">29 años · #1</span>
+        </div>
+      </div>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(242,245,249,0.32)" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0"><path d="m9 5 7 7-7 7"/></svg>
+    </div>
+  </div>
+
+  <!-- ===== ESCOLTA ===== -->
+  <div class="bloque" style="margin: 10px 14px 0">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 9px 12px 8px; border-bottom: 1px solid rgba(255,255,255,0.06)">
+      <div class="cond" style="font-size: 17px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase">Escolta</div>
+      <div class="rot">SG</div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 11px; padding: 11px 12px">
+      <div class="badge cond" style="background: #A9B4C2; color: #0A0F16">82</div>
+      <div style="flex-grow: 1; min-width: 0">
+        <div style="display: flex; align-items: center; gap: 6px">
+          <span class="rot" style="color: var(--ac)">Titular</span>
+          <span class="chip" style="background: rgba(61,123,255,0.22); color: #6094FF; font-size: 9.5px; letter-spacing: 0.8px">ESTRELLA DEFENSIVA</span>
+        </div>
+        <div class="cond nom">Khristian Blaun</div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 4px">
+          <span class="chip" style="background: rgba(224,138,30,0.18); color: #EFA43C">ATA 78</span>
+          <span class="chip" style="background: rgba(61,123,255,0.18); color: #6094FF">DEF 84</span>
+          <span class="meta" style="margin: 0">24 años · #0</span>
+        </div>
+      </div>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(242,245,249,0.32)" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0"><path d="m9 5 7 7-7 7"/></svg>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 12px 11px">
+      <div class="rot" style="flex-grow: 1">Minutos</div>
+      <button type="button" class="step"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F2F5F9" stroke-width="2" stroke-linecap="round"><path d="M6 12h12"/></svg></button>
+      <div class="cond" style="width: 46px; text-align: center; font-size: 22px; font-weight: 800">32</div>
+      <button type="button" class="step"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F2F5F9" stroke-width="2" stroke-linecap="round"><path d="M6 12h12M12 6v12"/></svg></button>
+      <div class="meta" style="width: 74px; text-align: right; margin: 0">suplente 16</div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 11px; padding: 11px 12px; background: rgba(255,255,255,0.02); border-top: 1px solid rgba(255,255,255,0.06)">
+      <div class="badge cond" style="width: 38px; height: 38px; font-size: 19px; background: #A9B4C2; color: #0A0F16">75</div>
+      <div style="flex-grow: 1; min-width: 0">
+        <span class="rot">Suplente</span>
+        <div class="cond nom" style="font-size: 16px">Pruce Bruwn</div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 3px">
+          <span class="chip" style="background: rgba(224,138,30,0.14); color: rgba(239,164,60,0.85); font-size: 10px">ATA 75</span>
+          <span class="chip" style="background: rgba(61,123,255,0.14); color: rgba(96,148,255,0.85); font-size: 10px">DEF 77</span>
+          <span class="meta" style="margin: 0">29 años · #11</span>
+        </div>
+      </div>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(242,245,249,0.32)" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0"><path d="m9 5 7 7-7 7"/></svg>
+    </div>
+  </div>
+
+  <!-- ===== ALERO ===== -->
+  <div class="bloque" style="margin: 10px 14px 0">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 9px 12px 8px; border-bottom: 1px solid rgba(255,255,255,0.06)">
+      <div class="cond" style="font-size: 17px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase">Alero</div>
+      <div class="rot">SF</div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 11px; padding: 11px 12px">
+      <div class="badge cond" style="background: #A9B4C2; color: #0A0F16">80</div>
+      <div style="flex-grow: 1; min-width: 0">
+        <span class="rot" style="color: var(--ac)">Titular</span>
+        <div class="cond nom">Caneron Juhnson</div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 4px">
+          <span class="chip" style="background: rgba(224,138,30,0.18); color: #EFA43C">ATA 78</span>
+          <span class="chip" style="background: rgba(61,123,255,0.18); color: #6094FF">DEF 72</span>
+          <span class="meta" style="margin: 0">29 años · #2</span>
+        </div>
+      </div>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(242,245,249,0.32)" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0"><path d="m9 5 7 7-7 7"/></svg>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 12px 11px">
+      <div class="rot" style="flex-grow: 1">Minutos</div>
+      <button type="button" class="step"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F2F5F9" stroke-width="2" stroke-linecap="round"><path d="M6 12h12"/></svg></button>
+      <div class="cond" style="width: 46px; text-align: center; font-size: 22px; font-weight: 800">30</div>
+      <button type="button" class="step"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F2F5F9" stroke-width="2" stroke-linecap="round"><path d="M6 12h12M12 6v12"/></svg></button>
+      <div class="meta" style="width: 74px; text-align: right; margin: 0">suplente 18</div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 11px; padding: 11px 12px; background: rgba(255,255,255,0.02); border-top: 1px solid rgba(255,255,255,0.06)">
+      <div class="badge cond" style="width: 38px; height: 38px; font-size: 19px; background: #59616D; color: #E7ECF3">73</div>
+      <div style="flex-grow: 1; min-width: 0">
+        <span class="rot">Suplente</span>
+        <div class="cond nom" style="font-size: 16px">Zpencer Jonis</div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 3px">
+          <span class="chip" style="background: rgba(224,138,30,0.14); color: rgba(239,164,60,0.85); font-size: 10px">ATA 55</span>
+          <span class="chip" style="background: rgba(61,123,255,0.14); color: rgba(96,148,255,0.85); font-size: 10px">DEF 69</span>
+          <span class="meta" style="margin: 0">24 años · #14</span>
+        </div>
+      </div>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(242,245,249,0.32)" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0"><path d="m9 5 7 7-7 7"/></svg>
+    </div>
+  </div>
+
+  <!-- ===== ALA-PÍVOT (con lesionado) ===== -->
+  <div class="bloque" style="margin: 10px 14px 0; border-left-color: #E5484D">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 9px 12px 8px; border-bottom: 1px solid rgba(255,255,255,0.06)">
+      <div class="cond" style="font-size: 17px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase">Ala-pívot</div>
+      <div class="rot">PF</div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 11px; padding: 11px 12px; background: rgba(229,72,77,0.06)">
+      <div class="badge cond" style="background: #A9B4C2; color: #0A0F16; opacity: 0.55">82</div>
+      <div style="flex-grow: 1; min-width: 0">
+        <div style="display: flex; align-items: center; gap: 6px">
+          <span class="rot" style="color: var(--ac)">Titular</span>
+          <span class="chip" style="background: rgba(229,72,77,0.2); color: #FF8A8E; font-size: 9.5px; letter-spacing: 0.8px">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#FF8A8E" stroke-width="3" stroke-linecap="round" style="margin-right: 4px"><path d="M12 6v12M6 12h12"/></svg>
+            BAJA 3 SEMANAS
+          </span>
+        </div>
+        <div class="cond nom" style="color: rgba(242,245,249,0.6)">Aeron Gordun</div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 4px">
+          <span class="chip" style="background: rgba(224,138,30,0.12); color: rgba(239,164,60,0.6)">ATA 80</span>
+          <span class="chip" style="background: rgba(61,123,255,0.12); color: rgba(96,148,255,0.6)">DEF 77</span>
+          <span class="meta" style="margin: 0">30 años · #50</span>
+        </div>
+      </div>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(242,245,249,0.32)" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0"><path d="m9 5 7 7-7 7"/></svg>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 12px 11px">
+      <div class="rot" style="flex-grow: 1">Minutos</div>
+      <button type="button" class="step"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F2F5F9" stroke-width="2" stroke-linecap="round"><path d="M6 12h12"/></svg></button>
+      <div class="cond" style="width: 46px; text-align: center; font-size: 22px; font-weight: 800">30</div>
+      <button type="button" class="step"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F2F5F9" stroke-width="2" stroke-linecap="round"><path d="M6 12h12M12 6v12"/></svg></button>
+      <div class="meta" style="width: 74px; text-align: right; margin: 0">suplente 18</div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 11px; padding: 11px 12px; background: rgba(255,255,255,0.02); border-top: 1px solid rgba(255,255,255,0.06)">
+      <div class="badge cond" style="width: 38px; height: 38px; font-size: 19px; background: #A9B4C2; color: #0A0F16">81</div>
+      <div style="flex-grow: 1; min-width: 0">
+        <span class="rot">Suplente</span>
+        <div class="cond nom" style="font-size: 16px">Narvin Begley III</div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 3px">
+          <span class="chip" style="background: rgba(224,138,30,0.14); color: rgba(239,164,60,0.85); font-size: 10px">ATA 76</span>
+          <span class="chip" style="background: rgba(61,123,255,0.14); color: rgba(96,148,255,0.85); font-size: 10px">DEF 80</span>
+          <span class="meta" style="margin: 0">26 años · #35</span>
+        </div>
+      </div>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(242,245,249,0.32)" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0"><path d="m9 5 7 7-7 7"/></svg>
+    </div>
+  </div>
+
+  <!-- ===== PÍVOT ===== -->
+  <div class="bloque" style="margin: 10px 14px 0">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 9px 12px 8px; border-bottom: 1px solid rgba(255,255,255,0.06)">
+      <div class="cond" style="font-size: 17px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase">Pívot</div>
+      <div class="rot">C</div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 11px; padding: 11px 12px">
+      <div class="badge cond" style="background: #F2C037; color: #17120A">98</div>
+      <div style="flex-grow: 1; min-width: 0">
+        <div style="display: flex; align-items: center; gap: 6px">
+          <span class="rot" style="color: var(--ac)">Titular</span>
+          <span class="chip" style="background: rgba(224,138,30,0.22); color: #EFA43C; font-size: 9.5px; letter-spacing: 0.8px">ESTRELLA OFENSIVA</span>
+        </div>
+        <div class="cond nom">Nikole Jukić</div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 4px">
+          <span class="chip" style="background: rgba(224,138,30,0.18); color: #EFA43C">ATA 98</span>
+          <span class="chip" style="background: rgba(61,123,255,0.18); color: #6094FF">DEF 97</span>
+          <span class="meta" style="margin: 0">30 años · #15</span>
+        </div>
+      </div>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(242,245,249,0.32)" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0"><path d="m9 5 7 7-7 7"/></svg>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px; padding: 0 12px 11px">
+      <div class="rot" style="flex-grow: 1">Minutos</div>
+      <button type="button" class="step"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F2F5F9" stroke-width="2" stroke-linecap="round"><path d="M6 12h12"/></svg></button>
+      <div class="cond" style="width: 46px; text-align: center; font-size: 22px; font-weight: 800">36</div>
+      <button type="button" class="step"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F2F5F9" stroke-width="2" stroke-linecap="round"><path d="M6 12h12M12 6v12"/></svg></button>
+      <div class="meta" style="width: 74px; text-align: right; margin: 0">suplente 12</div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 11px; padding: 11px 12px; background: rgba(255,255,255,0.02); border-top: 1px solid rgba(255,255,255,0.06)">
+      <div class="badge cond" style="width: 38px; height: 38px; font-size: 19px; background: #59616D; color: #E7ECF3">71</div>
+      <div style="flex-grow: 1; min-width: 0">
+        <span class="rot">Suplente</span>
+        <div class="cond nom" style="font-size: 16px">Zike Nneji</div>
+        <div style="display: flex; align-items: center; gap: 5px; margin-top: 3px">
+          <span class="chip" style="background: rgba(224,138,30,0.14); color: rgba(239,164,60,0.85); font-size: 10px">ATA 48</span>
+          <span class="chip" style="background: rgba(61,123,255,0.14); color: rgba(96,148,255,0.85); font-size: 10px">DEF 53</span>
+          <span class="meta" style="margin: 0">25 años · #22</span>
+        </div>
+      </div>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(242,245,249,0.32)" stroke-width="2" stroke-linecap="round" style="flex-shrink: 0"><path d="m9 5 7 7-7 7"/></svg>
+    </div>
+  </div>
+
+
+  <!-- ===== GUARDAR ===== -->
+  <div style="margin: 14px 14px 0">
+    <button type="button" style="width: 100%; height: 54px; display: flex; align-items: center; justify-content: center; gap: 10px; background: var(--ac); border: none; color: #101010; cursor: pointer; padding: 0; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)">
+      <span class="cond" style="font-size: 21px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase">Guardar rotación</span>
+    </button>
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; top: 844px; height: 0; border-top: 1px dashed rgba(254,197,36,0.4); pointer-events: none"></div>
+  <div style="position: absolute; right: 6px; top: 848px; font-size: 8px; font-weight: 600; letter-spacing: 1.2px; color: rgba(254,197,36,0.6); text-transform: uppercase; pointer-events: none">Aquí corta un iPhone 14 · debajo hay scroll</div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"equipo":{"editor":"color","default":"#0E2240","options":["#0E2240","#552583","#007A33","#CE1141"],"section":"Equipo"},"acento":{"editor":"color","default":"#FEC524","options":["#FEC524","#FDB927","#BA9653","#C8102E"],"section":"Equipo"},"$preview":{"width":390,"height":1710}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      equipo: this.props.equipo ?? '#0E2240',
+      acento: this.props.acento ?? '#FEC524',
+    };
+  }
+}
+</script>
+</body>
+</html>

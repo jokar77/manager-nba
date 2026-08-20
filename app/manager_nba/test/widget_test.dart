@@ -39,27 +39,27 @@ void main() {
         await tester.pump();
       }
     });
-    expect(find.text('Manager NBA'), findsOneWidget);
+    expect(find.text('MANAGER NBA'), findsOneWidget);
 
     // Las ranuras viven detrás de "Nueva partida": el menú son tres
     // opciones, no la lista de guardados.
-    await tester.tap(find.widgetWithText(FilledButton, 'Nueva partida'));
+    await tester.tap(find.widgetWithText(FilledButton, 'NUEVA PARTIDA'));
     await tester.pump();
     expect(find.text('Ranura vacía'), findsNWidgets(numeroDeSlots));
 
-    await tester.tap(find.widgetWithText(OutlinedButton, 'Empezar').first);
+    await tester.tap(find.widgetWithText(OutlinedButton, 'EMPEZAR').first);
     await tester.pump();
 
     await tester.runAsync(() async {
       for (var i = 0; i < 50; i++) {
         // El dataset real trae Denver entre sus 30 equipos.
-        if (find.textContaining('Denver').evaluate().isNotEmpty) break;
+        if (find.textContaining('DENVER').evaluate().isNotEmpty) break;
         await Future<void>.delayed(const Duration(milliseconds: 100));
         await tester.pump();
       }
     });
 
-    expect(find.text('Elige tu equipo'), findsOneWidget);
-    expect(find.textContaining('Denver'), findsOneWidget);
+    expect(find.text('ELIGE TU EQUIPO'), findsOneWidget);
+    expect(find.textContaining('DENVER'), findsOneWidget);
   });
 }

@@ -1,0 +1,106 @@
+{
+  "pages": [
+    {
+      "id": "menu",
+      "name": "Menú principal"
+    },
+    {
+      "id": "equipo",
+      "name": "Tu equipo"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "title": "A · Marcador — móvil 390",
+      "page": "menu",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 1300
+    },
+    {
+      "file": "HubB.dc.html",
+      "title": "B · Cinemática — móvil 390",
+      "page": "menu",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 1410
+    },
+    {
+      "file": "HubTablet.dc.html",
+      "title": "A · iPad vertical 834",
+      "page": "menu",
+      "x": 940,
+      "y": 0,
+      "w": 834,
+      "h": 1112
+    },
+    {
+      "file": "HubEscritorio.dc.html",
+      "title": "A · PC 1280",
+      "page": "menu",
+      "x": 1854,
+      "y": 0,
+      "w": 1280,
+      "h": 830
+    },
+    {
+      "file": "Plantilla.dc.html",
+      "title": "Tu equipo — móvil 390",
+      "page": "equipo",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 1720
+    },
+    {
+      "file": "PlantillaEscritorio.dc.html",
+      "title": "Tu equipo — PC 1280",
+      "page": "equipo",
+      "x": 470,
+      "y": 0,
+      "w": 1280,
+      "h": 810
+    }
+  ],
+  "annotations": [
+    {
+      "id": "dir-a",
+      "page": "menu",
+      "x": 0,
+      "y": -196,
+      "w": 390,
+      "text": "DIRECCIÓN A — «Marcador»\n\nLa cabecera se convierte en un marcador de retransmisión y los cuatro sitios donde de verdad entras cada día (calendario, equipo, clasificación, entrenador) son fichas grandes. El resto, en filas finas.\n\nA favor: llegas a todo antes, y el récord y el puesto se leen de un vistazo.\nEn contra: es la más densa, y el color del equipo sale menos protagonista."
+    },
+    {
+      "id": "dir-b",
+      "page": "menu",
+      "x": 470,
+      "y": -196,
+      "w": 390,
+      "text": "DIRECCIÓN B — «Cinemática»\n\nEl equipo ocupa media pantalla, con corte en diagonal y el nombre enorme. El menú son barras inclinadas, y Calendario va destacado en el color del equipo.\n\nA favor: es la que más se parece a un menú de consola y los botones son mucho más grandes.\nEn contra: cabe mucho menos por pantalla, así que se hace más scroll."
+    },
+    {
+      "id": "anchos",
+      "page": "menu",
+      "x": 940,
+      "y": -196,
+      "w": 834,
+      "text": "LOS TRES ANCHOS (dirección A)\n\nSon los cortes que tu código ya distingue en shared/pantalla.dart: compacto por debajo de 600, medio hasta 1024 y amplio a partir de ahí.\n\niPad (834): las cuatro fichas se ponen en una fila y las demás en dos columnas. El menú entero cabe sin scroll.\nPC (1280): la identidad del equipo se va a una columna fija a la izquierda y el menú ocupa el resto. Tampoco hay scroll.\n\nEn móvil la línea dorada de puntos marca dónde corta un iPhone 14: lo de debajo hay que bajarlo."
+    },
+    {
+      "id": "equipo-nota",
+      "page": "equipo",
+      "x": 0,
+      "y": -232,
+      "w": 390,
+      "text": "TU EQUIPO\n\nMismo contenido que ahora —cinco puestos, titular y suplente, minutos, estrella de ataque y de defensa— pero con la media como placa grande y con color: oro de 90 para arriba, verde de 85, plata de 80 y grafito por debajo. Naranja sigue siendo ataque y azul defensa, como en el resto del juego.\n\nDos cambios de sitio, no de contenido: el ataque/defensa del quinteto sube arriba (ahora está al final, y es justo lo que quieres mirar mientras cambias la alineación), y el lesionado se ve desde fuera, sin abrir nada.\n\nEn PC el quinteto pasa a cinco columnas y al lado entra la plantilla entera. Es lo mismo que hoy vive repartido entre esta pantalla y la pestaña de estadísticas."
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "menu"
+  }
+}

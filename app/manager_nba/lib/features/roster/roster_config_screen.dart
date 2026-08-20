@@ -8,6 +8,9 @@ import '../../domain/lesiones_repository.dart';
 import '../../domain/picks_repository.dart';
 import '../../domain/posiciones.dart';
 import '../../i18n/textos.dart';
+import '../../domain/equipos_info.dart';
+import '../../shared/contraste.dart';
+import '../../shared/estilo.dart';
 import '../../shared/icono_lesion.dart';
 import '../../shared/medias_jugador.dart';
 
@@ -314,113 +317,153 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
+    final e = Estilo.de(context);
+    final info = infoDe(widget.equipo);
+
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(t(context).alineacionDeEquipo(widget.equipo)),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.style),
-              tooltip: t(context).tusPicksDeDraft,
-              onPressed: _verPicks,
+        backgroundColor: e.fondo,
+        body: Column(
+          children: [
+            _BarraDeEquipo(
+                equipo: widget.equipo, info: info, onPicks: _verPicks),
+            Expanded(
+              child: FutureBuilder<List<Jugador>>(
+                future: _plantillaFuture,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData || _cargandoRotacionPrevia) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  final plantilla = snapshot.data!;
+                  final jugadoresPorId = {
+                    for (final j in plantilla) j.id: j
+                  };
+                  return TabBarView(
+                    children: [
+                      _alineacion(info, plantilla, jugadoresPorId),
+                      _EstadisticasTab(plantilla: plantilla, stats: _stats),
+                    ],
+                  );
+                },
+              ),
             ),
           ],
-          bottom: TabBar(tabs: [
-            Tab(text: t(context).pestanaAlineacion),
-            Tab(text: t(context).pestanaEstadisticas),
-          ]),
-        ),
-        body: FutureBuilder<List<Jugador>>(
-          future: _plantillaFuture,
-          builder: (context, snapshot) {
-            if (!snapshot.hasData || _cargandoRotacionPrevia) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            final plantilla = snapshot.data!;
-            final jugadoresPorId = {for (final j in plantilla) j.id: j};
-
-            return TabBarView(
-              children: [
-                Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: () => _alinearAutomaticamente(plantilla),
-                          icon: const Icon(Icons.auto_awesome),
-                          label: Text(t(context).alinearAutomaticamenteBtn),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: ListView(
-                        children: posicionesEquipo
-                            .map((posicion) => _PuestoCard(
-                                  posicion: posicion,
-                                  nombrePosicion: _nombrePosicion(context, posicion),
-                                  asignacion: _asignaciones[posicion]!,
-                                  jugadoresPorId: jugadoresPorId,
-                                  lesionados: _lesionados,
-                                  onElegirTitular: () =>
-                                      _elegirJugador(plantilla, posicion, true),
-                                  onElegirSuplente: () =>
-                                      _elegirJugador(plantilla, posicion, false),
-                                  onCambiarMinutosTitular: (delta) =>
-                                      setState(() {
-                                    final a = _asignaciones[posicion]!;
-                                    a.minutosTitular =
-                                        (a.minutosTitular + delta).clamp(0, 48);
-                                  }),
-                                ))
-                            .toList(),
-                      ),
-                    ),
-                    _SelectorEstrellas(
-                      jugadoresPorId: jugadoresPorId,
-                      idsAsignados: _todosLosAsignados,
-                      estrellaAtaqueId: _estrellaAtaqueId,
-                      estrellaDefensaId: _estrellaDefensaId,
-                      onCambiarEstrellaAtaque: (id) =>
-                          setState(() => _estrellaAtaqueId = id),
-                      onCambiarEstrellaDefensa: (id) =>
-                          setState(() => _estrellaDefensaId = id),
-                    ),
-                    _AtaqueYDefensaDelEquipo(
-                      titulares: [
-                        for (final posicion in posicionesEquipo)
-                          if (_asignaciones[posicion]?.titularId != null)
-                            jugadoresPorId[_asignaciones[posicion]!.titularId!]!,
-                      ],
-                      rotacion: [
-                        for (final id in _todosLosAsignados)
-                          if (jugadoresPorId[id] != null) jugadoresPorId[id]!,
-                      ],
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: FilledButton(
-                          onPressed: _rotacionCompleta ? _guardar : null,
-                          child: Text(widget.esConfiguracionInicial
-                              ? t(context).empezarTemporadaBtn
-                              : t(context).guardarRotacionBtn),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                _EstadisticasTab(plantilla: plantilla, stats: _stats),
-              ],
-            );
-          },
         ),
       ),
+    );
+  }
+
+  /// La pestaña de alineación: los cinco puestos con su titular y su
+  /// suplente, y arriba del todo cómo queda el quinteto.
+  ///
+  /// En escritorio los cinco puestos se ponen en fila —una columna cada
+  /// uno, como una alineación de verdad— porque a 1600 px de ancho la lista
+  /// vertical deja tres cuartas partes de la pantalla en blanco.
+  Widget _alineacion(EquipoInfo info, List<Jugador> plantilla,
+      Map<int, Jugador> jugadoresPorId) {
+    final acento = colorLegibleComoTexto(info.colorSecundario, context);
+    final titulares = [
+      for (final posicion in posicionesEquipo)
+        if (_asignaciones[posicion]?.titularId != null)
+          jugadoresPorId[_asignaciones[posicion]!.titularId!]!,
+    ];
+    final rotacion = [
+      for (final id in _todosLosAsignados)
+        if (jugadoresPorId[id] != null) jugadoresPorId[id]!,
+    ];
+
+    final bloques = [
+      for (final posicion in posicionesEquipo)
+        _PuestoCard(
+          posicion: posicion,
+          nombrePosicion: _nombrePosicion(context, posicion),
+          acento: acento,
+          asignacion: _asignaciones[posicion]!,
+          jugadoresPorId: jugadoresPorId,
+          lesionados: _lesionados,
+          onElegirTitular: () => _elegirJugador(plantilla, posicion, true),
+          onElegirSuplente: () => _elegirJugador(plantilla, posicion, false),
+          onCambiarMinutosTitular: (delta) => setState(() {
+            final a = _asignaciones[posicion]!;
+            a.minutosTitular = (a.minutosTitular + delta).clamp(0, 48);
+          }),
+        ),
+    ];
+    return Column(
+      children: [
+        _FranjaAtaqueDefensa(
+            titulares: titulares, rotacion: rotacion, acento: acento),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
+            children: [
+              BotonPerfilado(
+                icono: Icons.auto_awesome,
+                texto: t(context).alinearAutomaticamenteBtn,
+                color: acento,
+                onTap: () => _alinearAutomaticamente(plantilla),
+                alto: 46,
+              ),
+              const SizedBox(height: 12),
+              // La fila de cinco columnas no depende del tramo de pantalla
+              // sino del ancho que hay de verdad: es el contenido el que
+              // manda. Una ventana de 1024 ya cuenta como "amplio", pero
+              // ahí las cinco columnas salen a 190 px y las etiquetas de
+              // ataque y defensa no caben.
+              LayoutBuilder(
+                builder: (context, restricciones) {
+                  if (restricciones.maxWidth < _anchoMinimoParaCincoPuestos) {
+                    return Column(
+                      children: [
+                        for (final bloque in bloques)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: bloque,
+                          ),
+                      ],
+                    );
+                  }
+                  return IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        for (var i = 0; i < bloques.length; i++) ...[
+                          if (i > 0) const SizedBox(width: 10),
+                          Expanded(child: bloques[i]),
+                        ],
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+        _SelectorEstrellas(
+          jugadoresPorId: jugadoresPorId,
+          idsAsignados: _todosLosAsignados,
+          estrellaAtaqueId: _estrellaAtaqueId,
+          estrellaDefensaId: _estrellaDefensaId,
+          onCambiarEstrellaAtaque: (id) =>
+              setState(() => _estrellaAtaqueId = id),
+          onCambiarEstrellaDefensa: (id) =>
+              setState(() => _estrellaDefensaId = id),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
+          child: BotonPrincipal(
+            texto: widget.esConfiguracionInicial
+                ? t(context).empezarTemporadaBtn
+                : t(context).guardarRotacionBtn,
+            color: acento,
+            onTap: _rotacionCompleta ? _guardar : null,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -428,9 +471,18 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
 String _nombrePosicion(BuildContext context, String codigo) =>
     t(context).nombresDePosiciones[codigo] ?? codigo;
 
+
+/// Un puesto de la rotación: su titular, su suplente y el reparto de
+/// minutos entre los dos.
+/// Lo que necesita un puesto para que quepan su nombre, la placa de media y
+/// las etiquetas de ataque y defensa sin recortar. Por debajo de esto los
+/// cinco puestos se apilan.
+const _anchoMinimoParaCincoPuestos = 1190.0;
+
 class _PuestoCard extends StatelessWidget {
   final String posicion;
   final String nombrePosicion;
+  final Color acento;
   final _AsignacionPuesto asignacion;
   final Map<int, Jugador> jugadoresPorId;
   final Map<int, Lesion> lesionados;
@@ -441,6 +493,7 @@ class _PuestoCard extends StatelessWidget {
   const _PuestoCard({
     required this.posicion,
     required this.nombrePosicion,
+    required this.acento,
     required this.asignacion,
     required this.jugadoresPorId,
     required this.lesionados,
@@ -451,117 +504,248 @@ class _PuestoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(nombrePosicion,
-                style: const TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            _HuecoJugador(
-              etiqueta: t(context).tituloTitular,
-              posicion: posicion,
-              jugador: jugadoresPorId[asignacion.titularId],
-              lesion: lesionados[asignacion.titularId],
-              onTap: onElegirTitular,
-            ),
-            if (asignacion.titularId != null && asignacion.suplenteId != null)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  children: [
-                    Text(t(context).minutosTitularLabel),
-                    IconButton(
-                      icon: const Icon(Icons.remove_circle_outline, size: 20),
-                      onPressed: () => onCambiarMinutosTitular(-1),
-                    ),
-                    SizedBox(
-                      width: 60,
-                      child: Text(
-                        '${asignacion.minutosTitular} / ${asignacion.minutosSuplente}',
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.add_circle_outline, size: 20),
-                      onPressed: () => onCambiarMinutosTitular(1),
-                    ),
-                  ],
+    final e = Estilo.de(context);
+    final hayDos =
+        asignacion.titularId != null && asignacion.suplenteId != null;
+    // El puesto entero se marca en rojo si su titular está lesionado: así se
+    // ve el agujero desde fuera, sin abrir nada.
+    final titularLesionado = lesionados[asignacion.titularId] != null;
+
+    return PanelCortado(
+      fondo: e.panel,
+      corte: 12,
+      borde: Border(
+        left: BorderSide(
+            color: titularLesionado ? e.mal : acento, width: 3),
+        top: BorderSide(color: e.linea),
+        right: BorderSide(color: e.linea),
+        bottom: BorderSide(color: e.linea),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(12, 9, 12, 8),
+            decoration:
+                BoxDecoration(border: Border(bottom: BorderSide(color: e.linea))),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(mayus(nombrePosicion),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: titular(e, tamano: 16)),
                 ),
-              ),
-            _HuecoJugador(
-              etiqueta: t(context).tituloSuplente,
-              posicion: posicion,
-              jugador: jugadoresPorId[asignacion.suplenteId],
-              lesion: lesionados[asignacion.suplenteId],
-              onTap: onElegirSuplente,
+                const SizedBox(width: 8),
+                Text(posicion, style: rotulo(e, tamano: 9)),
+              ],
             ),
-          ],
-        ),
+          ),
+          _HuecoJugador(
+            etiqueta: t(context).tituloTitular,
+            clave: 'titular',
+            posicion: posicion,
+            jugador: jugadoresPorId[asignacion.titularId],
+            lesion: lesionados[asignacion.titularId],
+            destacado: true,
+            acento: acento,
+            onTap: onElegirTitular,
+          ),
+          if (hayDos)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      mayus(t(context)
+                          .minutosTitularLabel
+                          .replaceAll(':', '')
+                          .trim()),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: rotulo(e, tamano: 9),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _PasoMinutos(
+                      icono: Icons.remove,
+                      onTap: () => onCambiarMinutosTitular(-1)),
+                  SizedBox(
+                    width: 62,
+                    child: Text(
+                      '${asignacion.minutosTitular} / '
+                      '${asignacion.minutosSuplente}',
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: cifra(e, tamano: 17),
+                    ),
+                  ),
+                  _PasoMinutos(
+                      icono: Icons.add,
+                      onTap: () => onCambiarMinutosTitular(1)),
+                ],
+              ),
+            ),
+          _HuecoJugador(
+            etiqueta: t(context).tituloSuplente,
+            clave: 'suplente',
+            posicion: posicion,
+            jugador: jugadoresPorId[asignacion.suplenteId],
+            lesion: lesionados[asignacion.suplenteId],
+            destacado: false,
+            acento: acento,
+            onTap: onElegirSuplente,
+          ),
+        ],
       ),
     );
   }
 }
 
+
+/// Un hueco de la rotación: quién lo ocupa, lo bueno que es y por qué no
+/// debería estar ahí, si es el caso.
 class _HuecoJugador extends StatelessWidget {
   final String etiqueta;
+
+  /// Identificador estable del hueco, sin traducir. La etiqueta que se ve
+  /// cambia con el idioma; esto no, y es lo que usan los tests para señalar
+  /// un hueco concreto sin depender de cómo esté redactado.
+  final String clave;
+
   final String posicion;
   final Jugador? jugador;
   final Lesion? lesion;
+
+  /// El titular manda: placa más grande y sin fondo propio.
+  final bool destacado;
+
+  final Color acento;
   final VoidCallback onTap;
 
   const _HuecoJugador({
     required this.etiqueta,
+    required this.clave,
     required this.posicion,
     required this.jugador,
+    required this.destacado,
+    required this.acento,
     required this.onTap,
     this.lesion,
   });
 
   @override
   Widget build(BuildContext context) {
-    final fueraDePosicion = jugador != null && !juegaComodoDe(jugador!, posicion);
+    final e = Estilo.de(context);
+    final textos = t(context);
+    final fueraDePosicion =
+        jugador != null && !juegaComodoDe(jugador!, posicion);
     final lesionado = jugador != null && lesion != null;
 
     final lineaAviso = lesionado
-        ? t(context).lesionConDetalle(lesion!.motivo,
-            lesion!.partidosEstimados, _formatearFecha(lesion!.fechaFin))
-        : (fueraDePosicion ? t(context).fueraDeSusDosPosiciones : null);
+        ? textos.lesionConDetalle(lesion!.motivo, lesion!.partidosEstimados,
+            _formatearFecha(lesion!.fechaFin))
+        : (fueraDePosicion ? textos.fueraDeSusDosPosiciones : null);
 
-    return ListTile(
-      dense: true,
-      contentPadding: EdgeInsets.zero,
-      title: Text(jugador == null
-          ? '$etiqueta: ${t(context).elegirJugadorPlaceholder}'
-          : t(context).huecoConJugador(
-              etiqueta, jugador!.nombreFicticio, etiquetaPosicion(jugador!),
-              jugador!.media)),
-      // El ataque y la defensa van aquí y no en el título: dos jugadores de
-      // la misma media pueden ser cosas muy distintas, y sin verlo la
-      // alineación se hace a ciegas.
-      subtitle: jugador == null && lineaAviso == null
-          ? null
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (jugador != null)
-                  MediasAtaqueDefensa.de(jugador!, compacto: true),
-                if (lineaAviso != null)
-                  Text(lineaAviso,
-                      style: TextStyle(
-                          color: lesionado ? Colors.red : Colors.orange)),
-              ],
-            ),
-      trailing: lesionado
-          ? const IconoLesion()
-          : (fueraDePosicion
-              ? const Icon(Icons.warning_amber, color: Colors.orange)
-              : const Icon(Icons.chevron_right)),
-      onTap: onTap,
+    final ladoPlaca = destacado ? 46.0 : 38.0;
+
+    return Material(
+      color: destacado ? Colors.transparent : e.panelSuave,
+      child: InkWell(
+        key: ValueKey('hueco-$posicion-$clave'),
+        onTap: onTap,
+        child: Container(
+          decoration: destacado
+              ? null
+              : BoxDecoration(border: Border(top: BorderSide(color: e.linea))),
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+          child: Row(
+            children: [
+              if (jugador == null)
+                Container(
+                  width: ladoPlaca,
+                  height: ladoPlaca,
+                  alignment: Alignment.center,
+                  decoration:
+                      BoxDecoration(border: Border.all(color: e.lineaFuerte)),
+                  child: Icon(Icons.add, size: 20, color: e.textoRotulo),
+                )
+              else
+                PlacaMedia(
+                    media: jugador!.media,
+                    tamano: ladoPlaca,
+                    apagada: lesionado),
+              const SizedBox(width: 11),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(mayus(etiqueta),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: rotulo(e,
+                            tamano: 9,
+                            color: destacado ? acento : e.textoRotulo)),
+                    const SizedBox(height: 1),
+                    Text(
+                      // Con clave propia: es lo que señalan los tests para
+                      // leer quién ocupa el hueco sin depender de en qué
+                      // orden queden los textos de la fila.
+                      key: ValueKey('nombre-$posicion-$clave'),
+                      jugador == null
+                          ? textos.elegirJugadorPlaceholder
+                          : mayus(jugador!.nombreFicticio),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: titular(e,
+                          tamano: destacado ? 18 : 15,
+                          color: lesionado ? e.textoTenue : e.texto),
+                    ),
+                    if (jugador != null) ...[
+                      const SizedBox(height: 5),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          MediasAtaqueDefensa.de(jugador!, compacto: true),
+                          Text(
+                            jugador!.dorsal == null
+                                ? etiquetaPosicion(jugador!)
+                                : '${etiquetaPosicion(jugador!)} · '
+                                    '#${jugador!.dorsal}',
+                            style:
+                                TextStyle(fontSize: 11, color: e.textoTenue),
+                          ),
+                        ],
+                      ),
+                    ],
+                    if (lineaAviso != null) ...[
+                      const SizedBox(height: 4),
+                      Text(lineaAviso,
+                          style: TextStyle(
+                              fontSize: 11,
+                              height: 1.25,
+                              color: lesionado ? e.mal : Colors.orange)),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              if (lesionado)
+                const IconoLesion()
+              else if (fueraDePosicion)
+                const Icon(Icons.warning_amber, color: Colors.orange, size: 20)
+              else
+                Icon(Icons.chevron_right, size: 18, color: e.textoRotulo),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -619,6 +803,9 @@ class _EstadisticasTab extends StatelessWidget {
   }
 }
 
+
+/// Las dos estrellas de la rotación: a quién se le da la bola y a quién le
+/// toca el mejor del rival.
 class _SelectorEstrellas extends StatelessWidget {
   final Map<int, Jugador> jugadoresPorId;
   final Set<int> idsAsignados;
@@ -638,46 +825,86 @@ class _SelectorEstrellas extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final e = Estilo.de(context);
     final candidatos = idsAsignados.toList()
-      ..sort((a, b) =>
-          jugadoresPorId[a]!.nombreFicticio.compareTo(jugadoresPorId[b]!.nombreFicticio));
+      ..sort((a, b) => jugadoresPorId[a]!
+          .nombreFicticio
+          .compareTo(jugadoresPorId[b]!.nombreFicticio));
 
     DropdownMenuItem<int?> item(int? id, String etiqueta) => DropdownMenuItem(
           value: id,
           child: Text(etiqueta, overflow: TextOverflow.ellipsis),
         );
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+    Widget selector({
+      required String etiqueta,
+      required Color color,
+      required int? valor,
+      required void Function(int?) onChanged,
+    }) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(mayus(etiqueta),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: rotulo(e,
+                  tamano: 9, color: colorLegibleComoTexto(color, context))),
+          const SizedBox(height: 4),
+          DropdownButtonFormField<int?>(
+            isExpanded: true,
+            decoration: InputDecoration(
+              isDense: true,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+              filled: true,
+              fillColor: e.panel,
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.zero,
+                  borderSide: BorderSide(color: e.lineaFuerte)),
+              enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.zero,
+                  borderSide: BorderSide(color: e.lineaFuerte)),
+              focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.zero,
+                  borderSide: BorderSide(color: color, width: 2)),
+            ),
+            initialValue: candidatos.contains(valor) ? valor : null,
+            items: [
+              item(null, t(context).ningunaOpcion),
+              ...candidatos
+                  .map((id) => item(id, jugadoresPorId[id]!.nombreFicticio)),
+            ],
+            onChanged: onChanged,
+          ),
+        ],
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: e.marcador,
+        border: Border(top: BorderSide(color: e.lineaFuerte)),
+      ),
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: DropdownButtonFormField<int?>(
-              decoration:
-                  InputDecoration(labelText: t(context).estrellaAtaqueLabel),
-              initialValue:
-                  candidatos.contains(estrellaAtaqueId) ? estrellaAtaqueId : null,
-              items: [
-                item(null, t(context).ningunaOpcion),
-                ...candidatos
-                    .map((id) => item(id, jugadoresPorId[id]!.nombreFicticio)),
-              ],
+            child: selector(
+              etiqueta: t(context).estrellaAtaqueLabel,
+              color: colorAtaque,
+              valor: estrellaAtaqueId,
               onChanged: onCambiarEstrellaAtaque,
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: DropdownButtonFormField<int?>(
-              decoration:
-                  InputDecoration(labelText: t(context).estrellaDefensaLabel),
-              initialValue: candidatos.contains(estrellaDefensaId)
-                  ? estrellaDefensaId
-                  : null,
-              items: [
-                item(null, t(context).ningunaOpcion),
-                ...candidatos
-                    .map((id) => item(id, jugadoresPorId[id]!.nombreFicticio)),
-              ],
+            child: selector(
+              etiqueta: t(context).estrellaDefensaLabel,
+              color: colorDefensa,
+              valor: estrellaDefensaId,
               onChanged: onCambiarEstrellaDefensa,
             ),
           ),
@@ -744,73 +971,278 @@ class _HojaDePicks extends StatelessWidget {
 /// El ataque y la defensa de tu quinteto y de la rotación entera.
 ///
 /// Es lo que faltaba para poder decidir: viendo solo medias sueltas no se
-/// sabe si el equipo que estás montando defiende o no defiende.
-class _AtaqueYDefensaDelEquipo extends StatelessWidget {
+/// sabe si el equipo que estás montando defiende o no defiende. Va arriba y
+/// ya no al final de la pantalla porque es justo lo que estás mirando
+/// mientras mueves la alineación: abajo había que ir a buscarlo después de
+/// cada cambio.
+class _FranjaAtaqueDefensa extends StatelessWidget {
   final List<Jugador> titulares;
   final List<Jugador> rotacion;
+  final Color acento;
 
-  const _AtaqueYDefensaDelEquipo({
+  const _FranjaAtaqueDefensa({
     required this.titulares,
     required this.rotacion,
+    required this.acento,
   });
 
   @override
   Widget build(BuildContext context) {
     if (titulares.isEmpty) return const SizedBox.shrink();
+    final e = Estilo.de(context);
+    final textos = t(context);
     final quinteto = mediasDe(titulares);
     final todos = mediasDe(rotacion);
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
-      child: Card(
-        margin: EdgeInsets.zero,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: e.marcador,
+        border: Border(top: BorderSide(color: acento, width: 2)),
+      ),
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Text(t(context).ataqueYDefensaTitulo,
-                  style: Theme.of(context).textTheme.titleSmall),
-              const SizedBox(height: 8),
-              _Linea(
-                  etiqueta: t(context).quintetoInicial,
-                  ataque: quinteto.ataque,
-                  defensa: quinteto.defensa),
-              const SizedBox(height: 4),
-              _Linea(
-                  etiqueta: t(context).rotacionCompleta,
-                  ataque: todos.ataque,
-                  defensa: todos.defensa),
+              Expanded(
+                child: Text(mayus(textos.quintetoInicial),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: rotulo(e, tamano: 9)),
+              ),
+              const SizedBox(width: 10),
+              Flexible(
+                child: Text(
+                  '${mayus(textos.rotacionCompleta)}  '
+                  '${todos.ataque} / ${todos.defensa}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: rotulo(e, tamano: 9),
+                ),
+              ),
             ],
           ),
-        ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _BarraDeMedia(
+                    etiqueta: textos.ataque,
+                    valor: quinteto.ataque,
+                    color: colorAtaque),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: _BarraDeMedia(
+                    etiqueta: textos.defensa,
+                    valor: quinteto.defensa,
+                    color: colorDefensa),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 }
 
-class _Linea extends StatelessWidget {
+/// Una media del equipo con su barra: el número solo no dice si 82 es mucho
+/// o poco, la barra sí.
+class _BarraDeMedia extends StatelessWidget {
   final String etiqueta;
-  final int ataque;
-  final int defensa;
+  final int valor;
+  final Color color;
 
-  const _Linea({
+  const _BarraDeMedia({
     required this.etiqueta,
-    required this.ataque,
-    required this.defensa,
+    required this.valor,
+    required this.color,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    final e = Estilo.de(context);
+    final tinta = colorLegibleComoTexto(color, context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Expanded(
-          child: Text(etiqueta,
-              style: Theme.of(context).textTheme.bodySmall),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: Text(mayus(etiqueta),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: rotulo(e, tamano: 10, color: tinta)),
+            ),
+            const SizedBox(width: 6),
+            Text('$valor', style: cifra(e, tamano: 20, color: tinta)),
+          ],
         ),
-        const SizedBox(width: 8),
-        MediasAtaqueDefensa(ataque: ataque, defensa: defensa),
+        const SizedBox(height: 3),
+        LayoutBuilder(
+          builder: (context, restricciones) => Container(
+            height: 5,
+            color: e.lineaFuerte,
+            alignment: Alignment.centerLeft,
+            child: Container(
+              // La escala arranca en 40 y no en 0: por debajo de ahí no hay
+              // jugadores, y con 0 todas las barras salían casi llenas y sin
+              // diferencia visible entre un equipo bueno y uno malo.
+              width:
+                  restricciones.maxWidth * ((valor - 40) / 60).clamp(0.0, 1.0),
+              height: 5,
+              color: color,
+            ),
+          ),
+        ),
       ],
+    );
+  }
+}
+
+/// La barra de arriba: color del equipo, monograma de fondo y las dos
+/// pestañas.
+class _BarraDeEquipo extends StatelessWidget {
+  final String equipo;
+  final EquipoInfo info;
+  final VoidCallback onPicks;
+
+  const _BarraDeEquipo({
+    required this.equipo,
+    required this.info,
+    required this.onPicks,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final textos = t(context);
+    final fondo = info.colorPrimario;
+    final sobre = textoSobre(fondo);
+    final acento = acentoDeEquipo(fondo, info.colorSecundario);
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [fondo, const Color(0xFF05070B)],
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+              top: 0, right: 0, child: CunaEsquina(color: acento, tamano: 110)),
+          Positioned(
+            top: 0,
+            right: -6,
+            child: MonogramaFantasma(texto: equipo, tamano: 104),
+          ),
+          SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
+                  child: Row(
+                    children: [
+                      BackButton(color: sobre),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              mayus('${info.ciudad} · ${textos.tuEquipo}'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 2,
+                                  color: acento),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              // El apodo del club y no "Tu equipo" otra vez:
+                              // el rótulo de arriba ya dice dónde estás, y
+                              // así la barra manda identidad igual que la
+                              // del menú principal.
+                              mayus(info.apodo),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                  fontFamily: familiaTitular,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w800,
+                                  height: 1,
+                                  color: sobre),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.style),
+                        color: sobre,
+                        tooltip: textos.tusPicksDeDraft,
+                        onPressed: onPicks,
+                      ),
+                    ],
+                  ),
+                ),
+                TabBar(
+                  indicatorColor: acento,
+                  indicatorWeight: 3,
+                  labelColor: sobre,
+                  unselectedLabelColor: textoSecundarioSobre(fondo),
+                  labelStyle: const TextStyle(
+                      fontFamily: familiaTitular,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1),
+                  unselectedLabelStyle: const TextStyle(
+                      fontFamily: familiaTitular,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1),
+                  tabs: [
+                    Tab(text: mayus(textos.pestanaAlineacion)),
+                    Tab(text: mayus(textos.pestanaEstadisticas)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PasoMinutos extends StatelessWidget {
+  final IconData icono;
+  final VoidCallback onTap;
+
+  const _PasoMinutos({required this.icono, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final e = Estilo.de(context);
+    return Material(
+      color: e.panelSuave,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          width: 40,
+          height: 40,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(border: Border.all(color: e.lineaFuerte)),
+          child: Icon(icono, size: 18, color: e.texto),
+        ),
+      ),
     );
   }
 }

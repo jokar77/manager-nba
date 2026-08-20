@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
+import '../../shared/barra_de_club.dart';
 import '../../domain/draft_repository.dart';
 import '../../domain/nueva_temporada_repository.dart';
 import '../../domain/progresion_repository.dart';
@@ -25,10 +26,9 @@ class PretemporadaScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(t(context).temporadaN(resumen.temporadaNueva)),
-        automaticallyImplyLeading: false,
-      ),
+      appBar: barraDeClub(
+          equipoUsuario, t(context).temporadaN(resumen.temporadaNueva),
+          conVolver: false),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

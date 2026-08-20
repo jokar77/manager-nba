@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
+import '../../shared/barra_de_club.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/entrenadores_repository.dart' show formatearMillones;
 import '../../domain/equipos_info.dart';
@@ -115,7 +116,8 @@ class _OfertasScreenState extends State<OfertasScreen> {
   Widget build(BuildContext context) {
     final ofertas = _ofertas;
     return Scaffold(
-      appBar: AppBar(title: Text(t(context).tituloOfertasRecibidasScreen)),
+      appBar: barraDeClub(
+          widget.equipoUsuario, t(context).tituloOfertasRecibidasScreen),
       body: ofertas == null
           ? const Center(child: CircularProgressIndicator())
           : ofertas.isEmpty

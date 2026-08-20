@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../i18n/textos.dart';
 import '../../domain/eventos_narrativos_repository.dart';
 import '../../domain/salarios.dart' show formatearSalario;
+import '../../shared/estilo.dart';
 import '../../shared/pantalla.dart';
 
 /// Plantea un evento narrativo y devuelve la opción elegida.
@@ -34,7 +35,10 @@ Future<void> contarConsecuencia(
   return showDialog<void>(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text(evento.titulo),
+      title: Text(evento.titulo,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: titular(Estilo.de(context), tamano: 20)),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,12 +75,21 @@ class _DialogoDeEvento extends StatelessWidget {
   Widget build(BuildContext context) {
     final compacto = tamanoDe(context).esCompacto;
 
+    final e = Estilo.de(context);
+
     return AlertDialog(
       title: Row(
         children: [
-          Icon(Icons.forum, color: Theme.of(context).colorScheme.primary),
+          Icon(Icons.forum, color: e.marca),
           const SizedBox(width: 10),
-          Expanded(child: Text(evento.titulo)),
+          Expanded(
+            // Sin mayúsculas: el título de un evento es una frase del
+            // guion, y los demás diálogos del juego tampoco las usan.
+            child: Text(evento.titulo,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: titular(e, tamano: 20)),
+          ),
         ],
       ),
       content: SizedBox(
@@ -86,7 +99,8 @@ class _DialogoDeEvento extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(evento.texto),
+              Text(evento.texto,
+                  style: TextStyle(fontSize: 14.5, height: 1.4, color: e.texto)),
               const SizedBox(height: 18),
               // Los botones van en el cuerpo y no en `actions` porque son
               // hasta tres, con texto largo: en la fila de acciones de un
@@ -96,16 +110,13 @@ class _DialogoDeEvento extends StatelessWidget {
               ...evento.opciones.map(
                 (opcion) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.of(context).pop(opcion),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Text(opcion.etiqueta,
-                            textAlign: TextAlign.center),
-                      ),
-                    ),
+                  child: BotonPerfilado(
+                    texto: opcion.etiqueta,
+                    color: e.texto,
+                    alto: 52,
+                    // Tal cual está escrita: es una frase, no un rótulo.
+                    mayusculas: false,
+                    onTap: () => Navigator.of(context).pop(opcion),
                   ),
                 ),
               ),
@@ -125,9 +136,9 @@ class _FilaDeEfecto extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final e = Estilo.de(context);
     final bueno = efecto.esBueno;
-    final color =
-        bueno ? const Color(0xFF2E9E5B) : Theme.of(context).colorScheme.error;
+    final color = bueno ? e.bien : e.mal;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
@@ -137,13 +148,15 @@ class _FilaDeEfecto extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(efecto.etiqueta,
-                style: TextStyle(color: color, fontWeight: FontWeight.w600)),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontSize: 13.5, fontWeight: FontWeight.w600, color: color)),
           ),
           const SizedBox(width: 8),
-          Text(
-            t(context).nPartidos(efecto.partidos),
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
+          Text(t(context).nPartidos(efecto.partidos),
+              maxLines: 1,
+              style: rotulo(e, tamano: 9)),
         ],
       ),
     );
@@ -159,9 +172,9 @@ class _FilaDeDinero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final e = Estilo.de(context);
     final entra = dolares > 0;
-    final color =
-        entra ? const Color(0xFF2E9E5B) : Theme.of(context).colorScheme.error;
+    final color = entra ? e.bien : e.mal;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
@@ -170,16 +183,15 @@ class _FilaDeDinero extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(t(context).margenSalarialEvento,
-                style: TextStyle(color: color, fontWeight: FontWeight.w600)),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontSize: 13.5, fontWeight: FontWeight.w600, color: color)),
           ),
           const SizedBox(width: 8),
-          Text(
-            '${entra ? '+' : '−'}${formatearSalario(dolares.abs())}',
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(color: color, fontWeight: FontWeight.bold),
-          ),
+          Text('${entra ? '+' : '−'}${formatearSalario(dolares.abs())}',
+              maxLines: 1,
+              style: cifra(e, tamano: 16, color: color)),
         ],
       ),
     );
@@ -196,24 +208,40 @@ class TarjetaDeEfectosActivos extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (efectos.isEmpty) return const SizedBox.shrink();
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.forum, size: 18),
-                const SizedBox(width: 8),
-                Text(t(context).enElVestuario,
-                    style: Theme.of(context).textTheme.titleSmall),
-              ],
-            ),
-            const SizedBox(height: 8),
-            ...efectos.map((e) => _FilaDeEfecto(efecto: e)),
-          ],
+    final e = Estilo.de(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: PanelCortado(
+        fondo: e.panel,
+        corte: 12,
+        borde: Border(
+          left: BorderSide(color: e.marca, width: 3),
+          top: BorderSide(color: e.linea),
+          right: BorderSide(color: e.linea),
+          bottom: BorderSide(color: e.linea),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 11),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.forum, size: 16, color: e.marca),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(mayus(t(context).enElVestuario),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: rotulo(e, tamano: 10, color: e.marca)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              ...efectos.map((efecto) => _FilaDeEfecto(efecto: efecto)),
+            ],
+          ),
         ),
       ),
     );

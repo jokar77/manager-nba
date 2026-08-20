@@ -6,6 +6,7 @@ import '../../domain/equipos_especiales.dart' show esFranquicia;
 import '../../domain/equipos_info.dart';
 import '../../domain/salarios.dart' show topeSalarial;
 import '../../i18n/textos.dart';
+import '../../shared/barra_de_club.dart';
 import '../../shared/entrenador_ui.dart';
 import '../../shared/pantalla.dart';
 
@@ -181,11 +182,10 @@ class _EntrenadorScreenState extends State<EntrenadorScreen> {
   Widget build(BuildContext context) {
     final obligatorio = widget.onContinuar != null;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(t(context).entrenador),
-        // En modo trámite no se puede salir con "atrás": hay que fichar.
-        automaticallyImplyLeading: !obligatorio,
-      ),
+      // La flecha de volver no hace nada en modo trámite: la barra usa
+      // `maybePop`, y con la ruta marcada como no descartable se queda
+      // quieta en vez de dejarte salir sin entrenador.
+      appBar: barraDeClub(widget.equipoUsuario, t(context).entrenador),
       body: FutureBuilder<_EstadoDelBanquillo>(
         future: _futuro,
         builder: (context, snapshot) {

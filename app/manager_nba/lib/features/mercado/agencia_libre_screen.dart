@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
+import '../../shared/barra_de_club.dart';
+import '../../shared/estilo.dart';
+import '../../shared/ficha_jugador.dart';
+import '../../shared/medias_jugador.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/agencia_libre_repository.dart';
 import '../../domain/calendario_repository.dart';
@@ -143,10 +147,11 @@ class _AgenciaLibreScreenState extends State<AgenciaLibreScreen> {
     return PopScope(
       canPop: !esPasoObligatorio,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(t(context).tituloAgenciaLibre),
-          automaticallyImplyLeading: !esPasoObligatorio,
-          actions: [
+        appBar: barraDeClub(
+          widget.equipoUsuario,
+          t(context).tituloAgenciaLibre,
+          conVolver: !esPasoObligatorio,
+          acciones: [
             IconButton(
               icon: const Icon(Icons.groups),
               tooltip: t(context).verTuPlantilla,
@@ -395,36 +400,40 @@ class _FilaAgenteLibre extends StatelessWidget {
     final ofertasRestantes = maxOfertasDeRenovacion - jugador.ofertasRechazadas;
     final sinOfertas = ofertasRestantes <= 0;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 6),
-      child: ListTile(
-        dense: true,
-        title: Text(jugador.nombreFicticio),
-        subtitle: Text(t(context)
-            .posicionEdadMedia(etiquetaPosicion(jugador), jugador.edad, jugador.media)),
-        // En horizontal, no apilado: un ListTile denso solo da 40px de alto
-        // al trailing, y el precio encima del botón se pasaba de ahí (se veía
-        // la banda amarilla de desbordamiento). De lado caben de sobra y no
-        // depende de cuadrar alturas al píxel.
-        trailing: Row(
+    final e = Estilo.de(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: FilaDeJugador(
+        media: jugador.media,
+        nombre: jugador.nombreFicticio,
+        detalle: '${etiquetaPosicion(jugador)} · '
+            '${t(context).edadJugador(jugador.edad)}',
+        bajoElNombre: MediasAtaqueDefensa.de(jugador, compacto: true),
+        apagado: sinOfertas,
+        onTap: sinOfertas ? null : onNegociar,
+        // El precio encima y la acción debajo: en horizontal se comían el
+        // ancho del nombre en un móvil.
+        accesorio: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(formatearSalario(precioDeAgenteLibre(jugador)),
-                style: const TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(width: 12),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: cifra(e, tamano: 17)),
+            const SizedBox(height: 5),
             if (sinOfertas)
               Text(t(context).yaNoNegocia,
-                  style: const TextStyle(fontSize: 11, color: Colors.red))
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 11, color: e.mal))
             else
-              SizedBox(
-                height: 28,
-                child: FilledButton(
-                  style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      textStyle: const TextStyle(fontSize: 12)),
-                  onPressed: onNegociar,
-                  child: Text(t(context).negociarConN(ofertasRestantes)),
-                ),
+              BotonPrincipal(
+                texto: t(context).negociarConN(ofertasRestantes),
+                color: e.marca,
+                alto: 34,
+                onTap: onNegociar,
               ),
           ],
         ),

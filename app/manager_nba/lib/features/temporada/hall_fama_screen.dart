@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
+import '../../shared/estilo.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/carrera_repository.dart';
 import '../../domain/hall_fama_repository.dart';
@@ -27,10 +28,10 @@ class HallDeLaFamaScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(t(context).hallOfFame),
-        automaticallyImplyLeading: onContinuar == null,
-        actions: [
+      appBar: BarraNeutraAppBar(
+        titulo: t(context).hallOfFame,
+        conVolver: onContinuar == null,
+        acciones: [
           IconButton(
             icon: const Icon(Icons.info_outline),
             tooltip: t(context).explicacionPuntuacionCarreraTooltip,
@@ -95,10 +96,10 @@ class _NuevosEnHallDeLaFamaScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(t(context).hallOfFame),
-        automaticallyImplyLeading: false,
-        actions: [
+      appBar: BarraNeutraAppBar(
+        titulo: t(context).hallOfFame,
+        conVolver: false,
+        acciones: [
           IconButton(
             icon: const Icon(Icons.info_outline),
             tooltip: t(context).explicacionPuntuacionCarreraTooltip,
@@ -135,8 +136,10 @@ class _NuevosEnHallDeLaFamaScreenState
                   child: ListTile(
                     leading:
                         const Icon(Icons.emoji_events, color: Colors.amber),
-                    title: Text(m.nombreJugador,
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    title: Text(mayus(m.nombreJugador),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: titular(Estilo.de(context), tamano: 17)),
                     // El día que entras en el Hall of Fame lo que importa es
                     // que has entrado, y en qué año. Sus números están a un
                     // toque de distancia, en la ficha.
@@ -356,9 +359,10 @@ class _FilaMiembro extends StatelessWidget {
         title: Row(
           children: [
             Flexible(
-              child: Text(miembro.nombreJugador,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                  overflow: TextOverflow.ellipsis),
+              child: Text(mayus(miembro.nombreJugador),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: titular(Estilo.de(context), tamano: 16)),
             ),
             if (esNuevo) ...[
               const SizedBox(width: 6),

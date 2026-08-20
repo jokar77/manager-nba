@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
+import '../../shared/barra_de_club.dart';
+import '../../shared/equipo_logo.dart';
+import '../../shared/estilo.dart';
 import '../../shared/icono_lesion.dart';
 
 import '../../data/database/app_database.dart';
@@ -85,195 +88,248 @@ class _ResumenSimulacionScreenState extends State<ResumenSimulacionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final e = Estilo.de(context);
     final partidos = _resultado.partidos;
     // Cuántas has ganado en el tramo: simulando un mes entero, contar los
     // marcadores a ojo para saber cómo te ha ido no es razonable.
     final ganados =
         partidos.where((p) => p.marcadorUsuario > p.marcadorRival).length;
     final perdidos = partidos.length - ganados;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(partidos.isEmpty
+      appBar: barraDeClub(
+        widget.equipoUsuario,
+        partidos.isEmpty
             ? t(context).sinPartidosTitulo
-            : t(context).resumenPartidos(partidos.length, ganados, perdidos)),
-        actions: const [BotonMenuPrincipal()],
+            : t(context).resumenPartidos(partidos.length, ganados, perdidos),
+        acciones: const [BotonMenuPrincipal()],
       ),
       body: Column(
         children: [
           if (_simulando) const LinearProgressIndicator(),
           Expanded(
             child: ListView(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
               children: [
-                if (_resultado.lesionesActivas.isNotEmpty)
-                  Container(
-                    width: double.infinity,
-                    // Rojo translúcido (no un rosa fijo): así el texto por
-                    // defecto del tema — claro en modo oscuro, oscuro en
-                    // modo claro — siempre tiene contraste suficiente. El
-                    // fondo fijo de antes se quedaba claro también en modo
-                    // oscuro y el texto (heredado, claro) era casi
-                    // ilegible.
-                    color: Colors.red.withValues(alpha: 0.12),
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const IconoLesion(),
-                            const SizedBox(width: 8),
-                            Text(t(context).lesionesActivasAhora,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .error)),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        ..._resultado.lesionesActivas.map((l) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 2),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Padding(
-                                    padding: EdgeInsets.only(top: 2),
-                                    child: IconoLesion(tamano: 14),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      '${l.nombreJugador}: ${l.motivo} '
-                                      '(${l.partidosEstimados} partidos, '
-                                      'vuelve el '
-                                      '${_formatearFecha(l.vuelve)})',
-                                      style: TextStyle(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .onSurface),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )),
-                      ],
-                    ),
-                  ),
-                ...partidos.map((p) {
-                  final gana = p.marcadorUsuario >= p.marcadorRival;
-                  // Verde/rojo translúcido: funciona igual sobre fondo claro
-                  // u oscuro sin necesidad de ramificar por Brightness.
-                  final colorResultado = (gana ? Colors.green : Colors.red)
-                      .withValues(alpha: 0.18);
-                  // Orden real local-visitante, no "tu equipo primero": si
-                  // jugaste fuera, el rival aparece primero aunque hayas
-                  // ganado — igual que en el diálogo de partido ya jugado
-                  // del calendario.
-                  final ganaLocal =
-                      p.boxscore.marcadorLocal >= p.boxscore.marcadorVisitante;
-                  return InkWell(
+                if (_resultado.lesionesActivas.isNotEmpty) ...[
+                  _AvisoDeLesiones(lesiones: _resultado.lesionesActivas),
+                  const SizedBox(height: 12),
+                ],
+                for (final p in partidos) ...[
+                  _FilaDePartido(
+                    partido: p,
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => BoxscoreScreen(boxscore: p.boxscore),
+                      builder: (context) =>
+                          BoxscoreScreen(boxscore: p.boxscore),
                     )),
-                    child: Container(
-                      width: double.infinity,
-                      color: colorResultado,
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: Column(
-                        children: [
-                          Text(
-                            _formatearFecha(p.fecha),
-                            style: TextStyle(
-                                fontSize: 12,
-                                color: Theme.of(context).colorScheme.outline),
-                          ),
-                          const SizedBox(height: 2),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                p.boxscore.equipoLocal,
-                                style: TextStyle(
-                                  fontWeight: ganaLocal
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '${p.boxscore.marcadorLocal} - '
-                                '${p.boxscore.marcadorVisitante}',
-                                style: const TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                p.boxscore.equipoVisitante,
-                                style: TextStyle(
-                                  fontWeight: !ganaLocal
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }),
+                  ),
+                  const SizedBox(height: 6),
+                ],
               ],
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.fromLTRB(12, 6, 12, 12),
             child: Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: _simulando
+                  child: BotonPerfilado(
+                    texto: t(context).simularUnPartido,
+                    color: e.texto,
+                    alto: 44,
+                    onTap: _simulando
                         ? null
                         : () async {
-                            final partidosActuales =
-                                await leerPartidos(widget.db, widget.equipoUsuario);
-                            final proximo = proximaFechaPendiente(partidosActuales);
+                            final partidosActuales = await leerPartidos(
+                                widget.db, widget.equipoUsuario);
+                            final proximo =
+                                proximaFechaPendiente(partidosActuales);
                             if (proximo != null) _simularHasta(proximo);
                           },
-                    child: Text(t(context).simularUnPartido),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: _simulando
+                  child: BotonPerfilado(
+                    texto: t(context).simularUnaSemana,
+                    color: e.texto,
+                    alto: 44,
+                    onTap: _simulando
                         ? null
                         : () async {
-                            final partidosActuales =
-                                await leerPartidos(widget.db, widget.equipoUsuario);
-                            _simularHasta(fechaActualDeLaTemporada(partidosActuales)
-                                .add(const Duration(days: 7)));
+                            final partidosActuales = await leerPartidos(
+                                widget.db, widget.equipoUsuario);
+                            _simularHasta(
+                                fechaActualDeLaTemporada(partidosActuales)
+                                    .add(const Duration(days: 7)));
                           },
-                    child: Text(t(context).simularUnaSemana),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: _simulando
+                  child: BotonPerfilado(
+                    texto: t(context).simularUnMes,
+                    color: e.texto,
+                    alto: 44,
+                    onTap: _simulando
                         ? null
                         : () async {
-                            final partidosActuales =
-                                await leerPartidos(widget.db, widget.equipoUsuario);
-                            _simularHasta(fechaActualDeLaTemporada(partidosActuales)
-                                .add(const Duration(days: 30)));
+                            final partidosActuales = await leerPartidos(
+                                widget.db, widget.equipoUsuario);
+                            _simularHasta(
+                                fechaActualDeLaTemporada(partidosActuales)
+                                    .add(const Duration(days: 30)));
                           },
-                    child: Text(t(context).simularUnMes),
                   ),
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Quién se ha quedado fuera y hasta cuándo. Va arriba del todo: enterarte
+/// de una lesión tres pantallas después es enterarte tarde.
+class _AvisoDeLesiones extends StatelessWidget {
+  final List<LesionActivaInfo> lesiones;
+
+  const _AvisoDeLesiones({required this.lesiones});
+
+  @override
+  Widget build(BuildContext context) {
+    final e = Estilo.de(context);
+    return PanelCortado(
+      fondo: e.mal.withValues(alpha: 0.10),
+      corte: 12,
+      borde: Border(left: BorderSide(color: e.mal, width: 3)),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 11),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const IconoLesion(tamano: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(mayus(t(context).lesionesActivasAhora),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: rotulo(e, tamano: 10, color: e.mal)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            for (final l in lesiones)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 5),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(mayus(l.nombreJugador),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: titular(e, tamano: 15)),
+                    Text(
+                      '${l.motivo} · ${l.partidosEstimados} · '
+                      '${_formatearFecha(l.vuelve)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 11.5, color: e.textoTenue),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Un partido del lote: el filo de color dice si ganaste antes de que leas
+/// el marcador.
+class _FilaDePartido extends StatelessWidget {
+  final PartidoSimuladoInfo partido;
+  final VoidCallback onTap;
+
+  const _FilaDePartido({required this.partido, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final e = Estilo.de(context);
+    final gana = partido.marcadorUsuario >= partido.marcadorRival;
+    final color = gana ? e.bien : e.mal;
+    // Orden real local-visitante, no "tu equipo primero": si jugaste fuera,
+    // el rival aparece primero aunque hayas ganado — igual que en el
+    // diálogo de partido ya jugado del calendario.
+    final ganaLocal =
+        partido.boxscore.marcadorLocal >= partido.boxscore.marcadorVisitante;
+
+    Widget lado(String equipo, bool destacado) => Expanded(
+          child: Row(
+            mainAxisAlignment:
+                destacado ? MainAxisAlignment.end : MainAxisAlignment.start,
+            children: [
+              if (!destacado) ...[
+                EquipoLogo(codigoEquipo: equipo, tamano: 22),
+                const SizedBox(width: 7),
+              ],
+              Flexible(
+                child: Text(mayus(equipo),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign:
+                        destacado ? TextAlign.right : TextAlign.left,
+                    style: titular(e,
+                        tamano: 16,
+                        color: destacado ? e.texto : e.textoTenue)),
+              ),
+              if (destacado) ...[
+                const SizedBox(width: 7),
+                EquipoLogo(codigoEquipo: equipo, tamano: 22),
+              ],
+            ],
+          ),
+        );
+
+    return PanelCortado(
+      fondo: color.withValues(alpha: 0.12),
+      corte: 11,
+      borde: Border(left: BorderSide(color: color, width: 3)),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 8, 12, 9),
+            child: Column(
+              children: [
+                Text(_formatearFecha(partido.fecha),
+                    style: rotulo(e, tamano: 9)),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    lado(partido.boxscore.equipoLocal, ganaLocal),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Text(
+                        '${partido.boxscore.marcadorLocal}-'
+                        '${partido.boxscore.marcadorVisitante}',
+                        style: cifra(e, tamano: 22),
+                      ),
+                    ),
+                    lado(partido.boxscore.equipoVisitante, !ganaLocal),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

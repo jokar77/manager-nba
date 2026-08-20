@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
+import '../../shared/estilo.dart';
+import '../../shared/barra_de_club.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/camisetas_repository.dart';
 import '../../domain/carrera_repository.dart';
@@ -25,7 +27,8 @@ class CamisetasRetiradasScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(t(context).pestanaCamisetasRetiradas)),
+      appBar: barraDeClub(
+          equipoUsuario, t(context).pestanaCamisetasRetiradas),
       body: CamisetasRetiradasBody(db: db, equipoUsuario: equipoUsuario),
     );
   }
@@ -240,10 +243,11 @@ class _BloqueEquipo extends StatelessWidget {
                     // no existen —Chris Paul la tiene en los New Orleans
                     // Hornets (NOH)— y para esos códigos `infoDe` devuelve
                     // una ficha vacía, así que la cabecera salía en blanco.
-                    nombreDeEquipoEnFicha(equipo),
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: textoSobre(info.colorPrimario)),
+                    mayus(nombreDeEquipoEnFicha(equipo)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: titular(Estilo.de(context),
+                        tamano: 17, color: textoSobre(info.colorPrimario)),
                   ),
                 ),
                 if (esTuEquipo)

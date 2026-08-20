@@ -684,4 +684,7 @@ abstract class Textos {
   String get volverAlMenuPrincipalTooltip;
 
   String get margenSalarialEvento;
+
+  /// Rotulo de la primera seccion del menu principal.
+  String get tuFranquiciaSeccion;
 }

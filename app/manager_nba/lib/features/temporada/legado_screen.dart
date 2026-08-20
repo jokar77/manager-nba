@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
+import '../../shared/barra_de_club.dart';
 import '../../data/database/app_database.dart';
 import '../../shared/icono_camiseta.dart';
 import 'camisetas_retiradas_screen.dart';
@@ -26,9 +27,10 @@ class LegadoScreen extends StatelessWidget {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(t(context).tituloLegado),
-          actions: [
+        appBar: barraDeClub(
+          equipoUsuario,
+          t(context).tituloLegado,
+          acciones: [
             IconButton(
               icon: const Icon(Icons.info_outline),
               tooltip: t(context).explicacionPuntuacionCarreraTooltip,

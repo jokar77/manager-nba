@@ -6,6 +6,10 @@ import 'package:manager_nba/data/database/app_database.dart';
 import 'package:manager_nba/features/hub/home_hub_screen.dart';
 import 'package:manager_nba/main.dart' show routeObserver;
 
+// Los destinos del menú se pintan en MAYÚSCULAS desde el rediseño: Flutter
+// no tiene el `text-transform` de CSS, así que la mayúscula va en la cadena
+// (ver `mayus` en shared/estilo.dart) y es lo que ve `find.text`.
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -19,7 +23,7 @@ void main() {
       home: HomeHubScreen(db: db, equipo: 'DEN'),
     ));
     await tester.pumpAndSettle();
-    expect(find.text('Calendario'), findsOneWidget);
+    expect(find.text('CALENDARIO'), findsOneWidget);
 
     final navigator = tester.state<NavigatorState>(find.byType(Navigator));
     Future<void> abrirOtraPantalla() async {
@@ -40,7 +44,7 @@ void main() {
     // deja el Navigator bloqueado y a partir de ahí no se puede navegar:
     // exactamente el bug de "no me deja volver al menú principal".
     expect(tester.takeException(), isNull);
-    expect(find.text('Calendario'), findsOneWidget);
+    expect(find.text('CALENDARIO'), findsOneWidget);
 
     await abrirOtraPantalla();
     expect(tester.takeException(), isNull);
@@ -66,12 +70,16 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.textContaining('DEN'), findsWidgets);
-    expect(find.text('Calendario'), findsOneWidget);
+    expect(find.text('CALENDARIO'), findsOneWidget);
 
     // Y todo el menú se recorre con scroll sin que nada desborde.
-    for (final destino in ['Ofertas recibidas', 'Playoffs', 'Legado']) {
+    for (final destino in ['OFERTAS RECIBIDAS', 'PLAYOFFS', 'LEGADO']) {
+      // Se busca la fila pulsable y no el texto suelto: "LEGADO" aparece
+      // dos veces, como rótulo de su sección y como destino dentro de ella,
+      // y solo el destino es un InkWell.
+      final fila = find.widgetWithText(InkWell, destino);
       await tester.dragUntilVisible(
-        find.text(destino),
+        fila,
         find.byType(CustomScrollView),
         const Offset(0, -120),
       );

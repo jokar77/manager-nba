@@ -16,8 +16,12 @@ https://jokar77.github.io/manager-nba/
   funciona desde aquí** (las credenciales están guardadas): en la sesión
   del 19 de agosto de 2026 se subieron cinco commits sin que el usuario
   tuviera que hacer nada. La nota antigua decía que lo tenía que hacer él
-  a mano; ya no hace falta. Aun así, **commit y push solo cuando el
-  usuario lo pida**.
+  a mano; ya no hace falta técnicamente.
+- **PERO NO SE SUBE NADA SIN QUE LO PIDA.** Instrucción expresa del
+  usuario (20 de agosto de 2026): *"cada vez que hagas algo no lo subas al
+  git, déjamelo dicho y yo decido si subirlo o no"*. O sea: se hace el
+  trabajo, se verifica, se deja en el árbol de trabajo y **se le cuenta
+  qué hay**. Ni `git commit` ni `git push` por iniciativa propia.
 - Verificación local: `flutter analyze` limpio en los dos paquetes,
   **428 tests** de la app + **19** de `sim_engine`, y `flutter build web`
   correcto.
@@ -530,9 +534,47 @@ Tres "tests inestables" distintos y todos apuntaban al mismo sitio:
    cierran temporadas la pasan.
 
 Queda residuo: la temporada regular (`simularTramo`) sigue sin semilla, así
-que un test que simule 82 partidos de verdad todavía puede variar. De
-cuatro tandas completas seguidas, tres salieron verdes y una cayó. Es
-mucho mejor que antes pero no está cerrado.
+que un test que simule 82 partidos de verdad todavía puede variar.
+
+3. **Tercera fuga, encontrada el 20 de agosto de 2026: el propio import.**
+   Un rojo en CI (`d5e1f19`, "427 tests passed, 1 failed") en un commit que
+   SOLO tocaba `docs/plan.md` — o sea, el mismo código que había salido
+   verde en el commit anterior. Eso ya dice que es inestabilidad, no
+   regresión.
+
+   El culpable era `tu_equipo_no_se_descuelga_test.dart`. Sembraba
+   `Random(11)` bien a la vista arriba y le pasaba la semilla a los
+   playoffs... pero llamaba a `importarJugadoresSiHaceFalta(db)` **sin
+   semilla**, y ese import echa a suertes la edad de retiro de los 586
+   jugadores con un `Random()` pelado (a propósito: cada partida tiene sus
+   propias retiradas, hay un test que lo exige). Así que en cada ejecución
+   se retiraba gente distinta, la agencia libre quedaba distinta, y la
+   comprobación de "tu oficina no te ha fichado una estrella sola" caía a
+   veces.
+
+   **Medido antes y después**, que es lo único que vale con un test
+   inestable: 5 vueltas antes → 1 fallo. 8 vueltas después de pasarle la
+   semilla al import → 0 fallos.
+
+**Cómo diagnosticar el siguiente.** Los tres casos han sido la misma forma:
+*el test siembra una semilla bien visible y aun así varía, porque algo del
+camino no la recibe*. Para encontrar qué:
+
+```
+# tests que siembran algo pero importan sin semilla
+for f in $(grep -rl "Random(" test/*.dart); do
+  grep -q "importarJugadoresSiHaceFalta(db)" "$f" && basename "$f"
+done
+```
+
+Salen 17 ficheros, y **no** hay que tocarlos todos: la mayoría no dependen
+de qué jugadores se retiren. Se arregla el que se demuestre que falla,
+repitiéndolo en bucle 5-10 veces antes y después. Cambiar 17 ficheros "por
+si acaso" es justo el tipo de cambio que no se puede verificar.
+
+Y una regla que sale de aquí: **una semilla visible en un test no garantiza
+nada**. Si el test llama a algo que crea su propio `Random()` por dentro, la
+semilla es decorativa.
 
 ### Puntos 20 y 22 — salarios y progresion, medidos y arreglados
 
@@ -2961,3 +3003,310 @@ escritorio, porque la caja tiene ancho fijo) y la celda del calendario se
 salía 10px en un teléfono.
 
 Verificación: 298 tests, de los cuales 30 son de adaptación.
+
+
+## Fase 8: rediseño con aire de videojuego (menú principal y plantilla)
+
+Encargo: *"hay que hacerlo más parecido a los menús y niveles del 2K"*, y
+después de ver dos direcciones maquetadas: **dirección A ("Marcador")**, y
+que **se pueda elegir entre modo claro y oscuro**.
+
+Las maquetas están en `docs/diseno/`, con su propio README. Se hicieron
+para el lienzo de Claude Design, que no se pudo montar porque **esta
+máquina no tiene Node.js**; en su lugar hay un script de Python que las
+junta en una página. Esa página (`vista-previa.html`) NO se guarda: es un
+fichero derivado y está en `.gitignore`, se regenera con
+`python docs/diseno/construir_vista.py`.
+
+**Son un registro histórico, no la especificación.** La interfaz de verdad
+es el código, y se separó de las maquetas en varias cosas (la barra sin
+flecha, la regla de mayúsculas, los colores de placa corregidos por
+contraste). El README de la carpeta lo dice en la primera línea, para que
+nadie las lea como si mandaran.
+
+### El sistema de diseño vive en un sitio
+
+`lib/shared/estilo.dart`: la clase `Estilo` con las dos paletas
+(`Estilo.oscuro` y `Estilo.claro`, y `Estilo.de(context)` elige), más las
+piezas que se repiten — `PanelCortado` y `EsquinaCortada` (la esquina
+inferior derecha en diagonal, que es lo que hace que un panel se lea como
+de videojuego y no como una tarjeta de Material), `PlacaEquipo`,
+`PlacaMedia`, `MonogramaFantasma`, `CunaEsquina`, `SeparadorSeccion`, y los
+estilos de texto `rotulo` / `titular` / `cifra`.
+
+**El claro no es el oscuro invertido.** Lo que se conserva es la estructura
+(los cortes, las mayúsculas, la franja del marcador) y lo que cambia es el
+suelo y la tinta. La cabecera de equipo se queda con el color del club en
+los dos modos, porque eso es identidad y no decoración.
+
+### Decisiones que conviene no deshacer sin querer
+
+- **Las mayúsculas están en la cadena, no en el estilo.** Flutter no tiene
+  el `text-transform` de CSS. Se hace con `mayus()` en un solo sitio para
+  poder deshacerlo de una vez. Efecto secundario: `find.text('Calendario')`
+  dejó de encontrar nada, y hubo que tocar cuatro ficheros de test.
+- **`acentoDeEquipo(primario, secundario)`** en `shared/contraste.dart`: el
+  segundo color del club sobre el primero es lo natural (el oro de Denver
+  sobre su azul), pero hay equipos con los dos colores parecidos o negro
+  sobre azul marino. Si el contraste no llega a 2.2 se cae al blanco/negro.
+- **La fila de cinco puestos de la alineación depende del ancho real
+  (`_anchoMinimoParaCincoPuestos = 1190`), no del tramo de pantalla.** Una
+  ventana de 1024 ya cuenta como `amplio`, pero ahí las cinco columnas
+  salen a 190 px y las etiquetas ATA/DEF no caben. Es la excepción
+  razonada a la norma de `shared/pantalla.dart` de no inventarse cortes.
+- **Cada hueco de la alineación lleva `ValueKey('hueco-POS-titular')` y su
+  nombre `ValueKey('nombre-POS-titular')`.** Los tests se agarraban antes a
+  `ListTile` y al texto "Titular: X (POS, media)"; con el rediseño eso
+  desapareció. Las claves no cambian ni con el idioma ni con el maquetado.
+
+### Lo que el test nuevo cazó
+
+`test/tema_claro_y_oscuro_test.dart` monta las dos pantallas en los dos
+modos y a los tres tamaños (12 combinaciones) y, además, **comprueba el
+contraste WCAG de las dos paletas con números**, componiendo antes los
+colores semitransparentes sobre su fondo.
+
+Encontró dos fallos que a ojo no se ven: en modo claro, el verde
+(`#23A366`) y el gris (`#6F7B8C`) de las placas de media daban 3,2 y 4,3 de
+contraste con el blanco de encima, por debajo del 4,5 que pide la norma
+para texto pequeño. Se oscurecieron a `#127A48` y `#5A6675`.
+
+### Lo que NO se hizo, y por qué
+
+- ~~No hay tipografía condensada.~~ **Hecho después:** Saira Condensed
+  empaquetada (ver más abajo).
+- **Solo dos pantallas de una veintena.** (Ampliado después: ver más
+  abajo.) Dentro de la propia plantilla, la pestaña de Estadísticas y la
+  hoja de picks siguen con `ListTile`.
+- **No se añadió la tarjeta de "próximo partido"** arriba del menú. Encaja
+  sola en este estilo, pero es contenido nuevo y no un cambio de aspecto.
+
+Verificación: `flutter analyze` limpio y **446 tests en verde** (18 nuevos).
+
+### Segunda tanda: el camino entero hasta el partido
+
+Con la dirección ya elegida, el rediseño se llevó a las cuatro pantallas
+que faltaban para que no se rompiera el hilo:
+
+| Pantalla | Qué cambia |
+|---|---|
+| Menú de inicio | Título alineado a la izquierda con filete de marca, balón gigante de fondo, y las tres ranuras como fichas con la franja del club |
+| Elegir equipo | De lista de 30 filas iguales a **rejilla de fichas** (2/3/5 columnas), cada una con su color, su monograma y la media del quinteto como placa |
+| Vista previa del club | Cabecera de identidad con la media al lado, entrenador en su franja y plantilla con placa por jugador |
+| Calendario | Barra de título del club, botones de avance perfilados, cabecera de mes con el separador de sección y celda de día con **filo de color arriba** (verde ganado, rojo perdido, color de tu club por jugar) |
+
+Piezas nuevas del sistema, para no repetirlas por pantalla:
+
+- **`BotonPrincipal` y `BotonPerfilado`**. Por dentro son el `FilledButton`
+  y el `OutlinedButton` de Material con `BeveledRectangleBorder` de radio en
+  una sola esquina — eso da la diagonal del diseño de forma nativa, recorta
+  bien el chapoteo del InkWell (cosa que un `ClipPath` por fuera no hace) y
+  conserva foco con teclado, estado apagado y semántica. Lo único propio es
+  la forma y la letra.
+- **`BarraDeTitulo`**: la franja con el color del club. No es un
+  `PreferredSizeWidget` a propósito — va como primer hijo de un `Column` y
+  no en `Scaffold.appBar`, porque debajo suele ir pegada otra franja (el
+  marcador, las pestañas) y con el AppBar quedaban separadas.
+- **`Estilo.marca`**: el acento del juego para las pantallas que todavía no
+  tienen club (inicio y elección de equipo). Dentro de una franquicia manda
+  el color del club.
+
+Un arreglo que salió por el camino: los días pasados del calendario se
+apagaban echándoles negro por encima, lo que en **modo claro los hacía
+resaltar en vez de apagarlos**. Ahora se apagan hacia el fondo de la
+pantalla, que funciona en los dos modos.
+
+Verificación: `flutter analyze` limpio y **470 tests en verde**, 36 de ellos
+de temas (las seis pantallas × dos modos × tres tamaños, más el contraste
+de las paletas medido con números).
+
+### Lo que sigue sin rediseñar (al cierre de la segunda tanda)
+
+Se completó después: ver las tandas de abajo.
+
+### Tercera tanda: la tipografía y el tema global
+
+**La tipografía va empaquetada, no descargada.** `assets/fonts` con Saira
+Condensed en dos pesos (700 y 800, los únicos que se usan), 190 KB, licencia
+SIL OFL incluida al lado. Descargarla en tiempo de ejecución habría metido
+una dependencia de red en un juego que se puede jugar sin conexión, y un
+parpadeo de fuente en la primera pantalla.
+
+**Y hay que cargarla a mano en los tests.** `flutter test` NO carga las
+fuentes del `pubspec.yaml`: mide con una de relleno. Como el diseño se
+apoya en que la letra es estrecha —los titulares en mayúsculas solo caben
+por eso—, los tests de desborde estaban comprobando una pantalla que no es
+la que se publica. Se arregla con `cargarTipografiaDelJuego()`
+(`test/tipografia_de_prueba.dart`) en el `setUpAll` de los dos tests que
+miden sitio. Lo mismo con el tema: ahora montan `temaDeApp(brillo)` y no un
+`ThemeData` genérico.
+
+**El tema global es lo que unifica las pantallas que no se han rehecho.**
+`temaDeApp(Brightness)` en `estilo.dart` construye el `ThemeData` desde la
+misma paleta: suelo, grises, letra condensada en los títulos y esquina
+cortada en botones, tarjetas, diálogos y chips. Las ~18 pantallas que
+todavía no están rediseñadas a mano heredan de ahí, así que hablan el mismo
+idioma mientras les llega el turno, en vez de quedarse con el Material de
+fábrica al lado de las que sí lo están.
+
+**El escudo cuadrado, de un solo cambio.** `EquipoLogo` (el círculo) se
+reescribió por dentro para delegar en `PlacaEquipo`. Eran 29 sitios que lo
+pintaban; tocar la pieza y no las 29 pantallas es lo que evita que
+convivan dos escudos distintos según por dónde llegues. Por debajo de 24 px
+la placa se queda sin el código del equipo: a ese tamaño saldría a 8 px.
+
+Piezas compartidas nuevas: `FilaDeJugador` (`shared/ficha_jugador.dart`),
+que es la fila con placa de media que repetían agencia libre, draft,
+traspasos y ofertas; y `barraDeClub()` (`shared/barra_de_club.dart`), que
+mete la barra del club en el hueco `appBar:` de un `Scaffold` con una sola
+línea.
+
+Rediseñadas a fondo en esta tanda: **clasificación**, **playoffs**,
+**agencia libre**, **draft**, **premios**, **NBA Cup**, **ofertas**,
+**traspasos**, **entrenador** y **legado**.
+
+Un fallo que cazó el test al ampliarlo: la cabecera de la clasificación
+fingía la alineación de sus columnas con espacios (`'V-D    %    DIF'`), así
+que al cambiar los anchos de las filas quedó descuadrada **y desbordaba 41
+px en un móvil**. Ahora cabecera y filas comparten las mismas constantes de
+ancho.
+
+Verificación: `flutter analyze` limpio y **500 tests en verde**, 72 de ellos
+de temas (once pantallas × dos modos × tres tamaños, con la fuente y el tema
+de verdad, más el contraste de las paletas medido con números).
+
+### Cuarta tanda: lo que quedaba
+
+Rediseñadas a fondo: **resumen de simulación**, **boxscore**, **resumen de
+temporada**, **camisetas retiradas**, **detalle de equipo**,
+**renovaciones**, **retirados**, **Hall of Fame**, **All-Star** y **líderes
+históricos**.
+
+Dos decisiones de fondo:
+
+- **El boxscore tenía dos tablas** —`DataTable` de Material en ancho y una
+  hecha a mano en estrecho— porque `DataTable` reparte el ancho según lo que
+  ocupe cada celda y con un nombre largo se salía en un teléfono. Ahora es
+  una sola para todos los anchos: además de caber siempre, la de Material
+  era de lo poco que seguía teniendo aspecto de Material.
+- **En las listas, ganador y perdedor ya no se distinguen por el grosor de
+  la letra sino por la tinta.** La condensada va gruesa en los dos pesos que
+  se empaquetan, así que "negrita contra normal" no se notaba. Afecta al
+  marcador del boxscore, al bracket de playoffs, al All-Star y a los líderes
+  históricos, y obligó a reescribir lo que comprobaba
+  `boxscore_screen_test`: el test pasa a vigilar la intención (que el
+  marcador NO se pinte de verde, y que ganador y perdedor se distingan) en
+  vez del mecanismo concreto.
+
+Un detalle que salió en los tests y conviene recordar: **el monograma
+gigante de la barra de club es un `Text` de verdad**, así que
+`find.text('DEN')` encuentra dos. Los tests que buscan un código de equipo
+dentro de una pantalla tienen que acotar el ámbito
+(`find.descendant(of: find.byType(ListView), ...)`).
+
+Verificación: `flutter analyze` limpio y **506 tests en verde**, 78 de ellos
+de temas.
+
+### Estado del rediseño
+
+**A fondo (26 pantallas):** inicio, elegir equipo, vista previa de club,
+alineación, menú principal, calendario, clasificación, playoffs, agencia
+libre, draft, premios, NBA Cup, ofertas, traspasos, entrenador, legado,
+resumen de simulación, boxscore, resumen de temporada, camisetas retiradas,
+detalle de equipo, renovaciones, retirados, Hall of Fame, All-Star y líderes
+históricos.
+
+**Solo con el tema global:** (ninguna, se completaron después — ver la
+quinta tanda).
+
+### Quinta tanda: el rediseño queda completo
+
+Ya **no queda ni un `AppBar` de Material** en el juego. Lo que faltaba:
+
+- La tarjeta de eventos de vestuario (`evento_narrativo_dialog.dart`), que
+  se ve dentro del menú principal, y el propio diálogo de decisión.
+- Las seis pantallas de paso obligatorio del verano (renovaciones, draft,
+  retirados, pretemporada, camisetas nuevas, agencia libre en modo trámite).
+- La ficha de carrera de un jugador, All-Star, Hall of Fame, ajustes y los
+  boxscores de una serie.
+
+Piezas de sistema que hicieron falta para poder cerrarlo:
+
+- **`conVolver` en las barras.** Los pasos obligatorios del cambio de
+  temporada llevaban `automaticallyImplyLeading: false` justo para que no
+  hubiera flecha de volver: la ruta SÍ se puede descartar, así que una
+  flecha te dejaría escaparte de algo que el juego da por hecho. Sin este
+  parámetro, cambiar esas barras habría sido un cambio de comportamiento
+  disfrazado de cambio de aspecto.
+- **`BarraNeutraAppBar`**, para las pantallas que no son de un club (Hall of
+  Fame, All-Star, ajustes, la ficha de un jugador): misma forma, pero con el
+  acento del juego en vez del color de un equipo.
+- **`BackButton` de Flutter en vez de un `IconButton` a mano.** Trae el
+  tooltip ya traducido, el icono de cada plataforma y el `maybePop` de
+  serie; y además es lo que busca `tester.pageBack()`, que fue como se
+  descubrió.
+
+### Dónde NO van las mayúsculas
+
+Se corrigió un error de la tanda anterior: las **etiquetas de las opciones
+de un evento narrativo** salían en mayúsculas, y son frases del guion
+("Aceptar la cena del equipo"), no rótulos de interfaz. Lo mismo con el
+título del evento. Los botones tienen ahora un parámetro `mayusculas` (por
+defecto true) para poder decirlo.
+
+La regla, para no volver a equivocarse: **mayúsculas en los rótulos de
+interfaz** (destinos del menú, títulos de pantalla, cabeceras de columna,
+nombres propios de club y de jugador) y **caja normal en la prosa** (textos
+de evento, avisos, explicaciones).
+
+Verificación: `flutter analyze` limpio, **506 tests en verde** y la web
+compila. Los únicos restos de Material son los `AlertDialog`, que heredan
+del tema la esquina cortada, el panel y la letra condensada del título.
+
+## Pendiente en el rediseño (a 2026-08-20)
+
+El rediseño en sí está **completo**: no queda ningún `AppBar` de Material,
+506 tests en verde, `flutter analyze` limpio, la web compila. Lo que sigue
+abierto es más pequeño:
+
+1. **Los `AlertDialog` no se han rehecho a mano.** Heredan del tema
+   (`temaDeApp` en `estilo.dart`) la esquina cortada, el panel y la letra
+   condensada del título, así que son coherentes — pero sus botones siguen
+   siendo `TextButton`/`FilledButton` de Material tal cual, sin pasar por
+   `BotonPrincipal`/`BotonPerfilado`. Si en algún momento se quiere el
+   mismo acabado exacto que el resto de la interfaz, hay que revisarlos uno
+   a uno (son bastantes: confirmaciones de borrado, el diálogo de fichaje,
+   el de renovación, el de traspaso...).
+2. **No hay ninguna pantalla nueva de contenido**, solo el aspecto de las
+   que ya existían. La tarjeta de "próximo partido" en el hub, que se
+   sugirió al principio del rediseño, sigue sin construirse — encaja con el
+   estilo pero es funcionalidad nueva, no un cambio visual, y no se ha
+   pedido.
+3. **Verificación solo automática, nunca visual.** Todo lo anterior se
+   comprobó con `flutter analyze`, la suite de tests (incluida
+   `tema_claro_y_oscuro_test.dart`, que mide contraste WCAG con números) y
+   que la web compila sin errores de consola. **Nadie ha mirado la
+   interfaz con sus propios ojos todavía** — ni en el navegador de esta
+   sesión (los screenshots no funcionan aquí) ni en un dispositivo real.
+   Es el hueco más importante: los tests atrapan desbordes y contraste,
+   pero no dicen si algo "se ve raro".
+4. **`docs/diseno/`** son solo un registro histórico de las dos direcciones
+   que se compararon al principio (ver su README) — no hay trabajo
+   pendiente ahí, pero conviene no confundirlas con la especificación.
+
+## Pendiente del proyecto en general (no es del rediseño)
+
+Estos son anteriores al rediseño y siguen sin resolver:
+
+- **El icono del iPhone** sigue sin diagnosticar: hace falta que el usuario
+  abra `https://jokar77.github.io/manager-nba/estado.html` **desde el
+  icono** y diga qué pone.
+- **El chino puede verse en cuadraditos en la web**, sin comprobar: hace
+  falta que el usuario lo pruebe en su móvil con el idioma en chino.
+- **No hay copia de seguridad de partidas** (aparcado a propósito: el plan
+  es sacar el juego como app nativa).
+- El catálogo de eventos narrativos (`lib/domain/eventos_narrativos.dart`,
+  ~250 líneas) sigue solo en castellano.
+- Ítem 7 de la lista de bugs (ofertas de la CPU poco realistas):
+  investigado, no se encontró fallo — pendiente de un ejemplo concreto del
+  usuario para poder reproducirlo.

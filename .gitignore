@@ -37,3 +37,8 @@ app/manager_nba/.gradle/
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# La página que junta las maquetas de diseño: se genera con
+# `python docs/diseno/construir_vista.py` a partir de los .dc.html que sí
+# están en el repositorio. Guardarla sería tener el mismo trabajo dos veces.
+docs/diseno/vista-previa.html

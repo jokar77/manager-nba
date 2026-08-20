@@ -138,7 +138,7 @@ void main() {
     await tester.tap(find.byKey(ValueKey('serie-${finalNba.id}')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
-    expect(find.text('Partidos de la serie'), findsOneWidget);
+    expect(find.text('PARTIDOS DE LA SERIE'), findsOneWidget);
   });
 
   /// Una serie a partido único (el play-in) salta la lista y va directa al
@@ -168,7 +168,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text('Resultado del partido'), findsOneWidget);
+    expect(find.text('RESULTADO DEL PARTIDO'), findsOneWidget);
   });
 
   testWidgets('al decidirse la Final NBA en pantalla, sale el diálogo de '

@@ -1070,4 +1070,7 @@ class TextosEs extends Textos {
 
   @override
   String get margenSalarialEvento => 'Margen salarial';
+
+  @override
+  String get tuFranquiciaSeccion => 'Tu franquicia';
 }

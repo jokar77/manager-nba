@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
+import '../../shared/estilo.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/carrera_repository.dart';
 import '../../domain/equipos_info.dart';
@@ -103,7 +104,8 @@ class _CarreraJugadorScreenState extends State<CarreraJugadorScreen> {
     final c = widget.carrera;
 
     return Scaffold(
-      appBar: AppBar(title: Text(c?.nombre ?? widget.nombreSiNoHayCarrera)),
+      appBar: BarraNeutraAppBar(
+          titulo: c?.nombre ?? widget.nombreSiNoHayCarrera),
       body: c == null
           // Sin carrera simulada. Si es una leyenda real (id negativo, ver
           // legado_historico_repository.dart) el nombre guardado ES su
@@ -557,8 +559,12 @@ class _AntesDeTuPartida extends StatelessWidget {
               children: [
                 Icon(Icons.history, size: 18, color: outline),
                 const SizedBox(width: 8),
-                Text(t(context).antesDeTuPartidaTitulo,
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                Expanded(
+                  child: Text(mayus(t(context).antesDeTuPartidaTitulo),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: rotulo(Estilo.de(context), tamano: 10)),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -659,8 +665,9 @@ class _CarreraRealBloqueState extends State<_CarreraRealBloque> {
                       ? t(context).suCarreraEnLaNbaReal
                       : t(context).conEquipoEnLaNbaReal(
                           infoDe(widget.soloEsteEquipo!).nombreCompleto),
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 16),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: titular(Estilo.de(context), tamano: 17),
                 ),
                 const SizedBox(height: 8),
                 if (carrera != null) ...[
@@ -793,8 +800,10 @@ class _EtapaRealFila extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(nombreDeEquipoEnFicha(etapa.equipo),
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(mayus(nombreDeEquipoEnFicha(etapa.equipo)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: titular(Estilo.de(context), tamano: 16)),
                 Text(
                   textos.rangoTemporadasPartidos(
                       etiquetaTemporadaReal(etapa.primeraTemporada),
@@ -847,10 +856,13 @@ class _FilaTrofeo extends StatelessWidget {
       dense: true,
       contentPadding: contentPadding,
       leading: Icon(icono, color: color),
-      title: Text(etiqueta),
+      title: Text(mayus(etiqueta),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: titular(Estilo.de(context), tamano: 15)),
       subtitle: anios.isEmpty ? null : Text(anios.join(', ')),
       trailing: Text('x$veces',
-          style: const TextStyle(fontWeight: FontWeight.bold)),
+          maxLines: 1, style: cifra(Estilo.de(context), tamano: 18)),
     );
   }
 }
@@ -863,12 +875,15 @@ class _Dato extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final e = Estilo.de(context);
     return Column(
       children: [
         Text(valor.toStringAsFixed(1),
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-        Text(etiqueta,
-            style: TextStyle(color: Theme.of(context).colorScheme.outline)),
+            maxLines: 1, style: cifra(e, tamano: 26)),
+        Text(mayus(etiqueta),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: rotulo(e, tamano: 9)),
       ],
     );
   }
@@ -889,9 +904,10 @@ class _Bloque extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(titulo,
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(mayus(titulo),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: titular(Estilo.de(context), tamano: 17)),
             ...hijos,
           ],
         ),

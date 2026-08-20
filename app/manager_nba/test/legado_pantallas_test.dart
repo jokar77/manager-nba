@@ -99,11 +99,13 @@ void main() {
     expect(tester.takeException(), isNull);
 
     // Tocar la tarjeta del nuevo miembro lleva a su ficha (se identifica
-    // por el nombre en la AppBar de CarreraJugadorScreen).
-    await tester.tap(find.text(jugador.nombreFicticio));
+    // por el nombre en la barra de CarreraJugadorScreen). Los nombres van
+    // en mayúsculas en los dos sitios, como todos los titulares del juego.
+    await tester.tap(find.text(jugador.nombreFicticio.toUpperCase()));
     await asentar(tester);
-    expect(find.text(jugador.nombreFicticio), findsWidgets,
-        reason: 'la ficha del jugador también muestra su nombre');
+    expect(find.text(jugador.nombreFicticio.toUpperCase()), findsWidgets,
+        reason: 'la ficha del jugador también muestra su nombre, en la '
+            'barra de arriba y en mayúsculas como el resto de titulares');
 
     await tester.pageBack();
     await tester.pumpAndSettle();

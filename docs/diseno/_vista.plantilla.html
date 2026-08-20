@@ -1,0 +1,327 @@
+<meta charset="utf-8">
+<title>Rediseño Manager NBA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Barlow:wght@400;500;600;700&family=Big+Shoulders+Display:wght@600;700;800;900&family=IBM+Plex+Mono:wght@400;500&family=Saira+Condensed:wght@500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+
+<style>
+  :root {
+    --papel: #E4E7EC;
+    --tarjeta: #F4F6F9;
+    --foso: #CFD5DE;
+    --tinta: #12161D;
+    --tinta-2: #59616F;
+    --linea: #C2C8D2;
+    --acento: #12305C;
+    --oro: #8A6608;
+    --aviso-fondo: #F7EFD6;
+    --aviso-linea: #C9A63E;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --papel: #0F1217;
+      --tarjeta: #171B22;
+      --foso: #090B0F;
+      --tinta: #E7EAEF;
+      --tinta-2: #98A1B0;
+      --linea: #262C36;
+      --acento: #8AB0EC;
+      --oro: #E0B23A;
+      --aviso-fondo: #201B0E;
+      --aviso-linea: #7A6220;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --papel: #0F1217;
+    --tarjeta: #171B22;
+    --foso: #090B0F;
+    --tinta: #E7EAEF;
+    --tinta-2: #98A1B0;
+    --linea: #262C36;
+    --acento: #8AB0EC;
+    --oro: #E0B23A;
+    --aviso-fondo: #201B0E;
+    --aviso-linea: #7A6220;
+  }
+
+  body {
+    margin: 0;
+    background: var(--papel);
+    color: var(--tinta);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .envoltorio { max-width: 1240px; margin: 0 auto; padding: 0 28px 96px; }
+  .prosa { max-width: 64ch; }
+  .prosa p { margin: 0 0 1em; }
+  .prosa p:last-child { margin-bottom: 0; }
+
+  .titular {
+    font-family: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.022em;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .cejilla {
+    font-family: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--acento);
+    margin: 0 0 10px;
+  }
+
+  /* ---- portada ---- */
+  .portada { padding: 76px 0 8px; border-bottom: 1px solid var(--linea); }
+  .portada h1 { font-size: clamp(38px, 5.4vw, 62px); line-height: 1.02; }
+  .entradilla { font-size: 20px; line-height: 1.55; color: var(--tinta-2); margin: 20px 0 0; max-width: 60ch; }
+
+  .ficha {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+    gap: 1px;
+    margin: 40px 0 34px;
+    background: var(--linea);
+    border: 1px solid var(--linea);
+  }
+  .ficha > div { background: var(--tarjeta); padding: 14px 16px; }
+  .ficha dt {
+    font-family: 'Archivo', sans-serif;
+    font-size: 10.5px; font-weight: 600; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--tinta-2); margin: 0 0 4px;
+  }
+  .ficha dd {
+    margin: 0;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 14px; font-variant-numeric: tabular-nums; color: var(--tinta);
+  }
+
+  /* ---- secciones ---- */
+  .seccion { padding-top: 66px; }
+  .seccion > h2 { font-size: clamp(28px, 3.4vw, 40px); line-height: 1.08; margin-bottom: 18px; }
+  .seccion h3 { font-size: 21px; line-height: 1.2; margin: 0 0 8px; }
+
+  .par {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: 26px 34px;
+    margin-top: 30px;
+  }
+
+  .balance { display: flex; flex-direction: column; gap: 7px; margin: 14px 0 0; padding: 0; list-style: none; }
+  .balance li { display: flex; gap: 9px; font-size: 15.5px; line-height: 1.5; }
+  .balance .marca {
+    font-family: 'Archivo', sans-serif; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; flex-shrink: 0;
+    padding-top: 4px; width: 66px;
+  }
+  .balance .si .marca { color: var(--acento); }
+  .balance .no .marca { color: var(--tinta-2); }
+
+  /* ---- el foso donde se apoyan las maquetas ---- */
+  .foso {
+    margin-top: 22px;
+    background: var(--foso);
+    border: 1px solid var(--linea);
+    overflow-x: auto;
+  }
+  .foso-interior { display: flex; gap: 34px; align-items: flex-start; padding: 34px; width: max-content; }
+
+  .pieza { display: flex; flex-direction: column; gap: 0; }
+  .maqueta { box-shadow: 0 14px 34px rgba(6, 10, 18, 0.34); }
+
+  .pie {
+    display: flex; align-items: baseline; gap: 10px;
+    padding: 10px 2px 0;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 12px; font-variant-numeric: tabular-nums;
+    color: var(--tinta-2);
+  }
+  .pie strong {
+    font-family: 'Archivo', sans-serif; font-size: 12.5px; font-weight: 600;
+    letter-spacing: 0.04em; color: var(--tinta);
+  }
+
+  .aviso {
+    display: flex; gap: 12px; align-items: flex-start;
+    margin-top: 26px; padding: 15px 18px;
+    background: var(--aviso-fondo);
+    border-left: 3px solid var(--aviso-linea);
+    font-size: 15.5px; line-height: 1.55;
+    max-width: 78ch;
+  }
+  .aviso b { font-family: 'Archivo', sans-serif; font-weight: 600; }
+
+  .cierre { margin-top: 66px; padding-top: 30px; border-top: 1px solid var(--linea); }
+  .lista-decisiones { margin: 20px 0 0; padding: 0; list-style: none; max-width: 70ch; }
+  .lista-decisiones li {
+    padding: 15px 0; border-top: 1px solid var(--linea);
+    display: grid; grid-template-columns: 30px 1fr; gap: 14px; align-items: start;
+  }
+  .lista-decisiones li:last-child { border-bottom: 1px solid var(--linea); }
+  .lista-decisiones .num {
+    font-family: 'IBM Plex Mono', monospace; font-size: 13px;
+    color: var(--acento); padding-top: 3px;
+  }
+  .lista-decisiones b { font-family: 'Archivo', sans-serif; font-weight: 600; font-size: 16px; }
+
+  code {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 0.88em;
+    background: color-mix(in srgb, var(--acento) 11%, transparent);
+    padding: 1px 5px;
+  }
+
+  a { color: var(--acento); }
+  a:hover { color: var(--tinta); }
+  :focus-visible { outline: 2px solid var(--acento); outline-offset: 3px; }
+</style>
+
+<div class="envoltorio">
+
+  <header class="portada">
+    <p class="cejilla">Manager NBA · propuesta de rediseño</p>
+    <h1 class="titular">Los menús, con cara de videojuego</h1>
+    <p class="entradilla">Seis maquetas del menú principal y de la pantalla de tu equipo, a los tres anchos que el juego ya distingue. Dos direcciones distintas para que elijas una.</p>
+
+    <dl class="ficha">
+      <div><dt>Pantallas</dt><dd>Menú principal · Tu equipo</dd></div>
+      <div><dt>Anchos</dt><dd>390 · 834 · 1280 px</dd></div>
+      <div><dt>Equipo de ejemplo</dt><dd>DEN #0E2240 / #FEC524</dd></div>
+      <div><dt>Datos</dt><dd>jugadores.json, reales</dd></div>
+    </dl>
+
+    <div class="prosa">
+      <p>Todo lo que se ve sale del juego: los trece accesos del menú con los colores que ya tienen asignados en <code>home_hub_screen.dart</code>, los textos en castellano de <code>textos_es.dart</code>, los colores de Denver de <code>equipos_info.dart</code> y la plantilla de verdad del dataset. Nada de texto de relleno.</p>
+      <p>El estilo es el de un menú de juego deportivo —fondo casi negro, paneles con la esquina cortada, mayúsculas condensadas, el color del equipo mandando y la media como placa grande—, pero dibujado desde cero: no es una copia de las pantallas de ningún juego concreto.</p>
+    </div>
+  </header>
+
+  <section class="seccion">
+    <p class="cejilla">Pantalla 1</p>
+    <h2 class="titular">Menú principal</h2>
+    <div class="prosa">
+      <p>Las dos direcciones tienen el mismo contenido y la misma paleta. Lo que cambia es qué manda: en una, la información; en la otra, el equipo.</p>
+    </div>
+
+    <div class="par">
+      <div>
+        <h3 class="titular">A · Marcador</h3>
+        <div class="prosa">
+          <p>La cabecera se convierte en un marcador de retransmisión, y los cuatro sitios donde entras cada día —calendario, equipo, clasificación, entrenador— son fichas grandes. El resto baja a filas finas.</p>
+        </div>
+        <ul class="balance">
+          <li class="si"><span class="marca">A favor</span><span>Llegas antes a todo, y el récord y el puesto se leen sin pensar.</span></li>
+          <li class="no"><span class="marca">En contra</span><span>Es la más densa, y el color del equipo sale menos protagonista.</span></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="titular">B · Cinemática</h3>
+        <div class="prosa">
+          <p>El equipo se come media pantalla, con corte en diagonal y el nombre enorme. El menú son barras inclinadas, y Calendario va destacado en el color del equipo.</p>
+        </div>
+        <ul class="balance">
+          <li class="si"><span class="marca">A favor</span><span>Es la que más parece un menú de consola, y los botones son bastante más grandes.</span></li>
+          <li class="no"><span class="marca">En contra</span><span>Cabe menos por pantalla: se hace más scroll para llegar abajo.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="foso">
+      <div class="foso-interior">
+        <div class="pieza">
+          <!--ab-a-movil-->
+          <div class="pie"><strong>A · Marcador</strong><span>390 px · Tamano.compacto</span></div>
+        </div>
+        <div class="pieza">
+          <!--ab-b-movil-->
+          <div class="pie"><strong>B · Cinemática</strong><span>390 px · Tamano.compacto</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="aviso">
+      <span><b>La línea dorada de puntos</b> marca dónde corta la pantalla de un iPhone 14. Lo que queda por debajo hay que bajarlo con el dedo — por eso importa cuánto ocupa cada dirección.</span>
+    </div>
+  </section>
+
+  <section class="seccion">
+    <p class="cejilla">El mismo menú, más ancho</p>
+    <h2 class="titular">iPad y PC</h2>
+    <div class="prosa">
+      <p>Los cortes son los que ya usa <code>shared/pantalla.dart</code>: compacto por debajo de 600, medio hasta 1024, amplio a partir de ahí. Esto es la dirección A a los otros dos anchos.</p>
+      <p>En el iPad las cuatro fichas se ponen en fila y las demás pasan a dos columnas. En el PC la identidad del equipo se va a una columna fija a la izquierda y el menú ocupa el resto. En los dos casos cabe entero, sin scroll.</p>
+    </div>
+
+    <div class="foso">
+      <div class="foso-interior">
+        <div class="pieza">
+          <!--ab-tablet-->
+          <div class="pie"><strong>iPad, vertical</strong><span>834 px · Tamano.medio</span></div>
+        </div>
+        <div class="pieza">
+          <!--ab-pc-->
+          <div class="pie"><strong>PC</strong><span>1280 px · Tamano.amplio</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="seccion">
+    <p class="cejilla">Pantalla 2</p>
+    <h2 class="titular">Tu equipo</h2>
+    <div class="prosa">
+      <p>Mismo contenido que ahora: cinco puestos, titular y suplente, los minutos con sus botones, y la estrella de ataque y la de defensa. Lo que cambia es cómo se lee.</p>
+      <p>La media pasa a ser una placa grande y con color —oro de 90 para arriba, verde de 85, plata de 80, grafito por debajo— para que el nivel de la plantilla se vea de un vistazo. El naranja sigue siendo ataque y el azul defensa, como en el resto del juego.</p>
+      <p>Dos cosas cambian de sitio, no de contenido. El ataque y la defensa del quinteto suben arriba: hoy están al final de la pantalla, y son justo lo que quieres mirar mientras mueves la alineación. Y el lesionado se ve desde fuera, sin abrir nada.</p>
+      <p>En PC el quinteto pasa a cinco columnas y al lado entra la plantilla entera, con el fondo dorado marcando quién está en tu rotación. Eso hoy vive repartido entre esta pantalla y la pestaña de estadísticas.</p>
+    </div>
+
+    <div class="foso">
+      <div class="foso-interior">
+        <div class="pieza">
+          <!--ab-plantilla-->
+          <div class="pie"><strong>Móvil</strong><span>390 px · Tamano.compacto</span></div>
+        </div>
+        <div class="pieza">
+          <!--ab-plantilla-pc-->
+          <div class="pie"><strong>PC</strong><span>1280 px · Tamano.amplio</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="seccion cierre">
+    <p class="cejilla">Antes de tocar el código</p>
+    <h2 class="titular">Lo que necesito que decidas</h2>
+
+    <ul class="lista-decisiones">
+      <li>
+        <span class="num">1</span>
+        <span><b>A o B.</b> Es la única decisión que no puedo tomar yo: son igual de válidas y se diferencian en si prefieres ver más de golpe o que el equipo entre por los ojos. También vale «A, pero con la cabecera de B».</span>
+      </li>
+      <li>
+        <span class="num">2</span>
+        <span><b>Solo oscuro, o los dos modos.</b> Estas maquetas son oscuras a propósito, que es lo que da el aire de videojuego. El juego hoy tiene modo claro y oscuro; si lo quieres mantener, hay que decidir cómo se ve esto en claro, y no es automático.</span>
+      </li>
+      <li>
+        <span class="num">3</span>
+        <span><b>El resto de pantallas.</b> Esto son dos de una veintena. Calendario, clasificación, draft, playoffs y el mercado siguen con el aspecto de ahora, así que durante un tiempo el juego se vería a dos estilos.</span>
+      </li>
+    </ul>
+
+    <div class="aviso" style="margin-top: 30px">
+      <span><b>Una cosa que no he metido, aposta:</b> una tarjeta de «próximo partido» arriba del menú, con el rival y un botón de simular. Encaja sola en este estilo y es de lo más 2K que hay, pero es contenido nuevo, no un cambio de aspecto. Si la quieres, dímelo y la añado.</span>
+    </div>
+  </section>
+
+</div>

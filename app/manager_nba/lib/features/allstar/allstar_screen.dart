@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../i18n/textos.dart';import 'package:sim_engine/sim_engine.dart' as sim;
+import '../../i18n/textos.dart';
+import '../../shared/estilo.dart';import 'package:sim_engine/sim_engine.dart' as sim;
 
 import '../../data/database/app_database.dart';
 import '../../domain/allstar_repository.dart';
@@ -107,7 +108,7 @@ class _AllStarScreenState extends State<AllStarScreen>
   Widget build(BuildContext context) {
     final datos = _datos;
     return Scaffold(
-      appBar: AppBar(title: Text(t(context).allStarWeekendMayus)),
+      appBar: BarraNeutraAppBar(titulo: t(context).allStarWeekendMayus),
       body: datos == null
           ? const Center(child: CircularProgressIndicator())
           : ListView(
@@ -409,12 +410,13 @@ class _ListaConferencia extends StatelessWidget {
             color: info.colorPrimario,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Text(
-                t(context).conferenciaConNombre(conferencia == 'Oeste'
+                mayus(t(context).conferenciaConNombre(conferencia == 'Oeste'
                     ? t(context).conferenciaOeste
-                    : t(context).conferenciaEste),
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: textoSobre(info.colorPrimario))),
+                    : t(context).conferenciaEste)),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: titular(Estilo.de(context),
+                    tamano: 17, color: textoSobre(info.colorPrimario))),
           ),
           for (var i = 0; i < convocados.length; i++) ...[
             if (i == 0) _Etiqueta(texto: t(context).titularesLabel),
@@ -497,13 +499,16 @@ class _FilaVoto extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(j.nombreFicticio,
-                          style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: convocado.titular
-                                  ? FontWeight.bold
-                                  : FontWeight.normal),
-                          overflow: TextOverflow.ellipsis),
+                      Text(mayus(j.nombreFicticio),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: titular(Estilo.de(context),
+                              tamano: 15,
+                              // Los titulares del All-Star, con la tinta
+                              // principal; los suplentes, apagados.
+                              color: convocado.titular
+                                  ? Estilo.de(context).texto
+                                  : Estilo.de(context).textoTenue)),
                       Text(
                           t(context).posicionValoracion(etiquetaPosicion(j),
                               convocado.valoracion.toStringAsFixed(1)),

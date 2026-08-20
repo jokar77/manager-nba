@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
+import '../../shared/estilo.dart';
 import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 
 import '../../data/calendario/generador_calendario.dart';
@@ -308,19 +309,27 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
 
   @override
   Widget build(BuildContext context) {
-    final colorEquipo = infoDe(widget.equipoUsuario).colorPrimario;
+    final info = infoDe(widget.equipoUsuario);
+    final estilo = Estilo.de(context);
     final proximoPendiente = _cargando ? null : proximaFechaPendiente(_partidos);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(t(context).calendario),
-        backgroundColor: colorEquipo,
-        foregroundColor: textoSobre(colorEquipo),
-      ),
-      body: _cargando
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
+      backgroundColor: estilo.fondo,
+      body: Column(
+        children: [
+          BarraDeTitulo(
+            codigo: widget.equipoUsuario,
+            primario: info.colorPrimario,
+            secundario: info.colorSecundario,
+            sobretitulo: info.nombreCompleto,
+            titulo: t(context).calendario,
+          ),
+          if (_cargando)
+            const Expanded(child: Center(child: CircularProgressIndicator()))
+          else
+            Expanded(
+              child: Column(
+                children: [
                 _BotonesAvanceRapido(
                   habilitado: !_simulando && proximoPendiente != null,
                   onSimular1Partido: proximoPendiente == null
@@ -377,8 +386,11 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
                     );
                   }),
                 ),
-              ],
+                ],
+              ),
             ),
+        ],
+      ),
     );
   }
 }
@@ -428,33 +440,36 @@ class _BotonesAvanceRapido extends StatelessWidget {
     final compacto = tamanoDe(context).esCompacto;
     final textos = t(context);
 
+    final e = Estilo.de(context);
+
     return Padding(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 6),
       child: Row(
         children: [
           Expanded(
-            child: OutlinedButton(
-              onPressed: habilitado ? onSimular1Partido : null,
-              child: Text(
-                  compacto ? textos.unPartido : textos.simularUnPartido,
-                  maxLines: 1),
+            child: BotonPerfilado(
+              texto: compacto ? textos.unPartido : textos.simularUnPartido,
+              color: e.texto,
+              alto: 44,
+              onTap: habilitado ? onSimular1Partido : null,
             ),
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: OutlinedButton(
-              onPressed: habilitado ? onSimular1Semana : null,
-              child: Text(
-                  compacto ? textos.unaSemana : textos.simularUnaSemana,
-                  maxLines: 1),
+            child: BotonPerfilado(
+              texto: compacto ? textos.unaSemana : textos.simularUnaSemana,
+              color: e.texto,
+              alto: 44,
+              onTap: habilitado ? onSimular1Semana : null,
             ),
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: OutlinedButton(
-              onPressed: habilitado ? onSimular1Mes : null,
-              child: Text(compacto ? textos.unMes : textos.simularUnMes,
-                  maxLines: 1),
+            child: BotonPerfilado(
+              texto: compacto ? textos.unMes : textos.simularUnMes,
+              color: e.texto,
+              alto: 44,
+              onTap: habilitado ? onSimular1Mes : null,
             ),
           ),
         ],
@@ -511,22 +526,25 @@ class _SeccionMes extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(12, 16, 12, 4),
-          child: Text(
-            '${t(context).nombresMeses[mes.month - 1]} ${mes.year}',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          padding: const EdgeInsets.fromLTRB(10, 14, 10, 6),
+          child: SeparadorSeccion(
+            titulo: '${t(context).nombresMeses[mes.month - 1]} ${mes.year}',
+            acento: acentoDeEquipo(
+                infoDe(equipoUsuario).colorPrimario,
+                infoDe(equipoUsuario).colorSecundario),
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 6),
           child: Row(
-            children: t(context).diasSemanaAbrev
+            children: t(context)
+                .diasSemanaAbrev
                 .map((d) => Expanded(
                       child: Center(
-                        child: Text(d,
-                            style: TextStyle(
-                                fontSize: 12,
-                                color: Theme.of(context).colorScheme.outline)),
+                        child: Text(mayus(d),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: rotulo(Estilo.de(context), tamano: 9)),
                       ),
                     ))
                 .toList(),
@@ -598,100 +616,130 @@ class _CeldaDia extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Colores translúcidos (no un fondo claro fijo): así el texto de la
-    // celda, que hereda el color por defecto del tema, mantiene contraste
-    // tanto en modo claro como oscuro — con un fondo claro fijo, el texto
-    // claro del modo oscuro quedaba casi ilegible encima.
-    Color? color;
+    final e = Estilo.de(context);
+    final colorEquipo = infoDe(equipoUsuario).colorPrimario;
+
+    // Tintes translúcidos y no fondos fijos: así el texto de la celda, que
+    // sale de la paleta del modo activo, mantiene contraste en claro y en
+    // oscuro — con un fondo claro fijo, la tinta clara del modo oscuro
+    // quedaba casi ilegible encima.
+    Color? fondo;
+    Color? filo;
     if (partido != null) {
       if (partido!.jugado) {
         final gana = partido!.marcadorPropietario! >= partido!.marcadorRival!;
-        color = (gana ? Colors.green : Colors.red).withValues(alpha: 0.18);
+        final color = gana ? e.bien : e.mal;
+        fondo = color.withValues(alpha: 0.16);
+        filo = color;
       } else {
-        color = Colors.blue.withValues(alpha: 0.12);
+        // Los partidos que quedan por jugar van tintados con el color de tu
+        // club: se distinguen de un día vacío sin necesidad de otro color
+        // más en la pantalla.
+        fondo = colorEquipo.withValues(alpha: 0.16);
+        filo = colorEquipo;
       }
     }
-    final colorTexto = Theme.of(context).colorScheme.onSurface;
 
     return InkWell(
       onTap: (partido != null || evento != null) ? onTap : null,
       child: Container(
         margin: const EdgeInsets.all(2),
         decoration: BoxDecoration(
-          color: color,
-          border: Border.all(color: Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(4),
+          color: fondo ?? e.panel,
+          border: Border.all(color: e.linea),
         ),
-        padding: const EdgeInsets.all(2),
         child: Stack(
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // En un móvil la celda mide unos 50px: el día con su
-                    // abreviatura más los iconos no caben en la misma
-                    // línea y se salían. El nombre del día se cae en
-                    // compacto — ya está en la cabecera de la columna, así
-                    // que no se pierde información.
-                    Flexible(
-                      child: Text(
-                        tamanoDe(context).esCompacto
-                            ? '$dia'
-                            : '$dia ${t(context).diasSemanaAbrev[fecha.weekday - 1]}',
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 10, color: colorTexto),
-                      ),
-                    ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (partido != null)
-                          Icon(
-                            partido!.esLocal
-                                ? Icons.home
-                                : Icons.flight_takeoff,
-                            size: 14,
-                            color: Theme.of(context).colorScheme.outline,
-                          ),
-                        if (partido?.esTorneoTemporada == true)
-                          const Icon(Icons.emoji_events,
-                              size: 16, color: Colors.amber),
-                        if (evento != null)
-                          Icon(_iconoEvento(evento!.tipo), size: 18,
-                              color: Theme.of(context).colorScheme.primary),
-                      ],
-                    ),
-                  ],
-                ),
-                if (partido != null)
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        partido!.rival,
-                        style: TextStyle(
+            // El filo de color arriba: es lo que se lee de un vistazo al
+            // recorrer un mes entero —ganado, perdido, por jugar— sin tener
+            // que mirar el marcador de cada celda.
+            if (filo != null)
+              Positioned(
+                  top: 0, left: 0, right: 0, child: Container(height: 2, color: filo)),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(4, 4, 4, 3),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // En un móvil la celda mide unos 50 px: el día con su
+                      // abreviatura más los iconos no caben en la misma
+                      // línea y se salían. El nombre del día se cae en
+                      // compacto — ya está en la cabecera de la columna, así
+                      // que no se pierde información.
+                      Flexible(
+                        child: Text(
+                          tamanoDe(context).esCompacto
+                              ? '$dia'
+                              : '$dia ${t(context).diasSemanaAbrev[fecha.weekday - 1]}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: familiaTitular,
                             fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: colorTexto),
-                        overflow: TextOverflow.ellipsis,
+                            fontWeight: FontWeight.w700,
+                            height: 1,
+                            color: e.textoTenue,
+                          ),
+                        ),
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (partido != null)
+                            Icon(
+                              partido!.esLocal
+                                  ? Icons.home
+                                  : Icons.flight_takeoff,
+                              size: 13,
+                              color: e.textoRotulo,
+                            ),
+                          if (partido?.esTorneoTemporada == true)
+                            const Icon(Icons.emoji_events,
+                                size: 15, color: Color(0xFFE0A81E)),
+                          if (evento != null)
+                            Icon(_iconoEvento(evento!.tipo),
+                                size: 16, color: e.marca),
+                        ],
+                      ),
+                    ],
+                  ),
+                  if (partido != null)
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          mayus(partido!.rival),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: titular(e, tamano: 13),
+                        ),
                       ),
                     ),
-                  ),
-                if (partido?.jugado == true)
-                  Text(
-                    '${partido!.marcadorPropietario}-${partido!.marcadorRival}',
-                    style: TextStyle(fontSize: 10, color: colorTexto),
-                  ),
-              ],
+                  if (partido?.jugado == true)
+                    Text(
+                      '${partido!.marcadorPropietario}-${partido!.marcadorRival}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: familiaTitular,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        height: 1,
+                        color: e.texto,
+                      ),
+                    ),
+                ],
+              ),
             ),
-            // Días ya pasados (con partido o sin él) llevan un tinte gris
-            // para distinguirlos claramente de lo que queda por delante.
+            // Los días ya pasados se apagan hacia el fondo de la pantalla.
+            // Antes se les echaba negro encima, que en modo claro los hacía
+            // resaltar en vez de apagarlos.
             if (esPasado)
               Positioned.fill(
                 child: IgnorePointer(
-                  child: Container(color: Colors.black.withValues(alpha: 0.12)),
+                  child: Container(color: e.fondo.withValues(alpha: 0.55)),
                 ),
               ),
           ],

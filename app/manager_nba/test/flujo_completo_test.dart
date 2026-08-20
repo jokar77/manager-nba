@@ -51,20 +51,21 @@ void main() {
     // 1) Menú de inicio: se pide partida nueva y ahí salen las ranuras; se
     // estrena la primera.
     await esperarTexto('Nueva partida');
-    await tester.tap(find.widgetWithText(FilledButton, 'Nueva partida'));
+    await tester.tap(find.widgetWithText(FilledButton, 'NUEVA PARTIDA'));
     await tester.pump();
     await esperarTexto('Ranura vacía');
-    await tester.tap(find.widgetWithText(OutlinedButton, 'Empezar').first);
+    await tester.tap(find.widgetWithText(OutlinedButton, 'EMPEZAR').first);
     await tester.pump();
 
-    // 2) Selección de equipo (import real del dataset) -> Denver.
-    await esperarTexto('Denver', contiene: true);
-    await tester.tap(find.textContaining('Denver'));
+    // 2) Selección de equipo (import real del dataset) -> Denver. La
+    // rejilla rotula la ciudad en mayúsculas.
+    await esperarTexto('DENVER', contiene: true);
+    await tester.tap(find.textContaining('DENVER'));
     await tester.pump();
 
     // 3) Vista previa de la plantilla -> confirmar.
-    await esperarTexto('Elegir este equipo');
-    await tester.tap(find.text('Elegir este equipo'));
+    await esperarTexto('ELEGIR ESTE EQUIPO');
+    await tester.tap(find.text('ELEGIR ESTE EQUIPO'));
     await tester.pump();
 
     // 4) Alineación por posiciones: 10 huecos (titular+suplente x 5
@@ -96,32 +97,36 @@ void main() {
     expect(find.textContaining('elegir jugador'), findsNothing);
 
     // 5) Guardar rotación -> arranca la temporada -> menú principal.
+    // Los títulos y los botones del rediseño van en MAYÚSCULAS (ver
+    // `mayus` en shared/estilo.dart), y el botón de guardar ya no es un
+    // FilledButton de Material sino una pieza propia con la esquina
+    // cortada; lo pulsable de dentro sigue siendo un InkWell.
     final botonEmpezar =
-        find.widgetWithText(FilledButton, 'Empezar temporada');
-    expect(tester.widget<FilledButton>(botonEmpezar).onPressed, isNotNull);
+        find.widgetWithText(InkWell, 'EMPEZAR TEMPORADA');
+    expect(tester.widget<InkWell>(botonEmpezar).onTap, isNotNull);
     await tester.tap(botonEmpezar);
     await tester.pump();
 
-    await esperarTexto('Calendario');
-    expect(find.text('Tu equipo'), findsOneWidget);
-    expect(find.text('Clasificación'), findsOneWidget);
+    await esperarTexto('CALENDARIO');
+    expect(find.text('TU EQUIPO'), findsOneWidget);
+    expect(find.text('CLASIFICACIÓN'), findsOneWidget);
 
     // Premios y Playoffs existen pero están deshabilitados hasta terminar
     // la temporada regular (82 partidos) — aquí solo se ha creado la
     // franquicia, ninguno se ha jugado todavía.
-    await esperarTexto('Premios');
+    await esperarTexto('PREMIOS');
     expect(
       find.text('Se desbloquea al terminar la temporada regular'),
       findsNWidgets(2), // Premios y Playoffs
     );
 
     // 6) Entrar al calendario.
-    await tester.tap(find.text('Calendario'));
+    await tester.tap(find.text('CALENDARIO'));
     await tester.pump();
-    await esperarTexto('Simular 1 partido');
+    await esperarTexto('SIMULAR 1 PARTIDO');
 
     // 7) Simular el primer partido programado.
-    await tester.tap(find.text('Simular 1 partido'));
+    await tester.tap(find.text('SIMULAR 1 PARTIDO'));
     await tester.pump();
     await esperarTexto('1 partido(s) simulados');
 

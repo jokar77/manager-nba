@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/entrenadores_repository.dart';
 import '../../domain/equipos_info.dart';
-import '../../shared/equipo_logo.dart';
+import '../../domain/posiciones.dart';
 import '../../shared/contraste.dart';
+import '../../shared/estilo.dart';
 import '../../i18n/textos.dart';
 import '../../shared/entrenador_ui.dart';
 import '../../shared/medias_jugador.dart';
@@ -32,83 +33,167 @@ class TeamPreviewScreen extends StatelessWidget {
         .get();
   }
 
+  /// La media del quinteto, que es la misma cifra que enseña la rejilla de
+  /// equipos. La de la plantilla entera diluye el equipo con el fondo del
+  /// banquillo y sale un 70 para todo el mundo.
+  int _mediaDelQuinteto(List<Jugador> plantilla) {
+    if (plantilla.isEmpty) return 0;
+    final mejores = plantilla.take(5);
+    return (mejores.map((j) => j.media).reduce((a, b) => a + b) /
+            mejores.length)
+        .round();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final e = Estilo.de(context);
     final info = infoDe(equipo);
+    final textos = t(context);
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(info.nombreCompleto),
-        backgroundColor: info.colorPrimario,
-        foregroundColor: textoSobre(info.colorPrimario),
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                EquipoLogo(codigoEquipo: equipo, tamano: 56),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(info.nombreCompleto,
-                      style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold)),
-                ),
-              ],
-            ),
-          ),
-          // Quién dirige. Elegir equipo mirando solo la plantilla se deja
-          // fuera medio proyecto: el entrenador vale unas seis victorias de
-          // 82 entre el mejor y el peor, y además decide cuánto crecen tus
-          // jóvenes.
-          _EntrenadorDelEquipo(db: db, equipo: equipo),
-          Expanded(
-            child: FutureBuilder<List<Jugador>>(
-              future: _cargarPlantilla(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                final plantilla = snapshot.data!;
-                return ListView.separated(
-                  itemCount: plantilla.length,
-                  separatorBuilder: (_, _) => const Divider(height: 1),
-                  itemBuilder: (context, i) {
-                    final j = plantilla[i];
-                    return ListTile(
-                      title: Text(j.nombreFicticio),
-                      subtitle: Row(
-                        children: [
-                          Text('${j.posicion}  '),
-                          MediasAtaqueDefensa.de(j, compacto: true),
-                        ],
+      backgroundColor: e.fondo,
+      body: FutureBuilder<List<Jugador>>(
+        future: _cargarPlantilla(),
+        builder: (context, snapshot) {
+          final plantilla = snapshot.data;
+          return Column(
+            children: [
+              _CabeceraDeClub(
+                equipo: equipo,
+                info: info,
+                media: plantilla == null ? null : _mediaDelQuinteto(plantilla),
+              ),
+              _EntrenadorDelEquipo(db: db, equipo: equipo),
+              Expanded(
+                child: plantilla == null
+                    ? const Center(child: CircularProgressIndicator())
+                    : ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(14, 4, 14, 8),
+                        itemCount: plantilla.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 6),
+                        itemBuilder: (context, i) =>
+                            _FilaDeJugador(jugador: plantilla[i]),
                       ),
-                      trailing: Text(t(context).mediaJugador(j.media),
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
-                    );
-                  },
-                );
-              },
-            ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 8, 14, 14),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: BotonPerfilado(
+                        texto: textos.volver,
+                        color: e.textoTenue,
+                        onTap: () => Navigator.of(context).pop(),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 2,
+                      child: BotonPrincipal(
+                        texto: textos.elegirEsteEquipo,
+                        color: acentoDeEquipo(
+                            info.colorPrimario, info.colorSecundario),
+                        alto: 50,
+                        onTap: onElegir,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// La franja de identidad del club, con la media de su quinteto al lado:
+/// aquí es donde se decide, así que la cifra que se compara va a la vista.
+class _CabeceraDeClub extends StatelessWidget {
+  final String equipo;
+  final EquipoInfo info;
+  final int? media;
+
+  const _CabeceraDeClub({
+    required this.equipo,
+    required this.info,
+    required this.media,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final fondo = info.colorPrimario;
+    final sobre = textoSobre(fondo);
+    final acento = acentoDeEquipo(fondo, info.colorSecundario);
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [fondo, const Color(0xFF05070B)],
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned(top: 0, right: 0, child: CunaEsquina(color: acento)),
+          Positioned(
+            top: 4,
+            right: -8,
+            child: MonogramaFantasma(texto: equipo, tamano: 118),
           ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(t(context).volver),
+          SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(4, 4, 16, 16),
+              child: Row(
+                children: [
+                  BackButton(color: sobre),
+                  PlacaEquipo(
+                    codigo: equipo,
+                    primario: info.colorPrimario,
+                    secundario: info.colorSecundario,
+                    tamano: 50,
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: onElegir,
-                    child: Text(t(context).elegirEsteEquipo),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(mayus(info.ciudad),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 2.2,
+                                color: acento)),
+                        const SizedBox(height: 2),
+                        Text(mayus(info.apodo),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontFamily: familiaTitular,
+                                fontSize: 30,
+                                fontWeight: FontWeight.w800,
+                                height: 1,
+                                letterSpacing: -0.4,
+                                color: sobre)),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                  if (media != null) ...[
+                    const SizedBox(width: 10),
+                    Tooltip(
+                      message: t(context).mediaDelEquipo(media!),
+                      child: PlacaMedia(media: media!, tamano: 48),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
         ],
@@ -117,8 +202,59 @@ class TeamPreviewScreen extends StatelessWidget {
   }
 }
 
+/// Un jugador de la plantilla: su media como placa, y en qué es bueno.
+class _FilaDeJugador extends StatelessWidget {
+  final Jugador jugador;
 
-/// La fila del entrenador en la ficha de un equipo.
+  const _FilaDeJugador({required this.jugador});
+
+  @override
+  Widget build(BuildContext context) {
+    final e = Estilo.de(context);
+    return PanelCortado(
+      fondo: e.panelSuave,
+      corte: 10,
+      borde: Border.all(color: e.linea),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(10, 8, 12, 8),
+        child: Row(
+          children: [
+            PlacaMedia(media: jugador.media, tamano: 38),
+            const SizedBox(width: 11),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(mayus(jugador.nombreFicticio),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: titular(e, tamano: 16)),
+                  const SizedBox(height: 4),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      MediasAtaqueDefensa.de(jugador, compacto: true),
+                      Text(etiquetaPosicion(jugador),
+                          style:
+                              TextStyle(fontSize: 11, color: e.textoTenue)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Quién dirige. Elegir equipo mirando solo la plantilla se deja fuera
+/// medio proyecto: el entrenador vale unas seis victorias de 82 entre el
+/// mejor y el peor, y además decide cuánto crecen tus jóvenes.
 class _EntrenadorDelEquipo extends StatelessWidget {
   final AppDatabase db;
   final String equipo;
@@ -127,26 +263,51 @@ class _EntrenadorDelEquipo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final estilo = Estilo.de(context);
     return FutureBuilder<Entrenador?>(
       future: leerEntrenadorDe(db, equipo),
       builder: (context, snapshot) {
-        final e = snapshot.data;
-        if (e == null) return const SizedBox.shrink();
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-          child: Card(
-            margin: EdgeInsets.zero,
-            child: ListTile(
-              leading: const Icon(Icons.sports),
-              title: Text(e.nombreFicticio),
-              subtitle: Text(
-                '${t(context).edadJugador(e.edad)} · '
-                '${etiquetaDeEstilo(t(context), estiloDeEntrenador(ataque: e.atrAtaque, defensa: e.atrDefensa, desarrollo: e.atrDesarrollo))}'
-                '${e.anillos > 0 ? ' · ${t(context).anillos(e.anillos)}' : ''}',
+        final entrenador = snapshot.data;
+        if (entrenador == null) return const SizedBox.shrink();
+        final textos = t(context);
+        return Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: estilo.marcador,
+            border: Border(bottom: BorderSide(color: estilo.linea)),
+          ),
+          padding: const EdgeInsets.fromLTRB(14, 10, 14, 11),
+          child: Row(
+            children: [
+              Icon(Icons.sports, size: 20, color: estilo.textoRotulo),
+              const SizedBox(width: 11),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(mayus(textos.entrenador),
+                        style: rotulo(estilo, tamano: 9)),
+                    const SizedBox(height: 1),
+                    Text(mayus(entrenador.nombreFicticio),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: titular(estilo, tamano: 16)),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${textos.edadJugador(entrenador.edad)} · '
+                      '${etiquetaDeEstilo(textos, estiloDeEntrenador(ataque: entrenador.atrAtaque, defensa: entrenador.atrDefensa, desarrollo: entrenador.atrDesarrollo))}'
+                      '${entrenador.anillos > 0 ? ' · ${textos.anillos(entrenador.anillos)}' : ''}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 11, color: estilo.textoTenue),
+                    ),
+                  ],
+                ),
               ),
-              trailing: Text(t(context).mediaJugador(mediaDe(e)),
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
-            ),
+              const SizedBox(width: 10),
+              PlacaMedia(media: mediaDe(entrenador), tamano: 36),
+            ],
           ),
         );
       },

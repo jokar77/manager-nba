@@ -51,11 +51,16 @@ void main() {
     ));
     await tester.pump();
 
-    expect(find.text('105 - 98'), findsOneWidget);
+    expect(find.text('105-98'), findsOneWidget);
     // El local (LAL) va antes que el visitante (DEN) en la fila, aunque
     // DEN sea "tu equipo" y haya ganado.
-    final posicionLal = tester.getTopLeft(find.text('LAL')).dx;
-    final posicionDen = tester.getTopLeft(find.text('DEN')).dx;
+    //
+    // Solo dentro de la lista: la barra de arriba lleva de fondo el
+    // monograma gigante del club, que también dice "DEN".
+    Finder enLaLista(String equipo) =>
+        find.descendant(of: find.byType(ListView), matching: find.text(equipo));
+    final posicionLal = tester.getTopLeft(enLaLista('LAL')).dx;
+    final posicionDen = tester.getTopLeft(enLaLista('DEN')).dx;
     expect(posicionLal, lessThan(posicionDen));
 
     await db.close();

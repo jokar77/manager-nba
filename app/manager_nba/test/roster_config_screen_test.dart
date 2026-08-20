@@ -41,48 +41,56 @@ void main() {
     ));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Alinear automáticamente'));
+    await tester.tap(find.text('ALINEAR AUTOMÁTICAMENTE'));
     await tester.pumpAndSettle();
 
-    final titulares = find.byWidgetPredicate((w) =>
-        w is ListTile &&
-        w.title is Text &&
-        (w.title as Text).data!.startsWith('Titular:'));
-    expect(titulares, findsNWidgets(5));
+    // Cada hueco y cada nombre llevan clave propia, que no depende ni del
+    // idioma ni de cómo esté maquetada la fila.
+    Finder hueco(String posicion, String clave) =>
+        find.byKey(ValueKey('hueco-$posicion-$clave'));
 
-    String textoTitular(int i) =>
-        ((tester.widgetList<ListTile>(titulares).elementAt(i)).title as Text)
-            .data!;
+    String nombreEn(String posicion, String clave) => tester
+        .widget<Text>(find.byKey(ValueKey('nombre-$posicion-$clave')))
+        .data!;
 
-    final titularPgAntes = textoTitular(0);
-    final titularSgAntes = textoTitular(1);
-    expect(titularPgAntes, isNot(titularSgAntes));
+    for (final posicion in ['PG', 'SG', 'SF', 'PF', 'C']) {
+      expect(hueco(posicion, 'titular'), findsOneWidget);
+    }
 
-    // El nombre va antes del paréntesis de posición.
-    String soloNombre(String texto) =>
-        texto.substring(texto.indexOf(': ') + 2, texto.lastIndexOf(' (')).trim();
-    final nombrePg = soloNombre(titularPgAntes);
+    final titularPg = nombreEn('PG', 'titular');
+    final titularSg = nombreEn('SG', 'titular');
+    expect(titularPg, isNot(titularSg));
 
     // En el hueco de titular escolta, elige al que ahora mismo es el base
     // titular: deben intercambiarse.
-    await tester.tap(titulares.at(1));
+    await tester.tap(hueco('SG', 'titular'));
     await tester.pumpAndSettle();
 
-    final opcion = find.textContaining(nombrePg).last;
+    // El diálogo escribe el nombre tal cual ("Yamal Mulray (PG, 89)") y la
+    // pantalla en mayúsculas, así que se compara sin distinguir caja.
+    final opcion = find
+        .byWidgetPredicate((w) =>
+            w is Text &&
+            w.data != null &&
+            w.data!.toUpperCase().contains(titularPg))
+        .last;
     await tester.ensureVisible(opcion);
     await tester.pumpAndSettle();
     await tester.tap(opcion);
     await tester.pumpAndSettle();
 
-    expect(soloNombre(textoTitular(1)), nombrePg,
+    expect(nombreEn('SG', 'titular'), titularPg,
         reason: 'el base titular debería haber pasado a escolta titular');
-    expect(soloNombre(textoTitular(0)), soloNombre(titularSgAntes),
+    expect(nombreEn('PG', 'titular'), titularSg,
         reason: 'y el escolta titular debería haber ocupado su hueco');
 
-    // La rotación sigue completa: el intercambio no deja huecos vacíos.
+    // La rotación sigue completa: el intercambio no deja huecos vacíos, así
+    // que el botón de guardar tiene que seguir pulsable.
     expect(
-        tester.widget<FilledButton>(
-            find.widgetWithText(FilledButton, 'Guardar rotación')).onPressed,
+        tester
+            .widget<InkWell>(
+                find.widgetWithText(InkWell, 'GUARDAR ROTACIÓN'))
+            .onTap,
         isNotNull);
   });
 
@@ -122,7 +130,7 @@ void main() {
     // aparecer ninguna línea de "pts · ast · reb".
     expect(find.textContaining('pts ·'), findsNothing);
 
-    await tester.tap(find.text('Estadísticas'));
+    await tester.tap(find.text('ESTADÍSTICAS'));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('pts ·'), findsWidgets);

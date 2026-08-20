@@ -37,8 +37,9 @@ void main() {
     ));
     await tester.pump();
 
-    expect(find.text('Lesiones activas ahora mismo'), findsOneWidget);
-    expect(find.textContaining('Jugador de Prueba'), findsOneWidget);
+    expect(find.text('LESIONES ACTIVAS AHORA MISMO'), findsOneWidget);
+    // El nombre va en mayúsculas, como todos los titulares del juego.
+    expect(find.textContaining('JUGADOR DE PRUEBA'), findsOneWidget);
 
     await db.close();
   });

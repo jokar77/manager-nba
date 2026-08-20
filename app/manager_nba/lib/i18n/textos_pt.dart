@@ -1071,4 +1071,7 @@ class TextosPt extends Textos {
 
   @override
   String get margenSalarialEvento => 'Margem salarial';
+
+  @override
+  String get tuFranquiciaSeccion => 'A tua franquia';
 }

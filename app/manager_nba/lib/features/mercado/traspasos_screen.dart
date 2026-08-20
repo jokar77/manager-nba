@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
+import '../../shared/barra_de_club.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/calendario_repository.dart';
 import '../../domain/equipos_info.dart';
@@ -481,7 +482,7 @@ class _TraspasosScreenState extends State<TraspasosScreen> {
   Widget build(BuildContext context) {
     if (_cargando) {
       return Scaffold(
-        appBar: AppBar(title: Text(t(context).tituloTraspasos)),
+        appBar: barraDeClub(widget.equipoUsuario, t(context).tituloTraspasos),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -490,8 +491,9 @@ class _TraspasosScreenState extends State<TraspasosScreen> {
     final mesa = _equiposEnMesa;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(t(context).tituloTraspasos),
+      appBar: barraDeClub(
+        widget.equipoUsuario,
+        t(context).tituloTraspasos,
         bottom: _buscando
             ? const PreferredSize(
                 preferredSize: Size.fromHeight(4),

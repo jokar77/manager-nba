@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
+import '../../shared/barra_de_club.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/equipos_info.dart';
 import '../../domain/resumen_temporada_repository.dart';
@@ -46,7 +47,8 @@ class _ResumenTemporadaScreenState extends State<ResumenTemporadaScreen> {
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return Scaffold(
-            appBar: AppBar(title: Text(t(context).tituloResumenDeLaTemporada)),
+            appBar: barraDeClub(
+                widget.equipoUsuario, t(context).tituloResumenDeLaTemporada),
             body: Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
@@ -58,7 +60,8 @@ class _ResumenTemporadaScreenState extends State<ResumenTemporadaScreen> {
         }
         if (!snapshot.hasData) {
           return Scaffold(
-            appBar: AppBar(title: Text(t(context).tituloResumenDeLaTemporada)),
+            appBar: barraDeClub(
+                widget.equipoUsuario, t(context).tituloResumenDeLaTemporada),
             body: const Center(child: CircularProgressIndicator()),
           );
         }
@@ -66,11 +69,12 @@ class _ResumenTemporadaScreenState extends State<ResumenTemporadaScreen> {
         return DefaultTabController(
           length: 3,
           child: Scaffold(
-            appBar: AppBar(
-              title: Text(resumen.etiquetaTemporada.isEmpty
+            appBar: barraDeClub(
+              widget.equipoUsuario,
+              resumen.etiquetaTemporada.isEmpty
                   ? t(context).tituloResumenDeLaTemporada
-                  : t(context).temporadaConEtiqueta(resumen.etiquetaTemporada)),
-              actions: const [BotonMenuPrincipal()],
+                  : t(context).temporadaConEtiqueta(resumen.etiquetaTemporada),
+              acciones: const [BotonMenuPrincipal()],
               bottom: TabBar(tabs: [
                 Tab(text: t(context).pestanaBalance),
                 Tab(text: t(context).clasificacion),

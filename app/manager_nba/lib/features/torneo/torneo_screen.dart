@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
+import '../../shared/barra_de_club.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/equipos_info.dart';
 import '../../domain/nueva_temporada_repository.dart';
@@ -51,7 +52,7 @@ class _TorneoScreenState extends State<TorneoScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(t(context).nbaCup)),
+      appBar: barraDeClub(widget.equipoUsuario, t(context).nbaCup),
       body: FutureBuilder<List<SerieTorneo>>(
         future: _seriesFuture,
         builder: (context, snapshot) {

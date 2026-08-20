@@ -65,8 +65,9 @@ void main() {
     expect(await leerIdioma(partida), Idioma.espanol,
         reason: 'la base de la partida no pinta nada aquí');
 
-    // Y se ve: la propia pantalla ya está en inglés.
-    expect(find.text(const TextosEn().ajustes), findsOneWidget);
+    // Y se ve: la propia pantalla ya está en inglés. En mayúsculas,
+    // porque así rotula la barra de arriba desde el rediseño.
+    expect(find.text(const TextosEn().ajustes.toUpperCase()), findsOneWidget);
   });
 
   testWidgets('el modo oscuro también sale de la base de la app y repinta',
@@ -90,6 +91,6 @@ void main() {
 
     // Se cierra y se abre de nuevo, como quien sale y vuelve a entrar.
     await abrirAjustesScreen(tester);
-    expect(find.text(const TextosFr().ajustes), findsOneWidget);
+    expect(find.text(const TextosFr().ajustes.toUpperCase()), findsOneWidget);
   });
 }

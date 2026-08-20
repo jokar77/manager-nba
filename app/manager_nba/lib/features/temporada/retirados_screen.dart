@@ -2,6 +2,9 @@ import 'package:drift/drift.dart' show BooleanExpressionOperators;
 import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
+import '../../shared/barra_de_club.dart';
+import '../../shared/estilo.dart';
+import '../../shared/ficha_jugador.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/camisetas_repository.dart';
 import '../../domain/carrera_repository.dart';
@@ -133,10 +136,8 @@ class _RetiradosScreenState extends State<RetiradosScreen> {
         retirados.where((c) => c.equipo != widget.equipoUsuario).toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(t(context).tituloSeRetiran),
-        automaticallyImplyLeading: false,
-      ),
+      appBar: barraDeClub(widget.equipoUsuario, t(context).tituloSeRetiran,
+          conVolver: false),
       body: _cargando
           ? const Center(child: CircularProgressIndicator())
           : (propios.isEmpty && resto.isEmpty)
@@ -221,21 +222,34 @@ class _FilaRetirado extends StatelessWidget {
             ? t(context).suCamisetaYaRetiradaSola
             : t(context).camisetaRetiradaSufijo;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 6),
-      child: ListTile(
-        leading: esAgenteLibre
-            ? const Icon(Icons.person_off)
-            : EquipoLogo(codigoEquipo: cambio.equipo, tamano: 32),
-        title: Text(cambio.nombre),
-        subtitle: Text(t(context).seRetiraConEdadYMedia(
-            procedencia, cambio.edad, cambio.mediaAntes, aviso)),
-        trailing: onTap == null
-            ? null
-            : (camisetaRetirada
-                ? const Icon(Icons.checkroom, color: Colors.amber)
-                : const Icon(Icons.chevron_right)),
+    final e = Estilo.de(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: FilaDeJugador(
+        // La media con la que se retira, como placa: en una lista de doce
+        // retiradas es lo que distingue a una leyenda de un suplente.
+        media: cambio.mediaAntes,
+        nombre: cambio.nombre,
+        detalle: t(context).seRetiraConEdadYMedia(
+            procedencia, cambio.edad, cambio.mediaAntes, aviso),
         onTap: onTap,
+        accesorio: esAgenteLibre
+            ? Icon(Icons.person_off, size: 20, color: e.textoRotulo)
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  EquipoLogo(codigoEquipo: cambio.equipo, tamano: 26),
+                  if (onTap != null) ...[
+                    const SizedBox(width: 6),
+                    camisetaRetirada
+                        ? const Icon(Icons.checkroom,
+                            size: 18, color: Color(0xFFE0A81E))
+                        : Icon(Icons.chevron_right,
+                            size: 18, color: e.textoRotulo),
+                  ],
+                ],
+              ),
       ),
     );
   }

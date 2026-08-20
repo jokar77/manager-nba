@@ -174,7 +174,7 @@ void main() {
       _tamanos['iPhone vertical']!,
       (context) => const TarjetaDeEfectosActivos(efectos: []),
     );
-    expect(find.text('En el vestuario'), findsNothing);
+    expect(find.text('EN EL VESTUARIO'), findsNothing);
   });
 
   testWidgets('con efectos activos, la tarjeta los lista', (tester) async {
@@ -191,7 +191,7 @@ void main() {
       ]),
     );
 
-    expect(find.text('En el vestuario'), findsOneWidget);
+    expect(find.text('EN EL VESTUARIO'), findsOneWidget);
     expect(find.text('Buen rollo en el vestuario'), findsOneWidget);
     expect(find.text('12 partidos'), findsOneWidget);
     // Singular cuando queda uno: "1 partidos" se lee fatal.

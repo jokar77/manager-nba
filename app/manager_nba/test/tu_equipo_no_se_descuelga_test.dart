@@ -78,10 +78,16 @@ void main() {
       () async {
     almacenDeSlots = AlmacenDeSlotsEnMemoria();
     final db = AppDatabase.forTesting(NativeDatabase.memory());
-    await importarJugadoresSiHaceFalta(db);
+    final rng = Random(20260804);
+    // La semilla TAMBIÉN al importar. Sin ella el import echa a suertes la
+    // edad de retiro de los 586 jugadores con un `Random()` pelado (a
+    // propósito: cada partida tiene sus propias retiradas), así que se
+    // retiraba gente distinta en cada ejecución, la agencia libre quedaba
+    // distinta y el test dejaba de ser repetible por mucho que sembrara
+    // todo lo demás.
+    await importarJugadoresSiHaceFalta(db, random: rng);
     await crearFranquicia(db, 'DEN');
 
-    final rng = Random(20260804);
     final huecosPorTemporada = <double>[];
 
     for (var t = 1; t <= 5; t++) {
@@ -138,10 +144,12 @@ void main() {
       () async {
     almacenDeSlots = AlmacenDeSlotsEnMemoria();
     final db = AppDatabase.forTesting(NativeDatabase.memory());
-    await importarJugadoresSiHaceFalta(db);
+    final rng = Random(11);
+    // Con semilla también aquí: ver la nota del test de arriba. Este es el
+    // que caía, ~1 de cada 5 ejecuciones.
+    await importarJugadoresSiHaceFalta(db, random: rng);
     await crearFranquicia(db, 'DEN');
 
-    final rng = Random(11);
     final idsAlEmpezar = (await (db.select(db.jugadores)
               ..where((t) => t.equipo.equals('DEN')))
             .get())

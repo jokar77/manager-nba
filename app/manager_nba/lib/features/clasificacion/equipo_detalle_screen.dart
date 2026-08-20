@@ -6,9 +6,9 @@ import '../../domain/equipos_info.dart';
 import '../../domain/posiciones.dart';
 import '../../domain/salarios.dart';
 import '../../domain/traspasos_repository.dart';
-import '../../shared/contraste.dart';
 import '../../shared/equipo_logo.dart';
 import '../../i18n/textos.dart';
+import '../../shared/barra_de_club.dart';
 import '../../shared/hoja_de_propuestas.dart';
 
 /// Plantilla completa de un equipo, para consultarla desde Clasificación.
@@ -38,11 +38,7 @@ class EquipoDetalleScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final info = infoDe(equipo);
     return Scaffold(
-      appBar: AppBar(
-        title: Text(info.nombreCompleto),
-        backgroundColor: info.colorPrimario,
-        foregroundColor: textoSobre(info.colorPrimario),
-      ),
+      appBar: barraDeClub(equipo, info.nombreCompleto),
       body: FutureBuilder<List<Jugador>>(
         future: _cargarPlantilla(),
         builder: (context, snapshot) {

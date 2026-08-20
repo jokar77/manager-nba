@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
+import '../../shared/barra_de_club.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/equipos_info.dart';
 import '../../domain/franquicia_repository.dart';
@@ -81,10 +82,9 @@ class _PremiosScreenState extends State<PremiosScreen> {
   Widget build(BuildContext context) {
     final db = widget.db;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(t(context).tituloPremiosDeLaTemporada),
-        actions: const [BotonMenuPrincipal()],
-      ),
+      appBar: barraDeClub(
+          widget.equipoUsuario, t(context).tituloPremiosDeLaTemporada,
+          acciones: const [BotonMenuPrincipal()]),
       body: FutureBuilder<_DatosDePremios>(
         future: _futuro,
         builder: (context, snapshot) {

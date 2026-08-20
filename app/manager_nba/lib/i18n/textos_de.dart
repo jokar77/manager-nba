@@ -1071,4 +1071,7 @@ class TextosDe extends Textos {
 
   @override
   String get margenSalarialEvento => 'Gehaltsspielraum';
+
+  @override
+  String get tuFranquiciaSeccion => 'Dein Franchise';
 }

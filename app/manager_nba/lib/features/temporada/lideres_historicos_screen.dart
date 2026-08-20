@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
+import '../../shared/estilo.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/carrera_repository.dart';
 import '../../domain/lideres_historicos_repository.dart';
@@ -113,24 +114,28 @@ class _ListaDeLideres extends StatelessWidget {
       itemBuilder: (context, i) {
         final l = lideres[i];
         final color = l.enActivo ? _colorDeActivo(context) : null;
+        final e = Estilo.de(context);
         return ListTile(
           dense: true,
           leading: SizedBox(
             width: 32,
             child: Text('${i + 1}',
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontWeight: FontWeight.bold)),
+                style: cifra(e, tamano: 16, color: e.textoRotulo)),
           ),
           title: Text(
-            l.nombre,
-            style: TextStyle(
-              color: color,
-              fontWeight: l.enActivo ? FontWeight.bold : FontWeight.normal,
-            ),
+            mayus(l.nombre),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            // Los que siguen jugando, con su color; los retirados, en la
+            // tinta apagada. Es la misma distinción de siempre, pero por
+            // tinta y no por grosor: la condensada ya va gruesa.
+            style: titular(e, tamano: 16, color: color ?? e.textoTenue),
           ),
           trailing: Text(
             _conSeparadores(l.total),
-            style: TextStyle(fontWeight: FontWeight.bold, color: color),
+            maxLines: 1,
+            style: cifra(e, tamano: 18, color: color),
           ),
           onTap: () => _abrirFicha(context, l),
         );

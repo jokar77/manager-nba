@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
+import '../../shared/barra_de_club.dart';
+import '../../shared/estilo.dart';
+import '../../shared/ficha_jugador.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/contratos_repository.dart';
 import '../../domain/posiciones.dart';
@@ -63,10 +66,8 @@ class _RenovacionesScreenState extends State<RenovacionesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(t(context).tituloRenovaciones),
-        automaticallyImplyLeading: false,
-      ),
+      appBar: barraDeClub(widget.equipoUsuario, t(context).tituloRenovaciones,
+          conVolver: false),
       body: _cargando
           ? const Center(child: CircularProgressIndicator())
           : Column(
@@ -147,23 +148,47 @@ class _FilaRenovacion extends StatelessWidget {
     final ofertasRestantes = maxOfertasDeRenovacion - jugador.ofertasRechazadas;
     final sinOfertas = ofertasRestantes <= 0;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        title: Text(jugador.nombreFicticio,
-            style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(t(context).subtituloRenovacion(
-            etiquetaPosicion(jugador), jugador.edad, jugador.media,
-            formatearSalario(jugador.salario), formatearSalario(pide))),
-        isThreeLine: true,
-        trailing: sinOfertas
-            ? Text(t(context).seAcaboLaNegociacion,
-                textAlign: TextAlign.right,
-                style: const TextStyle(fontSize: 11, color: Colors.red))
-            : FilledButton(
-                onPressed: onNegociar,
-                child: Text(t(context).ofrecerConN(ofertasRestantes)),
+    final e = Estilo.de(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: FilaDeJugador(
+        media: jugador.media,
+        nombre: jugador.nombreFicticio,
+        detalle: '${etiquetaPosicion(jugador)} · '
+            '${t(context).edadJugador(jugador.edad)}',
+        apagado: sinOfertas,
+        onTap: sinOfertas ? null : onNegociar,
+        accesorio: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Lo que cobra ahora y lo que pide, uno encima del otro: la
+            // decisión es la diferencia entre esos dos números.
+            Text(formatearSalario(jugador.salario),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 11.5, color: e.textoTenue)),
+            Text(formatearSalario(pide),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: cifra(e, tamano: 17)),
+            const SizedBox(height: 5),
+            if (sinOfertas)
+              Text(t(context).seAcaboLaNegociacion,
+                  textAlign: TextAlign.right,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 11, color: e.mal))
+            else
+              BotonPrincipal(
+                texto: t(context).ofrecerConN(ofertasRestantes),
+                color: e.marca,
+                alto: 34,
+                onTap: onNegociar,
               ),
+          ],
+        ),
       ),
     );
   }

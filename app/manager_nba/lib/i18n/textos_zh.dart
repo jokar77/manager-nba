@@ -1075,4 +1075,7 @@ class TextosZh extends Textos {
 
   @override
   String get margenSalarialEvento => '工资空间';
+
+  @override
+  String get tuFranquiciaSeccion => '你的球队';
 }

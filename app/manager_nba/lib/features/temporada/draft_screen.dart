@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
+import '../../shared/barra_de_club.dart';
+import '../../shared/estilo.dart';
+import '../../shared/ficha_jugador.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/draft_repository.dart';
 import '../../domain/equipos_info.dart';
@@ -114,10 +117,12 @@ class _DraftScreenState extends State<DraftScreen> {
       // temporada nueva se quedaría sin generar.
       canPop: false,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(t(context).tituloDraft),
-          automaticallyImplyLeading: false,
-          actions: [
+        appBar: barraDeClub(
+          widget.equipoUsuario,
+          t(context).tituloDraft,
+          // El draft es paso obligatorio del verano: sin flecha de volver.
+          conVolver: false,
+          acciones: [
             IconButton(
               icon: const Icon(Icons.groups),
               tooltip: t(context).verTuPlantilla,
@@ -289,25 +294,21 @@ class _ListaDisponibles extends StatelessWidget {
       itemCount: prospectos.length,
       itemBuilder: (context, i) {
         final p = prospectos[i];
-        return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          child: ListTile(
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+          child: FilaDeJugador(
+            media: p.media,
+            nombre: p.nombreFicticio,
+            detalle: '${etiquetaPosicion(p)} · '
+                '${t(context).edadJugador(p.edad)}',
+            // El potencial es LO que se mira en un draft: un 72 con cinco
+            // estrellas vale más que un 78 con dos.
+            bajoElNombre: PotencialEstrellas(potencial: p.potencial),
             // La fila entera elige: apuntar a un botón pequeño para cada
             // pick, con la lista llena de prospectos, era trabajo de más.
             onTap: procesando ? null : () => onElegir(p),
-            title: Text(p.nombreFicticio,
-                style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(t(context)
-                    .posicionEdadMedia(etiquetaPosicion(p), p.edad, p.media)),
-                const SizedBox(height: 3),
-                PotencialEstrellas(potencial: p.potencial),
-              ],
-            ),
-            trailing: const Icon(Icons.chevron_right),
+            accesorio: Icon(Icons.chevron_right,
+                size: 18, color: Estilo.de(context).textoRotulo),
           ),
         );
       },
