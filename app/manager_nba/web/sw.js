@@ -21,7 +21,7 @@
 //
 // Al subirla, el `activate` borra las cachés viejas y la nueva se llena de
 // cero, así que no quedan mezclados ficheros de dos compilaciones.
-const CACHE = 'manager-nba-v10';
+const CACHE = 'manager-nba-v11';
 
 // Lo imprescindible para arrancar y jugar. Se descarga entero al instalar,
 // de una vez, para que baste con abrir el juego UNA vez con conexión.
@@ -68,6 +68,12 @@ const ESENCIALES = [
   // La pide el arranque siempre, y tampoco estaba: sin ella el primer
   // pintado sin conexión se queda esperando una fuente que no llega.
   'assets/packages/cupertino_icons/assets/CupertinoIcons.ttf',
+  // La condensada de los titulares del rediseño (ver
+  // lib/shared/estilo.dart, familiaTitular). Mismo motivo que la de arriba:
+  // sin ella en caché, el primer pintado sin conexión se queda esperando
+  // una fuente que no llega.
+  'assets/assets/fonts/SairaCondensed-Bold.ttf',
+  'assets/assets/fonts/SairaCondensed-ExtraBold.ttf',
   'assets/assets/data/jugadores.json',
   'assets/assets/data/entrenadores.json',
   'assets/assets/data/datos_reales.json',
