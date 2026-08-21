@@ -35,7 +35,7 @@ Future<void> contarConsecuencia(
   return showDialog<void>(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text(evento.titulo,
+      title: Text(t(context).eventos.de(evento.clave).titulo,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: titular(Estilo.de(context), tamano: 20)),
@@ -43,7 +43,8 @@ Future<void> contarConsecuencia(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(opcion.consecuencia),
+          Text(t(context).eventos.opcion(evento.clave, opcion.clave)
+              .consecuencia),
           if (opcion.efectos.isNotEmpty || opcion.bonusSalarial != 0) ...[
             const SizedBox(height: 16),
             ...opcion.efectos.map((e) => _FilaDeEfecto(efecto: e)),
@@ -76,6 +77,7 @@ class _DialogoDeEvento extends StatelessWidget {
     final compacto = tamanoDe(context).esCompacto;
 
     final e = Estilo.de(context);
+    final guion = t(context).eventos.de(evento.clave);
 
     return AlertDialog(
       title: Row(
@@ -85,7 +87,7 @@ class _DialogoDeEvento extends StatelessWidget {
           Expanded(
             // Sin mayúsculas: el título de un evento es una frase del
             // guion, y los demás diálogos del juego tampoco las usan.
-            child: Text(evento.titulo,
+            child: Text(guion.titulo,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: titular(e, tamano: 20)),
@@ -99,7 +101,7 @@ class _DialogoDeEvento extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(evento.texto,
+              Text(guion.texto,
                   style: TextStyle(fontSize: 14.5, height: 1.4, color: e.texto)),
               const SizedBox(height: 18),
               // Los botones van en el cuerpo y no en `actions` porque son
@@ -111,7 +113,8 @@ class _DialogoDeEvento extends StatelessWidget {
                 (opcion) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: BotonPerfilado(
-                    texto: opcion.etiqueta,
+                    texto: guion.opciones[opcion.clave]?.etiqueta ??
+                        opcion.clave,
                     color: e.texto,
                     alto: 52,
                     // Tal cual está escrita: es una frase, no un rótulo.
@@ -139,6 +142,11 @@ class _FilaDeEfecto extends StatelessWidget {
     final e = Estilo.de(context);
     final bueno = efecto.esBueno;
     final color = bueno ? e.bien : e.mal;
+    // La clave traducida, y si no se conoce —una partida empezada antes de
+    // que los efectos tuvieran clave— lo que se guardó en su día.
+    final etiqueta = t(context).eventos.etiquetaDeEfecto(efecto.clave) ??
+        efecto.etiquetaGuardada ??
+        efecto.clave;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
@@ -147,7 +155,7 @@ class _FilaDeEfecto extends StatelessWidget {
               size: 18, color: color),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(efecto.etiqueta,
+            child: Text(etiqueta,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(

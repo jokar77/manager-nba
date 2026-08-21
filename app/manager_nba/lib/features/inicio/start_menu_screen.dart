@@ -14,6 +14,7 @@ import '../ajustes/ajustes_screen.dart';
 import '../hub/home_hub_screen.dart';
 import '../roster/roster_config_screen.dart';
 import '../roster/team_selector_screen.dart';
+import '../temporada/patrocinadores_screen.dart';
 import '../../i18n/textos.dart';
 import '../../shared/contraste.dart';
 import '../../shared/estilo.dart';
@@ -211,17 +212,30 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
               esConfiguracionInicial: true,
               onGuardado: () {
                 configuracionGuardada = true;
-                Navigator.of(context)
-                    .pushAndRemoveUntil(
-                      MaterialPageRoute(
-                        settings:
-                            const RouteSettings(name: RutasPrincipales.hub),
-                        builder: (context) =>
-                            HomeHubScreen(db: db, equipo: equipo),
-                      ),
-                      (route) => route.isFirst,
-                    )
-                    .then((_) => sesionTerminada.complete());
+                // Los patrocinadores se eligen también el primer año, antes
+                // de entrar al menú: es la misma decisión de pretemporada
+                // que se repite cada cambio de temporada (ver
+                // cambio_de_temporada.dart), solo que aquí no hay cierre de
+                // año del que colgarse.
+                Navigator.of(context).push(MaterialPageRoute<void>(
+                  builder: (context) => PatrocinadoresScreen(
+                    db: db,
+                    equipoUsuario: equipo,
+                    onContinuar: () {
+                      Navigator.of(context)
+                          .pushAndRemoveUntil(
+                            MaterialPageRoute(
+                              settings: const RouteSettings(
+                                  name: RutasPrincipales.hub),
+                              builder: (context) =>
+                                  HomeHubScreen(db: db, equipo: equipo),
+                            ),
+                            (route) => route.isFirst,
+                          )
+                          .then((_) => sesionTerminada.complete());
+                    },
+                  ),
+                ));
               },
             ),
           )).then((_) {

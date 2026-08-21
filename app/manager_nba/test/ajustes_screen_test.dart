@@ -75,12 +75,16 @@ void main() {
     final partida = abrirSlot(1);
 
     await abrirAjustesScreen(tester);
+    // Sin nada guardado todavía, arranca en oscuro (es el modo por
+    // defecto): tocar el switch lo pasa a claro.
     await tester.tap(find.byType(SwitchListTile));
     await tester.pump();
 
-    expect(temaNotifier.value, ThemeMode.dark);
-    expect(await leerModoOscuro(abrirAjustes()), isTrue);
-    expect(await leerModoOscuro(partida), isFalse);
+    expect(temaNotifier.value, ThemeMode.light);
+    expect(await leerModoOscuro(abrirAjustes()), isFalse);
+    // La base de la partida no se ha tocado: sigue en el valor por
+    // defecto, oscuro.
+    expect(await leerModoOscuro(partida), isTrue);
   });
 
   testWidgets('al volver a abrirla enseña lo que se eligió antes',

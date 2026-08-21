@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:manager_nba/data/database/app_database.dart';
 import 'package:manager_nba/data/importer/jugadores_importer.dart';
+import 'package:manager_nba/domain/agencia_libre_repository.dart';
 import 'package:manager_nba/domain/calendario_repository.dart';
 import 'package:manager_nba/domain/draft_repository.dart';
 import 'package:manager_nba/domain/equipos_especiales.dart';
@@ -14,6 +15,7 @@ import 'package:manager_nba/domain/nueva_temporada_repository.dart';
 import 'package:manager_nba/domain/ofertas_repository.dart';
 import 'package:manager_nba/domain/picks_repository.dart';
 import 'package:manager_nba/domain/posiciones.dart';
+import 'package:manager_nba/domain/restriccion_de_fichaje.dart';
 import 'package:manager_nba/domain/salarios.dart';
 import 'package:manager_nba/domain/tipo_evento_temporada.dart';
 import 'package:manager_nba/domain/traspasos_cpu_repository.dart';
@@ -210,6 +212,73 @@ void main() {
         expect(p.jugadoresQueSalen.length, lessThanOrEqualTo(1),
             reason: 'con 13 en plantilla no puede pedirte dos y darte uno');
       }
+    });
+  });
+
+  group('restricción de fichaje reciente', () {
+    test('un jugador fichado hace poco no se puede traspasar, sea cual sea '
+        'el paquete ofrecido', () async {
+      // La fecha "de hoy" de la liga, no la del reloj real: nada más crear
+      // la franquicia ya hay un calendario generado con partidos en
+      // octubre, así que comparar contra `DateTime.now()` aquí daba una
+      // diferencia de meses que no tenía nada que ver con la firma.
+      final hoy = await fechaActualDeLaLiga(db) ?? DateTime.now();
+      final tuya = await plantillaParaTraspasos(db, 'LAL');
+      final recienFichado = tuya.first;
+      await (db.update(db.jugadores)
+            ..where((t) => t.id.equals(recienFichado.id)))
+          .write(JugadoresCompanion(
+              fechaFichaje: Value(hoy.subtract(
+                  const Duration(days: diasMinimosTrasFichaje - 10)))));
+
+      final peorDeBos = (await plantillaParaTraspasos(db, 'BOS')).last;
+      final respuesta = await evaluarTraspaso(db,
+          equipoUsuario: 'LAL',
+          equipoRival: 'BOS',
+          tuyos: [recienFichado.id],
+          suyos: [peorDeBos.id]);
+
+      expect(respuesta.aceptado, isFalse);
+      expect(respuesta.mensaje, contains('no se puede traspasar todavía'));
+    });
+
+    test('pasados los tres meses, ya se puede traspasar con normalidad',
+        () async {
+      final hoy = await fechaActualDeLaLiga(db) ?? DateTime.now();
+      final tuya = await plantillaParaTraspasos(db, 'LAL');
+      final fichadoHaceTiempo = tuya.first;
+      await (db.update(db.jugadores)
+            ..where((t) => t.id.equals(fichadoHaceTiempo.id)))
+          .write(JugadoresCompanion(
+              fechaFichaje: Value(hoy.subtract(
+                  const Duration(days: diasMinimosTrasFichaje + 1)))));
+
+      final peorDeBos = (await plantillaParaTraspasos(db, 'BOS')).last;
+      final respuesta = await evaluarTraspaso(db,
+          equipoUsuario: 'LAL',
+          equipoRival: 'BOS',
+          tuyos: [fichadoHaceTiempo.id],
+          suyos: [peorDeBos.id]);
+
+      expect(respuesta.mensaje, isNot(contains('no se puede traspasar')));
+    });
+
+    test('fichar por agencia libre dispara la restricción de inmediato',
+        () async {
+      final libre = (await agentesLibres(db)).first;
+      final fichado = await ficharAgenteLibre(db,
+          jugadorId: libre.id, equipo: 'LAL', salario: salarioMinimo);
+      expect(fichado, isNotNull);
+
+      final peorDeBos = (await plantillaParaTraspasos(db, 'BOS')).last;
+      final respuesta = await evaluarTraspaso(db,
+          equipoUsuario: 'LAL',
+          equipoRival: 'BOS',
+          tuyos: [libre.id],
+          suyos: [peorDeBos.id]);
+
+      expect(respuesta.aceptado, isFalse);
+      expect(respuesta.mensaje, contains('no se puede traspasar todavía'));
     });
   });
 

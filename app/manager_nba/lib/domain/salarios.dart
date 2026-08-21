@@ -44,14 +44,22 @@ const margenDeBanquillo = 20000000;
 ///
 /// [edad] modula un poco: un chaval de 21 con la misma media que un
 /// veterano cobra menos (sigue en contrato de rookie).
+///
+/// El descuento no puede ser tan fuerte como para desmentirse a sí mismo:
+/// un chaval de 21 CON MEDIA DE VERDAD ALTA ya no es un misterio sin
+/// resolver — en la NBA real esos firman extensión máxima en cuanto pueden.
+/// Con los factores de antes (0,45/0,7) un 22 años de 87 pedía 14,8M,
+/// menos que un rotación cualquiera de 30 años: eso es lo que se corrige
+/// aquí, no el rookie de verdad (media baja, ese sigue cobrando poco
+/// porque el número de arriba ya es pequeño de por sí).
 int salarioEstimado({required int media, required int edad}) {
   final porEncimaDelSuelo = max(0, media - 62);
   final bruto = salarioMinimo + pow(porEncimaDelSuelo, 2.4) * 12456;
 
   final factorEdad = edad <= 22
-      ? 0.45
+      ? 0.65
       : edad <= 24
-          ? 0.7
+          ? 0.85
           : 1.0;
 
   return (bruto * factorEdad).round().clamp(salarioMinimo, salarioMaximo);

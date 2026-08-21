@@ -34,6 +34,9 @@ void main() {
   // El catálogo (Dart puro, sin base de datos)
   // -------------------------------------------------------------------------
 
+  // Que el texto de todo esto exista en los siete idiomas se comprueba en
+  // `eventos_traducidos_test.dart`: aquí el catálogo ya no tiene texto, solo
+  // claves, condiciones y números.
   test('todos los eventos están bien formados', () {
     expect(catalogoDeEventos, isNotEmpty);
 
@@ -42,16 +45,19 @@ void main() {
       expect(claves.add(evento.clave), isTrue,
           reason: 'la clave ${evento.clave} está repetida, y las claves son '
               'lo que impide que un evento salga dos veces por temporada');
-      expect(evento.titulo.trim(), isNotEmpty);
-      expect(evento.texto.trim(), isNotEmpty);
       expect(evento.opciones.length, greaterThanOrEqualTo(2),
           reason: '${evento.clave}: con una sola opción no hay decisión');
 
+      final clavesDeOpcion = <String>{};
       for (final opcion in evento.opciones) {
-        expect(opcion.etiqueta.trim(), isNotEmpty);
-        expect(opcion.consecuencia.trim(), isNotEmpty,
-            reason: '${evento.clave}: sin consecuencia escrita, el usuario '
-                'elige a ciegas y no aprende nada');
+        expect(opcion.clave.trim(), isNotEmpty);
+        expect(clavesDeOpcion.add(opcion.clave), isTrue,
+            reason: '${evento.clave}: la opción "${opcion.clave}" está '
+                'repetida, y con dos opciones con la misma clave las dos '
+                'enseñarían el mismo texto');
+        for (final efecto in opcion.efectos) {
+          expect(efecto.clave.trim(), isNotEmpty);
+        }
       }
     }
   });
@@ -65,12 +71,11 @@ void main() {
         for (final efecto in opcion.efectos) {
           expect(efecto.factor,
               inInclusiveRange(minFactorDeEvento, maxFactorDeEvento),
-              reason: '${evento.clave} / ${opcion.etiqueta}: factor '
+              reason: '${evento.clave} / ${opcion.clave}: factor '
                   '${efecto.factor} fuera de rango');
           expect(efecto.partidos, inInclusiveRange(1, maxPartidosDeEfecto),
-              reason: '${evento.clave} / ${opcion.etiqueta}: '
+              reason: '${evento.clave} / ${opcion.clave}: '
                   '${efecto.partidos} partidos es demasiado');
-          expect(efecto.etiqueta.trim(), isNotEmpty);
         }
       }
     }
@@ -102,7 +107,7 @@ void main() {
           .any((o) => o.bonusSalarial > mejor.bonusSalarial);
 
       expect(pagaEnPista || pagaEnDinero, isTrue,
-          reason: '${evento.clave}: "${mejor.etiqueta}" es la mejor en la '
+          reason: '${evento.clave}: "${mejor.clave}" es la mejor en la '
               'pista y no cuesta ni piernas ni dinero, así que no hay nada '
               'que decidir');
     }
@@ -116,7 +121,7 @@ void main() {
     for (final evento in catalogoDeEventos) {
       for (final opcion in evento.opciones) {
         expect(opcion.noHaceNada, isFalse,
-            reason: '${evento.clave}: "${opcion.etiqueta}" no tiene ni '
+            reason: '${evento.clave}: "${opcion.clave}" no tiene ni '
                 'efectos ni dinero, así que elegirla es no decidir nada');
       }
     }
@@ -136,17 +141,19 @@ void main() {
         reason: 'alguna decisión tiene que costar dinero, no solo darlo');
   });
 
-  test('el dinero de un evento da al menos para un contrato mínimo', () {
-    // Por debajo del salario mínimo el margen no desbloquea ningún fichaje:
-    // sube un número en una pantalla y no cambia ni una decisión. Si alguna
-    // vez se pone un bonus simbólico, que salte aquí.
+  test('el dinero de un evento es un extra puntual, no una fortuna', () {
+    // Bajado dos veces por feedback directo (6M/3M → 4M/2,5M → 3M/1,5M):
+    // por debajo del salario mínimo a propósito desde el último ajuste —
+    // el dinero de un patrocinio es sabor de un diálogo, no algo pensado
+    // para desbloquear un fichaje por sí solo. Lo que sí se sigue
+    // comprobando es que nadie se ha ido de madre por el otro lado.
     for (final evento in catalogoDeEventos) {
       for (final opcion in evento.opciones) {
         if (opcion.bonusSalarial <= 0) continue;
-        expect(opcion.bonusSalarial, greaterThanOrEqualTo(salarioMinimo),
-            reason: '${evento.clave}: "${opcion.etiqueta}" da '
-                '${opcion.bonusSalarial}, menos que un contrato mínimo '
-                '($salarioMinimo): no le cambia la vida a nadie');
+        expect(opcion.bonusSalarial, lessThanOrEqualTo(salarioMinimo * 2),
+            reason: '${evento.clave}: "${opcion.clave}" da '
+                '${opcion.bonusSalarial}, demasiado para un evento que dura '
+                'un diálogo');
       }
     }
   });
@@ -212,19 +219,14 @@ void main() {
     EventoNarrativo eventoDePrueba(List<EfectoDeEvento> efectos) =>
         EventoNarrativo(
           clave: 'prueba',
-          titulo: 'Prueba',
-          texto: 'Texto',
-          opciones: [
-            OpcionDeEvento(
-                etiqueta: 'Sí', consecuencia: 'Pasa algo', efectos: efectos),
-          ],
+          opciones: [OpcionDeEvento(clave: 'si', efectos: efectos)],
         );
 
     test('resolver un evento guarda sus efectos y lo apunta como visto',
         () async {
       final evento = eventoDePrueba(const [
-        EfectoDeEvento(etiqueta: 'Buen rollo', factor: 1.02, partidos: 5),
-        EfectoDeEvento(etiqueta: 'Cansancio', factor: 0.99, partidos: 2),
+        EfectoDeEvento(clave: 'buen_rollo', factor: 1.02, partidos: 5),
+        EfectoDeEvento(clave: 'piernas_cansadas', factor: 0.99, partidos: 2),
       ]);
 
       await resolverEvento(db, evento, evento.opciones.first);
@@ -232,7 +234,7 @@ void main() {
       final activos = await leerEfectosActivos(db);
       expect(activos, hasLength(2));
       // El más fuerte primero: es lo que se enseña arriba en el menú.
-      expect(activos.first.etiqueta, 'Buen rollo');
+      expect(activos.first.clave, 'buen_rollo');
 
       // Y no vuelve a salir esta temporada.
       final otra = await eventoQueSalta(db,
@@ -247,13 +249,8 @@ void main() {
 
       final evento = EventoNarrativo(
         clave: 'patrocinio',
-        titulo: 'Patrocinio',
-        texto: 'Texto',
         opciones: const [
-          OpcionDeEvento(
-              etiqueta: 'Firmar',
-              consecuencia: 'Entra dinero',
-              bonusSalarial: 6000000),
+          OpcionDeEvento(clave: 'firmar', bonusSalarial: 6000000),
         ],
       );
       await resolverEvento(db, evento, evento.opciones.first);
@@ -269,14 +266,7 @@ void main() {
       Future<void> resolver(String clave, int dinero) async {
         final evento = EventoNarrativo(
           clave: clave,
-          titulo: clave,
-          texto: 'Texto',
-          opciones: [
-            OpcionDeEvento(
-                etiqueta: 'Vale',
-                consecuencia: 'Pasa algo',
-                bonusSalarial: dinero),
-          ],
+          opciones: [OpcionDeEvento(clave: 'vale', bonusSalarial: dinero)],
         );
         await resolverEvento(db, evento, evento.opciones.first);
       }
@@ -291,13 +281,8 @@ void main() {
         () async {
       final evento = EventoNarrativo(
         clave: 'patrocinio',
-        titulo: 'Patrocinio',
-        texto: 'Texto',
         opciones: const [
-          OpcionDeEvento(
-              etiqueta: 'Firmar',
-              consecuencia: 'Entra dinero',
-              bonusSalarial: 6000000),
+          OpcionDeEvento(clave: 'firmar', bonusSalarial: 6000000),
         ],
       );
       await resolverEvento(db, evento, evento.opciones.first);
@@ -311,8 +296,8 @@ void main() {
     test('los efectos se multiplican entre sí: bueno y malo a la vez casi se '
         'anulan', () async {
       final evento = eventoDePrueba(const [
-        EfectoDeEvento(etiqueta: 'Arriba', factor: 1.02, partidos: 5),
-        EfectoDeEvento(etiqueta: 'Abajo', factor: 0.98, partidos: 5),
+        EfectoDeEvento(clave: 'buen_rollo', factor: 1.02, partidos: 5),
+        EfectoDeEvento(clave: 'piernas_cansadas', factor: 0.98, partidos: 5),
       ]);
       await resolverEvento(db, evento, evento.opciones.first);
 
@@ -325,6 +310,7 @@ void main() {
         await db.into(db.efectosDeEvento).insert(
             EfectosDeEventoCompanion.insert(
                 clave: 'x$i',
+                claveEfecto: Value('buen_rollo'),
                 etiqueta: 'Bueno $i',
                 factor: 1.02,
                 partidosRestantes: 10));
@@ -340,7 +326,7 @@ void main() {
     test('cada partido gasta uno, y al agotarse el efecto desaparece',
         () async {
       final evento = eventoDePrueba(const [
-        EfectoDeEvento(etiqueta: 'Corto', factor: 1.02, partidos: 2),
+        EfectoDeEvento(clave: 'buen_rollo', factor: 1.02, partidos: 2),
       ]);
       await resolverEvento(db, evento, evento.opciones.first);
 
@@ -359,7 +345,7 @@ void main() {
     test('un efecto fuera de rango se acota al guardarlo, no al leerlo',
         () async {
       final evento = eventoDePrueba(const [
-        EfectoDeEvento(etiqueta: 'Exagerado', factor: 1.40, partidos: 500),
+        EfectoDeEvento(clave: 'buen_rollo', factor: 1.40, partidos: 500),
       ]);
       await resolverEvento(db, evento, evento.opciones.first);
 
@@ -380,11 +366,7 @@ void main() {
       for (var i = 0; i < maxEventosPorTemporada; i++) {
         final evento = EventoNarrativo(
           clave: 'gastado$i',
-          titulo: 'T',
-          texto: 'T',
-          opciones: const [
-            OpcionDeEvento(etiqueta: 'Vale', consecuencia: 'Nada'),
-          ],
+          opciones: const [OpcionDeEvento(clave: 'vale')],
         );
         await resolverEvento(db, evento, evento.opciones.first);
       }
@@ -398,7 +380,7 @@ void main() {
 
     test('el verano borra los efectos y la lista de vistos', () async {
       final evento = eventoDePrueba(const [
-        EfectoDeEvento(etiqueta: 'Largo', factor: 1.02, partidos: 12),
+        EfectoDeEvento(clave: 'buen_rollo', factor: 1.02, partidos: 12),
       ]);
       await resolverEvento(db, evento, evento.opciones.first);
 

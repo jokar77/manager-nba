@@ -228,11 +228,12 @@ class _FilaRetirado extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 6),
       child: FilaDeJugador(
         // La media con la que se retira, como placa: en una lista de doce
-        // retiradas es lo que distingue a una leyenda de un suplente.
+        // retiradas es lo que distingue a una leyenda de un suplente. Por
+        // eso el detalle de abajo no la repite en texto — solo procedencia
+        // y edad, que ahí sí que no se ven en ningún otro sitio.
         media: cambio.mediaAntes,
         nombre: cambio.nombre,
-        detalle: t(context).seRetiraConEdadYMedia(
-            procedencia, cambio.edad, cambio.mediaAntes, aviso),
+        detalle: '$procedencia · ${t(context).edadJugador(cambio.edad)}$aviso',
         onTap: onTap,
         accesorio: esAgenteLibre
             ? Icon(Icons.person_off, size: 20, color: e.textoRotulo)

@@ -107,6 +107,13 @@ void main() {
     await tester.tap(botonEmpezar);
     await tester.pump();
 
+    // 5.5) Patrocinadores: paso de pretemporada también el primer año. Sin
+    // elegir ninguno a propósito (aquí solo se comprueba que el flujo
+    // completo sigue adelante, no las decisiones de patrocinio).
+    await esperarTexto('Patrocinadores');
+    await tester.tap(find.widgetWithText(FilledButton, 'Continuar'));
+    await tester.pump();
+
     await esperarTexto('CALENDARIO');
     expect(find.text('TU EQUIPO'), findsOneWidget);
     expect(find.text('CLASIFICACIÓN'), findsOneWidget);

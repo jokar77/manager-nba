@@ -51,13 +51,22 @@ sim.EquipoPartido generarAlineacionAutomatica(
   // ni pone a su pívot de base.
   final porPuesto = repartirPorPuestos(disponibles);
 
+  // El sexto hombre es el mejor de los cinco suplentes que va a salir del
+  // banquillo, no el mejor del equipo entero: por definición no es titular.
+  final suplentes = [
+    for (final posicion in posicionesEquipo) porPuesto[posicion]![1],
+  ]..sort((a, b) => b.media.compareTo(a.media));
+  final sextoHombreId = suplentes.isNotEmpty ? suplentes.first.id : null;
+
   final jugadoresEnPartido = <sim.JugadorEnPartido>[];
-  void anotar(Jugador jugador, String puesto, int minutos) {
+  void anotar(Jugador jugador, String puesto, int minutos,
+      {bool esSuplente = false}) {
     jugadoresEnPartido.add(sim.JugadorEnPartido(
       jugador: jugador.toSimJugador(),
       minutos: minutos,
       esEstrellaAtaque: jugador.id == estrellaAtaqueId,
       esEstrellaDefensa: jugador.id == estrellaDefensaId,
+      esSextoHombre: esSuplente && jugador.id == sextoHombreId,
       penalizacionFueraDePosicion: factorDePuesto(jugador, puesto),
       factorForma: formas[jugador.id] ?? 1.0,
     ));
@@ -69,7 +78,8 @@ sim.EquipoPartido generarAlineacionAutomatica(
   }
   for (var i = 0; i < posicionesEquipo.length; i++) {
     anotar(porPuesto[posicionesEquipo[i]]![1], posicionesEquipo[i],
-        _minutosSuplentes[i]);
+        _minutosSuplentes[i],
+        esSuplente: true);
   }
 
   return sim.EquipoPartido(

@@ -10,12 +10,13 @@ import '../mercado/renovaciones_screen.dart';
 import 'camisetas_nuevas_screen.dart';
 import 'draft_screen.dart';
 import 'hall_fama_screen.dart';
+import 'patrocinadores_screen.dart';
 import 'pretemporada_screen.dart';
 import 'retirados_screen.dart';
 
 /// Cierra el año y arranca el siguiente: envejecimiento, retiradas, Hall of
-/// Fame, renovaciones, draft, agencia libre y resumen de pretemporada, cada
-/// paso en su pantalla y en ese orden.
+/// Fame, patrocinadores, renovaciones, draft, agencia libre y resumen de
+/// pretemporada, cada paso en su pantalla y en ese orden.
 ///
 /// Vive aquí y no dentro del Calendario porque se puede lanzar desde dos
 /// sitios: el panel de playoffs del calendario y el bracket, que es donde
@@ -69,6 +70,18 @@ Future<bool> ejecutarCambioDeTemporada(
     ));
     if (!context.mounted) return false;
   }
+
+  // 2c) Los patrocinadores de la temporada nueva. Van ANTES de las
+  // renovaciones y de la agencia libre a propósito: el margen que dan ya
+  // tiene que estar puesto cuando llegues a decidir en qué te lo gastas.
+  await Navigator.of(context).push(MaterialPageRoute<void>(
+    builder: (context) => PatrocinadoresScreen(
+      db: db,
+      equipoUsuario: equipoUsuario,
+      onContinuar: () => Navigator.of(context).pop(),
+    ),
+  ));
+  if (!context.mounted) return false;
 
   // 3) Renovaciones de los contratos que se acaban.
   await Navigator.of(context).push(MaterialPageRoute<void>(

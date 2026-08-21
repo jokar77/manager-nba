@@ -2,19 +2,34 @@ import 'package:flutter/material.dart';
 
 import '../i18n/textos.dart';
 import '../data/database/app_database.dart';
+import '../domain/entrenadores_repository.dart' show formatearMillones;
 import '../domain/picks_repository.dart';
 import '../domain/posiciones.dart';
 import '../domain/traspasos_repository.dart';
 import 'equipo_logo.dart';
 
+/// El contrato de un jugador en una línea: "3 años · 40,0M al año". La usan
+/// tanto las ofertas entrantes de la CPU como el buscador automático de la
+/// mesa de traspasos — antes cada una tenía la suya y no enseñaban lo mismo
+/// (una el contrato, la otra la edad), así que juzgabas una propuesta con
+/// menos datos que la otra según por dónde hubiera llegado.
+String contratoEnUnaLinea(BuildContext context, Jugador j) {
+  final anios = j.aniosContrato <= 1
+      ? t(context).ultimoAnioContrato
+      : t(context).aniosDeContrato(j.aniosContrato);
+  return t(context).contratoAnioMillones(anios, formatearMillones(j.salario));
+}
+
 /// Los nombres de un lado del traspaso, con la ficha de cada jugador entre
-/// paréntesis. Sin la media no se puede juzgar una propuesta: la lista era
-/// una fila de nombres sueltos y había que salirse a mirarlos uno a uno.
+/// paréntesis: posición, media y contrato — lo mismo que enseña una oferta
+/// entrante de la CPU (ver `_lineaJugador` en `ofertas_screen.dart`), para
+/// que buscar un traspaso a mano no se juzgue con menos información que
+/// aceptar uno que te llega solo.
 String _conFicha(
         BuildContext context, List<Jugador> jugadores, List<PickDraft> picks) =>
     [
-      ...jugadores.map((j) => t(context).jugadorConFicha(
-          j.nombreFicticio, etiquetaPosicion(j), j.media, j.edad)),
+      ...jugadores.map((j) => t(context).lineaJugadorOferta(j.nombreFicticio,
+          etiquetaPosicion(j), j.media, contratoEnUnaLinea(context, j))),
       ...picks.map(etiquetaDePick),
     ].join(', ');
 

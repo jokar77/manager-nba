@@ -4,7 +4,6 @@ import '../../i18n/textos.dart';
 import '../../shared/barra_de_club.dart';
 import '../../shared/estilo.dart';
 import '../../shared/ficha_jugador.dart';
-import '../../shared/medias_jugador.dart';
 import '../../data/database/app_database.dart';
 import '../../domain/agencia_libre_repository.dart';
 import '../../domain/calendario_repository.dart';
@@ -340,6 +339,11 @@ class _Estado extends StatelessWidget {
 /// Los dos filtros del mercado: por puesto (contando también la segunda
 /// posición, que para fichar un recambio es lo que importa) y por si te lo
 /// puedes permitir con el espacio salarial que te queda.
+///
+/// Sin chip de "Todos": por defecto ya se ven todos (sin filtro no hay
+/// nada seleccionado), así que ese chip solo repetía el estado de partida.
+/// Tocar un puesto ya elegido lo destoca y vuelve a "todos" solo, en vez de
+/// depender de un botón aparte para deshacer el filtro.
 class _Filtros extends StatelessWidget {
   final String? posicion;
   final bool soloAsequibles;
@@ -360,17 +364,12 @@ class _Filtros extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
       child: Row(
         children: [
-          ChoiceChip(
-            label: Text(t(context).todosFiltro),
-            selected: posicion == null,
-            onSelected: (_) => onPosicion(null),
-          ),
           for (final p in posicionesEquipo) ...[
-            const SizedBox(width: 6),
+            if (p != posicionesEquipo.first) const SizedBox(width: 6),
             ChoiceChip(
               label: Text(p),
               selected: posicion == p,
-              onSelected: (_) => onPosicion(p),
+              onSelected: (_) => onPosicion(posicion == p ? null : p),
             ),
           ],
           const SizedBox(width: 14),
@@ -409,7 +408,6 @@ class _FilaAgenteLibre extends StatelessWidget {
         nombre: jugador.nombreFicticio,
         detalle: '${etiquetaPosicion(jugador)} · '
             '${t(context).edadJugador(jugador.edad)}',
-        bajoElNombre: MediasAtaqueDefensa.de(jugador, compacto: true),
         apagado: sinOfertas,
         onTap: sinOfertas ? null : onNegociar,
         // El precio encima y la acción debajo: en horizontal se comían el

@@ -41,6 +41,7 @@ EquipoPartido _equipoUniforme(
   double astPg = 3,
   double trbPg = 5,
   String? idEstrellaAtaque,
+  String? idSextoHombre,
   EntrenadorEnPartido? entrenador,
 }) {
   final jugadores = List.generate(5, (i) {
@@ -57,6 +58,7 @@ EquipoPartido _equipoUniforme(
       ),
       minutos: 48,
       esEstrellaAtaque: id == idEstrellaAtaque,
+      esSextoHombre: id == idSextoHombre,
     );
   });
   return EquipoPartido(
@@ -102,6 +104,21 @@ void main() {
               jugador: _jugador(id: 'a'), minutos: 48, esEstrellaAtaque: true),
           JugadorEnPartido(
               jugador: _jugador(id: 'b'), minutos: 48, esEstrellaAtaque: true),
+          JugadorEnPartido(jugador: _jugador(id: 'c'), minutos: 48),
+          JugadorEnPartido(jugador: _jugador(id: 'd'), minutos: 48),
+          JugadorEnPartido(jugador: _jugador(id: 'e'), minutos: 48),
+        ]),
+        throwsArgumentError,
+      );
+    });
+
+    test('rechaza más de un sexto hombre', () {
+      expect(
+        () => EquipoPartido(nombre: 'Bad', jugadores: [
+          JugadorEnPartido(
+              jugador: _jugador(id: 'a'), minutos: 48, esSextoHombre: true),
+          JugadorEnPartido(
+              jugador: _jugador(id: 'b'), minutos: 48, esSextoHombre: true),
           JugadorEnPartido(jugador: _jugador(id: 'c'), minutos: 48),
           JugadorEnPartido(jugador: _jugador(id: 'd'), minutos: 48),
           JugadorEnPartido(jugador: _jugador(id: 'e'), minutos: 48),
@@ -292,6 +309,33 @@ void main() {
       final companero = totalCompanero / nMuestras;
       expect(estrella, greaterThan(companero),
           reason: 'la estrella promedia ${estrella.toStringAsFixed(2)} y su '
+              'compañero ${companero.toStringAsFixed(2)}');
+    });
+
+    test('el sexto hombre anota más de media que un compañero con los '
+        'mismos atributos, con el mismo empujón que la estrella de ataque',
+        () {
+      final rival = _equipoUniforme('Rival');
+      final local = _equipoUniforme('Local', idSextoHombre: 'Local-0');
+
+      const nMuestras = 800;
+      var totalSexto = 0.0;
+      var totalCompanero = 0.0;
+      for (var seed = 0; seed < nMuestras; seed++) {
+        final boxscore =
+            simularPartido(local: local, visitante: rival, seed: seed);
+        totalSexto += boxscore.statsLocal
+            .firstWhere((s) => s.jugadorId == 'Local-0')
+            .puntos;
+        totalCompanero += boxscore.statsLocal
+            .firstWhere((s) => s.jugadorId == 'Local-1')
+            .puntos;
+      }
+
+      final sexto = totalSexto / nMuestras;
+      final companero = totalCompanero / nMuestras;
+      expect(sexto, greaterThan(companero),
+          reason: 'el sexto hombre promedia ${sexto.toStringAsFixed(2)} y su '
               'compañero ${companero.toStringAsFixed(2)}');
     });
 

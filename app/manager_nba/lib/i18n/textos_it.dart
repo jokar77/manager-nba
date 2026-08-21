@@ -7,6 +7,9 @@ class TextosIt extends Textos {
   const TextosIt();
 
   @override
+  TextosDeEventos get eventos => const EventosIt();
+
+  @override
   String get aceptar => 'Conferma';
   @override
   String get cancelar => 'Annulla';
@@ -465,6 +468,8 @@ class TextosIt extends Textos {
   @override
   String get estrellaDefensaLabel => 'Stella difensiva';
   @override
+  String get sextoHombreLabel => 'Sesto uomo';
+  @override
   String get ningunaOpcion => 'Nessuna';
   @override
   String get sinPicksPropios => 'Non ti resta nessuna scelta di tua proprietà: le hai scambiate tutte.';
@@ -492,8 +497,6 @@ class TextosIt extends Textos {
   @override
   String get proponer => 'Proponi';
   @override
-  String get todosFiltro => 'Tutti';
-  @override
   String get tituloAgenciaLibre => 'Free agency';
   @override
   String get verTuPlantilla => 'Vedi la tua rosa';
@@ -506,7 +509,7 @@ class TextosIt extends Textos {
   @override
   String fichadosPorElMinimo(int n) => 'Firmati $n giocatori al minimo.';
   @override
-  String get quePuedaPagar => 'Che posso permettermi';
+  String get quePuedaPagar => 'Accessibile';
   @override
   String get noQuedaNadieEnMercado => 'Non resta nessuno sul mercato.';
   @override
@@ -584,7 +587,8 @@ class TextosIt extends Textos {
   @override
   String ofertaNDeM(int n, int m) => 'Offerta $n di $m';
   @override
-  String lineaJugadorOferta(String nombre, String posicion, int media, String pts, String ast, String reb, String contrato) => '$nombre · $posicion · $media · $pts pt, $ast ass, $reb rmb · $contrato';
+  String lineaJugadorOferta(
+          String nombre, String posicion, int media, String contrato) => '$nombre · $posicion · $media · $contrato';
   @override
   String get ultimoAnioContrato => 'Ultimo anno';
   @override
@@ -693,8 +697,6 @@ class TextosIt extends Textos {
   String get todaviaNadieEnHof => 'Non c\'è ancora nessuno nella Hall of Fame. Entrano solo giocatori già ritirati con una carriera delle grandi: premi, anelli e tanti anni ad alto livello.';
   @override
   String get nuevoChip => 'NUOVO';
-  @override
-  String statsCarreraSufijo(String pts, String ast, String reb) => ' · $pts pt · $ast ast · $reb rmb';
 
   @override
   String get enActivoLeyenda => 'In attività: può ancora salire in classifica';
@@ -785,8 +787,6 @@ class TextosIt extends Textos {
   String get estaTemporadaNoSeRetiraNadie => 'Questa stagione nessuno si ritira.';
   @override
   String get restoDeLaLiga => 'Resto della lega';
-  @override
-  String seRetiraConEdadYMedia(String procedencia, int edad, int media, String aviso) => '$procedencia · si ritira a $edad anni, valutazione $media$aviso';
   @override
   String get suCamisetaYaRetiradaSola => ' · la sua maglia è già stata ritirata da sola (leggenda reale)';
   @override
@@ -1053,8 +1053,6 @@ class TextosIt extends Textos {
   @override
   String get traspasarBtn => 'Scambia';
   @override
-  String jugadorConFicha(String nombre, String posicion, int media, int edad) => '$nombre ($posicion, $media, $edad anni)';
-  @override
   String get potencialElite => 'Elite';
   @override
   String get potencialMuyAlto => 'Molto alto';
@@ -1086,4 +1084,23 @@ class TextosIt extends Textos {
 
   @override
   String get vsAbreviatura => 'VS';
+
+  @override
+  String get tituloPatrocinadores => 'Sponsor';
+  @override
+  String get explicacionPatrocinadores => 'Scegli quali sponsor firma la tua franchigia questa stagione: ognuno attivo aggiunge margine sotto il tetto salariale.';
+  @override
+  String get patrocinioEstadioLabel => 'Sponsor del palazzetto';
+  @override
+  String get patrocinioCamisetaLabel => 'Sponsor di maglia';
+  @override
+  String get patrocinioBebidaLabel => 'Bevanda ufficiale';
+  @override
+  String get patrocinioOcioLabel => 'Sponsor della comunità';
+  @override
+  String fundadoEnAnio(int anio) => 'Fondata nel $anio';
+  @override
+  String margenPatrocinio(String importe) => '+$importe di margine salariale';
+  @override
+  String get totalPatrociniosLabel => "Margine totale quest'anno";
 }

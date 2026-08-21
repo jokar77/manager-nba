@@ -7,6 +7,9 @@ class TextosFr extends Textos {
   const TextosFr();
 
   @override
+  TextosDeEventos get eventos => const EventosFr();
+
+  @override
   String get aceptar => 'Accepter';
   @override
   String get cancelar => 'Annuler';
@@ -465,6 +468,8 @@ class TextosFr extends Textos {
   @override
   String get estrellaDefensaLabel => 'Star défensive';
   @override
+  String get sextoHombreLabel => 'Sixième homme';
+  @override
   String get ningunaOpcion => 'Aucune';
   @override
   String get sinPicksPropios => "Il ne te reste aucun choix qui t'appartienne : tu les as tous échangés.";
@@ -492,8 +497,6 @@ class TextosFr extends Textos {
   @override
   String get proponer => 'Proposer';
   @override
-  String get todosFiltro => 'Tous';
-  @override
   String get tituloAgenciaLibre => 'Agence libre';
   @override
   String get verTuPlantilla => 'Voir ton effectif';
@@ -506,7 +509,7 @@ class TextosFr extends Textos {
   @override
   String fichadosPorElMinimo(int n) => '$n joueurs signés au contrat minimum.';
   @override
-  String get quePuedaPagar => 'Abordable pour moi';
+  String get quePuedaPagar => 'Abordable';
   @override
   String get noQuedaNadieEnMercado => 'Il ne reste plus personne sur le marché.';
   @override
@@ -584,7 +587,8 @@ class TextosFr extends Textos {
   @override
   String ofertaNDeM(int n, int m) => 'Offre $n sur $m';
   @override
-  String lineaJugadorOferta(String nombre, String posicion, int media, String pts, String ast, String reb, String contrato) => '$nombre · $posicion · $media · $pts pts, $ast pd, $reb reb · $contrato';
+  String lineaJugadorOferta(
+          String nombre, String posicion, int media, String contrato) => '$nombre · $posicion · $media · $contrato';
   @override
   String get ultimoAnioContrato => 'Dernière année';
   @override
@@ -693,8 +697,6 @@ class TextosFr extends Textos {
   String get todaviaNadieEnHof => 'Personne n\'est encore au Hall of Fame. N\'y entrent que les joueurs retraités avec une grande carrière : trophées, bagues et de nombreuses années à haut niveau.';
   @override
   String get nuevoChip => 'NOUVEAU';
-  @override
-  String statsCarreraSufijo(String pts, String ast, String reb) => ' · $pts pts · $ast pd · $reb reb';
 
   @override
   String get enActivoLeyenda => 'En activité : peut encore grimper au classement';
@@ -785,8 +787,6 @@ class TextosFr extends Textos {
   String get estaTemporadaNoSeRetiraNadie => 'Personne ne prend sa retraite cette saison.';
   @override
   String get restoDeLaLiga => 'Reste de la ligue';
-  @override
-  String seRetiraConEdadYMedia(String procedencia, int edad, int media, String aviso) => '$procedencia · prend sa retraite à $edad ans, niveau $media$aviso';
   @override
   String get suCamisetaYaRetiradaSola => ' · son maillot a déjà été retiré automatiquement (légende réelle)';
   @override
@@ -1053,8 +1053,6 @@ class TextosFr extends Textos {
   @override
   String get traspasarBtn => 'Échanger';
   @override
-  String jugadorConFicha(String nombre, String posicion, int media, int edad) => '$nombre ($posicion, $media, $edad ans)';
-  @override
   String get potencialElite => 'Élite';
   @override
   String get potencialMuyAlto => 'Très élevé';
@@ -1086,4 +1084,23 @@ class TextosFr extends Textos {
 
   @override
   String get vsAbreviatura => 'VS';
+
+  @override
+  String get tituloPatrocinadores => 'Sponsors';
+  @override
+  String get explicacionPatrocinadores => 'Choisis les sponsors que ton équipe signe cette saison : chacun activé ajoute de la marge sous le plafond salarial.';
+  @override
+  String get patrocinioEstadioLabel => 'Sponsor de la salle';
+  @override
+  String get patrocinioCamisetaLabel => 'Sponsor maillot';
+  @override
+  String get patrocinioBebidaLabel => 'Boisson officielle';
+  @override
+  String get patrocinioOcioLabel => 'Sponsor communautaire';
+  @override
+  String fundadoEnAnio(int anio) => 'Fondé en $anio';
+  @override
+  String margenPatrocinio(String importe) => '+$importe de marge salariale';
+  @override
+  String get totalPatrociniosLabel => 'Marge totale cette année';
 }

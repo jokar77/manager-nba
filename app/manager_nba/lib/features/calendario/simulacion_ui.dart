@@ -57,6 +57,14 @@ DateTime? proximaFechaPendiente(List<PartidosCalendarioData> partidos) {
   return pendientes.isEmpty ? null : pendientes.first.fecha;
 }
 
+/// Cuántos partidos tuyos quedan por jugar hasta [diaObjetivo] inclusive.
+/// Es lo que decide cuántos segmentos pinta la barra de progreso antes de
+/// arrancar la simulación: hace falta saberlo de antemano, porque la barra
+/// se construye con el total ya fijo y se va rellenando encima.
+int partidosPendientesHasta(
+        List<PartidosCalendarioData> partidos, DateTime diaObjetivo) =>
+    partidos.where((p) => !p.jugado && !p.fecha.isAfter(diaObjetivo)).length;
+
 /// La fecha "actual" de tu temporada: el último partido jugado, o el
 /// primero programado si todavía no has jugado ninguno.
 DateTime fechaActualDeLaTemporada(List<PartidosCalendarioData> partidos) {
@@ -130,8 +138,14 @@ Future<ResultadoLoteSimulado> simularHastaConDialogo(
   BuildContext context,
   AppDatabase db,
   String equipoUsuario,
-  DateTime diaObjetivo,
-) async {
+  DateTime diaObjetivo, {
+  /// Se llama después de cada tramo simulado (la simulación avanza por
+  /// semanas, ver más abajo), con todo lo simulado hasta ese momento. Es
+  /// lo que alimenta la barra de progreso segmentada: no hay enganche al
+  /// motor para saber cuándo se resuelve cada partido suelto, así que la
+  /// granularidad real es "por semana", no "por partido".
+  void Function(List<PartidoSimuladoInfo> hastaAhora)? onProgreso,
+}) async {
   // Nada de simular con el banquillo vacío. Si acabas de despedir a tu
   // entrenador, aquí se te manda a buscar uno antes de seguir: es el mismo
   // listón que la plantilla mínima, y va a la agencia DE ENTRENADORES, no
@@ -177,6 +191,7 @@ Future<ResultadoLoteSimulado> simularHastaConDialogo(
     acumulados.addAll(tramo.simulados);
     lesionesAcumuladas.addAll(tramo.lesionesNuevas);
     if (tramo.temporadaRegularTerminada) temporadaTerminada = true;
+    onProgreso?.call(List.unmodifiable(acumulados));
 
     // Se avisa en la misma etapa en la que ocurre (como con las ofertas más
     // abajo), no al final de todo el lote: si simulas "hasta fin de mes" y
@@ -357,8 +372,11 @@ Future<void> _avisarDeOfertasEntrantes(
 
   if (verlas == true && context.mounted) {
     await Navigator.of(context).push(MaterialPageRoute<void>(
-      builder: (context) =>
-          OfertasScreen(db: db, equipoUsuario: equipoUsuario),
+      builder: (context) => OfertasScreen(
+        db: db,
+        equipoUsuario: equipoUsuario,
+        cierraSolaAlVaciarse: true,
+      ),
     ));
   }
 }

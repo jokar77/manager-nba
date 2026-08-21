@@ -12,6 +12,10 @@ library;
 
 import 'package:flutter/widgets.dart';
 
+import 'textos_eventos.dart';
+
+export 'textos_eventos.dart' show TextosDeEventos, TextoDeEvento, TextoDeOpcion;
+
 part 'textos_es.dart';
 part 'textos_en.dart';
 part 'textos_fr.dart';
@@ -87,6 +91,11 @@ Textos t(BuildContext context) => Idiomas.de(context);
 /// una clase y no un fichero de traducción.
 abstract class Textos {
   const Textos();
+
+  // --- Eventos narrativos ------------------------------------------------
+  /// El guion de los eventos de vestuario, que vive aparte por su tamaño.
+  /// Ver `textos_eventos.dart`.
+  TextosDeEventos get eventos;
 
   // --- Genéricos ---------------------------------------------------------
   String get aceptar;
@@ -372,6 +381,7 @@ abstract class Textos {
   String get sinPartidosJugadosTemporada;
   String get estrellaAtaqueLabel;
   String get estrellaDefensaLabel;
+  String get sextoHombreLabel;
   String get ningunaOpcion;
   String get sinPicksPropios;
   String get traspasadoATiPorOtroEquipo;
@@ -386,7 +396,6 @@ abstract class Textos {
 
   String get rechazar;
   String get proponer;
-  String get todosFiltro;
   String get tituloAgenciaLibre;
   String get verTuPlantilla;
   String get agenciaLibreCerrada;
@@ -432,7 +441,11 @@ abstract class Textos {
   String get ofertaAnterior;
   String get ofertaSiguiente;
   String ofertaNDeM(int n, int m);
-  String lineaJugadorOferta(String nombre, String posicion, int media, String pts, String ast, String reb, String contrato);
+  // Sin estadísticas de la temporada: en una oferta de traspaso lo que
+  // se juzga es el jugador (nivel y contrato), no cómo le ha ido en la
+  // temporada que ya se está negociando dejar atrás.
+  String lineaJugadorOferta(
+      String nombre, String posicion, int media, String contrato);
   String get ultimoAnioContrato;
   String aniosDeContrato(int n);
   String contratoAnioMillones(String anios, String millones);
@@ -488,7 +501,6 @@ abstract class Textos {
   String noSePudoCargarHof(String error);
   String get todaviaNadieEnHof;
   String get nuevoChip;
-  String statsCarreraSufijo(String pts, String ast, String reb);
 
   String get enActivoLeyenda;
   String get todaviaNoHayEstadisticas;
@@ -536,7 +548,6 @@ abstract class Textos {
   String get tituloSeRetiran;
   String get estaTemporadaNoSeRetiraNadie;
   String get restoDeLaLiga;
-  String seRetiraConEdadYMedia(String procedencia, int edad, int media, String aviso);
   String get suCamisetaYaRetiradaSola;
   String get camisetaRetiradaSufijo;
 
@@ -674,7 +685,6 @@ abstract class Textos {
   String get recibesLabel;
   String get entregasLabel;
   String get traspasarBtn;
-  String jugadorConFicha(String nombre, String posicion, int media, int edad);
   String get potencialElite;
   String get potencialMuyAlto;
   String get potencialAlto;
@@ -693,4 +703,15 @@ abstract class Textos {
   String get enCasaLabel;
   String get fueraLabel;
   String get vsAbreviatura;
+
+  // --- Patrocinadores (elección de pretemporada) ---------------------------
+  String get tituloPatrocinadores;
+  String get explicacionPatrocinadores;
+  String get patrocinioEstadioLabel;
+  String get patrocinioCamisetaLabel;
+  String get patrocinioBebidaLabel;
+  String get patrocinioOcioLabel;
+  String fundadoEnAnio(int anio);
+  String margenPatrocinio(String importe);
+  String get totalPatrociniosLabel;
 }

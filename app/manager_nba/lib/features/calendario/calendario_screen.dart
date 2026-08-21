@@ -46,6 +46,8 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
   bool _temporadaCompleta = false;
   bool _cargando = true;
   bool _simulando = false;
+  int _totalASimular = 0;
+  List<PartidoSimuladoInfo> _progresoSimulacion = const [];
   bool _procesandoPlayoffs = false;
   bool _campeonPlayoffsYaVisto = false;
   final _scrollController = ScrollController();
@@ -201,9 +203,16 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
   }
 
   Future<void> _simularHasta(DateTime diaObjetivo) async {
-    setState(() => _simulando = true);
+    setState(() {
+      _simulando = true;
+      _totalASimular = partidosPendientesHasta(_partidos, diaObjetivo);
+      _progresoSimulacion = const [];
+    });
     final resultado = await simularHastaConDialogo(
-        context, widget.db, widget.equipoUsuario, diaObjetivo);
+        context, widget.db, widget.equipoUsuario, diaObjetivo,
+        onProgreso: (hastaAhora) {
+      if (mounted) setState(() => _progresoSimulacion = hastaAhora);
+    });
 
     await _recargarDatos();
     if (!mounted) return;
@@ -340,7 +349,16 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
                   onSimular1Mes: () => _simularHasta(
                       fechaActualDeLaTemporada(_partidos).add(const Duration(days: 30))),
                 ),
-                if (_simulando) const LinearProgressIndicator(),
+                if (_simulando)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: BarraProgresoSimulacion(
+                      total: _totalASimular,
+                      resultados: _progresoSimulacion
+                          .map((p) => p.marcadorUsuario >= p.marcadorRival)
+                          .toList(),
+                    ),
+                  ),
                 if (_temporadaCompleta)
                   _PanelPlayoffs(
                     db: widget.db,
@@ -664,16 +682,12 @@ class _CeldaDia extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // En un móvil la celda mide unos 50 px: el día con su
-                      // abreviatura más los iconos no caben en la misma
-                      // línea y se salían. El nombre del día se cae en
-                      // compacto — ya está en la cabecera de la columna, así
-                      // que no se pierde información.
+                      // Solo el número: el nombre del día ya está en la
+                      // cabecera de la columna, así que repetirlo en cada
+                      // celda no añade información.
                       Flexible(
                         child: Text(
-                          tamanoDe(context).esCompacto
-                              ? '$dia'
-                              : '$dia ${t(context).diasSemanaAbrev[fecha.weekday - 1]}',
+                          '$dia',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(

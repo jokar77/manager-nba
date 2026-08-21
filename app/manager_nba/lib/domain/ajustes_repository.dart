@@ -3,10 +3,13 @@ import 'package:drift/drift.dart';
 import '../data/database/app_database.dart';
 import '../i18n/textos.dart';
 
+/// El oscuro es el modo por defecto la primera vez que se abre el juego
+/// (sin fila de ajustes todavía). En cuanto hay una preferencia guardada
+/// —oscura o clara— se respeta esa, no este valor.
 Future<bool> leerModoOscuro(AppDatabase db) async {
   final fila =
       await (db.select(db.ajustes)..where((t) => t.id.equals(0))).getSingleOrNull();
-  return fila?.modoOscuro ?? false;
+  return fila?.modoOscuro ?? true;
 }
 
 Future<void> guardarModoOscuro(AppDatabase db, bool activo) async {

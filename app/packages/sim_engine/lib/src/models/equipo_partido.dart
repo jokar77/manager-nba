@@ -31,6 +31,10 @@ class EquipoPartido {
     if (estrellasDefensa > 1) {
       throw ArgumentError('$nombre tiene más de una estrella de defensa');
     }
+    final sextosHombres = jugadores.where((j) => j.esSextoHombre).length;
+    if (sextosHombres > 1) {
+      throw ArgumentError('$nombre tiene más de un sexto hombre');
+    }
   }
 
   List<JugadorEnPartido> get jugadoresActivos =>

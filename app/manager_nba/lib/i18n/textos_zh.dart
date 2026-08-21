@@ -15,6 +15,9 @@ class TextosZh extends Textos {
   const TextosZh();
 
   @override
+  TextosDeEventos get eventos => const EventosZh();
+
+  @override
   String get aceptar => '确定';
   @override
   String get cancelar => '取消';
@@ -469,6 +472,8 @@ class TextosZh extends Textos {
   @override
   String get estrellaDefensaLabel => '防守核心';
   @override
+  String get sextoHombreLabel => '第六人';
+  @override
   String get ningunaOpcion => '无';
   @override
   String get sinPicksPropios => '你没有属于自己的选秀权了：全部交易出去了。';
@@ -496,8 +501,6 @@ class TextosZh extends Textos {
   @override
   String get proponer => '提出方案';
   @override
-  String get todosFiltro => '全部';
-  @override
   String get tituloAgenciaLibre => '自由市场';
   @override
   String get verTuPlantilla => '查看你的阵容';
@@ -510,7 +513,7 @@ class TextosZh extends Textos {
   @override
   String fichadosPorElMinimo(int n) => '已签下$n名底薪球员。';
   @override
-  String get quePuedaPagar => '我能负担的';
+  String get quePuedaPagar => '可负担';
   @override
   String get noQuedaNadieEnMercado => '市场上已经没有球员了。';
   @override
@@ -588,7 +591,8 @@ class TextosZh extends Textos {
   @override
   String ofertaNDeM(int n, int m) => '第$n个报价（共$m个）';
   @override
-  String lineaJugadorOferta(String nombre, String posicion, int media, String pts, String ast, String reb, String contrato) => '$nombre·$posicion·$media·场均$pts分$ast助攻$reb篮板·$contrato';
+  String lineaJugadorOferta(
+          String nombre, String posicion, int media, String contrato) => '$nombre·$posicion·$media·$contrato';
   @override
   String get ultimoAnioContrato => '最后一年';
   @override
@@ -697,8 +701,6 @@ class TextosZh extends Textos {
   String get todaviaNadieEnHof => '名人堂目前还没有成员。只有已退役、拥有伟大生涯的球员才能入选：荣誉、戒指和多年的高水准表现。';
   @override
   String get nuevoChip => '新';
-  @override
-  String statsCarreraSufijo(String pts, String ast, String reb) => ' · 场均$pts分 $ast助攻 $reb篮板';
 
   @override
   String get enActivoLeyenda => '现役：排名仍有可能上升';
@@ -789,8 +791,6 @@ class TextosZh extends Textos {
   String get estaTemporadaNoSeRetiraNadie => '本赛季没有球员退役。';
   @override
   String get restoDeLaLiga => '联盟其他球队';
-  @override
-  String seRetiraConEdadYMedia(String procedencia, int edad, int media, String aviso) => '$procedencia·以$edad岁、综合评分$media退役$aviso';
   @override
   String get suCamisetaYaRetiradaSola => ' · 该球衣已自动退役（真实传奇球员）';
   @override
@@ -1057,8 +1057,6 @@ class TextosZh extends Textos {
   @override
   String get traspasarBtn => '完成交易';
   @override
-  String jugadorConFicha(String nombre, String posicion, int media, int edad) => '$nombre（$posicion，$media，$edad岁）';
-  @override
   String get potencialElite => '顶级';
   @override
   String get potencialMuyAlto => '很高';
@@ -1090,4 +1088,23 @@ class TextosZh extends Textos {
 
   @override
   String get vsAbreviatura => 'VS';
+
+  @override
+  String get tituloPatrocinadores => '赞助商';
+  @override
+  String get explicacionPatrocinadores => '选择本赛季球队签约的赞助商：每激活一个都会增加薪资空间。';
+  @override
+  String get patrocinioEstadioLabel => '主场馆赞助商';
+  @override
+  String get patrocinioCamisetaLabel => '球衣赞助商';
+  @override
+  String get patrocinioBebidaLabel => '官方饮品';
+  @override
+  String get patrocinioOcioLabel => '社区赞助商';
+  @override
+  String fundadoEnAnio(int anio) => '创立于$anio年';
+  @override
+  String margenPatrocinio(String importe) => '+$importe 薪资空间';
+  @override
+  String get totalPatrociniosLabel => '本年度总空间';
 }

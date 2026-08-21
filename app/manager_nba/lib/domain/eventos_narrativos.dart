@@ -4,7 +4,15 @@
 ///
 /// Este fichero es Dart puro (sin base de datos) para poder probar el
 /// catálogo y las condiciones sin montar una partida. La parte que guarda y
-/// aplica los efectos está en `eventos_narrativos_repository.dart`.
+/// aplica los efectos está en `eventos_narrativos_repository.dart`, y lo
+/// que se lee en pantalla está en `i18n/textos_eventos.dart`.
+///
+/// **Aquí no hay texto.** El catálogo son claves, condiciones y números; lo
+/// que se lee vive en los siete idiomas del juego. Se separó así cuando
+/// tocó traducirlos: si el guion viviera aquí, cada evento nuevo habría que
+/// escribirlo siete veces en medio de la lógica, y un ajuste de equilibrio
+/// (subir un factor, acortar una racha) obligaría a tocar los siete sitios
+/// donde solo cambia una palabra.
 ///
 /// Tres reglas de diseño, para que esto no se convierta en un generador de
 /// texto sin consecuencias:
@@ -59,8 +67,9 @@ const maxPartidosDeEfecto = 12;
 /// Un efecto activo en el vestuario: un multiplicador sobre el rendimiento
 /// del equipo que se va gastando partido a partido.
 class EfectoDeEvento {
-  /// Cómo se llama en la pantalla ("Buen rollo en el vestuario").
-  final String etiqueta;
+  /// Con qué nombre se busca su texto ('buen_rollo', 'piernas_cansadas').
+  /// Ver `etiquetasDeEfecto` en `i18n/textos_eventos.dart`.
+  final String clave;
 
   /// Multiplicador sobre el estado de forma. 1,03 = un 3% mejor.
   final double factor;
@@ -68,30 +77,37 @@ class EfectoDeEvento {
   /// Partidos que le quedan de vida.
   final int partidos;
 
+  /// La etiqueta tal cual estaba guardada en la base de datos, para las
+  /// partidas empezadas ANTES de que los efectos tuvieran clave.
+  ///
+  /// Aquellas filas guardaron el texto ya escrito ("Buen rollo en el
+  /// vestuario") y no hay forma de saber a qué efecto del catálogo
+  /// correspondían, así que se enseñan tal cual: en español y sin traducir,
+  /// pero legibles. Se vacían solas al acabar la temporada.
+  final String? etiquetaGuardada;
+
   const EfectoDeEvento({
-    required this.etiqueta,
+    required this.clave,
     required this.factor,
     required this.partidos,
+    this.etiquetaGuardada,
   });
 
   bool get esBueno => factor > 1.0;
 
   /// Acotado a lo que se considera sano, por si un evento futuro se pasa.
   EfectoDeEvento get acotado => EfectoDeEvento(
-        etiqueta: etiqueta,
+        clave: clave,
         factor: factor.clamp(minFactorDeEvento, maxFactorDeEvento),
         partidos: partidos.clamp(1, maxPartidosDeEfecto),
+        etiquetaGuardada: etiquetaGuardada,
       );
 }
 
 /// Una de las respuestas posibles a un evento.
 class OpcionDeEvento {
-  /// El botón que se pulsa ("Pagar la cena").
-  final String etiqueta;
-
-  /// Lo que se le cuenta al usuario DESPUÉS de elegir. Es lo que hace que la
-  /// decisión se entienda: sin esto, eliges a ciegas y no aprendes nada.
-  final String consecuencia;
+  /// Con qué nombre se busca su texto dentro del evento ('noche_larga').
+  final String clave;
 
   /// Los efectos de rendimiento que deja. Uno, o varios con signos
   /// distintos.
@@ -108,8 +124,7 @@ class OpcionDeEvento {
   final int bonusSalarial;
 
   const OpcionDeEvento({
-    required this.etiqueta,
-    required this.consecuencia,
+    required this.clave,
     this.efectos = const [],
     this.bonusSalarial = 0,
   });
@@ -168,14 +183,9 @@ class EventoNarrativo {
   /// Identificador estable. Se guarda para no repetir el mismo evento dos
   /// veces en la misma temporada, así que NO se puede cambiar sin romper las
   /// partidas en curso (lo único que pasaría es que un evento ya visto
-  /// pudiera repetirse una vez).
+  /// pudiera repetirse una vez). Es también con lo que se busca su texto en
+  /// `i18n/textos_eventos.dart`.
   final String clave;
-
-  final String titulo;
-
-  /// El texto que se lee. En segunda persona y corto: esto se lee en un
-  /// móvil, en medio de una simulación.
-  final String texto;
 
   final List<OpcionDeEvento> opciones;
 
@@ -184,8 +194,6 @@ class EventoNarrativo {
 
   const EventoNarrativo({
     required this.clave,
-    required this.titulo,
-    required this.texto,
     required this.opciones,
     this.cuando,
   });
@@ -221,68 +229,70 @@ const _muchoPeor = 0.98;
 /// Y las magnitudes de dinero, en dólares de tope salarial.
 ///
 /// La referencia NO es el tope (240M): a esa escala cualquier cifra de
-/// patrocinio es ruido. La referencia es el **salario mínimo, 2,3M**,
-/// porque es el escalón que de verdad decide si puedes firmar a alguien o
-/// no. Por debajo de eso el dinero es decorativo: sube un número en una
-/// pantalla y no desbloquea ni un fichaje.
+/// patrocinio es ruido. Tampoco es el salario mínimo (2,3M) — el ajuste
+/// final los deja por debajo, ver la nota de abajo.
 ///
-/// Por eso el pellizco pequeño es de 3M —justo por encima del mínimo, o sea
-/// "te da para un jugador de rotación"— y el grande de 6M, que ya es un
-/// suplente de nivel. Una multa fuerte quita 4M, que duele sin dejarte
+/// Por eso el pellizco pequeño es de 1,5M y el grande de 3M: menos que el
+/// mínimo del convenio, a propósito — el dinero de un patrocinio es un
+/// extra puntual de un solo diálogo, no algo pensado para desbloquear un
+/// fichaje por sí solo. Una multa fuerte quita 4M, que duele sin dejarte
 /// sin plantilla.
-const _bastanteDinero = 6000000;
-const _algoDeDinero = 3000000;
+///
+/// Bajados dos veces por feedback directo: primero de 3M/6M a 2,5M/4M, y
+/// de ahí a 1,5M/3M — seguían pareciendo demasiado dinero para un evento
+/// que dura un diálogo.
+const _bastanteDinero = 3000000;
+const _algoDeDinero = 1500000;
 const _multaFuerte = -4000000;
+
+/// Y un gasto del club, que no es lo mismo que una multa: no es un castigo
+/// por una decisión, es lo que cuesta algo que has decidido pagar. Se queda
+/// por debajo de [_multaFuerte] a propósito — invertir en la plantilla
+/// tiene que doler menos que hacer el ridículo en público.
+const _gastoModerado = -2000000;
 
 /// Todos los eventos que existen. El orden no importa: se sortea entre los
 /// que encajan.
+///
+/// Las claves de aquí (del evento, de cada opción y de cada efecto) son las
+/// que se buscan en los siete idiomas. Un test comprueba que ninguna se
+/// quede sin traducir en ningún idioma.
 final List<EventoNarrativo> catalogoDeEventos = [
   // El ejemplo que pidió el usuario, tal cual: química a cambio de energía.
   EventoNarrativo(
     clave: 'cena_de_equipo',
-    titulo: 'Cena de equipo',
-    texto: 'Los veteranos quieren organizar una cena para toda la plantilla, '
-        'cuerpo técnico incluido. Dicen que hace falta soltarse un poco.',
     opciones: const [
       OpcionDeEvento(
-        etiqueta: 'Que sea una noche larga',
-        consecuencia: 'El vestuario se ha soltado de verdad y se nota en la '
-            'pista. Los próximos dos partidos van a costar: nadie ha dormido '
-            'lo que debía.',
+        clave: 'noche_larga',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Buen rollo en el vestuario',
+              clave: 'buen_rollo',
               factor: _muchoMejor,
               partidos: _unaRachaLarga),
           EfectoDeEvento(
-              etiqueta: 'Piernas cansadas',
+              clave: 'piernas_cansadas',
               factor: _muchoPeor,
               partidos: _unosPocosPartidos),
         ],
       ),
       OpcionDeEvento(
-        etiqueta: 'Cena corta y a dormir',
-        consecuencia: 'Un par de horas, risas y a casa. No arregla el mundo, '
-            'pero el grupo está algo más unido y mañana se entrena.',
+        clave: 'cena_corta',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Buen rollo en el vestuario',
+              clave: 'buen_rollo',
               factor: _algoMejor,
               partidos: _unaRachaCorta),
         ],
       ),
       OpcionDeEvento(
-        etiqueta: 'Ahora no toca',
-        consecuencia: 'Se entrena y se descansa. Se llega con las piernas '
-            'frescas al siguiente partido, pero nadie se ha olvidado de que '
-            'dijiste que no: el grupo anda más frío de lo que estaba.',
+        clave: 'ahora_no_toca',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Piernas frescas',
+              clave: 'piernas_frescas',
               factor: _algoMejor,
               partidos: _unaRachaCorta),
           EfectoDeEvento(
-              etiqueta: 'Grupo frío',
+              clave: 'grupo_frio',
               factor: _algoPeor,
               partidos: _unaRachaLarga),
         ],
@@ -292,45 +302,36 @@ final List<EventoNarrativo> catalogoDeEventos = [
 
   EventoNarrativo(
     clave: 'bronca_en_el_entrenamiento',
-    titulo: 'Se han liado en el entrenamiento',
-    texto: 'Dos jugadores han pasado de las palabras a los empujones en un '
-        'cinco contra cinco. Están separados en el vestuario y la prensa ya '
-        'lo sabe.',
     // Una pelea con el mejor récord de la liga no se sostiene.
     cuando: (c) => !c.vaBien && c.partidosJugados >= 10,
     opciones: const [
       OpcionDeEvento(
-        etiqueta: 'Multar a los dos',
-        consecuencia: 'Queda claro quién manda. El vestuario está tenso unos '
-            'días, pero nadie va a volver a hacerlo.',
+        clave: 'multar_a_los_dos',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Vestuario tenso',
+              clave: 'vestuario_tenso',
               factor: _algoPeor,
               partidos: _unosPocosPartidos),
           EfectoDeEvento(
-              etiqueta: 'Disciplina',
+              clave: 'disciplina',
               factor: _algoMejor,
               partidos: _unaRachaLarga),
         ],
       ),
       OpcionDeEvento(
-        etiqueta: 'Que lo arreglen ellos',
-        consecuencia: 'Se dan la mano delante del grupo. Parece sincero.',
+        clave: 'que_lo_arreglen_ellos',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Buen rollo en el vestuario',
+              clave: 'buen_rollo',
               factor: _algoMejor,
               partidos: _unaRachaCorta),
         ],
       ),
       OpcionDeEvento(
-        etiqueta: 'Mirar a otro lado',
-        consecuencia: 'Nadie dice nada y el asunto se enquista. En la pista '
-            'se ve: no se pasan el balón igual.',
+        clave: 'mirar_a_otro_lado',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Vestuario roto',
+              clave: 'vestuario_roto',
               factor: _muchoPeor,
               partidos: _unaRachaLarga),
         ],
@@ -340,34 +341,26 @@ final List<EventoNarrativo> catalogoDeEventos = [
 
   EventoNarrativo(
     clave: 'estrella_pide_descanso',
-    titulo: 'Tu mejor jugador pide descanso',
-    texto: 'Lleva jugando con molestias desde noviembre. No está lesionado, '
-        'pero pide sentarse unos partidos para llegar entero al final de '
-        'temporada.',
     cuando: (c) => c.partidosJugados >= 30 && c.partidosJugados <= 65,
     opciones: const [
       OpcionDeEvento(
-        etiqueta: 'Que descanse',
-        consecuencia: 'Se pierde unos partidos y se nota su ausencia, pero '
-            'vuelve fresco y con ganas para el tramo que de verdad importa.',
+        clave: 'que_descanse',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Sin tu mejor jugador',
+              clave: 'sin_tu_mejor_jugador',
               factor: _muchoPeor,
               partidos: _unosPocosPartidos),
           EfectoDeEvento(
-              etiqueta: 'Plantilla fresca',
+              clave: 'plantilla_fresca',
               factor: _muchoMejor,
               partidos: _unaRachaLarga),
         ],
       ),
       OpcionDeEvento(
-        etiqueta: 'Te necesito ahora',
-        consecuencia: 'Lo entiende y aprieta los dientes. Rinde, pero se le '
-            've arrastrando la pierna y el resto del grupo lo nota.',
+        clave: 'te_necesito_ahora',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Plantilla al límite',
+              clave: 'plantilla_al_limite',
               factor: _algoPeor,
               partidos: _unaRachaLarga),
         ],
@@ -377,34 +370,26 @@ final List<EventoNarrativo> catalogoDeEventos = [
 
   EventoNarrativo(
     clave: 'joven_pide_minutos',
-    titulo: 'Un joven quiere minutos',
-    texto: 'Uno de tus chavales lleva media temporada pegado al banquillo. '
-        'Su agente ha llamado: o juega, o el verano que viene se busca la '
-        'vida en otro sitio.',
     cuando: (c) => c.jugadoresJovenes >= 2 && c.partidosJugados >= 15,
     opciones: const [
       OpcionDeEvento(
-        etiqueta: 'Dale minutos',
-        consecuencia: 'Los primeros partidos se le ven las costuras, pero se '
-            'suelta rápido y el vestuario ve que aquí se premia el trabajo.',
+        clave: 'dale_minutos',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Rotación verde',
+              clave: 'rotacion_verde',
               factor: _algoPeor,
               partidos: _unaRachaCorta),
           EfectoDeEvento(
-              etiqueta: 'Grupo enchufado',
+              clave: 'grupo_enchufado',
               factor: _algoMejor,
               partidos: _unaRachaLarga),
         ],
       ),
       OpcionDeEvento(
-        etiqueta: 'Que se lo gane en el entrenamiento',
-        consecuencia: 'Se lo toma mal y se le nota en la cara. El resto de '
-            'jóvenes toma nota de cómo funcionan las cosas aquí.',
+        clave: 'que_se_lo_gane',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Banquillo descontento',
+              clave: 'banquillo_descontento',
               factor: _algoPeor,
               partidos: _unaRachaCorta),
         ],
@@ -414,52 +399,39 @@ final List<EventoNarrativo> catalogoDeEventos = [
 
   EventoNarrativo(
     clave: 'prensa_dura',
-    titulo: 'La prensa os está crujiendo',
-    texto: 'Después de la última derrota, el periódico de la ciudad ha '
-        'publicado que el vestuario está muerto y que aquí sobra gente. Te '
-        'piden una respuesta.',
     cuando: (c) => c.vaMal && c.partidosJugados >= 15,
     opciones: const [
       OpcionDeEvento(
-        etiqueta: 'Defender al grupo en público',
-        consecuencia: 'Los jugadores lo agradecen: has puesto la cara por '
-            'ellos cuando nadie lo hacía. El problema es que ahora el foco '
-            'está en ti, y dentro nadie se siente señalado por lo que está '
-            'haciendo mal.',
+        clave: 'defender_al_grupo',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'El grupo va contigo',
+              clave: 'el_grupo_va_contigo',
               factor: _muchoMejor,
               partidos: _unaRachaCorta),
           EfectoDeEvento(
-              etiqueta: 'Nadie se da por aludido',
+              clave: 'nadie_se_da_por_aludido',
               factor: _algoPeor,
               partidos: _unaRachaLarga),
         ],
       ),
       OpcionDeEvento(
-        etiqueta: 'Darles la razón',
-        consecuencia: 'Has admitido en público que el equipo no está a la '
-            'altura. Es verdad, pero dentro no ha sentado bien.',
+        clave: 'darles_la_razon',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Vestuario dolido',
+              clave: 'vestuario_dolido',
               factor: _muchoPeor,
               partidos: _unaRachaCorta),
         ],
       ),
       OpcionDeEvento(
-        etiqueta: 'No entrar al trapo',
-        consecuencia: 'Dos frases hechas y a entrenar. Sin leña, el asunto '
-            'se apaga solo en unos días. Lo que queda dentro es que no '
-            'saliste a dar la cara por ellos.',
+        clave: 'no_entrar_al_trapo',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Nadie dio la cara por ellos',
+              clave: 'nadie_dio_la_cara',
               factor: _algoPeor,
               partidos: _unaRachaCorta),
           EfectoDeEvento(
-              etiqueta: 'El ruido se apaga',
+              clave: 'el_ruido_se_apaga',
               factor: _algoMejor,
               partidos: _unaRachaLarga),
         ],
@@ -469,39 +441,30 @@ final List<EventoNarrativo> catalogoDeEventos = [
 
   EventoNarrativo(
     clave: 'racha_buena',
-    titulo: 'Nadie os para',
-    texto: 'El equipo va lanzado y se empieza a hablar de vosotros como '
-        'candidatos. El entrenador pregunta si aprieta o si levanta el pie '
-        'para no quemar a nadie.',
     cuando: (c) => c.vaBien && c.partidosJugados >= 20 && c.tieneEntrenador,
     opciones: const [
       OpcionDeEvento(
-        etiqueta: 'Apretar mientras dure',
-        consecuencia: 'Se entrena a tope y la racha se alarga. El desgaste '
-            'llegará, pero más tarde.',
+        clave: 'apretar_mientras_dure',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'A todo gas',
+              clave: 'a_todo_gas',
               factor: _muchoMejor,
               partidos: _unaRachaCorta),
           EfectoDeEvento(
-              etiqueta: 'Desgaste acumulado',
+              clave: 'desgaste_acumulado',
               factor: _algoPeor,
               partidos: _unaRachaLarga),
         ],
       ),
       OpcionDeEvento(
-        etiqueta: 'Levantar el pie',
-        consecuencia: 'Cargas más suaves y minutos repartidos. La racha se '
-            'corta antes de lo que se habría cortado apretando, pero el '
-            'equipo llega entero.',
+        clave: 'levantar_el_pie',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Se corta la racha',
+              clave: 'se_corta_la_racha',
               factor: _algoPeor,
               partidos: _unosPocosPartidos),
           EfectoDeEvento(
-              etiqueta: 'Cargas controladas',
+              clave: 'cargas_controladas',
               factor: _algoMejor,
               partidos: _unaRachaLarga),
         ],
@@ -511,41 +474,31 @@ final List<EventoNarrativo> catalogoDeEventos = [
 
   EventoNarrativo(
     clave: 'aficion_llena_el_pabellon',
-    titulo: 'El pabellón se llena',
-    texto: 'Las entradas se están agotando y la afición pide un gesto: un '
-        'entrenamiento a puerta abierta, firmas, fotos. Ocupa una mañana '
-        'entera de trabajo.',
     cuando: (c) => c.partidosJugados >= 10,
     opciones: const [
       OpcionDeEvento(
-        etiqueta: 'Abrir las puertas',
-        consecuencia: 'El pabellón va a empujar de verdad los próximos '
-            'partidos, y la tienda del club no ha parado en toda la mañana. '
-            'La sesión de trabajo perdida se paga en el siguiente.',
+        clave: 'abrir_las_puertas',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'La grada empuja',
+              clave: 'la_grada_empuja',
               factor: _algoMejor,
               partidos: _unaRachaLarga),
           EfectoDeEvento(
-              etiqueta: 'Una mañana sin entrenar',
+              clave: 'una_manana_sin_entrenar',
               factor: _algoPeor,
               partidos: 1),
         ],
         bonusSalarial: _algoDeDinero,
       ),
       OpcionDeEvento(
-        etiqueta: 'A entrenar, que es lo que toca',
-        consecuencia: 'Se trabaja la mañana entera y se nota en el siguiente '
-            'partido. La afición lo entiende a medias: alguna pancarta ha '
-            'salido en la grada.',
+        clave: 'a_entrenar',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Mañana de trabajo',
+              clave: 'manana_de_trabajo',
               factor: _algoMejor,
               partidos: _unosPocosPartidos),
           EfectoDeEvento(
-              etiqueta: 'La grada, fría',
+              clave: 'la_grada_fria',
               factor: _algoPeor,
               partidos: _unaRachaLarga),
         ],
@@ -558,45 +511,31 @@ final List<EventoNarrativo> catalogoDeEventos = [
   // diálogo no sabe — si te falta espacio para firmar a alguien o no.
   EventoNarrativo(
     clave: 'acto_publicitario',
-    titulo: 'Un patrocinador quiere a la plantilla',
-    texto: 'Una marca de la ciudad pone dinero encima de la mesa por un día '
-        'entero de rodaje: toda la plantilla, sesión de fotos y anuncio. Es '
-        'un día de trabajo perdido y los jugadores ya han puesto cara.',
     cuando: (c) => c.partidosJugados >= 5,
     opciones: const [
       OpcionDeEvento(
-        etiqueta: 'Firmar el acuerdo entero',
-        consecuencia: 'Rodaje hasta las tantas y jugadores de mal humor, pero '
-            'el club se lleva un buen pellizco que da aire con el tope '
-            'salarial.',
+        clave: 'firmar_el_acuerdo_entero',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Día de rodaje',
+              clave: 'dia_de_rodaje',
               factor: _muchoPeor,
               partidos: _unosPocosPartidos),
         ],
         bonusSalarial: _bastanteDinero,
       ),
       OpcionDeEvento(
-        etiqueta: 'Negociar algo más corto',
-        consecuencia: 'Media mañana de fotos y a entrenar. Se cobra menos, '
-            'pero nadie ha perdido el día entero.',
+        clave: 'negociar_algo_mas_corto',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Mañana de fotos',
-              factor: _algoPeor,
-              partidos: 1),
+              clave: 'manana_de_fotos', factor: _algoPeor, partidos: 1),
         ],
         bonusSalarial: _algoDeDinero,
       ),
       OpcionDeEvento(
-        etiqueta: 'Decirles que no',
-        consecuencia: 'La plantilla se entera de que les has ahorrado el '
-            'marrón y llega al siguiente partido con las piernas nuevas. El '
-            'dinero, para otro año.',
+        clave: 'decirles_que_no',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Plantilla descansada',
+              clave: 'plantilla_descansada',
               factor: _algoMejor,
               partidos: _unaRachaCorta),
         ],
@@ -606,48 +545,37 @@ final List<EventoNarrativo> catalogoDeEventos = [
 
   EventoNarrativo(
     clave: 'partido_benefico',
-    titulo: 'Partido benéfico entre semana',
-    texto: 'El ayuntamiento organiza un amistoso benéfico y quiere al equipo. '
-        'Cae justo entre dos partidos de liga.',
     cuando: (c) => c.partidosJugados >= 12,
     opciones: const [
       OpcionDeEvento(
-        etiqueta: 'Ir con los titulares',
-        consecuencia: 'Pabellón lleno y la ciudad volcada con el equipo. Es '
-            'un partido más en unas piernas que ya venían justas.',
+        clave: 'ir_con_los_titulares',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Un partido de más',
+              clave: 'un_partido_de_mas',
               factor: _muchoPeor,
               partidos: _unosPocosPartidos),
           EfectoDeEvento(
-              etiqueta: 'La ciudad se vuelca',
+              clave: 'la_ciudad_se_vuelca',
               factor: _algoMejor,
               partidos: _unaRachaLarga),
         ],
         bonusSalarial: _bastanteDinero,
       ),
       OpcionDeEvento(
-        etiqueta: 'Mandar a los suplentes',
-        consecuencia: 'Los de abajo cogen minutos de verdad y se les ve '
-            'sueltos. La recaudación es menor, pero nadie importante se ha '
-            'cansado.',
+        clave: 'mandar_a_los_suplentes',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'El banquillo coge ritmo',
+              clave: 'el_banquillo_coge_ritmo',
               factor: _algoMejor,
               partidos: _unaRachaCorta),
         ],
         bonusSalarial: _algoDeDinero,
       ),
       OpcionDeEvento(
-        etiqueta: 'No ir',
-        consecuencia: 'Semana limpia de trabajo y descanso. El acto se '
-            'celebra igual sin vosotros, la ciudad lo lee como un feo y el '
-            'club acaba compensándolo de su bolsillo.',
+        clave: 'no_ir',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Semana de descanso',
+              clave: 'semana_de_descanso',
               factor: _algoMejor,
               partidos: _unaRachaCorta),
         ],
@@ -658,35 +586,26 @@ final List<EventoNarrativo> catalogoDeEventos = [
 
   EventoNarrativo(
     clave: 'viaje_infernal',
-    titulo: 'Cinco partidos fuera en ocho días',
-    texto: 'El calendario ha dejado un viaje muy duro. El preparador físico '
-        'propone viajar un día antes a cada ciudad, que sale caro pero '
-        'ahorra horas de avión.',
     cuando: (c) => c.partidosJugados >= 8,
     opciones: const [
       OpcionDeEvento(
-        etiqueta: 'Viajar con margen',
-        consecuencia: 'El equipo llega descansado a cada partido. Lo que se '
-            'pierde son sesiones de vídeo y entrenamiento: se viaja mucho y '
-            'se trabaja poco.',
+        clave: 'viajar_con_margen',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Bien descansados',
+              clave: 'bien_descansados',
               factor: _algoMejor,
               partidos: _unaRachaCorta),
           EfectoDeEvento(
-              etiqueta: 'Sin trabajo táctico',
+              clave: 'sin_trabajo_tactico',
               factor: _algoPeor,
               partidos: _unosPocosPartidos),
         ],
       ),
       OpcionDeEvento(
-        etiqueta: 'Como siempre',
-        consecuencia: 'Aviones de madrugada y hoteles a las tres de la '
-            'mañana. Se va a notar.',
+        clave: 'como_siempre',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Piernas cansadas',
+              clave: 'piernas_cansadas',
               factor: _algoPeor,
               partidos: _unaRachaCorta),
         ],
@@ -696,41 +615,30 @@ final List<EventoNarrativo> catalogoDeEventos = [
 
   EventoNarrativo(
     clave: 'veterano_de_vestuario',
-    titulo: 'Un veterano se ofrece a hablar con el grupo',
-    texto: 'El más veterano de la plantilla te pide cinco minutos con el '
-        'equipo, sin cuerpo técnico delante. Dice que hay cosas que se '
-        'hablan mejor entre jugadores.',
     cuando: (c) => c.vaMal || c.partidosJugados >= 40,
     opciones: const [
       OpcionDeEvento(
-        etiqueta: 'Déjales solos',
-        consecuencia: 'Nadie ha contado qué se dijo ahí dentro, pero el '
-            'equipo ha salido distinto al siguiente partido. Lo que se '
-            'decidiera, lo decidieron ellos: tú te has quedado fuera de esa '
-            'conversación.',
+        clave: 'dejales_solos',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Se han dicho las cosas',
+              clave: 'se_han_dicho_las_cosas',
               factor: _muchoMejor,
               partidos: _unaRachaCorta),
           EfectoDeEvento(
-              etiqueta: 'El vestuario va por libre',
+              clave: 'el_vestuario_va_por_libre',
               factor: _algoPeor,
               partidos: _unaRachaLarga),
         ],
       ),
       OpcionDeEvento(
-        etiqueta: 'Prefiero estar delante',
-        consecuencia: 'La charla se queda a medias —con el jefe delante nadie '
-            'dice lo que piensa— pero sales sabiendo exactamente quién está '
-            'con quién en ese vestuario.',
+        clave: 'prefiero_estar_delante',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'La charla no llegó a pasar',
+              clave: 'la_charla_no_llego_a_pasar',
               factor: _algoPeor,
               partidos: _unaRachaCorta),
           EfectoDeEvento(
-              etiqueta: 'Sabes lo que hay',
+              clave: 'sabes_lo_que_hay',
               factor: _algoMejor,
               partidos: _unaRachaLarga),
         ],
@@ -740,39 +648,372 @@ final List<EventoNarrativo> catalogoDeEventos = [
 
   EventoNarrativo(
     clave: 'recta_final',
-    titulo: 'Se juegan los playoffs en tres semanas',
-    texto: 'Quedan pocos partidos y todo está apretado. El cuerpo técnico '
-        'pregunta si se acortan las rotaciones para tirar de los mejores.',
     cuando: (c) => c.partidosJugados >= 68,
     opciones: const [
       OpcionDeEvento(
-        etiqueta: 'Tirar de los titulares',
-        consecuencia: 'Los mejores van a jugarlo casi todo. Rinde ahora y se '
-            'paga en abril.',
+        clave: 'tirar_de_los_titulares',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Rotación corta',
+              clave: 'rotacion_corta',
               factor: _muchoMejor,
               partidos: _unaRachaCorta),
           EfectoDeEvento(
-              etiqueta: 'Titulares fundidos',
+              clave: 'titulares_fundidos',
               factor: _muchoPeor,
               partidos: _unaRachaCorta),
         ],
       ),
       OpcionDeEvento(
-        etiqueta: 'Repartir minutos',
-        consecuencia: 'Nadie llega fundido a los playoffs, pero en la recta '
-            'final se pierde algún partido por el camino — y el puesto en la '
-            'clasificación se decide justo ahora.',
+        clave: 'repartir_minutos',
         efectos: [
           EfectoDeEvento(
-              etiqueta: 'Suplentes en pista',
+              clave: 'suplentes_en_pista',
               factor: _muchoPeor,
               partidos: _unosPocosPartidos),
           EfectoDeEvento(
-              etiqueta: 'Cargas controladas',
+              clave: 'cargas_controladas',
               factor: _algoMejor,
+              partidos: _unaRachaLarga),
+        ],
+      ),
+    ],
+  ),
+
+  // ---------------------------------------------------------------------
+  // Segunda tanda (a 2026-08-21). Doce eventos con un tope de cinco por
+  // temporada se repetían demasiado pronto en una carrera larga: en cuanto
+  // llevabas tres años ya los habías visto todos. Estos ocho suben el
+  // catálogo a veinte y, sobre todo, cubren situaciones que no tocaba
+  // ninguno de los doce primeros — la directiva, el entrenador como parte
+  // interesada, la propiedad y el dinero del club.
+  // ---------------------------------------------------------------------
+
+  EventoNarrativo(
+    clave: 'rumor_de_traspaso',
+    cuando: (c) => c.partidosJugados >= 20,
+    opciones: const [
+      OpcionDeEvento(
+        clave: 'prometerle_que_se_queda',
+        efectos: [
+          EfectoDeEvento(
+              clave: 'jugador_liberado',
+              factor: _muchoMejor,
+              partidos: _unaRachaCorta),
+          // El coste de prometer: el vestuario entero se entera de que
+          // aquí el sitio no se pierde por jugar mal.
+          EfectoDeEvento(
+              clave: 'nadie_teme_por_su_puesto',
+              factor: _algoPeor,
+              partidos: _unaRachaLarga),
+        ],
+      ),
+      OpcionDeEvento(
+        clave: 'decirle_la_verdad',
+        efectos: [
+          EfectoDeEvento(
+              clave: 'jugador_tocado',
+              factor: _muchoPeor,
+              partidos: _unaRachaCorta),
+          EfectoDeEvento(
+              clave: 'se_juegan_el_puesto',
+              factor: _algoMejor,
+              partidos: _unaRachaLarga),
+        ],
+      ),
+      OpcionDeEvento(
+        clave: 'no_contestar',
+        efectos: [
+          EfectoDeEvento(
+              clave: 'duda_en_el_vestuario',
+              factor: _algoPeor,
+              partidos: _unaRachaLarga),
+        ],
+      ),
+    ],
+  ),
+
+  // El dilema más incómodo del catálogo, y el que mejor usa el eje del
+  // dinero: perder a propósito paga y además mejora el draft (que el
+  // diálogo no modela), así que la respuesta depende de si te has creído
+  // que este año todavía se puede.
+  EventoNarrativo(
+    clave: 'tanking_de_la_directiva',
+    cuando: (c) => c.vaMal && c.partidosJugados >= 55,
+    opciones: const [
+      OpcionDeEvento(
+        clave: 'mirar_al_draft',
+        efectos: [
+          EfectoDeEvento(
+              clave: 'equipo_desarmado',
+              factor: _muchoPeor,
+              partidos: _unaRachaLarga),
+        ],
+        bonusSalarial: _bastanteDinero,
+      ),
+      OpcionDeEvento(
+        clave: 'competir_hasta_el_final',
+        efectos: [
+          EfectoDeEvento(
+              clave: 'orgullo_del_grupo',
+              factor: _algoMejor,
+              partidos: _unaRachaLarga),
+        ],
+      ),
+    ],
+  ),
+
+  EventoNarrativo(
+    clave: 'jugador_llega_tarde',
+    cuando: (c) => c.partidosJugados >= 10,
+    opciones: const [
+      OpcionDeEvento(
+        clave: 'multarle',
+        efectos: [
+          EfectoDeEvento(
+              clave: 'disciplina',
+              factor: _algoMejor,
+              partidos: _unaRachaLarga),
+          EfectoDeEvento(
+              clave: 'vestuario_tenso',
+              factor: _algoPeor,
+              partidos: _unosPocosPartidos),
+        ],
+      ),
+      OpcionDeEvento(
+        clave: 'hablar_en_privado',
+        efectos: [
+          EfectoDeEvento(
+              clave: 'jugador_agradecido',
+              factor: _algoMejor,
+              partidos: _unaRachaCorta),
+          EfectoDeEvento(
+              clave: 'el_resto_toma_nota',
+              factor: _algoPeor,
+              partidos: _unaRachaLarga),
+        ],
+      ),
+      OpcionDeEvento(
+        clave: 'sentarle_un_partido',
+        efectos: [
+          EfectoDeEvento(
+              clave: 'sin_uno_de_la_rotacion',
+              factor: _muchoPeor,
+              partidos: _unosPocosPartidos),
+          EfectoDeEvento(
+              clave: 'norma_clara',
+              factor: _algoMejor,
+              partidos: _unaRachaLarga),
+        ],
+      ),
+    ],
+  ),
+
+  EventoNarrativo(
+    clave: 'camiseta_de_una_leyenda',
+    cuando: (c) => c.partidosJugados >= 25,
+    opciones: const [
+      OpcionDeEvento(
+        clave: 'ceremonia_a_lo_grande',
+        efectos: [
+          EfectoDeEvento(
+              clave: 'la_ciudad_se_vuelca',
+              factor: _algoMejor,
+              partidos: _unaRachaLarga),
+          EfectoDeEvento(
+              clave: 'descanso_roto', factor: _muchoPeor, partidos: 1),
+        ],
+        bonusSalarial: _bastanteDinero,
+      ),
+      OpcionDeEvento(
+        clave: 'algo_breve',
+        efectos: [
+          EfectoDeEvento(
+              clave: 'homenaje_discreto',
+              factor: _algoMejor,
+              partidos: _unaRachaCorta),
+        ],
+        bonusSalarial: _algoDeDinero,
+      ),
+      OpcionDeEvento(
+        clave: 'dejarlo_para_el_verano',
+        efectos: [
+          EfectoDeEvento(
+              clave: 'rutina_intacta',
+              factor: _algoMejor,
+              partidos: _unosPocosPartidos),
+          EfectoDeEvento(
+              clave: 'la_leyenda_dolida',
+              factor: _algoPeor,
+              partidos: _unaRachaCorta),
+        ],
+      ),
+    ],
+  ),
+
+  EventoNarrativo(
+    clave: 'entrenador_pide_mando',
+    cuando: (c) => c.tieneEntrenador && c.partidosJugados >= 12,
+    opciones: const [
+      OpcionDeEvento(
+        clave: 'darle_mando',
+        efectos: [
+          EfectoDeEvento(
+              clave: 'entrenador_con_las_riendas',
+              factor: _muchoMejor,
+              partidos: _unaRachaCorta),
+          EfectoDeEvento(
+              clave: 'pierdes_el_banquillo',
+              factor: _algoPeor,
+              partidos: _unaRachaLarga),
+        ],
+      ),
+      OpcionDeEvento(
+        clave: 'mando_compartido',
+        efectos: [
+          EfectoDeEvento(
+              clave: 'equilibrio_incomodo',
+              factor: _algoPeor,
+              partidos: _unosPocosPartidos),
+          EfectoDeEvento(
+              clave: 'nadie_se_desmarca',
+              factor: _algoMejor,
+              partidos: _unaRachaLarga),
+        ],
+      ),
+      OpcionDeEvento(
+        clave: 'decidir_tu',
+        efectos: [
+          EfectoDeEvento(
+              clave: 'mano_firme',
+              factor: _algoMejor,
+              partidos: _unaRachaCorta),
+          EfectoDeEvento(
+              clave: 'entrenador_dolido',
+              factor: _algoPeor,
+              partidos: _unaRachaLarga),
+        ],
+      ),
+    ],
+  ),
+
+  EventoNarrativo(
+    clave: 'metida_de_pata_en_redes',
+    cuando: (c) => c.partidosJugados >= 8,
+    opciones: const [
+      OpcionDeEvento(
+        clave: 'multarle_y_zanjarlo',
+        efectos: [
+          EfectoDeEvento(
+              clave: 'disciplina',
+              factor: _algoMejor,
+              partidos: _unaRachaLarga),
+          EfectoDeEvento(
+              clave: 'jugador_resentido',
+              factor: _algoPeor,
+              partidos: _unaRachaCorta),
+        ],
+      ),
+      // Sale caro de verdad: defenderle a él te obliga a decir en público
+      // lo que piensas del arbitraje, y eso lo paga el club.
+      OpcionDeEvento(
+        clave: 'defenderle_en_publico',
+        efectos: [
+          EfectoDeEvento(
+              clave: 'el_grupo_va_contigo',
+              factor: _muchoMejor,
+              partidos: _unaRachaCorta),
+        ],
+        bonusSalarial: _multaFuerte,
+      ),
+      OpcionDeEvento(
+        clave: 'obligarle_a_disculparse',
+        efectos: [
+          EfectoDeEvento(
+              clave: 'disculpa_forzada',
+              factor: _algoPeor,
+              partidos: _unaRachaCorta),
+          EfectoDeEvento(
+              clave: 'el_ruido_se_apaga',
+              factor: _algoMejor,
+              partidos: _unaRachaLarga),
+        ],
+      ),
+    ],
+  ),
+
+  EventoNarrativo(
+    clave: 'precio_de_las_entradas',
+    cuando: (c) => c.vaBien && c.partidosJugados >= 25,
+    opciones: const [
+      OpcionDeEvento(
+        clave: 'subirlas',
+        efectos: [
+          EfectoDeEvento(
+              clave: 'la_grada_fria',
+              factor: _algoPeor,
+              partidos: _unaRachaLarga),
+        ],
+        bonusSalarial: _bastanteDinero,
+      ),
+      OpcionDeEvento(
+        clave: 'subirlas_un_poco',
+        efectos: [
+          EfectoDeEvento(
+              clave: 'algo_de_ruido_en_la_grada',
+              factor: _algoPeor,
+              partidos: _unosPocosPartidos),
+        ],
+        bonusSalarial: _algoDeDinero,
+      ),
+      OpcionDeEvento(
+        clave: 'no_tocarlas',
+        efectos: [
+          EfectoDeEvento(
+              clave: 'la_grada_empuja',
+              factor: _algoMejor,
+              partidos: _unaRachaLarga),
+        ],
+      ),
+    ],
+  ),
+
+  EventoNarrativo(
+    clave: 'nutricionista',
+    cuando: (c) => c.partidosJugados >= 6,
+    opciones: const [
+      OpcionDeEvento(
+        clave: 'cambiarlo_todo',
+        efectos: [
+          EfectoDeEvento(
+              clave: 'protestas_en_el_comedor',
+              factor: _algoPeor,
+              partidos: _unosPocosPartidos),
+          EfectoDeEvento(
+              clave: 'plantilla_mejor_alimentada',
+              factor: _algoMejor,
+              partidos: _unaRachaLarga),
+        ],
+        bonusSalarial: _gastoModerado,
+      ),
+      OpcionDeEvento(
+        clave: 'solo_en_los_viajes',
+        efectos: [
+          EfectoDeEvento(
+              clave: 'pequeno_cambio',
+              factor: _algoMejor,
+              partidos: _unaRachaCorta),
+        ],
+      ),
+      OpcionDeEvento(
+        clave: 'dejarlo_como_esta',
+        efectos: [
+          EfectoDeEvento(
+              clave: 'rutina_intacta',
+              factor: _algoMejor,
+              partidos: _unosPocosPartidos),
+          EfectoDeEvento(
+              clave: 'mismo_de_siempre',
+              factor: _algoPeor,
               partidos: _unaRachaLarga),
         ],
       ),

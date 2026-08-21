@@ -515,52 +515,46 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
     );
   }
 
-  /// Escritorio: la identidad del equipo se queda fija en una columna a la
-  /// izquierda y el menú ocupa el resto. Estirar el diseño de móvil a 1600
-  /// px daría filas de un kilómetro con tres palabras dentro.
+  /// Escritorio: la cabecera de identidad va arriba, igual que en móvil —
+  /// el menú aprovecha el ancho de sobra con más columnas por fila, no con
+  /// una columna fija a un lado.
   Widget _anchoDeEscritorio(
       Estilo e, EquipoInfo info, _EstadoDelHub estado) {
     final acento = colorLegibleComoTexto(info.colorSecundario, context);
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SizedBox(
-          width: 396,
-          child: _PanelIdentidad(
+    const margen = 32.0;
+
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: _CabeceraEquipo(
             equipo: widget.equipo,
             info: info,
             estado: estado,
+            margen: margen,
+            columnasDeMarcador: 4,
             onAjustes: _abrirAjustes,
           ),
         ),
-        Expanded(
-          child: CustomScrollView(
-            slivers: [
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(32, 30, 32, 32),
-                sliver: SliverList.list(children: [
-                  if (estado.proximoPartido != null)
-                    _TarjetaProximoPartido(
-                      db: widget.db,
-                      equipoUsuario: widget.equipo,
-                      partido: estado.proximoPartido!,
-                      // Ver el comentario de la otra copia de este
-                      // callback, arriba en _unaColumna.
-                      onSimulado: () {
-                        setState(() {
-                          _estadoFuture = _cargarEstado();
-                        });
-                      },
-                    ),
-                  TarjetaDeEfectosActivos(efectos: estado.efectosDeVestuario),
-                  ..._secciones(e, estado, acento,
-                      columnasFichas: 4,
-                      columnasFilas: 3,
-                      altoFicha: 190),
-                ]),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(margen, 0, margen, 32),
+          sliver: SliverList.list(children: [
+            if (estado.proximoPartido != null)
+              _TarjetaProximoPartido(
+                db: widget.db,
+                equipoUsuario: widget.equipo,
+                partido: estado.proximoPartido!,
+                // Ver el comentario de la otra copia de este callback,
+                // arriba en _unaColumna.
+                onSimulado: () {
+                  setState(() {
+                    _estadoFuture = _cargarEstado();
+                  });
+                },
               ),
-            ],
-          ),
+            TarjetaDeEfectosActivos(efectos: estado.efectosDeVestuario),
+            ..._secciones(e, estado, acento,
+                columnasFichas: 4, columnasFilas: 3, altoFicha: 190),
+          ]),
         ),
       ],
     );
@@ -768,120 +762,6 @@ class _CabeceraEquipo extends StatelessWidget {
   }
 }
 
-/// La misma información que `_CabeceraEquipo`, pero en vertical para la
-/// columna fija de escritorio.
-class _PanelIdentidad extends StatelessWidget {
-  final String equipo;
-  final EquipoInfo info;
-  final _EstadoDelHub estado;
-  final VoidCallback onAjustes;
-
-  const _PanelIdentidad({
-    required this.equipo,
-    required this.info,
-    required this.estado,
-    required this.onAjustes,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final fondo = info.colorPrimario;
-    final sobre = textoSobre(fondo);
-    final secundario = textoSecundarioSobre(fondo);
-    final acento = acentoDeEquipo(info.colorPrimario, info.colorSecundario);
-    final textos = t(context);
-
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [fondo, const Color(0xFF05070B)],
-        ),
-        border: Border(right: BorderSide(color: acento, width: 2)),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-              top: 0,
-              right: 0,
-              child: CunaEsquina(color: acento, tamano: 190, opacidad: 0.11)),
-          Positioned(
-            left: -18,
-            bottom: -30,
-            child: MonogramaFantasma(texto: equipo, tamano: 230),
-          ),
-          SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(30, 34, 30, 30),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  PlacaEquipo(
-                    codigo: equipo,
-                    primario: info.colorPrimario,
-                    secundario: info.colorSecundario,
-                    tamano: 84,
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    mayus('${info.ciudad} · ${estado.conferencia}'),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 2.6,
-                        color: acento),
-                  ),
-                  const SizedBox(height: 5),
-                  Text(
-                    mayus(info.apodo),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        fontFamily: familiaTitular,
-                        fontSize: 52,
-                        fontWeight: FontWeight.w800,
-                        height: 0.92,
-                        letterSpacing: -1,
-                        color: sobre),
-                  ),
-                  const SizedBox(height: 9),
-                  Text(
-                    estado.anioTemporada.isEmpty
-                        ? '${textos.temporada} ${estado.temporada}'
-                        : '${estado.anioTemporada} · '
-                            '${textos.temporada} ${estado.temporada}',
-                    style: TextStyle(fontSize: 13, color: secundario),
-                  ),
-                  if (estado.anillos > 0 || estado.copas > 0) ...[
-                    const SizedBox(height: 16),
-                    _Palmares(
-                        anillos: estado.anillos,
-                        copas: estado.copas,
-                        acento: acento,
-                        sobre: sobre),
-                  ],
-                  const SizedBox(height: 26),
-                  _MarcadorVertical(estado: estado, acento: acento),
-                  const SizedBox(height: 20),
-                  _BotonFantasma(
-                    icono: Icons.settings,
-                    texto: textos.ajustes,
-                    color: sobre,
-                    onTap: onAjustes,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 /// La franja de datos pegada bajo la cabecera: récord, puesto y salarial.
 class _Marcador extends StatelessWidget {
   final _EstadoDelHub estado;
@@ -965,67 +845,6 @@ class _Marcador extends StatelessWidget {
             : '${estado.entrenador} ${estado.mediaEntrenador}',
       ),
     ];
-  }
-}
-
-/// El marcador de la columna de escritorio: una fila por dato, con la cifra
-/// pegada a la derecha.
-class _MarcadorVertical extends StatelessWidget {
-  final _EstadoDelHub estado;
-  final Color acento;
-
-  const _MarcadorVertical({required this.estado, required this.acento});
-
-  @override
-  Widget build(BuildContext context) {
-    final e = Estilo.de(context);
-    final datos = _Marcador._datosDelMarcador(context, estado, e);
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.42),
-        border: Border(top: BorderSide(color: acento, width: 2)),
-      ),
-      child: Column(
-        children: [
-          for (var i = 0; i < datos.length; i++) ...[
-            if (i > 0) Container(height: 1, color: Colors.white12),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(18, 12, 18, 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(mayus(datos[i].etiqueta),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            fontSize: 9.5,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 1.7,
-                            color: Colors.white70)),
-                  ),
-                  const SizedBox(width: 10),
-                  Flexible(
-                    child: Text(
-                      datos[i].valor,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.right,
-                      style: TextStyle(
-                          fontFamily: familiaTitular,
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
-                          height: 1,
-                          color: datos[i].color ?? Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
   }
 }
 
@@ -1206,49 +1025,6 @@ class _Fila extends StatelessWidget {
                 ),
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Botón de contorno para la columna de escritorio.
-class _BotonFantasma extends StatelessWidget {
-  final IconData icono;
-  final String texto;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _BotonFantasma({
-    required this.icono,
-    required this.texto,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white.withValues(alpha: 0.07),
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          height: 46,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(border: Border.all(color: Colors.white24)),
-          child: Row(
-            children: [
-              Icon(icono, size: 18, color: color),
-              const SizedBox(width: 9),
-              Text(mayus(texto),
-                  style: TextStyle(
-                      fontFamily: familiaTitular,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.4,
-                      color: color)),
-            ],
           ),
         ),
       ),

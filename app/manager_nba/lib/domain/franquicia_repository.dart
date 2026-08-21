@@ -52,6 +52,16 @@ List<RotacionJugadorCompanion> generarRotacionAutomatica(
   final estrellaAtaqueId = porMedia.isNotEmpty ? porMedia[0].id : null;
   final estrellaDefensaId = porMedia.length > 1 ? porMedia[1].id : null;
 
+  // El sexto hombre es el mejor SUPLENTE de la rotación, no el mejor de
+  // todos: por definición no puede ser titular. Mismo motivo que las
+  // estrellas de arriba — sin esto tu equipo sale sin sexto hombre mientras
+  // los otros 29 llevan siempre el suyo (ver generarAlineacionAutomatica).
+  final suplentes = <Jugador>[
+    for (final posicion in posicionesEquipo)
+      if (porPuesto[posicion]!.length >= 2) porPuesto[posicion]![1],
+  ]..sort((a, b) => b.media.compareTo(a.media));
+  final sextoHombreId = suplentes.isNotEmpty ? suplentes[0].id : null;
+
   final filas = <RotacionJugadorCompanion>[];
   for (final posicion in posicionesEquipo) {
     final delPuesto = porPuesto[posicion]!;
@@ -64,6 +74,10 @@ List<RotacionJugadorCompanion> generarRotacionAutomatica(
       minutos: minutosPorDefectoTitular,
       esEstrellaAtaque: Value(delPuesto[0].id == estrellaAtaqueId),
       esEstrellaDefensa: Value(delPuesto[0].id == estrellaDefensaId),
+      // Explícito a false y no ausente: un titular nunca es sexto hombre,
+      // pero dejarlo ausente en vez de puesto haría que leer `.value` de
+      // esta fila reventara en vez de dar el false que le toca.
+      esSextoHombre: const Value(false),
     ));
     filas.add(RotacionJugadorCompanion.insert(
       posicion: posicion,
@@ -72,6 +86,7 @@ List<RotacionJugadorCompanion> generarRotacionAutomatica(
       minutos: 48 - minutosPorDefectoTitular,
       esEstrellaAtaque: Value(delPuesto[1].id == estrellaAtaqueId),
       esEstrellaDefensa: Value(delPuesto[1].id == estrellaDefensaId),
+      esSextoHombre: Value(delPuesto[1].id == sextoHombreId),
     ));
   }
 
@@ -95,6 +110,7 @@ Future<void> nuevaFranquicia(AppDatabase db) async {
   await db.transaction(() async {
     await db.delete(db.franquicia).go();
     await db.delete(db.rotacionJugador).go();
+    await db.delete(db.patrociniosActivos).go();
     await db.delete(db.partidosCalendario).go();
     await db.delete(db.eventosTemporada).go();
     await db.delete(db.lesiones).go();
@@ -312,6 +328,7 @@ Future<bool> repararRotacion(AppDatabase db, String equipoUsuario) async {
           minutos: f.minutos,
           esEstrellaAtaque: Value(f.esEstrellaAtaque),
           esEstrellaDefensa: Value(f.esEstrellaDefensa),
+          esSextoHombre: Value(f.esSextoHombre),
         );
 
     // El titular y el suplente de un puesto siempre tienen que sumar 48
@@ -377,6 +394,11 @@ Future<bool> repararRotacion(AppDatabase db, String equipoUsuario) async {
             Value(esElQueSeQueda && conservada.esEstrellaAtaque),
         esEstrellaDefensa:
             Value(esElQueSeQueda && conservada.esEstrellaDefensa),
+        // Un sexto hombre nunca puede ser titular: si el que se queda pasa
+        // a titular con este cambio, pierde la designación aquí en vez de
+        // colársela a un puesto donde ya no tiene sentido.
+        esSextoHombre:
+            Value(esElQueSeQueda && !esTitular && conservada.esSextoHombre),
       ));
     }
   }
@@ -416,6 +438,7 @@ sim.JugadorEnPartido _jugadorEnPartidoDesde(
   int minutos, {
   bool esEstrellaAtaque = false,
   bool esEstrellaDefensa = false,
+  bool esSextoHombre = false,
   double factorForma = 1.0,
 }) {
   return sim.JugadorEnPartido(
@@ -423,6 +446,7 @@ sim.JugadorEnPartido _jugadorEnPartidoDesde(
     minutos: minutos,
     esEstrellaAtaque: esEstrellaAtaque,
     esEstrellaDefensa: esEstrellaDefensa,
+    esSextoHombre: esSextoHombre,
     penalizacionFueraDePosicion:
         factorDePuesto(jugadorRow, posicionAsignada),
     factorForma: factorForma,
@@ -470,6 +494,7 @@ Future<sim.EquipoPartido> construirEquipoUsuarioParaFecha(
     int minutos, {
     bool esEstrellaAtaque = false,
     bool esEstrellaDefensa = false,
+    bool esSextoHombre = false,
   }) {
     return _jugadorEnPartidoDesde(
       jugadorRow,
@@ -477,6 +502,7 @@ Future<sim.EquipoPartido> construirEquipoUsuarioParaFecha(
       minutos,
       esEstrellaAtaque: esEstrellaAtaque,
       esEstrellaDefensa: esEstrellaDefensa,
+      esSextoHombre: esSextoHombre,
       factorForma: (formas[jugadorRow.id] ?? 1.0) *
           (penalizacionLeve[jugadorRow.id] ?? 1.0) *
           animo,
@@ -519,6 +545,7 @@ Future<sim.EquipoPartido> construirEquipoUsuarioParaFecha(
         filaSuplente.minutos,
         esEstrellaAtaque: filaSuplente.esEstrellaAtaque,
         esEstrellaDefensa: filaSuplente.esEstrellaDefensa,
+        esSextoHombre: filaSuplente.esSextoHombre,
       ));
       usadosIds.add(filaTitular.jugadorId);
       usadosIds.add(filaSuplente.jugadorId);
@@ -538,6 +565,7 @@ Future<sim.EquipoPartido> construirEquipoUsuarioParaFecha(
         48,
         esEstrellaAtaque: filaSuplente.esEstrellaAtaque,
         esEstrellaDefensa: filaSuplente.esEstrellaDefensa,
+        esSextoHombre: filaSuplente.esSextoHombre,
       ));
       usadosIds.add(filaSuplente.jugadorId);
     } else {

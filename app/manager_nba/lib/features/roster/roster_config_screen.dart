@@ -14,6 +14,11 @@ import '../../shared/estilo.dart';
 import '../../shared/icono_lesion.dart';
 import '../../shared/medias_jugador.dart';
 
+/// El color del sexto hombre en el selector de roles: distinto del naranja
+/// de ataque y el azul de defensa, para que los tres se distingan de un
+/// vistazo.
+const colorSextoHombre = Color(0xFF9C5FE0);
+
 class _AsignacionPuesto {
   int? titularId;
   int? suplenteId;
@@ -55,6 +60,7 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
   };
   int? _estrellaAtaqueId;
   int? _estrellaDefensaId;
+  int? _sextoHombreId;
   bool _cargandoRotacionPrevia = true;
   Map<int, Lesion> _lesionados = {};
   Map<int, EstadisticasTemporadaJugadorData> _stats = {};
@@ -107,6 +113,7 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
       }
       if (fila.esEstrellaAtaque) _estrellaAtaqueId = fila.jugadorId;
       if (fila.esEstrellaDefensa) _estrellaDefensaId = fila.jugadorId;
+      if (fila.esSextoHombre) _sextoHombreId = fila.jugadorId;
     }
     _cargandoRotacionPrevia = false;
     return plantilla;
@@ -116,6 +123,15 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
     final ids = <int>{};
     for (final a in _asignaciones.values) {
       if (a.titularId != null) ids.add(a.titularId!);
+      if (a.suplenteId != null) ids.add(a.suplenteId!);
+    }
+    return ids;
+  }
+
+  /// Solo los suplentes: es de donde puede salir el sexto hombre.
+  Set<int> get _suplentesAsignados {
+    final ids = <int>{};
+    for (final a in _asignaciones.values) {
       if (a.suplenteId != null) ids.add(a.suplenteId!);
     }
     return ids;
@@ -262,6 +278,7 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
     setState(() {
       _estrellaAtaqueId = null;
       _estrellaDefensaId = null;
+      _sextoHombreId = null;
       for (final fila in filas) {
         final asignacion = _asignaciones[fila.posicion.value]!;
         if (fila.esTitular.value) {
@@ -275,6 +292,9 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
         }
         if (fila.esEstrellaDefensa.value) {
           _estrellaDefensaId = fila.jugadorId.value;
+        }
+        if (fila.esSextoHombre.value) {
+          _sextoHombreId = fila.jugadorId.value;
         }
       }
     });
@@ -300,6 +320,7 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
         minutos: a.minutosSuplente,
         esEstrellaAtaque: Value(_estrellaAtaqueId == a.suplenteId),
         esEstrellaDefensa: Value(_estrellaDefensaId == a.suplenteId),
+        esSextoHombre: Value(_sextoHombreId == a.suplenteId),
       ));
     }
 
@@ -448,10 +469,13 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
           idsAsignados: _todosLosAsignados,
           estrellaAtaqueId: _estrellaAtaqueId,
           estrellaDefensaId: _estrellaDefensaId,
+          idsSuplentes: _suplentesAsignados,
+          sextoHombreId: _sextoHombreId,
           onCambiarEstrellaAtaque: (id) =>
               setState(() => _estrellaAtaqueId = id),
           onCambiarEstrellaDefensa: (id) =>
               setState(() => _estrellaDefensaId = id),
+          onCambiarSextoHombre: (id) => setState(() => _sextoHombreId = id),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
@@ -707,21 +731,12 @@ class _HuecoJugador extends StatelessWidget {
                     ),
                     if (jugador != null) ...[
                       const SizedBox(height: 5),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 4,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          MediasAtaqueDefensa.de(jugador!, compacto: true),
-                          Text(
-                            jugador!.dorsal == null
-                                ? etiquetaPosicion(jugador!)
-                                : '${etiquetaPosicion(jugador!)} · '
-                                    '#${jugador!.dorsal}',
-                            style:
-                                TextStyle(fontSize: 11, color: e.textoTenue),
-                          ),
-                        ],
+                      Text(
+                        jugador!.dorsal == null
+                            ? etiquetaPosicion(jugador!)
+                            : '${etiquetaPosicion(jugador!)} · '
+                                '#${jugador!.dorsal}',
+                        style: TextStyle(fontSize: 11, color: e.textoTenue),
                       ),
                     ],
                     if (lineaAviso != null) ...[
@@ -806,27 +821,44 @@ class _EstadisticasTab extends StatelessWidget {
 
 /// Las dos estrellas de la rotación: a quién se le da la bola y a quién le
 /// toca el mejor del rival.
+/// Por debajo de esto los tres selectores se apilan en vez de ir en fila:
+/// con las tres columnas seguidas el desplegable del sexto hombre se
+/// quedaba sin sitio para su etiqueta en un móvil.
+const _anchoMinimoParaTresSelectores = 520.0;
+
 class _SelectorEstrellas extends StatelessWidget {
   final Map<int, Jugador> jugadoresPorId;
   final Set<int> idsAsignados;
   final int? estrellaAtaqueId;
   final int? estrellaDefensaId;
+
+  /// Solo suplentes: un titular no puede ser sexto hombre por definición.
+  final Set<int> idsSuplentes;
+  final int? sextoHombreId;
   final void Function(int?) onCambiarEstrellaAtaque;
   final void Function(int?) onCambiarEstrellaDefensa;
+  final void Function(int?) onCambiarSextoHombre;
 
   const _SelectorEstrellas({
     required this.jugadoresPorId,
     required this.idsAsignados,
     required this.estrellaAtaqueId,
     required this.estrellaDefensaId,
+    required this.idsSuplentes,
+    required this.sextoHombreId,
     required this.onCambiarEstrellaAtaque,
     required this.onCambiarEstrellaDefensa,
+    required this.onCambiarSextoHombre,
   });
 
   @override
   Widget build(BuildContext context) {
     final e = Estilo.de(context);
     final candidatos = idsAsignados.toList()
+      ..sort((a, b) => jugadoresPorId[a]!
+          .nombreFicticio
+          .compareTo(jugadoresPorId[b]!.nombreFicticio));
+    final candidatosSuplentes = idsSuplentes.toList()
       ..sort((a, b) => jugadoresPorId[a]!
           .nombreFicticio
           .compareTo(jugadoresPorId[b]!.nombreFicticio));
@@ -840,6 +872,7 @@ class _SelectorEstrellas extends StatelessWidget {
       required String etiqueta,
       required Color color,
       required int? valor,
+      required List<int> opciones,
       required void Function(int?) onChanged,
     }) {
       return Column(
@@ -870,10 +903,10 @@ class _SelectorEstrellas extends StatelessWidget {
                   borderRadius: BorderRadius.zero,
                   borderSide: BorderSide(color: color, width: 2)),
             ),
-            initialValue: candidatos.contains(valor) ? valor : null,
+            initialValue: opciones.contains(valor) ? valor : null,
             items: [
               item(null, t(context).ningunaOpcion),
-              ...candidatos
+              ...opciones
                   .map((id) => item(id, jugadoresPorId[id]!.nombreFicticio)),
             ],
             onChanged: onChanged,
@@ -882,34 +915,57 @@ class _SelectorEstrellas extends StatelessWidget {
       );
     }
 
+    final selectorAtaque = selector(
+      etiqueta: t(context).estrellaAtaqueLabel,
+      color: colorAtaque,
+      valor: estrellaAtaqueId,
+      opciones: candidatos,
+      onChanged: onCambiarEstrellaAtaque,
+    );
+    final selectorDefensa = selector(
+      etiqueta: t(context).estrellaDefensaLabel,
+      color: colorDefensa,
+      valor: estrellaDefensaId,
+      opciones: candidatos,
+      onChanged: onCambiarEstrellaDefensa,
+    );
+    final selectorSextoHombre = selector(
+      etiqueta: t(context).sextoHombreLabel,
+      color: colorSextoHombre,
+      valor: sextoHombreId,
+      opciones: candidatosSuplentes,
+      onChanged: onCambiarSextoHombre,
+    );
+
     return Container(
       decoration: BoxDecoration(
         color: e.marcador,
         border: Border(top: BorderSide(color: e.lineaFuerte)),
       ),
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: selector(
-              etiqueta: t(context).estrellaAtaqueLabel,
-              color: colorAtaque,
-              valor: estrellaAtaqueId,
-              onChanged: onCambiarEstrellaAtaque,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: selector(
-              etiqueta: t(context).estrellaDefensaLabel,
-              color: colorDefensa,
-              valor: estrellaDefensaId,
-              onChanged: onCambiarEstrellaDefensa,
-            ),
-          ),
-        ],
-      ),
+      child: LayoutBuilder(builder: (context, restricciones) {
+        final selectores = [selectorAtaque, selectorDefensa, selectorSextoHombre];
+        if (restricciones.maxWidth < _anchoMinimoParaTresSelectores) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (var i = 0; i < selectores.length; i++) ...[
+                if (i > 0) const SizedBox(height: 10),
+                selectores[i],
+              ],
+            ],
+          );
+        }
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (var i = 0; i < selectores.length; i++) ...[
+              if (i > 0) const SizedBox(width: 12),
+              Expanded(child: selectores[i]),
+            ],
+          ],
+        );
+      }),
     );
   }
 }

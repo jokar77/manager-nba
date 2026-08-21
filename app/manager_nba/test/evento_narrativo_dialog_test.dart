@@ -3,6 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:manager_nba/domain/eventos_narrativos_repository.dart';
 import 'package:manager_nba/features/temporada/evento_narrativo_dialog.dart';
+import 'package:manager_nba/i18n/textos_eventos.dart';
+
+/// Sin envolver la pantalla en `Idiomas`, `t(context)` cae en español (ver
+/// el `orElse` de `Idiomas.de`), así que es el guion español el que se
+/// pinta y el que hay que buscar en pantalla.
+const _guion = EventosEs();
 
 /// Los mismos tres tamaños que vigila `adaptacion_movil_test.dart`. Un
 /// desborde de layout sale como excepción en un test, así que montar el
@@ -21,10 +27,14 @@ void main() {
   /// este, caben todos.
   EventoNarrativo elMasLargo() {
     final ordenados = [...catalogoDeEventos]..sort((a, b) {
-        int peso(EventoNarrativo e) =>
-            e.opciones.length * 1000 +
-            e.texto.length +
-            e.opciones.fold<int>(0, (a, o) => a + o.etiqueta.length);
+        int peso(EventoNarrativo e) {
+          final texto = _guion.de(e.clave);
+          return e.opciones.length * 1000 +
+              texto.texto.length +
+              e.opciones.fold<int>(
+                  0, (a, o) => a + texto.opciones[o.clave]!.etiqueta.length);
+        }
+
         return peso(b).compareTo(peso(a));
       });
     return ordenados.first;
@@ -61,9 +71,10 @@ void main() {
       await tester.tap(find.text('abrir'));
       await tester.pumpAndSettle();
 
-      expect(find.text(evento.titulo), findsOneWidget);
+      expect(find.text(_guion.de(evento.clave).titulo), findsOneWidget);
       for (final opcion in evento.opciones) {
-        expect(find.text(opcion.etiqueta), findsOneWidget);
+        expect(find.text(_guion.opcion(evento.clave, opcion.clave).etiqueta),
+            findsOneWidget);
       }
     });
 
@@ -87,9 +98,14 @@ void main() {
       await tester.tap(find.text('abrir'));
       await tester.pumpAndSettle();
 
-      expect(find.text(conMasEfectos.$2.consecuencia), findsOneWidget);
+      expect(
+          find.text(_guion
+              .opcion(conMasEfectos.$1.clave, conMasEfectos.$2.clave)
+              .consecuencia),
+          findsOneWidget);
       for (final efecto in conMasEfectos.$2.efectos) {
-        expect(find.text(efecto.etiqueta), findsOneWidget);
+        expect(find.text(_guion.etiquetaDeEfecto(efecto.clave)!),
+            findsOneWidget);
       }
     });
 
@@ -135,11 +151,13 @@ void main() {
 
     await tester.tap(find.text('abrir'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text(evento.opciones.first.etiqueta));
+    final primera = evento.opciones.first;
+    await tester
+        .tap(find.text(_guion.opcion(evento.clave, primera.clave).etiqueta));
     await tester.pumpAndSettle();
 
     expect(elegida, isNotNull);
-    expect(elegida!.etiqueta, evento.opciones.first.etiqueta);
+    expect(elegida!.clave, primera.clave);
   });
 
   testWidgets('no se puede escapar del diálogo sin elegir', (tester) async {
@@ -163,7 +181,7 @@ void main() {
     await tester.tapAt(const Offset(5, 5));
     await tester.pumpAndSettle();
 
-    expect(find.text(evento.titulo), findsOneWidget,
+    expect(find.text(_guion.de(evento.clave).titulo), findsOneWidget,
         reason: 'el diálogo tiene que seguir ahí');
   });
 
@@ -182,12 +200,8 @@ void main() {
       tester,
       _tamanos['iPhone vertical']!,
       (context) => const TarjetaDeEfectosActivos(efectos: [
-        EfectoDeEvento(
-            etiqueta: 'Buen rollo en el vestuario',
-            factor: 1.02,
-            partidos: 12),
-        EfectoDeEvento(
-            etiqueta: 'Piernas cansadas', factor: 0.98, partidos: 1),
+        EfectoDeEvento(clave: 'buen_rollo', factor: 1.02, partidos: 12),
+        EfectoDeEvento(clave: 'piernas_cansadas', factor: 0.98, partidos: 1),
       ]),
     );
 
@@ -196,5 +210,27 @@ void main() {
     expect(find.text('12 partidos'), findsOneWidget);
     // Singular cuando queda uno: "1 partidos" se lee fatal.
     expect(find.text('1 partido'), findsOneWidget);
+  });
+
+  testWidgets('un efecto de una partida vieja, sin clave, se sigue leyendo',
+      (tester) async {
+    // Para esto existe la migración aditiva del esquema 28: las filas
+    // guardadas antes de que los efectos tuvieran clave solo tienen la
+    // etiqueta ya escrita, y no hay forma de adivinar a qué efecto del
+    // catálogo correspondían. Se enseñan tal cual —en español, sin
+    // traducir— en vez de dejar el hueco en blanco o pintar la clave.
+    await montar(
+      tester,
+      _tamanos['iPhone vertical']!,
+      (context) => const TarjetaDeEfectosActivos(efectos: [
+        EfectoDeEvento(
+            clave: '',
+            factor: 1.02,
+            partidos: 4,
+            etiquetaGuardada: 'Algo que ya no está en el catálogo'),
+      ]),
+    );
+
+    expect(find.text('Algo que ya no está en el catálogo'), findsOneWidget);
   });
 }

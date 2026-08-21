@@ -341,6 +341,30 @@ void main() {
     }
   });
 
+  test('generarRotacionAutomatica marca al sexto hombre, y siempre es un '
+      'suplente', () async {
+    for (final equipo in ['DEN', 'LAL', 'CLE']) {
+      final plantilla = await plantillaDe(equipo);
+      final filas = generarRotacionAutomatica(plantilla);
+
+      final sextos = filas.where((f) => f.esSextoHombre.value).toList();
+      expect(sextos, hasLength(1), reason: '$equipo: un sexto hombre');
+      expect(sextos.first.esTitular.value, isFalse,
+          reason: 'el sexto hombre nunca puede ser titular');
+
+      // Y es el mejor de los cinco suplentes, no el mejor de la plantilla
+      // entera.
+      final porId = {for (final j in plantilla) j.id: j};
+      final mediasDeSuplentes = filas
+          .where((f) => !f.esTitular.value)
+          .map((f) => porId[f.jugadorId.value]!.media)
+          .toList()
+        ..sort((a, b) => b.compareTo(a));
+      expect(porId[sextos.first.jugadorId.value]!.media,
+          mediasDeSuplentes.first);
+    }
+  });
+
   test('generarRotacionAutomatica no manda a nadie fuera de su sitio '
       'teniendo natural disponible, y cubre los 10 huecos', () async {
     final plantilla = await plantillaDe('DEN');
@@ -632,5 +656,22 @@ void main() {
         reason: 'jugador $id en puesto ${fila.posicion.value}',
       );
     }
+  });
+
+  test('construirEquipoUsuario lleva el sexto hombre de la rotación guardada '
+      'al equipo de sim_engine', () async {
+    final plantilla = await plantillaDe('DEN');
+    final filas = generarRotacionAutomatica(plantilla);
+    await guardarRotacion(db, filas);
+
+    final sextoHombreId =
+        filas.firstWhere((f) => f.esSextoHombre.value).jugadorId.value;
+
+    final equipo =
+        await construirEquipoUsuarioParaFecha(db, 'DEN', DateTime(2026, 10, 21));
+
+    final marcados = equipo.jugadores.where((j) => j.esSextoHombre).toList();
+    expect(marcados, hasLength(1));
+    expect(marcados.first.jugador.id, sextoHombreId.toString());
   });
 }

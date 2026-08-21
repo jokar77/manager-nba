@@ -146,18 +146,16 @@ void main() {
             reason: '$nombre: la marca sobre el fondo');
       });
 
-      test('modo $nombre: la cifra de cada placa de media se lee', () {
-        // Una placa por tramo, con un valor de dentro de cada uno.
-        for (final media in [98, 87, 82, 71]) {
-          final placa = e.placaDeMedia(media);
-          expect(_contraste(placa.texto, placa.fondo),
-              greaterThanOrEqualTo(4.5),
-              reason: '$nombre: el $media dentro de su placa');
-          // Y la placa tiene que despegarse del panel donde se apoya, o un
-          // 82 gris sobre panel gris no se ve como placa.
-          expect(_contraste(placa.fondo, e.panel), greaterThanOrEqualTo(1.25),
-              reason: '$nombre: la placa del $media contra el panel');
-        }
+      test('modo $nombre: la cifra de la placa de media se lee', () {
+        // Un solo color de placa para cualquier media (ver
+        // `Estilo.placaFondo`/`placaTexto`): ya no hay tramos, así que
+        // basta comprobar ese único par de una vez.
+        expect(_contraste(e.placaTexto, e.placaFondo), greaterThanOrEqualTo(4.5),
+            reason: '$nombre: la cifra dentro de la placa');
+        // Y la placa tiene que despegarse del panel donde se apoya, o se
+        // confunde con el fondo en vez de verse como placa.
+        expect(_contraste(e.placaFondo, e.panel), greaterThanOrEqualTo(1.25),
+            reason: '$nombre: la placa contra el panel');
       });
     }
   });

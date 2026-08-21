@@ -3,6 +3,10 @@ import 'dart:math';
 import 'package:drift/drift.dart';
 
 import '../data/database/app_database.dart';
+// Solo para dejar la etiqueta en español guardada junto al efecto, como
+// respaldo legible; lo que se ENSEÑA se traduce en la pantalla, con el
+// idioma que tenga puesto el usuario en ese momento.
+import '../i18n/textos_eventos.dart';
 import 'entrenadores_repository.dart' show leerEntrenadorDe;
 import 'eventos_narrativos.dart';
 
@@ -41,9 +45,13 @@ Future<List<EfectoDeEvento>> leerEfectosActivos(AppDatabase db) async {
       .get();
   final efectos = filas
       .map((f) => EfectoDeEvento(
-          etiqueta: f.etiqueta,
+          // Las partidas anteriores a la traducción no tienen clave: se
+          // quedan con la etiqueta que guardaron, en español, y así al
+          // menos se leen. Se agotan en unos partidos.
+          clave: f.claveEfecto ?? '',
           factor: f.factor,
-          partidos: f.partidosRestantes))
+          partidos: f.partidosRestantes,
+          etiquetaGuardada: f.etiqueta))
       .toList()
     ..sort((a, b) =>
         (b.factor - 1).abs().compareTo((a.factor - 1).abs()));
@@ -203,7 +211,13 @@ Future<void> resolverEvento(
       final acotado = efecto.acotado;
       await db.into(db.efectosDeEvento).insert(EfectosDeEventoCompanion.insert(
             clave: evento.clave,
-            etiqueta: acotado.etiqueta,
+            claveEfecto: Value(acotado.clave),
+            // La etiqueta en español se sigue guardando aunque ya no se
+            // enseñe: es lo que hace que una fila de esta tabla se entienda
+            // al mirarla a mano, y el respaldo si algún día se borrara una
+            // clave del catálogo con partidas en marcha.
+            etiqueta: const EventosEs().etiquetaDeEfecto(acotado.clave) ??
+                acotado.clave,
             factor: acotado.factor,
             partidosRestantes: acotado.partidos,
           ));

@@ -9,7 +9,6 @@ import '../../shared/contraste.dart';
 import '../../shared/estilo.dart';
 import '../../i18n/textos.dart';
 import '../../shared/entrenador_ui.dart';
-import '../../shared/medias_jugador.dart';
 
 /// Plantilla completa de un equipo antes de confirmarlo: nombre, posición
 /// y media de cada jugador, con la opción de elegir ese equipo o volver a
@@ -231,17 +230,8 @@ class _FilaDeJugador extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: titular(e, tamano: 16)),
                   const SizedBox(height: 4),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 4,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      MediasAtaqueDefensa.de(jugador, compacto: true),
-                      Text(etiquetaPosicion(jugador),
-                          style:
-                              TextStyle(fontSize: 11, color: e.textoTenue)),
-                    ],
-                  ),
+                  Text(etiquetaPosicion(jugador),
+                      style: TextStyle(fontSize: 11, color: e.textoTenue)),
                 ],
               ),
             ),

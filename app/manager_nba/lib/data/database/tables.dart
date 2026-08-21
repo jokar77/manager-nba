@@ -58,6 +58,13 @@ class Jugadores extends Table {
   /// otro. Se pone a cero cuando firma.
   IntColumn get ofertasRechazadas => integer().withDefault(const Constant(0))();
 
+  /// Fecha (de la liga, no del reloj real) en la que fichó como agente
+  /// libre por el equipo con el que está ahora. Null para quien nunca ha
+  /// fichado así —importado, drafteado, o simplemente renovado con su
+  /// equipo—: esos no tienen restricción de traspaso por esto. Ver
+  /// [traspasos_repository.dart].
+  DateTimeColumn get fechaFichaje => dateTime().nullable()();
+
   /// Crédito de carrera anterior a tu partida, de cara al Hall of Fame.
   ///
   /// Sin esto, las leyendas que ya están al final de su carrera —LeBron,
@@ -243,6 +250,29 @@ class RotacionJugador extends Table {
       boolean().withDefault(const Constant(false))();
   BoolColumn get esEstrellaDefensa =>
       boolean().withDefault(const Constant(false))();
+
+  /// El sexto hombre: el primer suplente que entra a anotar. Igual que las
+  /// estrellas de arriba, es una designación tuya, no algo que calcule el
+  /// motor solo — pero a diferencia de ellas, solo puede recaer en un
+  /// suplente (lo valida la capa de dominio: un titular ya tiene su propio
+  /// rol, no "sale del banquillo").
+  BoolColumn get esSextoHombre =>
+      boolean().withDefault(const Constant(false))();
+}
+
+/// Las categorías de patrocinio activas ahora mismo (estadio, camiseta,
+/// bebida, ocio — ver `domain/patrocinadores.dart`). Una fila por categoría
+/// activa; si la categoría no tiene fila, está desactivada. Es del equipo
+/// del usuario únicamente — los otros 29 no eligen patrocinadores — así
+/// que, igual que `RotacionJugador`, no lleva columna de equipo.
+class PatrociniosActivos extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get categoria => text()();
+
+  @override
+  List<Set<Column>> get uniqueKeys => [
+        {categoria},
+      ];
 }
 
 /// Un partido de la temporada de [equipoPropietario] (los 30 equipos
@@ -352,7 +382,7 @@ class SeriesPlayoffs extends Table {
 /// idioma.
 class Ajustes extends Table {
   IntColumn get id => integer().withDefault(const Constant(0))();
-  BoolColumn get modoOscuro => boolean().withDefault(const Constant(false))();
+  BoolColumn get modoOscuro => boolean().withDefault(const Constant(true))();
   /// 'es' o 'en' — el selector real llega en la Fase 3b.
   TextColumn get idioma => text().withDefault(const Constant('es'))();
 
@@ -444,7 +474,19 @@ class EfectosDeEvento extends Table {
   /// Que evento lo produjo. Solo para poder contarlo; no se usa como clave.
   TextColumn get clave => text()();
 
+  /// Cual de los efectos del catalogo es ('buen_rollo'), para buscar su
+  /// nombre en el idioma que tenga puesto el usuario.
+  ///
+  /// Nullable por las partidas empezadas antes de que los eventos se
+  /// tradujeran: aquellas filas solo guardaron [etiqueta], ya escrita en
+  /// espanol, y no hay forma de adivinar a que efecto correspondian.
+  TextColumn get claveEfecto => text().nullable()();
+
   /// Como se llama en pantalla ("Buen rollo en el vestuario").
+  ///
+  /// Desde que existe [claveEfecto] es solo el respaldo: se escribe en
+  /// espanol para que la fila se entienda al mirar la base de datos a mano,
+  /// pero lo que se ensena sale de traducir la clave.
   TextColumn get etiqueta => text()();
 
   /// Multiplicador sobre el estado de forma de cada jugador del equipo.

@@ -7,6 +7,14 @@ class JugadorEnPartido {
   final bool esEstrellaAtaque;
   final bool esEstrellaDefensa;
 
+  /// El sexto hombre: el primer suplente que entra a anotar. Da el mismo
+  /// empujón individual al reparto de puntos que [esEstrellaAtaque] (ver
+  /// [PesosAtributos.multiplicadorEstrellaIndividual] en
+  /// `simulador_partido.dart`), pero no toca el rating de equipo — es una
+  /// chispa de anotación puntual desde el banquillo, no un titular con más
+  /// peso.
+  final bool esSextoHombre;
+
   /// Multiplicador (0.0-1.0) aplicado a sus índices ofensivo/defensivo y a
   /// su reparto de estadísticas cuando juega fuera de su posición natural.
   /// 1.0 = sin penalización. La app decide este valor comparando el puesto
@@ -26,6 +34,7 @@ class JugadorEnPartido {
     required this.minutos,
     this.esEstrellaAtaque = false,
     this.esEstrellaDefensa = false,
+    this.esSextoHombre = false,
     this.penalizacionFueraDePosicion = 1.0,
     this.factorForma = 1.0,
   })  : assert(minutos >= 0 && minutos <= 48,

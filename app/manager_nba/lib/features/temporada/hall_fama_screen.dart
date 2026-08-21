@@ -375,65 +375,27 @@ class _FilaMiembro extends StatelessWidget {
             ],
           ],
         ),
-        // Negativo marca historia real (el año de verdad en que entró,
-        // ver legado_historico_repository.dart); las temporadas de tu
-        // partida siempre son positivas.
-        // Dos líneas: el año de entrada SIEMPRE, y debajo sus números si
-        // los hay.
+        // Solo el año de entrada, siempre — nada de temporadas ni de
+        // promedios aquí: eso vive en la ficha, a un toque de distancia
+        // (ver CarreraJugadorScreen). Negativo marca historia real (el año
+        // de verdad en que entró, ver legado_historico_repository.dart);
+        // las temporadas de tu partida siempre son positivas.
         //
-        // Antes era una sola línea y excluyente: quien tenía carrera
-        // guardada enseñaba estadísticas y quien no, el año. Resultado: los
-        // que entraban jugando tu partida —justo los tuyos— eran los
-        // únicos sin año. Y a quien no tiene estadísticas registradas le
-        // salía "0.0 pts · 0.0 ast · 0.0 reb", que es peor que no poner
-        // nada: parece un jugador que no anotó en 21 temporadas.
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              // Corto a propósito: en un móvil la tarjeta da para una
-              // línea, y "Entró en el Hall of Fame real en 1996" se
-              // cortaba a la mitad. Negativo = año real; positivo = una
-              // temporada de tu partida, que se traduce a año.
-              // Siempre un año a secas, igual que las leyendas reales
-              // ("Entró en 2026"): la entrada al Hall of Fame es el verano
-              // SIGUIENTE a la temporada, de ahí el +1. Poner aquí
-              // "2026-27" haría que dos filas de la misma lista usaran dos
-              // formatos distintos para lo mismo.
-              t(context).entroEnAnio(
-                  miembro.temporadaIngreso < 0
-                      ? -miembro.temporadaIngreso
-                      : anioDeTemporadaDesde(
-                              temporadaActual, miembro.temporadaIngreso) +
-                          1),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            // Al recién inducido solo se le pone el año. El día que entras
-            // en el Hall of Fame la noticia es ESA, y una segunda línea de
-            // promedios la diluye; sus números están a un toque, en la
-            // ficha. Además es justo el caso en el que peor salían: un
-            // jugador que acaba de entrar dentro de tu partida puede no
-            // tener promedios archivados todavía y ahí es donde aparecía
-            // el "21 temporadas · 0.0 pts · 0.0 ast".
-            if (!esNuevo && c != null && _tieneNumeros(c))
-              Text(
-                t(context).anios(c.temporadasTotales) +
-                    t(context).statsCarreraSufijo(
-                        c.puntosPorPartido.toStringAsFixed(1),
-                        c.asistenciasPorPartido.toStringAsFixed(1),
-                        c.rebotesPorPartido.toStringAsFixed(1)) +
-                    (c.anillos.isEmpty
-                        ? ''
-                        : ' · ${t(context).anillos(c.anillos.length)}'),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              )
-            else if (!esNuevo && c != null && c.temporadasTotales > 0)
-              Text(t(context).anios(c.temporadasTotales),
-                  maxLines: 1, overflow: TextOverflow.ellipsis),
-          ],
+        // Corto a propósito: en un móvil la tarjeta da para una línea, y
+        // "Entró en el Hall of Fame real en 1996" se cortaba a la mitad.
+        // Siempre un año a secas, igual que las leyendas reales ("Entró en
+        // 2026"): la entrada al Hall of Fame es el verano SIGUIENTE a la
+        // temporada, de ahí el +1. Poner aquí "2026-27" haría que dos filas
+        // de la misma lista usaran dos formatos distintos para lo mismo.
+        subtitle: Text(
+          t(context).entroEnAnio(
+              miembro.temporadaIngreso < 0
+                  ? -miembro.temporadaIngreso
+                  : anioDeTemporadaDesde(
+                          temporadaActual, miembro.temporadaIngreso) +
+                      1),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
         trailing: const Icon(Icons.chevron_right),
         onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
@@ -449,15 +411,3 @@ class _FilaMiembro extends StatelessWidget {
     );
   }
 }
-
-
-/// ¿La carrera guardada trae números de verdad?
-///
-/// Las leyendas reales importadas tienen las temporadas contadas pero no
-/// siempre los promedios, y enseñar "0.0 pts · 0.0 ast · 0.0 reb" de
-/// alguien con 21 temporadas es peor que no enseñar nada: se lee como que
-/// no anotó nunca, no como que falta el dato.
-bool _tieneNumeros(CarreraJugador c) =>
-    c.puntosPorPartido > 0 ||
-    c.asistenciasPorPartido > 0 ||
-    c.rebotesPorPartido > 0;

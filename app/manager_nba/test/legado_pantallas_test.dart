@@ -130,12 +130,12 @@ void main() {
         reason: 'el número 1 del ranking de puntos');
   });
 
-  testWidgets('a un recién inducido solo se le pone el año: ni temporadas '
-      'ni promedios debajo', (tester) async {
-    // Las leyendas reales importadas no traen carrera archivada, así que
-    // nunca llevan segunda línea. El caso del bug es el otro: alguien
-    // inducido DENTRO de la partida, que sí tiene temporadas guardadas.
-    // Se monta uno a mano.
+  testWidgets(
+      'en la lista del Hall of Fame solo se ve el año: ni temporadas ni '
+      'promedios debajo, tenga o no carrera archivada', (tester) async {
+    // Un inducido DENTRO de la partida, con carrera y estadísticas
+    // guardadas de sobra: es el caso que antes sí mostraba una segunda
+    // línea con temporadas y promedios. Se monta a mano.
     final jugador = (await (db.select(db.jugadores)..limit(1)).getSingle());
     await db.into(db.historialEstadisticasJugador).insert(
         HistorialEstadisticasJugadorCompanion.insert(
@@ -154,20 +154,8 @@ void main() {
         temporadaIngreso: 3,
         puntuacion: 90));
 
-    // Sin marcarlo como nuevo: le sale la segunda línea con sus números.
-    // Sin esta comprobación el resto del test podría pasar por vacío.
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(body: HallDeLaFamaBody(db: db)),
-    ));
-    await asentar(tester);
-    expect(find.textContaining(' pts · '), findsWidgets,
-        reason: 'un inducido de la partida sí enseña sus promedios');
-
-    // Y ahora el mismo, marcado como recién inducido: solo el año.
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(
-        body: HallDeLaFamaBody(db: db, nuevosIds: {jugador.id}),
-      ),
     ));
     await asentar(tester);
 
@@ -175,7 +163,8 @@ void main() {
     expect(find.textContaining('Entró en'), findsWidgets,
         reason: 'el año se queda: es justo lo único que debe verse');
     expect(find.textContaining(' pts · '), findsNothing,
-        reason: 'a un recién inducido no se le ponen los promedios');
+        reason: 'la lista ya no enseña promedios, aunque haya carrera '
+            'archivada — eso vive en la ficha, a un toque de distancia');
     expect(find.textContaining('temporadas'), findsNothing,
         reason: 'ni el recuento de temporadas suelto');
   });

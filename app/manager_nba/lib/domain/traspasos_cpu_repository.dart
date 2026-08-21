@@ -2,6 +2,7 @@ import 'dart:math';
 
 import '../data/database/app_database.dart';
 import 'posiciones.dart';
+import 'restriccion_de_fichaje.dart';
 import 'traspasos_repository.dart';
 
 /// Cuánto tiene que separarse un puesto de la media del equipo para
@@ -194,8 +195,14 @@ List<String> _puestosQueFaltan(List<Jugador> plantilla) {
   final candidatosB = _excedenteDe(plantillaB, puestoQueSaleDeB);
 
   for (final ja in candidatosA) {
+    if (restriccionDeFichajeReciente(ja, mercado.fechaActual) != null) {
+      continue;
+    }
     final valorA = valorDeTraspaso(ja);
     for (final jb in candidatosB) {
+      if (restriccionDeFichajeReciente(jb, mercado.fechaActual) != null) {
+        continue;
+      }
       final valorB = valorDeTraspaso(jb);
       final referencia = max(valorA, valorB);
       if (referencia <= 0) continue;

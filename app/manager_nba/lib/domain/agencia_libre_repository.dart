@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:drift/drift.dart';
 
 import '../data/database/app_database.dart';
+import 'calendario_repository.dart' show fechaActualDeLaLiga;
 import 'contratos_repository.dart';
 import 'draft_repository.dart';
 import 'equipos_especiales.dart';
@@ -110,6 +111,7 @@ Future<int?> ficharAgenteLibre(
   if (!await puedeAsumir(db, equipo, precio)) return null;
 
   final aniosFirmados = anios ?? aniosContratoEstimados(edad: jugador.edad);
+  final fechaFichaje = await fechaActualDeLaLiga(db) ?? DateTime.now();
   await (db.update(db.jugadores)..where((t) => t.id.equals(jugadorId)))
       .write(JugadoresCompanion(
     equipo: Value(equipo),
@@ -118,6 +120,7 @@ Future<int?> ficharAgenteLibre(
     ofertasRechazadas: const Value(0),
     // El dorsal se reasigna aquí debajo: el suyo puede estar cogido.
     dorsal: const Value(null),
+    fechaFichaje: Value(fechaFichaje),
   ));
 
   await sanearTrasMovimientoDePlantilla(db);
@@ -193,6 +196,7 @@ Future<RespuestaFichaje> ofrecerContratoFichaje(
   );
 
   if (rng.nextDouble() < probabilidad) {
+    final fechaFichaje = await fechaActualDeLaLiga(db) ?? DateTime.now();
     await (db.update(db.jugadores)..where((t) => t.id.equals(jugadorId)))
         .write(JugadoresCompanion(
       equipo: Value(equipo),
@@ -201,6 +205,7 @@ Future<RespuestaFichaje> ofrecerContratoFichaje(
       ofertasRechazadas: const Value(0),
       // El dorsal se reasigna en el saneo: el suyo puede estar cogido aquí.
       dorsal: const Value(null),
+      fechaFichaje: Value(fechaFichaje),
     ));
     await sanearTrasMovimientoDePlantilla(db, random: rng);
     return RespuestaFichaje(

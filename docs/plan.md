@@ -3296,8 +3296,9 @@ Estos son anteriores al rediseño y siguen sin resolver:
   falta que el usuario lo pruebe en su móvil con el idioma en chino.
 - **No hay copia de seguridad de partidas** (aparcado a propósito: el plan
   es sacar el juego como app nativa).
-- El catálogo de eventos narrativos (`lib/domain/eventos_narrativos.dart`,
-  ~250 líneas) sigue solo en castellano.
+- ~~El catálogo de eventos narrativos (`lib/domain/eventos_narrativos.dart`,
+  ~250 líneas) sigue solo en castellano.~~ **Hecho el 2026-08-21**, ver
+  "Eventos narrativos traducidos" al final.
 - Ítem 7 de la lista de bugs (ofertas de la CPU poco realistas):
   investigado, no se encontró fallo — pendiente de un ejemplo concreto del
   usuario para poder reproducirlo.
@@ -3383,3 +3384,856 @@ y después, no una cifra fija).
 
 Verificación: `flutter analyze` limpio, **509 tests en verde** (3 nuevos de
 la tarjeta) y la web compila.
+
+## Lista bugs/mejora 12 (a 2026-08-20, de `lista_bugs_mejora_12.txt`)
+
+Por orden de más a menos importante:
+
+1. **Ofertas de traspaso**: cuando llega una oferta por un jugador, quitar
+   las estadísticas de la temporada (puntos, asistencias, rebotes) de la
+   vista asociada a esa oferta.
+2. **Barra de simulación**: sustituir la barra horizontal indeterminada por
+   una barra de progreso segmentada. Partido a partido: cada segmento en
+   verde o rojo según victoria/derrota. Temporada completa: 82 segmentos
+   que se rellenan progresivamente.
+3. **Calendario**: en la celda de cada día, solo el número del día; quitar
+   el sufijo/prefijo que solo aparece en el ordenador (no en el móvil).
+4. **UI equipos/medias**: el color del cuadradito de media debe ser
+   siempre el mismo, independientemente de la media. Los nombres de las
+   ciudades deben mantener color legible en modo claro y oscuro.
+5. **Tema por defecto**: modo oscuro al abrir el juego por primera vez,
+   salvo que ya exista una preferencia guardada (si la última vez se dejó
+   en claro, se respeta).
+6. **Vista de escritorio**: la información del equipo aparece a la
+   izquierda; tiene que ir arriba, como en el móvil.
+
+## Lista bugs/mejora 12: los seis puntos, completos (a 2026-08-20)
+
+Los seis puntos de `lista_bugs_mejora_12.txt` (registrada más arriba) están
+hechos, con `flutter analyze` limpio y la suite completa en verde (512
+tests). **Nada de esto está commiteado** — sigue en el árbol de trabajo,
+esperando la instrucción de subir.
+
+### Punto 1 — ofertas de traspaso sin estadísticas
+
+La firma de `lineaJugadorOferta` en los siete idiomas perdió
+`pts`/`ast`/`reb`; ahora es `(nombre, posicion, media, contrato)`. Cambiado
+el único sitio que la llama, `_lineaJugador` en `ofertas_screen.dart`.
+
+### Punto 2 — barra de progreso segmentada
+
+- `BarraProgresoSimulacion` en `lib/shared/estilo.dart`: una fila de
+  `Expanded` (uno por partido), verde/rojo para los ya resueltos, gris
+  (`e.lineaFuerte`) para los pendientes. No depende del ancho — cabe igual
+  82 segmentos que 1.
+- `simularHastaConDialogo` (`lib/features/calendario/simulacion_ui.dart`)
+  gana un parámetro opcional `onProgreso` que se llama tras cada tramo
+  semanal con lo acumulado hasta ese punto. **La granularidad real es por
+  semana, no por partido individual** — no hay enganche al motor de
+  simulación para saber cuándo se resuelve cada partido suelto dentro de
+  un tramo, así que la barra avanza a saltos (uno por semana simulada), no
+  partido a partido de verdad. Decisión a propósito para no reescribir el
+  bucle de simulación (una única transacción por tramo) — documentado en
+  el comentario del propio parámetro.
+- Nueva función `partidosPendientesHasta(partidos, diaObjetivo)` en
+  `simulacion_ui.dart`, para saber de antemano cuántos segmentos pintar.
+- Conectado en `calendario_screen.dart` y `resumen_simulacion_screen.dart`.
+  **No** se ha tocado la tarjeta de próximo partido del hub — ahí siempre
+  es 1 solo partido, y un "segmento" no aporta nada.
+- `test/barra_progreso_simulacion_test.dart`: tres tests, los tres en
+  verde. El tercero (tocar "1 SEMANA" en el Calendario) NO comprueba el
+  fotograma a medio simular porque es una carrera con la base en memoria
+  (a veces la simulación de la semana entera resuelve dentro de un solo
+  `pump()`, a veces no) — solo se comprueban invariantes deterministas:
+  la barra no está antes de simular, no está después de asentarse, y el
+  récord de victorias+derrotas subió.
+
+### Punto 3 — celda del calendario sin sufijo en escritorio
+
+`_CeldaDia` en `calendario_screen.dart` pintaba, en tamaño no compacto
+(escritorio/tablet ancho), `"$dia ${diaSemanaAbrev}"` — el nombre del día
+repetido junto al número, cuando ya está en la cabecera de la columna.
+Ahora siempre pinta solo `"$dia"`, en cualquier tamaño.
+
+### Punto 4 — color uniforme de la placa de media + legibilidad de ciudad
+
+- `Estilo` perdió el sistema de tramos (`TramoDeMedia`, `tramos`,
+  `placaDeMedia`) y ganó dos campos fijos, `placaFondo`/`placaTexto`, uno
+  por tema. `PlacaMedia` los usa directamente: el cuadradito de media
+  tiene ahora el mismo color siempre, sea cual sea la cifra dentro.
+  `test/tema_claro_y_oscuro_test.dart` actualizado al nuevo API.
+- Nombre de ciudad ilegible: en `team_selector_screen.dart`, el texto de
+  la ciudad usaba `acentoDeEquipo(...)` — pensado para leerse ENCIMA del
+  color primario del club (la franja de arriba de la tarjeta) — pero el
+  texto en sí vive más abajo, sobre el panel neutro de la tarjeta. Un
+  segundo color de club oscuro se perdía en modo oscuro y uno claro en
+  modo claro. Cambiado a `colorLegibleComoTexto(info.colorSecundario,
+  context)`, que sí ajusta legibilidad contra el tema activo (ya existía
+  y se usa igual en `home_hub_screen.dart`/`clasificacion_screen.dart`).
+  Los demás sitios que usan `acentoDeEquipo` para el nombre de ciudad
+  (`home_hub_screen.dart`, `team_preview_screen.dart`,
+  `roster_config_screen.dart`) están bien tal cual: ahí el texto sí va
+  encima de la franja de color primario, que es para lo que está pensada
+  esa función.
+
+### Punto 5 — modo oscuro por defecto
+
+`leerModoOscuro` (`ajustes_repository.dart`) devolvía `false` cuando no
+había fila de ajustes guardada (primera vez). Ahora devuelve `true`. La
+columna `modoOscuro` en `tables.dart` también cambió su `withDefault` a
+`true`, para que una fila creada indirectamente (p. ej. al guardar solo el
+idioma, sin haber tocado nunca el tema) no cuele un `false` por el
+default SQL de la tabla en vez del nuevo default de la app — ambos
+tienen que coincidir. En cuanto hay una preferencia explícita guardada
+(`guardarModoOscuro`), esa manda, sea clara u oscura.
+`test/ajustes_screen_test.dart` actualizado: el test que tocaba el switch
+esperaba que arrancara en claro y pasara a oscuro con un toque; ahora
+arranca en oscuro (nada guardado) y un toque lo deja en claro.
+
+### Punto 6 — layout de escritorio: identidad arriba, no a la izquierda
+
+`_anchoDeEscritorio` en `home_hub_screen.dart` ponía la identidad del
+club (`_PanelIdentidad`) en una columna fija de 396px a la izquierda, con
+el menú a la derecha. Ahora usa `_CabeceraEquipo` — el mismo widget que ya
+usa el layout de móvil/tablet — arriba de un único `CustomScrollView`,
+igual que en móvil pero con más columnas por fila en las rejillas (4/3 en
+vez de 2-4/1-2). `_PanelIdentidad`, `_MarcadorVertical` y `_BotonFantasma`
+quedaron sin ningún uso tras el cambio y se borraron enteros (eran
+exclusivos de ese layout de columna).
+
+### Verificación
+
+`flutter analyze` limpio y `flutter test` completo en verde (512 tests,
+confirmado dos veces tras los seis puntos). No se pudo hacer una
+comprobación visual con capturas de pantalla en el navegador de
+previsualización en esta sesión —la herramienta de captura no compone
+frames cuando el panel del navegador no está siendo mostrado activamente
+al usuario, algo fuera de mi control en un turno automático—, así que la
+verificación de estos dos cambios de layout (puntos 3 y 6) se apoya en
+`tema_claro_y_oscuro_test.dart`, que monta tanto `CalendarioScreen` como
+`HomeHubScreen` en modo claro y oscuro y en los tres tamaños (móvil,
+tablet, escritorio 1600×900) comprobando que no haya overflow ni
+excepciones, más la revisión directa del código. Queda pendiente que el
+usuario le eche un ojo en `flutter run` cuando pueda.
+
+### Nota sobre el falso cuelgue de `CalendarioScreen` (ya resuelto)
+
+Antes de terminar estos cuatro puntos, un test de diagnóstico pareció
+demostrar un cuelgue infinito real de `CalendarioScreen` al montarlo con
+una franquicia recién creada (`pumpAndSettle()` que no terminaba nunca).
+**Era ruido del entorno, no un bug del calendario.** Cortar `flutter test`
+varias veces con timeouts de shell en vez de matar el proceso por PID
+había dejado procesos `dart.exe`/`flutter_tester.exe` huérfanos
+acumulados, uno de los cuales tenía bloqueado `sqlite3.dll`. Comprobado
+con `Get-Process`: CPU acumulada casi cero pese a minutos de "cuelgue"
+(síntoma de bloqueo, no de trabajo lento), y tras matar los procesos
+huérfanos y repetir exactamente la misma prueba en un entorno limpio,
+todo terminó en 2-3 segundos sin ningún cuelgue. El fallo real y rápido
+que sí apareció después en el test 3 de `barra_progreso_simulacion_test`
+era una carrera de la propia base en memoria (ver punto 2, arriba), ya
+arreglada.
+
+### Aviso operativo: procesos huérfanos de `flutter test` en Windows
+
+Pasó dos veces en esta sesión: si se corta un `flutter test` con un
+timeout externo (del propio Bash tool o de un `timeout` de shell) en vez
+de dejar que termine o usar `run_in_background`, en Windows puede dejar
+`dart.exe` y/o `flutter_tester.exe` vivos de fondo, y uno de ellos se
+queda con `build
+ative_assets\windows\sqlite3.dll` bloqueado. El
+síntoma es "Flutter failed to delete file at ...sqlite3.dll" al arrancar
+el SIGUIENTE `flutter test`, aunque ese test no tenga nada que ver.
+
+**El arreglo es siempre el mismo:**
+```
+tasklist //FI "IMAGENAME eq dart.exe"
+tasklist //FI "IMAGENAME eq flutter_tester.exe"
+taskkill //F //PID <el que aparezca>
+```
+Y si hay que cortar un test que parece colgado, mejor lanzarlo con
+`run_in_background: true` y matarlo por PID después de confirmarlo, no
+con un `timeout` de shell que corta el proceso padre pero no siempre
+arrastra al hijo.
+
+### Siguiente paso al retomar
+
+La lista `lista_bugs_mejora_12.txt` está completa (los seis puntos, ver
+arriba). Lo que queda es del usuario, no del código:
+
+1. Probar de verdad en `flutter run` — sobre todo los puntos 3 y 6
+   (cambios de layout), que no se pudieron verificar con captura de
+   pantalla en esta sesión.
+2. Decidir si se sube. Si sí: `git add` de los ficheros de abajo y
+   commit; si el mensaje debe repartirse en varios commits (uno por
+   punto, por ejemplo) o ir todo junto, es decisión del usuario.
+
+### Ficheros modificados por la lista 12
+
+Superado por la lista 13, que sigue trabajando sobre el mismo árbol sin
+commitear. Ver el listado completo y actualizado de ficheros al final de
+este documento, en "Ficheros modificados ahora mismo (listas 12 y 13,
+sin commitear)".
+
+Último commit subido: `2b1ae0d` ("Diálogos con el estilo del rediseño y
+tarjeta de próximo partido"). Todo lo de arriba es posterior y no se ha
+subido.
+
+## Lista bugs/mejora 13 (a 2026-08-20, de `lista_bugs_cambios_nba_manager_13.txt`)
+
+Por orden de más a menos importante:
+
+1. **Traspasos, restricciones reales**: un jugador recién fichado no puede
+   ser traspasado inmediatamente. Informarse y aplicar las restricciones
+   de tiempo reales de la NBA.
+2. **Hall of Fame (entrada)**: en la lista, junto al nombre solo el año de
+   entrada — nada de temporadas ni promedios ahí (eso va dentro de la
+   ficha del jugador).
+3. **Ofertas de traspaso manuales**: al buscar un traspaso a mano, debe
+   verse la misma información que en una oferta automática de la máquina.
+4. **Agencia libre**: quitar el botón "Todos" visible; por defecto se
+   muestran todos al entrar, y si se selecciona una posición y luego se
+   quita, vuelve solo a "todos". Además, el texto de los botones de
+   posición más corto para que el botón de pagar/negociar se vea claro.
+5. **Sexto hombre**: añadir su selección, igual que ya existe para
+   estrella de ataque y estrella defensiva.
+6. **Pantalla "se retiran"**: simplificar el texto — quitar frases largas
+   tipo "se retira con 43 años" y dejar solo "43 años".
+7. **Estadísticas de jugador**: quitar ataque/defensa individual de cada
+   jugador; solo se mantiene el ataque/defensa general del equipo.
+8. **Simulación pausada + ofertas**: al terminar de revisar todas las
+   ofertas que pausaron la simulación, la ventana se cierra sola y vuelve
+   al Calendario.
+9. **Patrocinios**: reducir el dinero ofrecido en los popups (6M o 3M es
+   demasiado).
+10. **Salarios de jugadores**: ajustar lo que piden en los contratos — no
+    es normal que jugadores de media alta pidan tan poco dinero.
+11. **All-Star**: rediseñar los logos de equipo del All-Star, las letras
+    no caben dentro del logo actual.
+
+## Lista bugs/mejora 13: los once puntos, completos (a 2026-08-21)
+
+Los once puntos de arriba están hechos, con `flutter analyze` limpio en los
+dos paquetes (app + sim_engine) y la suite completa en verde. **Nada de
+esto está commiteado** — sigue en el árbol de trabajo, esperando permiso
+para subir.
+
+### Punto 1 — restricciones reales de traspaso
+
+Se ha modelado UNA restricción real de la NBA, la que de verdad se nota al
+jugar: un agente libre recién fichado no se puede traspasar hasta pasados
+tres meses (regla real: tres meses desde la firma). No se ha intentado
+modelar el reglamento entero de traspasos de la NBA (derechos de tanteo,
+sign-and-trade, la regla de los mayores de 38, etc.) — es un reglamento
+enorme y la mayoría de esas reglas nunca se notarían jugando.
+
+- `Jugadores` gana `fechaFichaje` (nullable; null = nunca ha fichado como
+  agente libre, así que sin restricción — importados, drafteados y
+  renovados con su propio equipo se quedan así). Schema 24→25.
+- Nuevo fichero `lib/domain/restriccion_de_fichaje.dart`:
+  `diasMinimosTrasFichaje = 90` y `restriccionDeFichajeReciente(jugador,
+  fechaActual)`.
+- `MercadoDeTraspasos` (traspasos_repository.dart) gana `fechaActual`,
+  cargada una vez con el resto del mercado. La restricción se comprueba
+  dentro de `evaluarMultipleEnMercado`, en el mismo punto donde se resuelve
+  cada jugador del movimiento — así cubre a la vez la mesa de traspasos
+  manual, el buscador automático y las ofertas entrantes de la CPU (todas
+  pasan por ahí). También se añadió a `traspasos_cpu_repository.dart` (los
+  intercambios que la CPU cierra sola en pretemporada).
+- `agencia_libre_repository.dart` rellena `fechaFichaje` en `ficharAgenteLibre`
+  y en la rama aceptada de `ofrecerContratoFichaje`, con la fecha de LA
+  LIGA (`fechaActualDeLaLiga`, no `DateTime.now()`).
+- Tests en `test/traspasos_avanzados_test.dart` (grupo nuevo "restricción de
+  fichaje reciente"): bloqueo antes de los 3 meses, vía libre después, y
+  que fichar por agencia libre dispara la restricción de inmediato.
+
+### Punto 2 — Hall of Fame: solo el año
+
+`_FilaMiembro` en `hall_fama_screen.dart` ya no pinta una segunda línea con
+temporadas/promedios — solo el año de entrada, siempre, tenga o no carrera
+archivada. Los números siguen a un toque, en la ficha
+(`CarreraJugadorScreen`). Se borró `_tieneNumeros` (sin uso) y el método de
+i18n `statsCarreraSufijo` de los 8 idiomas (sin uso tras el cambio). Test
+de `legado_pantallas_test.dart` reescrito para la nueva regla (antes solo
+comprobaba el caso "recién inducido"; ahora comprueba que NADIE lleva
+promedios en la lista).
+
+### Punto 3 — ofertas manuales = misma información que las automáticas
+
+`HojaDePropuestas` (el buscador automático de traspasos) mostraba nombre +
+posición + media + EDAD (`jugadorConFicha`); las ofertas entrantes de la
+CPU mostraban nombre + posición + media + CONTRATO (`lineaJugadorOferta`).
+Se unificó todo en el segundo formato (contrato, no edad — es lo que de
+verdad hace falta para juzgar un traspaso, según ya explicaba el propio
+comentario de `ofertas_screen.dart`). Nueva función compartida
+`contratoEnUnaLinea` en `lib/shared/hoja_de_propuestas.dart`, usada por los
+dos sitios. Se borró `jugadorConFicha` de los 8 idiomas (sin uso).
+
+### Punto 4 — Agencia Libre: sin botón "Todos" y texto más corto
+
+- `_Filtros` ya no tiene el chip "Todos": sin filtro ya se ven todos por
+  defecto, y tocar un puesto ya seleccionado lo destoca (`onPosicion(posicion
+  == p ? null : p)`) en vez de necesitar un botón aparte.
+- El filtro "Que pueda pagar" se acortó a una palabra en los 7 idiomas
+  (ES "Asequible", EN "Affordable", etc.) para que la fila entera de chips
+  quepa sin cortarse.
+- Se borró `todosFiltro` de los 8 idiomas (sin uso).
+- Test nuevo `test/agencia_libre_filtros_test.dart`. Ojo con la lección
+  aprendida aquí: la lista de agentes libres es un `ListView`, así que
+  contar `find.byType(FilaDeJugador)` solo cuenta lo que cabe en el
+  viewport, no el total filtrado — el test se reescribió para leer el
+  contador de texto ("N de 100 agentes libres (hay filtros puestos)"), que
+  sí refleja el estado real.
+
+### Punto 5 — sexto hombre
+
+Se ha añadido igual que estrella de ataque/defensa, pero restringido a
+suplentes (un titular no puede ser sexto hombre por definición):
+
+- `RotacionJugador` gana `esSextoHombre`. Schema 25→26.
+- `sim_engine`: `JugadorEnPartido.esSextoHombre`, `EquipoPartido` valida
+  como mucho uno, y en `_statsEquipo` (simulador_partido.dart) da el MISMO
+  empujón individual al reparto de puntos que la estrella de ataque
+  (`multiplicadorEstrellaIndividual`, con un `||` para no doblar el efecto
+  si coincidiera con la estrella) — sin tocar el rating de equipo, que es
+  cosa de las estrellas, no del sexto hombre.
+- `generarRotacionAutomatica` (franquicia_repository.dart) elige como
+  sexto hombre al mejor de los 5 suplentes, igual que ya elegía a las dos
+  estrellas entre titulares y suplentes — así los 29 equipos de la CPU
+  también salen con el suyo (`generarAlineacionAutomatica` en
+  `alineacion_automatica.dart`, actualizado igual).
+  `repararRotacion` conserva la designación solo si el jugador sigue
+  siendo suplente tras el arreglo.
+- UI: `_SelectorEstrellas` en `roster_config_screen.dart` gana un tercer
+  desplegable (options = solo suplentes), con su propio color
+  (`colorSextoHombre`, morado) y se apilan en vertical en pantallas
+  estrechas (`LayoutBuilder`, antes 2 columnas fijas).
+- Tests: `sim_engine/test/simulacion_test.dart` (rechaza más de uno; anota
+  más que un compañero igual), `test/franquicia_repository_test.dart`
+  (siempre suplente, siempre el mejor de los 5, viaja hasta
+  `construirEquipoUsuarioParaFecha`), `test/sexto_hombre_test.dart`
+  (widget: alinear automáticamente + guardar lo deja en la rotación).
+- Bug encontrado y arreglado de camino: `generarRotacionAutomatica` dejaba
+  `esSextoHombre` AUSENTE (no `false`) en la fila del titular — leer
+  `.value` sobre un campo ausente revienta con "type 'Null' is not a
+  subtype of type 'bool'". Ahora va explícito a `false`.
+
+### Punto 6 — pantalla "se retiran": solo la edad
+
+`_FilaRetirado` en `retirados_screen.dart` ya no usa
+`seRetiraConEdadYMedia` (borrado de los 8 idiomas): ahora compone el
+detalle a mano con la función que YA existía para esto,
+`t(context).edadJugador(cambio.edad)` — "$procedencia · $edad años$aviso".
+La media no se repite en texto: ya sale como placa al lado (`FilaDeJugador`),
+tal y como decía el propio comentario del código.
+
+### Punto 7 — sin ataque/defensa individual de jugador
+
+Se borró la clase `MediasAtaqueDefensa` entera de `medias_jugador.dart`
+(colorAtaque/colorDefensa/mediasDe se quedan — los usa la franja de
+equipo). Sus tres usos (`agencia_libre_screen.dart`,
+`roster_config_screen.dart`, `team_preview_screen.dart`) se simplificaron
+para no mostrar ATA/DEF de cada jugador. El ataque/defensa de EQUIPO
+(`_FranjaAtaqueDefensa` en roster_config_screen.dart) no se ha tocado —
+sigue mostrando la media del quinteto y de la rotación entera, que es lo
+que pedía conservar el punto.
+
+Ojo: `atrAtaque`/`atrDefensa` de ENTRENADOR (`entrenador_screen.dart`,
+`team_preview_screen.dart`) es un concepto distinto (estilo de entrenador)
+y no se ha tocado — el punto habla de jugadores, no de entrenadores.
+
+### Punto 8 — la bandeja de ofertas se cierra sola
+
+`OfertasScreen` gana `cierraSolaAlVaciarse` (default `false`, para no
+cambiar el comportamiento de "Ofertas recibidas" desde el menú — ahí es
+una consulta voluntaria y no debe echarte fuera si vacías la bandeja).
+Activado a `true` solo en la llamada desde `simulacion_ui.dart`
+(`_avisarDeOfertasEntrantes`), que es la que pausa la simulación. Al
+resolver la última oferta pendiente en una recarga (no en la carga
+inicial: `_ofertas != null` marca que ya hubo una carga antes), hace
+`Navigator.pop()` solo. Test nuevo
+`test/ofertas_cierre_automatico_test.dart`, con las dos variantes
+(cierra sola / no cierra sola) montadas sobre una navegación real para
+poder comprobar qué pantalla queda encima.
+
+### Punto 9 — patrocinios: menos dinero
+
+Bajado dos veces por feedback directo. Primera pasada: `_bastanteDinero`
+6M→4M y `_algoDeDinero` 3M→2,5M. El usuario pidió bajarlo más (a
+2026-08-21): ahora `_bastanteDinero`=3M y `_algoDeDinero`=1,5M —por debajo
+del salario mínimo (2,3M) a propósito, el dinero de un patrocinio es sabor
+de un diálogo, no algo pensado para desbloquear un fichaje por sí solo.
+Afecta a `acto_publicitario` (el patrocinio en sí) y de paso a
+`partido_benefico`, que reutiliza las mismas constantes.
+`_multaFuerte` (-4M) no se ha tocado: el punto hablaba de dinero OFRECIDO,
+no de multas.
+
+El segundo bajón rompió un test que asumía justo lo contrario
+(`el dinero de un evento da al menos para un contrato mínimo`, en
+`test/eventos_narrativos_test.dart`): esa era la regla vieja, y ahora es
+al revés a propósito. Reescrito como
+`el dinero de un evento es un extra puntual, no una fortuna` — comprueba
+que nadie se ha ido de madre por ARRIBA (`<= salarioMinimo * 2`), no que
+llegue a un mínimo.
+
+### Punto 10 — salarios: el bug real estaba en el descuento por edad
+
+Antes de tocar nada se comprobó con un test de diagnóstico contra el
+dataset real qué pedían de verdad los jugadores top: los VETERANOS de
+media alta ya piden mucho (Doncic 98 → 70M, el techo). El bug de verdad
+estaba en jugadores JÓVENES de media alta: `salarioEstimado` aplicaba un
+descuento por edad (0,45x a 22 años o menos, 0,7x a 23-24) pensado para
+"todavía en contrato de rookie", pero se aplicaba igual a un chaval de 22
+años que YA es una media de 87 — un jugador así pedía 14,8M, MENOS que un
+rotación cualquiera de 30 años con 75 de media. Subidos a 0,65x/0,85x en
+`salarios.dart`: el descuento se mantiene (un veterano igual sigue
+cobrando más que un joven) pero ya no se desmiente a sí mismo. Test nuevo
+en `test/datos_reales_test.dart` que fija exactamente este caso: un 22
+años de 87 tiene que pedir más que un 30 años de 75.
+
+Se intentó primero bajar el umbral de "a partir de aquí es una estrella y
+no te la regalan por el mínimo" (`_mediaDeEstrellaQueFichasTu`, agencia
+libre) de 82 a 78, pensando que el problema estaba ahí — pero
+`test/tu_equipo_no_se_descuelga_test.dart` (cinco veranos sin tocar nada
+tienen que dejarte mediocre, no hundido) empezó a fallar: ese umbral está
+calibrado a propósito para que la red de seguridad de "completar plantilla
+con el mínimo" pueda rescatar tu equipo si lo abandonas. Revertido sin
+tocar — el bug real estaba en otro sitio, como se ve arriba.
+
+### Punto 11 — logos del All-Star: el texto ya se encoge para caber
+
+`PlacaEquipo` (estilo.dart), el escudo compartido de todo el juego, pinta
+el `codigo` tal cual como texto a tamaño fijo. Para las 30 franquicias
+siempre son 3 letras y cabía de sobra, pero el All-Star reutiliza el MISMO
+widget para sus "equipos" especiales (Este, Oeste, Novatos, Sophomores —
+ver `equipos_info.dart`), cuyo "código" es la palabra entera: "Sophomores"
+se salía del escudo por completo. Envuelto en un `FittedBox(fit:
+BoxFit.scaleDown)` con un pelín de padding: los códigos de 3 letras no
+cambian (ya cabían, FittedBox no los toca), y cualquier palabra más larga
+se encoge lo justo para caber. Test nuevo `test/placa_equipo_test.dart`.
+
+### Verificación
+
+`flutter analyze` limpio en `app/manager_nba` y en `app/packages/sim_engine`.
+`dart run build_runner build` corrido dos veces (schema 24→25 por el punto
+1, 25→26 por el punto 5) sin conflictos. Suite completa de la app y de
+sim_engine en verde.
+
+### Ficheros modificados (listas 12, 13 y patrocinadores)
+
+Ver el listado completo y actualizado al final de este documento — se
+quedó desfasado aquí en cuanto se sumó el sistema de patrocinadores, así
+que no se duplica.
+
+Último commit subido: `2b1ae0d` ("Diálogos con el estilo del rediseño y
+tarjeta de próximo partido"). Todo lo de arriba es posterior y no se ha
+subido. Nada se sube sin que el usuario lo pida explícitamente.
+
+## Patrocinadores (a 2026-08-21, pedido fuera de las dos listas)
+
+Sistema nuevo, no de ninguna lista de bugs: el usuario dejó una carpeta en
+el escritorio (`Desktop/MANAGER NBA/`) con un PDF de historias de marca
+ficticias para 20 ciudades (15 patrocinadores por ciudad, con nombre, año
+de fundación y anécdota) y una hoja de logos por ciudad (imagen única de
+15 logos juntos por ciudad — no son assets recortables uno a uno, así que
+no se han usado como imagen; el juego sigue sin bitmaps, todo vectorial/
+iconos como el resto del rediseño). Se pidió: patrocinadores que se eligen
+al principio de cada temporada, dan millones para la masa salarial, y se
+pueden elegir varios a la vez (el del estadio, el de las camisetas, el del
+parque, etc.).
+
+### Diseño
+
+Cuatro categorías fijas por equipo (`estadio`, `camiseta`, `bebida`,
+`ocio`), un candidato por categoría — la decisión real es QUÉ categorías
+activas, no con quién de cada una (más simple que modelar pujas entre 15
+empresas por ciudad, y ya cumple "puedes elegir varios patrocinadores").
+Bonus fijo por categoría (no por empresa): estadio 2,5M, camiseta 3M,
+bebida 1,5M, ocio 1M — hasta 8M/temporada si activas las cuatro. Se
+reeligen cada año, no se heredan solos.
+
+- `lib/domain/patrocinadores.dart`: catálogo const, 120 entradas (30
+  equipos × 4 categorías). Los 21 equipos de las 20 ciudades que cubre el
+  PDF (Los Ángeles reparte su lista entre LAL y LAC) usan datos reales del
+  PDF; los 9 que quedan fuera (ATL, BOS, BRK, CHI, CHO, DAL, DEN, DET,
+  OKC) llevan cuatro patrocinadores inventados en la sesión, mismo estilo
+  (nombre, año, anécdota atada a un sitio real de la ciudad). Las
+  historias se quedan en español — mismo criterio ya aplicado a
+  `eventos_narrativos.dart`, que sigue pendiente de traducir.
+- Tabla nueva `PatrociniosActivos` (categoria, sin columna de equipo — es
+  siempre el tuyo, igual que `RotacionJugador`). Schema 26→27.
+- `lib/domain/patrocinadores_repository.dart`: leer/activar-desactivar/
+  bonus/limpiar. El bonus se sube a `espacioSalarial`
+  (`contratos_repository.dart`), acumulado con el de los eventos
+  narrativos, no en su lugar.
+- Se limpian en `nuevaFranquicia` (equipo nuevo) y en
+  `empezarNuevaTemporada` (cada cambio de año) — hay que volver a
+  elegirlos siempre.
+- Pantalla nueva `PatrocinadoresScreen`
+  (`lib/features/temporada/patrocinadores_screen.dart`): cuatro tarjetas
+  con interruptor, nombre, año, historia y el bonus de esa categoría, más
+  el margen total abajo. Enganchada en `cambio_de_temporada.dart` justo
+  después del Hall of Fame y ANTES de renovaciones (el margen tiene que
+  estar puesto antes de decidir en qué gastarlo), y en
+  `start_menu_screen.dart` para el año 1, después de guardar la rotación
+  inicial y antes de entrar al hub.
+- i18n: el título, la explicación y las cuatro etiquetas de categoría
+  están en los 8 idiomas. Los nombres y las historias de las empresas, no
+  (ver nota de arriba).
+
+### Bug real encontrado con los tests, no a ojo
+
+`alternarPatrocinio` usaba `insertOnConflictUpdate`, que en drift hace el
+upsert sobre la CLAVE PRIMARIA (`id`, autoincremental) y no sobre la
+columna con la restricción UNIQUE (`categoria`) — con un `id` nuevo cada
+vez, el conflicto de verdad (dos filas con la misma categoría) nunca lo
+detectaba el upsert y saltaba como error de SQLite en vez de actualizar.
+Arreglado borrando la fila de esa categoría antes de insertar, en vez de
+confiar en el upsert. Lo cazó el segundo test que activaba la misma
+categoría dos veces seguidas — exactamente lo que hace un usuario real al
+tocar un interruptor, cambiar de opinión, y tocarlo otra vez.
+
+También se rompió `test/flujo_completo_test.dart` (el test de extremo a
+extremo: menú → onboarding → alineación → calendario → simulación), que
+no sabía que ahora hay una pantalla nueva de por medio entre guardar la
+rotación inicial y llegar al menú principal. Arreglado añadiendo el paso
+que faltaba: esperar a "Patrocinadores" y tocar "Continuar" sin elegir
+ninguno, antes de seguir esperando a "CALENDARIO". Recordatorio para la
+próxima vez que se toque el flujo de onboarding: este test cubre el
+camino entero de verdad, así que cualquier pantalla nueva insertada ahí
+hay que enseñársela a él también.
+
+### Verificación
+
+`flutter analyze` limpio. Tests nuevos: `test/patrocinadores_test.dart`
+(el catálogo: los 30 equipos reales tienen las cuatro categorías, ni
+repetidas ni de más, sin historias vacías, sin años absurdos),
+`test/patrocinadores_repository_test.dart` (activar/desactivar, el bonus
+suma bien, llega a `espacioSalarial` solo para tu equipo, se limpia en
+franquicia nueva), `test/patrocinadores_screen_test.dart` (las cuatro
+tarjetas se ven, activar/desactivar por la UI persiste de verdad —
+incluido el caso que cazó el bug de arriba). Suite completa de la app
+corriendo para confirmar que no rompe nada del resto.
+
+### Ficheros modificados ahora mismo (listas 12, 13 y patrocinadores — sin commitear)
+
+```
+ M app/manager_nba/lib/data/database/app_database.dart
+ M app/manager_nba/lib/data/database/app_database.g.dart
+ M app/manager_nba/lib/data/database/tables.dart
+ M app/manager_nba/lib/domain/agencia_libre_repository.dart
+ M app/manager_nba/lib/domain/ajustes_repository.dart
+ M app/manager_nba/lib/domain/contratos_repository.dart
+ M app/manager_nba/lib/domain/eventos_narrativos.dart
+ M app/manager_nba/lib/domain/franquicia_repository.dart
+ M app/manager_nba/lib/domain/nueva_temporada_repository.dart
+ M app/manager_nba/lib/domain/salarios.dart
+ M app/manager_nba/lib/domain/traspasos_cpu_repository.dart
+ M app/manager_nba/lib/domain/traspasos_repository.dart
+ M app/manager_nba/lib/features/calendario/calendario_screen.dart
+ M app/manager_nba/lib/features/calendario/resumen_simulacion_screen.dart
+ M app/manager_nba/lib/features/calendario/simulacion_ui.dart
+ M app/manager_nba/lib/features/hub/home_hub_screen.dart
+ M app/manager_nba/lib/features/inicio/start_menu_screen.dart
+ M app/manager_nba/lib/features/mercado/agencia_libre_screen.dart
+ M app/manager_nba/lib/features/mercado/ofertas_screen.dart
+ M app/manager_nba/lib/features/partido/alineacion_automatica.dart
+ M app/manager_nba/lib/features/roster/roster_config_screen.dart
+ M app/manager_nba/lib/features/roster/team_preview_screen.dart
+ M app/manager_nba/lib/features/roster/team_selector_screen.dart
+ M app/manager_nba/lib/features/temporada/cambio_de_temporada.dart
+ M app/manager_nba/lib/features/temporada/hall_fama_screen.dart
+ M app/manager_nba/lib/features/temporada/retirados_screen.dart
+ M app/manager_nba/lib/i18n/textos.dart (+ los 7 idiomas)
+ M app/manager_nba/lib/shared/estilo.dart
+ M app/manager_nba/lib/shared/hoja_de_propuestas.dart
+ M app/manager_nba/lib/shared/medias_jugador.dart
+ M app/manager_nba/test/ajustes_screen_test.dart
+ M app/manager_nba/test/datos_reales_test.dart
+ M app/manager_nba/test/eventos_narrativos_test.dart
+ M app/manager_nba/test/flujo_completo_test.dart
+ M app/manager_nba/test/franquicia_repository_test.dart
+ M app/manager_nba/test/legado_pantallas_test.dart
+ M app/manager_nba/test/tema_claro_y_oscuro_test.dart
+ M app/manager_nba/test/traspasos_avanzados_test.dart
+ M app/packages/sim_engine/lib/src/models/equipo_partido.dart
+ M app/packages/sim_engine/lib/src/models/jugador_en_partido.dart
+ M app/packages/sim_engine/lib/src/simulacion/simulador_partido.dart
+ M app/packages/sim_engine/test/simulacion_test.dart
+ M docs/plan.md
+?? app/manager_nba/lib/domain/patrocinadores.dart
+?? app/manager_nba/lib/domain/patrocinadores_repository.dart
+?? app/manager_nba/lib/domain/restriccion_de_fichaje.dart
+?? app/manager_nba/lib/features/temporada/patrocinadores_screen.dart
+?? app/manager_nba/test/agencia_libre_filtros_test.dart
+?? app/manager_nba/test/barra_progreso_simulacion_test.dart
+?? app/manager_nba/test/ofertas_cierre_automatico_test.dart
+?? app/manager_nba/test/patrocinadores_repository_test.dart
+?? app/manager_nba/test/patrocinadores_screen_test.dart
+?? app/manager_nba/test/patrocinadores_test.dart
+?? app/manager_nba/test/placa_equipo_test.dart
+?? app/manager_nba/test/sexto_hombre_test.dart
+```
+
+## Eventos narrativos traducidos (a 2026-08-21)
+
+Los "mensajes espontáneos con opciones" — los eventos de vestuario que
+saltan durante la simulación — estaban **solo en castellano**, y era el
+último trozo de interfaz sin traducir. Ahora están en los siete idiomas.
+
+### El problema de meterlos en `Textos`
+
+El resto de la interfaz vive en `lib/i18n/textos.dart`: una clase abstracta
+con un método por texto, precisamente para que el compilador cante si a un
+idioma le falta algo. Con el guion de los eventos eso no valía: son **~150
+frases** (12 títulos, 12 planteamientos, 30 etiquetas de botón, 30
+consecuencias y 42 nombres de efecto). Como métodos abstractos habrían
+dejado `Textos` tres veces más larga que todo el resto junto, que es donde
+se busca de verdad cuando falta un rótulo.
+
+### Cómo quedó
+
+**El catálogo se quedó sin texto.** `lib/domain/eventos_narrativos.dart`
+son ahora solo claves, condiciones y números:
+
+```dart
+OpcionDeEvento(
+  clave: 'noche_larga',
+  efectos: [EfectoDeEvento(clave: 'buen_rollo', factor: _muchoMejor, ...)],
+)
+```
+
+Eso resuelve de paso un problema que habría aparecido enseguida: si el
+guion viviera ahí, cada evento nuevo habría que escribirlo siete veces en
+medio de la lógica, y un ajuste de equilibrio (subir un factor, acortar una
+racha) obligaría a tocar los siete sitios donde solo cambia una palabra.
+
+**El guion vive aparte**, en `lib/i18n/textos_eventos.dart` más un fichero
+por idioma (`eventos_es.dart`, `eventos_en.dart`, ...), enganchado a
+`Textos` con un solo miembro nuevo (`TextosDeEventos get eventos`).
+
+**Quién vigila qué**, ya que un mapa no lo puede comprobar el analizador:
+
+- El **compilador** sigue obligando a que cada idioma implemente los dos
+  mapas. Un idioma nuevo no compila hasta que estén.
+- Un **test nuevo** (`test/eventos_traducidos_test.dart`, 30 casos)
+  comprueba lo que el mapa no: que cada evento, cada opción de cada evento
+  y cada etiqueta de efecto existan en los siete idiomas; que no sobre
+  texto traducido que el catálogo ya no menciona (eso sería una errata en
+  una clave, y el texto bueno no se encontraría nunca); y que ningún idioma
+  se haya quedado copiado del español a medias.
+
+### La base de datos: los efectos ya no guardan el texto
+
+`EfectosDeEvento` guardaba la etiqueta ya escrita ("Buen rollo en el
+vestuario"). Con eso, cambiar de idioma a mitad de temporada dejaba los
+efectos activos en el idioma anterior. Ahora se guarda `claveEfecto` y se
+traduce al pintar.
+
+Esquema **27 → 28**, aditiva y nullable, como manda la regla desde la 20:
+una partida en curso no pierde nada. Las filas viejas no tienen clave —no
+hay forma de adivinar a qué efecto del catálogo correspondían—, así que
+siguen enseñando su etiqueta guardada, en español; se agotan en unos
+partidos y el problema desaparece solo. La columna `etiqueta` se sigue
+escribiendo en español como respaldo legible al mirar la base a mano.
+
+### Verificación
+
+- `flutter analyze` limpio.
+- Los tres ficheros de eventos: **64 tests en verde** (30 son los de
+  traducción, 7 idiomas × 4 comprobaciones más los dos generales).
+- Suite completa en verde.
+
+### Ficheros
+
+## Ocho eventos narrativos nuevos (a 2026-08-21)
+
+Con doce eventos y un tope de cinco por temporada, en tres años de carrera
+ya los habías visto todos. Estos ocho suben el catálogo a **veinte**.
+
+Separar el guion del catálogo (ver la sección anterior) hizo que esto
+costara lo que tenía que costar: el evento se define una vez con sus
+claves, sus condiciones y sus números, y luego solo hay que escribirlo.
+
+### Qué cubren que no cubría ninguno de los doce
+
+Los doce primeros eran casi todos de vestuario. Estos meten a los otros
+actores del club:
+
+| Evento | Cuándo sale | El eje de la decisión |
+| --- | --- | --- |
+| `rumor_de_traspaso` | ≥20 partidos | Tranquilizarle relaja al vestuario entero, y eso también quita presión |
+| `tanking_de_la_directiva` | vaMal y ≥55 partidos | Dinero y draft contra no dejarte ir |
+| `jugador_llega_tarde` | ≥10 partidos | Disciplina contra el ambiente |
+| `camiseta_de_una_leyenda` | ≥25 partidos | Taquilla y ciudad contra el día de partido |
+| `entrenador_pide_mando` | con entrenador, ≥12 | Rendimiento ahora contra el control del banquillo |
+| `metida_de_pata_en_redes` | ≥8 partidos | Defenderle sale caro: la multa la paga el club |
+| `precio_de_las_entradas` | vaBien y ≥25 | Dinero contra el ambiente del pabellón |
+| `nutricionista` | ≥6 partidos | Gasto ahora contra plantilla mejor a la larga |
+
+El de la directiva y el draft es el que mejor usa el segundo eje: perder a
+propósito **paga** y además mejora la elección del draft (que el diálogo no
+modela), así que la respuesta depende de si te has creído que este año
+todavía se puede.
+
+### Una constante de dinero nueva
+
+`_gastoModerado` (−2M): no es lo mismo una multa que un gasto. La multa
+castiga una decisión; el gasto es lo que cuesta algo que has decidido
+pagar, y por eso duele menos que hacer el ridículo en público (−4M).
+
+### Verificación
+
+Las reglas de diseño del catálogo son tests, no buenas intenciones, y los
+ocho pasan por ellas: ninguna opción se queda sin consecuencia, la mejor de
+cada evento paga en piernas o en dinero, y ningún efecto se sale de los
+topes medidos. **65 tests en verde** entre los tres ficheros de eventos —
+las comprobaciones de traducción son ahora 7 idiomas × 20 eventos.
+
+## Los patrocinadores no hacían nada (a 2026-08-21)
+
+Bug de verdad, encontrado revisando el sistema que se había hecho unas
+horas antes: **en una partida ya empezada, los patrocinadores no servían
+para nada.**
+
+### Qué pasaba
+
+El cambio de temporada llama a las pantallas por pasos. La de
+patrocinadores es el paso **2c**. Pero `finalizarPretemporada` —el paso
+**4.5**— llamaba a `limpiarPatrocinios`.
+
+O sea: el juego te hacía elegir patrocinadores, y los borraba dos pasos
+después, antes de dejarte gastar el margen en la agencia libre. El margen
+llegaba a cero justo donde tenía que servir de algo.
+
+No lo cazó ningún test porque los que había miraban el repositorio por
+separado, y `flujo_completo_test.dart` solo pasa por el camino de la
+PRIMERA temporada, donde `finalizarPretemporada` no corre después de la
+pantalla. Es el punto ciego típico: cada pieza bien y el orden mal.
+
+**El arreglo**: limpiar en `cerrarTemporada`, que corre ANTES de elegir.
+De paso se movió también `limpiarEventosDeLaTemporada`, que tenía la misma
+trampa esperando. Test nuevo:
+`test/patrocinadores_sobreviven_al_cambio_test.dart`, escrito primero para
+verlo fallar.
+
+### Y ya puestos: no eran una decisión
+
+Cuatro interruptores que solo dan dinero tienen una respuesta óptima
+obvia —encenderlos los cuatro— así que aquello era un botón de cobrar 8M,
+no una pantalla de decisiones. Es justo lo que prohíbe la regla de diseño
+número 1 de `eventos_narrativos.dart`, escrita para el otro sistema:
+
+> *Toda opción tiene un coste o no es una decisión.*
+
+Ahora cada patrocinio **pide algo a cambio**, como efecto de vestuario de
+los primeros partidos, y se ve en su tarjeta al lado del dinero (un coste
+que se descubre después de firmar no es una decisión, es una trampa):
+
+| Patrocinio | Paga | Pide |
+| --- | --- | --- |
+| Camiseta | 3,0M | Días de medios, −2% × 6 partidos |
+| Estadio | 2,5M | El pabellón con otro nombre, −1% × 12 |
+| Bebida | 1,5M | Compromisos de marca, −1% × 6 |
+| Ocio | 1,0M | Trabajo con la ciudad, **+1% × 6** |
+
+Las magnitudes **no** son proporcionales al dinero a propósito: si lo
+fueran, la respuesta volvería a ser aritmética (firmar por orden de ratio)
+y seguiría sin haber nada que pensar. Así, el de ocio casi no paga pero
+suma, y la respuesta correcta depende de algo que la pantalla no sabe: si
+te falta espacio para fichar o no.
+
+Los compromisos van a la misma tabla que los efectos de los eventos —para
+el jugador es un efecto de vestuario más, venga de una cena de equipo o de
+un contrato de camiseta— y se aplican al confirmar, no al tocar cada
+interruptor: así puedes probar combinaciones sin dejar rastro. Es
+idempotente, y solo borra sus propias filas (`clave = 'patrocinio'`), así
+que una bronca de vestuario que estuviera corriendo no se ve afectada.
+
+### Verificación
+
+`flutter analyze` limpio y **47 tests** entre los cuatro ficheros de
+patrocinadores y traducción, incluidos los dos que fallaban antes del
+arreglo. Suite completa en verde.
+
+```
+ M app/manager_nba/lib/data/database/app_database.dart
+ M app/manager_nba/lib/data/database/app_database.g.dart
+ M app/manager_nba/lib/data/database/tables.dart
+ M app/manager_nba/lib/domain/agencia_libre_repository.dart
+ M app/manager_nba/lib/domain/ajustes_repository.dart
+ M app/manager_nba/lib/domain/contratos_repository.dart
+ M app/manager_nba/lib/domain/eventos_narrativos.dart
+ M app/manager_nba/lib/domain/eventos_narrativos_repository.dart
+ M app/manager_nba/lib/domain/franquicia_repository.dart
+ M app/manager_nba/lib/domain/nueva_temporada_repository.dart
+ M app/manager_nba/lib/domain/salarios.dart
+ M app/manager_nba/lib/domain/traspasos_cpu_repository.dart
+ M app/manager_nba/lib/domain/traspasos_repository.dart
+ M app/manager_nba/lib/features/calendario/calendario_screen.dart
+ M app/manager_nba/lib/features/calendario/resumen_simulacion_screen.dart
+ M app/manager_nba/lib/features/calendario/simulacion_ui.dart
+ M app/manager_nba/lib/features/hub/home_hub_screen.dart
+ M app/manager_nba/lib/features/inicio/start_menu_screen.dart
+ M app/manager_nba/lib/features/mercado/agencia_libre_screen.dart
+ M app/manager_nba/lib/features/mercado/ofertas_screen.dart
+ M app/manager_nba/lib/features/partido/alineacion_automatica.dart
+ M app/manager_nba/lib/features/roster/roster_config_screen.dart
+ M app/manager_nba/lib/features/roster/team_preview_screen.dart
+ M app/manager_nba/lib/features/roster/team_selector_screen.dart
+ M app/manager_nba/lib/features/temporada/cambio_de_temporada.dart
+ M app/manager_nba/lib/features/temporada/evento_narrativo_dialog.dart
+ M app/manager_nba/lib/features/temporada/hall_fama_screen.dart
+ M app/manager_nba/lib/features/temporada/retirados_screen.dart
+ M app/manager_nba/lib/i18n/textos.dart
+ M app/manager_nba/lib/i18n/textos_de.dart
+ M app/manager_nba/lib/i18n/textos_en.dart
+ M app/manager_nba/lib/i18n/textos_es.dart
+ M app/manager_nba/lib/i18n/textos_fr.dart
+ M app/manager_nba/lib/i18n/textos_it.dart
+ M app/manager_nba/lib/i18n/textos_pt.dart
+ M app/manager_nba/lib/i18n/textos_zh.dart
+ M app/manager_nba/lib/shared/estilo.dart
+ M app/manager_nba/lib/shared/hoja_de_propuestas.dart
+ M app/manager_nba/lib/shared/medias_jugador.dart
+ M app/manager_nba/test/ajustes_screen_test.dart
+ M app/manager_nba/test/datos_reales_test.dart
+ M app/manager_nba/test/evento_narrativo_dialog_test.dart
+ M app/manager_nba/test/eventos_narrativos_test.dart
+ M app/manager_nba/test/flujo_completo_test.dart
+ M app/manager_nba/test/franquicia_repository_test.dart
+ M app/manager_nba/test/legado_pantallas_test.dart
+ M app/manager_nba/test/tema_claro_y_oscuro_test.dart
+ M app/manager_nba/test/traspasos_avanzados_test.dart
+ M app/packages/sim_engine/lib/src/models/equipo_partido.dart
+ M app/packages/sim_engine/lib/src/models/jugador_en_partido.dart
+ M app/packages/sim_engine/lib/src/simulacion/simulador_partido.dart
+ M app/packages/sim_engine/test/simulacion_test.dart
+ M docs/plan.md
+?? app/manager_nba/lib/domain/patrocinadores.dart
+?? app/manager_nba/lib/domain/patrocinadores_repository.dart
+?? app/manager_nba/lib/domain/restriccion_de_fichaje.dart
+?? app/manager_nba/lib/features/temporada/patrocinadores_screen.dart
+?? app/manager_nba/lib/i18n/eventos_de.dart
+?? app/manager_nba/lib/i18n/eventos_en.dart
+?? app/manager_nba/lib/i18n/eventos_es.dart
+?? app/manager_nba/lib/i18n/eventos_fr.dart
+?? app/manager_nba/lib/i18n/eventos_it.dart
+?? app/manager_nba/lib/i18n/eventos_pt.dart
+?? app/manager_nba/lib/i18n/eventos_zh.dart
+?? app/manager_nba/lib/i18n/textos_eventos.dart
+?? app/manager_nba/test/agencia_libre_filtros_test.dart
+?? app/manager_nba/test/barra_progreso_simulacion_test.dart
+?? app/manager_nba/test/eventos_traducidos_test.dart
+?? app/manager_nba/test/ofertas_cierre_automatico_test.dart
+?? app/manager_nba/test/patrocinadores_repository_test.dart
+?? app/manager_nba/test/patrocinadores_screen_test.dart
+?? app/manager_nba/test/patrocinadores_test.dart
+?? app/manager_nba/test/placa_equipo_test.dart
+?? app/manager_nba/test/sexto_hombre_test.dart
+```
+
+Último commit subido: `2b1ae0d` ("Diálogos con el estilo del rediseño y
+tarjeta de próximo partido"). Todo lo de arriba —las listas 12 y 13
+enteras, el sistema de patrocinadores y la traducción de los eventos
+narrativos— es posterior y no se ha subido. Nada se sube sin que el
+usuario lo pida explícitamente.

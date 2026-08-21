@@ -36,6 +36,8 @@ class ResumenSimulacionScreen extends StatefulWidget {
 class _ResumenSimulacionScreenState extends State<ResumenSimulacionScreen> {
   late ResultadoLoteSimulado _resultado;
   bool _simulando = false;
+  int _totalASimular = 0;
+  List<PartidoSimuladoInfo> _progresoSimulacion = const [];
   bool _premiosMostrados = false;
 
   @override
@@ -46,9 +48,21 @@ class _ResumenSimulacionScreenState extends State<ResumenSimulacionScreen> {
   }
 
   Future<void> _simularHasta(DateTime diaObjetivo) async {
-    setState(() => _simulando = true);
+    // Una consulta más para saber cuántos segmentos pintar: esta pantalla
+    // no guarda el calendario entero como hace el Calendario, así que no
+    // hay otro sitio de donde sacar el total antes de empezar.
+    final partidos = await leerPartidos(widget.db, widget.equipoUsuario);
+    if (!mounted) return;
+    setState(() {
+      _simulando = true;
+      _totalASimular = partidosPendientesHasta(partidos, diaObjetivo);
+      _progresoSimulacion = const [];
+    });
     final nuevo = await simularHastaConDialogo(
-        context, widget.db, widget.equipoUsuario, diaObjetivo);
+        context, widget.db, widget.equipoUsuario, diaObjetivo,
+        onProgreso: (hastaAhora) {
+      if (mounted) setState(() => _progresoSimulacion = hastaAhora);
+    });
     if (!mounted) return;
     setState(() {
       _simulando = false;
@@ -106,7 +120,16 @@ class _ResumenSimulacionScreenState extends State<ResumenSimulacionScreen> {
       ),
       body: Column(
         children: [
-          if (_simulando) const LinearProgressIndicator(),
+          if (_simulando)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              child: BarraProgresoSimulacion(
+                total: _totalASimular,
+                resultados: _progresoSimulacion
+                    .map((p) => p.marcadorUsuario >= p.marcadorRival)
+                    .toList(),
+              ),
+            ),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),

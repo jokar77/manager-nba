@@ -19,6 +19,7 @@ import 'franquicia_repository.dart';
 import 'hall_fama_repository.dart';
 import 'legado_real_repository.dart';
 import 'ofertas_repository.dart';
+import 'patrocinadores_repository.dart' show limpiarPatrocinios;
 import 'progresion_repository.dart';
 import 'traspasos_cpu_repository.dart';
 
@@ -169,6 +170,17 @@ Future<CierreDeTemporada> cerrarTemporada(
   final temporada = await leerTemporada(db);
   final ordenDeDraft = await _ordenDeDraft(db);
 
+  // El verano entero se limpia AQUÍ, al cerrar, y no al rematar la
+  // pretemporada: la pantalla donde eliges los patrocinadores del año nuevo
+  // sale entre medias (paso 2c de `ejecutarCambioDeTemporada`) y limpiar
+  // después se llevaba por delante lo que acababas de elegir.
+  //
+  // Se borran las dos cosas juntas porque acaban en la misma tabla: una
+  // bronca de vestuario y el compromiso de un patrocinador son el mismo
+  // tipo de efecto, y ninguno de los dos cruza de un año al siguiente.
+  await limpiarEventosDeLaTemporada(db);
+  await limpiarPatrocinios(db);
+
   // Ojo al orden: archivar tiene que ir antes de envejecer, porque guarda
   // el equipo y la media que tenía cada jugador *esta* temporada.
   await _archivarTemporada(db, temporada.numero);
@@ -310,9 +322,16 @@ Future<ResumenPretemporada> finalizarPretemporada(
         eventosVistos: const Value(''),
       ));
 
-  // Un verano entero borra cualquier bronca de vestuario y cualquier racha
-  // de buen rollo: los efectos activos no cruzan de un año al siguiente.
-  await limpiarEventosDeLaTemporada(db);
+  // OJO: ni los efectos de vestuario ni los patrocinadores se borran aquí.
+  // Los dos se limpian en `cerrarTemporada`, que corre ANTES de que elijas
+  // los patrocinadores del año nuevo.
+  //
+  // Estaban aquí y era un bug de verdad: esta función es el paso 4.5 del
+  // cambio de temporada y la pantalla de patrocinadores es el 2c, así que
+  // el juego te hacía elegirlos y te los borraba justo después —junto con
+  // los compromisos que dejan en el vestuario— antes de dejarte gastar el
+  // margen en la agencia libre. Ver
+  // `patrocinadores_sobreviven_al_cambio_test.dart`.
 
   // La rotación guardada puede apuntar a retirados o a gente que ya no
   // está en el equipo: se deja una válida hecha, editable como siempre.

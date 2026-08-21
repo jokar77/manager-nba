@@ -276,7 +276,12 @@ List<EstadisticasJugador> _statsEquipo(
         (PesosAtributos.multiplicadorAtributoMax -
                 PesosAtributos.multiplicadorAtributoMin) *
             (j.indiceOfensivo / 99);
-    final multiplicadorRol = jep.esEstrellaAtaque
+    // La chispa de anotación del sexto hombre es el mismo empujón que la
+    // estrella de ataque, no uno acumulado: si el mejor suplente resulta
+    // ser también el mejor jugador del equipo (puede pasar: la estrella se
+    // elige por nivel general, sin mirar si es titular) no se dobla el
+    // efecto por ser las dos cosas a la vez.
+    final multiplicadorRol = jep.esEstrellaAtaque || jep.esSextoHombre
         ? PesosAtributos.multiplicadorEstrellaIndividual
         : 1.0;
     // Gaussiano y no uniforme: las noches malas y las buenas de verdad son

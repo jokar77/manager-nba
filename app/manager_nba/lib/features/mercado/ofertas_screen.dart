@@ -4,12 +4,12 @@ import '../../i18n/textos.dart';
 import '../../shared/estilo.dart';
 import '../../shared/barra_de_club.dart';
 import '../../data/database/app_database.dart';
-import '../../domain/entrenadores_repository.dart' show formatearMillones;
 import '../../domain/equipos_info.dart';
 import '../../domain/ofertas_repository.dart';
 import '../../domain/picks_repository.dart';
 import '../../domain/posiciones.dart';
 import '../../shared/equipo_logo.dart';
+import '../../shared/hoja_de_propuestas.dart' show contratoEnUnaLinea;
 import 'traspasos_screen.dart';
 
 /// Las propuestas que te han llegado mientras simulabas. Cada una es un
@@ -24,10 +24,19 @@ class OfertasScreen extends StatefulWidget {
   final AppDatabase db;
   final String equipoUsuario;
 
+  /// Cuando la simulación se paró aquí para que decidieras: en cuanto no
+  /// quede ninguna oferta por resolver, la pantalla se cierra sola y
+  /// vuelve al Calendario, en vez de esperar a que le des a "volver" tú.
+  /// Desde el menú (consulta voluntaria) se deja en false: si entras a
+  /// mirar y no queda nada, te quedas viendo el aviso de que no hay nada,
+  /// no te echa fuera de golpe.
+  final bool cierraSolaAlVaciarse;
+
   const OfertasScreen({
     super.key,
     required this.db,
     required this.equipoUsuario,
+    this.cierraSolaAlVaciarse = false,
   });
 
   @override
@@ -48,6 +57,10 @@ class _OfertasScreenState extends State<OfertasScreen> {
   }
 
   Future<void> _cargar() async {
+    // Si ya había una carga previa (no es la primera vez que se llama),
+    // vaciarse aquí significa que se acaba de resolver la última: es el
+    // momento de cerrar sola, no al abrir la pantalla ya vacía.
+    final esRecarga = _ofertas != null;
     await marcarOfertasComoVistas(widget.db);
     final ofertas = await ofertasPendientes(widget.db, widget.equipoUsuario);
     if (!mounted) return;
@@ -55,6 +68,9 @@ class _OfertasScreenState extends State<OfertasScreen> {
       _ofertas = ofertas;
       if (_indice >= ofertas.length) _indice = 0;
     });
+    if (ofertas.isEmpty && esRecarga && widget.cierraSolaAlVaciarse) {
+      Navigator.of(context).pop();
+    }
   }
 
   Future<void> _aceptar(OfertaEntrante oferta) async {
@@ -205,28 +221,16 @@ class _Navegador extends StatelessWidget {
 }
 
 /// Un jugador de la oferta con lo que hace falta para juzgarla: quién es,
-/// dónde juega, su nivel, lo que produce por partido y LO QUE COBRA. Sin
-/// los promedios, decidir un traspaso era comparar dos números de media a
-/// ciegas; sin el contrato, era aceptar un sueldo a ciegas — que es peor,
-/// porque un traspaso te ata a esa nómina varios años y puede dejarte sin
-/// espacio salarial para el resto del mercado.
+/// dónde juega, su nivel y LO QUE COBRA. Sin el contrato, aceptar era
+/// aceptar un sueldo a ciegas — un traspaso te ata a esa nómina varios
+/// años y puede dejarte sin espacio salarial para el resto del mercado.
+///
+/// Sin las estadísticas de la temporada a propósito: lo que se juzga aquí
+/// es el jugador en sí (nivel y contrato), no un rendimiento que puede
+/// venir condicionado por un equipo que está a punto de dejar.
 String _lineaJugador(BuildContext context, Jugador j) =>
-    t(context).lineaJugadorOferta(
-        j.nombreFicticio,
-        etiquetaPosicion(j),
-        j.media,
-        j.ptsPg.toStringAsFixed(1),
-        j.astPg.toStringAsFixed(1),
-        j.trbPg.toStringAsFixed(1),
-        _contratoDe(context, j));
-
-/// El contrato en una línea: "3 años · 40,0M al año".
-String _contratoDe(BuildContext context, Jugador j) {
-  final anios = j.aniosContrato <= 1
-      ? t(context).ultimoAnioContrato
-      : t(context).aniosDeContrato(j.aniosContrato);
-  return t(context).contratoAnioMillones(anios, formatearMillones(j.salario));
-}
+    t(context).lineaJugadorOferta(j.nombreFicticio, etiquetaPosicion(j),
+        j.media, contratoEnUnaLinea(context, j));
 
 class _TarjetaOferta extends StatelessWidget {
   final OfertaEntrante oferta;

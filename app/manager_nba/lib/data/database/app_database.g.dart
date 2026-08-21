@@ -269,6 +269,17 @@ class $JugadoresTable extends Jugadores
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _fechaFichajeMeta = const VerificationMeta(
+    'fechaFichaje',
+  );
+  @override
+  late final GeneratedColumn<DateTime> fechaFichaje = GeneratedColumn<DateTime>(
+    'fecha_fichaje',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _prestigioPrevioMeta = const VerificationMeta(
     'prestigioPrevio',
   );
@@ -307,6 +318,7 @@ class $JugadoresTable extends Jugadores
     salario,
     aniosContrato,
     ofertasRechazadas,
+    fechaFichaje,
     prestigioPrevio,
   ];
   @override
@@ -510,6 +522,15 @@ class $JugadoresTable extends Jugadores
         ),
       );
     }
+    if (data.containsKey('fecha_fichaje')) {
+      context.handle(
+        _fechaFichajeMeta,
+        fechaFichaje.isAcceptableOrUnknown(
+          data['fecha_fichaje']!,
+          _fechaFichajeMeta,
+        ),
+      );
+    }
     if (data.containsKey('prestigio_previo')) {
       context.handle(
         _prestigioPrevioMeta,
@@ -624,6 +645,10 @@ class $JugadoresTable extends Jugadores
         DriftSqlType.int,
         data['${effectivePrefix}ofertas_rechazadas'],
       )!,
+      fechaFichaje: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fecha_fichaje'],
+      ),
       prestigioPrevio: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}prestigio_previo'],
@@ -688,6 +713,13 @@ class Jugador extends DataClass implements Insertable<Jugador> {
   /// otro. Se pone a cero cuando firma.
   final int ofertasRechazadas;
 
+  /// Fecha (de la liga, no del reloj real) en la que fichó como agente
+  /// libre por el equipo con el que está ahora. Null para quien nunca ha
+  /// fichado así —importado, drafteado, o simplemente renovado con su
+  /// equipo—: esos no tienen restricción de traspaso por esto. Ver
+  /// [traspasos_repository.dart].
+  final DateTime? fechaFichaje;
+
   /// Crédito de carrera anterior a tu partida, de cara al Hall of Fame.
   ///
   /// Sin esto, las leyendas que ya están al final de su carrera —LeBron,
@@ -720,6 +752,7 @@ class Jugador extends DataClass implements Insertable<Jugador> {
     required this.salario,
     required this.aniosContrato,
     required this.ofertasRechazadas,
+    this.fechaFichaje,
     required this.prestigioPrevio,
   });
   @override
@@ -755,6 +788,9 @@ class Jugador extends DataClass implements Insertable<Jugador> {
     map['salario'] = Variable<int>(salario);
     map['anios_contrato'] = Variable<int>(aniosContrato);
     map['ofertas_rechazadas'] = Variable<int>(ofertasRechazadas);
+    if (!nullToAbsent || fechaFichaje != null) {
+      map['fecha_fichaje'] = Variable<DateTime>(fechaFichaje);
+    }
     map['prestigio_previo'] = Variable<double>(prestigioPrevio);
     return map;
   }
@@ -791,6 +827,9 @@ class Jugador extends DataClass implements Insertable<Jugador> {
       salario: Value(salario),
       aniosContrato: Value(aniosContrato),
       ofertasRechazadas: Value(ofertasRechazadas),
+      fechaFichaje: fechaFichaje == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fechaFichaje),
       prestigioPrevio: Value(prestigioPrevio),
     );
   }
@@ -827,6 +866,7 @@ class Jugador extends DataClass implements Insertable<Jugador> {
       salario: serializer.fromJson<int>(json['salario']),
       aniosContrato: serializer.fromJson<int>(json['aniosContrato']),
       ofertasRechazadas: serializer.fromJson<int>(json['ofertasRechazadas']),
+      fechaFichaje: serializer.fromJson<DateTime?>(json['fechaFichaje']),
       prestigioPrevio: serializer.fromJson<double>(json['prestigioPrevio']),
     );
   }
@@ -858,6 +898,7 @@ class Jugador extends DataClass implements Insertable<Jugador> {
       'salario': serializer.toJson<int>(salario),
       'aniosContrato': serializer.toJson<int>(aniosContrato),
       'ofertasRechazadas': serializer.toJson<int>(ofertasRechazadas),
+      'fechaFichaje': serializer.toJson<DateTime?>(fechaFichaje),
       'prestigioPrevio': serializer.toJson<double>(prestigioPrevio),
     };
   }
@@ -887,6 +928,7 @@ class Jugador extends DataClass implements Insertable<Jugador> {
     int? salario,
     int? aniosContrato,
     int? ofertasRechazadas,
+    Value<DateTime?> fechaFichaje = const Value.absent(),
     double? prestigioPrevio,
   }) => Jugador(
     id: id ?? this.id,
@@ -915,6 +957,7 @@ class Jugador extends DataClass implements Insertable<Jugador> {
     salario: salario ?? this.salario,
     aniosContrato: aniosContrato ?? this.aniosContrato,
     ofertasRechazadas: ofertasRechazadas ?? this.ofertasRechazadas,
+    fechaFichaje: fechaFichaje.present ? fechaFichaje.value : this.fechaFichaje,
     prestigioPrevio: prestigioPrevio ?? this.prestigioPrevio,
   );
   Jugador copyWithCompanion(JugadoresCompanion data) {
@@ -961,6 +1004,9 @@ class Jugador extends DataClass implements Insertable<Jugador> {
       ofertasRechazadas: data.ofertasRechazadas.present
           ? data.ofertasRechazadas.value
           : this.ofertasRechazadas,
+      fechaFichaje: data.fechaFichaje.present
+          ? data.fechaFichaje.value
+          : this.fechaFichaje,
       prestigioPrevio: data.prestigioPrevio.present
           ? data.prestigioPrevio.value
           : this.prestigioPrevio,
@@ -994,6 +1040,7 @@ class Jugador extends DataClass implements Insertable<Jugador> {
           ..write('salario: $salario, ')
           ..write('aniosContrato: $aniosContrato, ')
           ..write('ofertasRechazadas: $ofertasRechazadas, ')
+          ..write('fechaFichaje: $fechaFichaje, ')
           ..write('prestigioPrevio: $prestigioPrevio')
           ..write(')'))
         .toString();
@@ -1025,6 +1072,7 @@ class Jugador extends DataClass implements Insertable<Jugador> {
     salario,
     aniosContrato,
     ofertasRechazadas,
+    fechaFichaje,
     prestigioPrevio,
   ]);
   @override
@@ -1055,6 +1103,7 @@ class Jugador extends DataClass implements Insertable<Jugador> {
           other.salario == this.salario &&
           other.aniosContrato == this.aniosContrato &&
           other.ofertasRechazadas == this.ofertasRechazadas &&
+          other.fechaFichaje == this.fechaFichaje &&
           other.prestigioPrevio == this.prestigioPrevio);
 }
 
@@ -1083,6 +1132,7 @@ class JugadoresCompanion extends UpdateCompanion<Jugador> {
   final Value<int> salario;
   final Value<int> aniosContrato;
   final Value<int> ofertasRechazadas;
+  final Value<DateTime?> fechaFichaje;
   final Value<double> prestigioPrevio;
   const JugadoresCompanion({
     this.id = const Value.absent(),
@@ -1109,6 +1159,7 @@ class JugadoresCompanion extends UpdateCompanion<Jugador> {
     this.salario = const Value.absent(),
     this.aniosContrato = const Value.absent(),
     this.ofertasRechazadas = const Value.absent(),
+    this.fechaFichaje = const Value.absent(),
     this.prestigioPrevio = const Value.absent(),
   });
   JugadoresCompanion.insert({
@@ -1136,6 +1187,7 @@ class JugadoresCompanion extends UpdateCompanion<Jugador> {
     this.salario = const Value.absent(),
     this.aniosContrato = const Value.absent(),
     this.ofertasRechazadas = const Value.absent(),
+    this.fechaFichaje = const Value.absent(),
     this.prestigioPrevio = const Value.absent(),
   }) : nombreFicticio = Value(nombreFicticio),
        nombreReal = Value(nombreReal),
@@ -1177,6 +1229,7 @@ class JugadoresCompanion extends UpdateCompanion<Jugador> {
     Expression<int>? salario,
     Expression<int>? aniosContrato,
     Expression<int>? ofertasRechazadas,
+    Expression<DateTime>? fechaFichaje,
     Expression<double>? prestigioPrevio,
   }) {
     return RawValuesInsertable({
@@ -1204,6 +1257,7 @@ class JugadoresCompanion extends UpdateCompanion<Jugador> {
       if (salario != null) 'salario': salario,
       if (aniosContrato != null) 'anios_contrato': aniosContrato,
       if (ofertasRechazadas != null) 'ofertas_rechazadas': ofertasRechazadas,
+      if (fechaFichaje != null) 'fecha_fichaje': fechaFichaje,
       if (prestigioPrevio != null) 'prestigio_previo': prestigioPrevio,
     });
   }
@@ -1233,6 +1287,7 @@ class JugadoresCompanion extends UpdateCompanion<Jugador> {
     Value<int>? salario,
     Value<int>? aniosContrato,
     Value<int>? ofertasRechazadas,
+    Value<DateTime?>? fechaFichaje,
     Value<double>? prestigioPrevio,
   }) {
     return JugadoresCompanion(
@@ -1260,6 +1315,7 @@ class JugadoresCompanion extends UpdateCompanion<Jugador> {
       salario: salario ?? this.salario,
       aniosContrato: aniosContrato ?? this.aniosContrato,
       ofertasRechazadas: ofertasRechazadas ?? this.ofertasRechazadas,
+      fechaFichaje: fechaFichaje ?? this.fechaFichaje,
       prestigioPrevio: prestigioPrevio ?? this.prestigioPrevio,
     );
   }
@@ -1339,6 +1395,9 @@ class JugadoresCompanion extends UpdateCompanion<Jugador> {
     if (ofertasRechazadas.present) {
       map['ofertas_rechazadas'] = Variable<int>(ofertasRechazadas.value);
     }
+    if (fechaFichaje.present) {
+      map['fecha_fichaje'] = Variable<DateTime>(fechaFichaje.value);
+    }
     if (prestigioPrevio.present) {
       map['prestigio_previo'] = Variable<double>(prestigioPrevio.value);
     }
@@ -1372,6 +1431,7 @@ class JugadoresCompanion extends UpdateCompanion<Jugador> {
           ..write('salario: $salario, ')
           ..write('aniosContrato: $aniosContrato, ')
           ..write('ofertasRechazadas: $ofertasRechazadas, ')
+          ..write('fechaFichaje: $fechaFichaje, ')
           ..write('prestigioPrevio: $prestigioPrevio')
           ..write(')'))
         .toString();
@@ -1663,6 +1723,21 @@ class $RotacionJugadorTable extends RotacionJugador
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _esSextoHombreMeta = const VerificationMeta(
+    'esSextoHombre',
+  );
+  @override
+  late final GeneratedColumn<bool> esSextoHombre = GeneratedColumn<bool>(
+    'es_sexto_hombre',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("es_sexto_hombre" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1672,6 +1747,7 @@ class $RotacionJugadorTable extends RotacionJugador
     minutos,
     esEstrellaAtaque,
     esEstrellaDefensa,
+    esSextoHombre,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1738,6 +1814,15 @@ class $RotacionJugadorTable extends RotacionJugador
         ),
       );
     }
+    if (data.containsKey('es_sexto_hombre')) {
+      context.handle(
+        _esSextoHombreMeta,
+        esSextoHombre.isAcceptableOrUnknown(
+          data['es_sexto_hombre']!,
+          _esSextoHombreMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1775,6 +1860,10 @@ class $RotacionJugadorTable extends RotacionJugador
         DriftSqlType.bool,
         data['${effectivePrefix}es_estrella_defensa'],
       )!,
+      esSextoHombre: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}es_sexto_hombre'],
+      )!,
     );
   }
 
@@ -1793,6 +1882,13 @@ class RotacionJugadorData extends DataClass
   final int minutos;
   final bool esEstrellaAtaque;
   final bool esEstrellaDefensa;
+
+  /// El sexto hombre: el primer suplente que entra a anotar. Igual que las
+  /// estrellas de arriba, es una designación tuya, no algo que calcule el
+  /// motor solo — pero a diferencia de ellas, solo puede recaer en un
+  /// suplente (lo valida la capa de dominio: un titular ya tiene su propio
+  /// rol, no "sale del banquillo").
+  final bool esSextoHombre;
   const RotacionJugadorData({
     required this.id,
     required this.posicion,
@@ -1801,6 +1897,7 @@ class RotacionJugadorData extends DataClass
     required this.minutos,
     required this.esEstrellaAtaque,
     required this.esEstrellaDefensa,
+    required this.esSextoHombre,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1812,6 +1909,7 @@ class RotacionJugadorData extends DataClass
     map['minutos'] = Variable<int>(minutos);
     map['es_estrella_ataque'] = Variable<bool>(esEstrellaAtaque);
     map['es_estrella_defensa'] = Variable<bool>(esEstrellaDefensa);
+    map['es_sexto_hombre'] = Variable<bool>(esSextoHombre);
     return map;
   }
 
@@ -1824,6 +1922,7 @@ class RotacionJugadorData extends DataClass
       minutos: Value(minutos),
       esEstrellaAtaque: Value(esEstrellaAtaque),
       esEstrellaDefensa: Value(esEstrellaDefensa),
+      esSextoHombre: Value(esSextoHombre),
     );
   }
 
@@ -1840,6 +1939,7 @@ class RotacionJugadorData extends DataClass
       minutos: serializer.fromJson<int>(json['minutos']),
       esEstrellaAtaque: serializer.fromJson<bool>(json['esEstrellaAtaque']),
       esEstrellaDefensa: serializer.fromJson<bool>(json['esEstrellaDefensa']),
+      esSextoHombre: serializer.fromJson<bool>(json['esSextoHombre']),
     );
   }
   @override
@@ -1853,6 +1953,7 @@ class RotacionJugadorData extends DataClass
       'minutos': serializer.toJson<int>(minutos),
       'esEstrellaAtaque': serializer.toJson<bool>(esEstrellaAtaque),
       'esEstrellaDefensa': serializer.toJson<bool>(esEstrellaDefensa),
+      'esSextoHombre': serializer.toJson<bool>(esSextoHombre),
     };
   }
 
@@ -1864,6 +1965,7 @@ class RotacionJugadorData extends DataClass
     int? minutos,
     bool? esEstrellaAtaque,
     bool? esEstrellaDefensa,
+    bool? esSextoHombre,
   }) => RotacionJugadorData(
     id: id ?? this.id,
     posicion: posicion ?? this.posicion,
@@ -1872,6 +1974,7 @@ class RotacionJugadorData extends DataClass
     minutos: minutos ?? this.minutos,
     esEstrellaAtaque: esEstrellaAtaque ?? this.esEstrellaAtaque,
     esEstrellaDefensa: esEstrellaDefensa ?? this.esEstrellaDefensa,
+    esSextoHombre: esSextoHombre ?? this.esSextoHombre,
   );
   RotacionJugadorData copyWithCompanion(RotacionJugadorCompanion data) {
     return RotacionJugadorData(
@@ -1886,6 +1989,9 @@ class RotacionJugadorData extends DataClass
       esEstrellaDefensa: data.esEstrellaDefensa.present
           ? data.esEstrellaDefensa.value
           : this.esEstrellaDefensa,
+      esSextoHombre: data.esSextoHombre.present
+          ? data.esSextoHombre.value
+          : this.esSextoHombre,
     );
   }
 
@@ -1898,7 +2004,8 @@ class RotacionJugadorData extends DataClass
           ..write('jugadorId: $jugadorId, ')
           ..write('minutos: $minutos, ')
           ..write('esEstrellaAtaque: $esEstrellaAtaque, ')
-          ..write('esEstrellaDefensa: $esEstrellaDefensa')
+          ..write('esEstrellaDefensa: $esEstrellaDefensa, ')
+          ..write('esSextoHombre: $esSextoHombre')
           ..write(')'))
         .toString();
   }
@@ -1912,6 +2019,7 @@ class RotacionJugadorData extends DataClass
     minutos,
     esEstrellaAtaque,
     esEstrellaDefensa,
+    esSextoHombre,
   );
   @override
   bool operator ==(Object other) =>
@@ -1923,7 +2031,8 @@ class RotacionJugadorData extends DataClass
           other.jugadorId == this.jugadorId &&
           other.minutos == this.minutos &&
           other.esEstrellaAtaque == this.esEstrellaAtaque &&
-          other.esEstrellaDefensa == this.esEstrellaDefensa);
+          other.esEstrellaDefensa == this.esEstrellaDefensa &&
+          other.esSextoHombre == this.esSextoHombre);
 }
 
 class RotacionJugadorCompanion extends UpdateCompanion<RotacionJugadorData> {
@@ -1934,6 +2043,7 @@ class RotacionJugadorCompanion extends UpdateCompanion<RotacionJugadorData> {
   final Value<int> minutos;
   final Value<bool> esEstrellaAtaque;
   final Value<bool> esEstrellaDefensa;
+  final Value<bool> esSextoHombre;
   const RotacionJugadorCompanion({
     this.id = const Value.absent(),
     this.posicion = const Value.absent(),
@@ -1942,6 +2052,7 @@ class RotacionJugadorCompanion extends UpdateCompanion<RotacionJugadorData> {
     this.minutos = const Value.absent(),
     this.esEstrellaAtaque = const Value.absent(),
     this.esEstrellaDefensa = const Value.absent(),
+    this.esSextoHombre = const Value.absent(),
   });
   RotacionJugadorCompanion.insert({
     this.id = const Value.absent(),
@@ -1951,6 +2062,7 @@ class RotacionJugadorCompanion extends UpdateCompanion<RotacionJugadorData> {
     required int minutos,
     this.esEstrellaAtaque = const Value.absent(),
     this.esEstrellaDefensa = const Value.absent(),
+    this.esSextoHombre = const Value.absent(),
   }) : posicion = Value(posicion),
        esTitular = Value(esTitular),
        jugadorId = Value(jugadorId),
@@ -1963,6 +2075,7 @@ class RotacionJugadorCompanion extends UpdateCompanion<RotacionJugadorData> {
     Expression<int>? minutos,
     Expression<bool>? esEstrellaAtaque,
     Expression<bool>? esEstrellaDefensa,
+    Expression<bool>? esSextoHombre,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1972,6 +2085,7 @@ class RotacionJugadorCompanion extends UpdateCompanion<RotacionJugadorData> {
       if (minutos != null) 'minutos': minutos,
       if (esEstrellaAtaque != null) 'es_estrella_ataque': esEstrellaAtaque,
       if (esEstrellaDefensa != null) 'es_estrella_defensa': esEstrellaDefensa,
+      if (esSextoHombre != null) 'es_sexto_hombre': esSextoHombre,
     });
   }
 
@@ -1983,6 +2097,7 @@ class RotacionJugadorCompanion extends UpdateCompanion<RotacionJugadorData> {
     Value<int>? minutos,
     Value<bool>? esEstrellaAtaque,
     Value<bool>? esEstrellaDefensa,
+    Value<bool>? esSextoHombre,
   }) {
     return RotacionJugadorCompanion(
       id: id ?? this.id,
@@ -1992,6 +2107,7 @@ class RotacionJugadorCompanion extends UpdateCompanion<RotacionJugadorData> {
       minutos: minutos ?? this.minutos,
       esEstrellaAtaque: esEstrellaAtaque ?? this.esEstrellaAtaque,
       esEstrellaDefensa: esEstrellaDefensa ?? this.esEstrellaDefensa,
+      esSextoHombre: esSextoHombre ?? this.esSextoHombre,
     );
   }
 
@@ -2019,6 +2135,9 @@ class RotacionJugadorCompanion extends UpdateCompanion<RotacionJugadorData> {
     if (esEstrellaDefensa.present) {
       map['es_estrella_defensa'] = Variable<bool>(esEstrellaDefensa.value);
     }
+    if (esSextoHombre.present) {
+      map['es_sexto_hombre'] = Variable<bool>(esSextoHombre.value);
+    }
     return map;
   }
 
@@ -2031,7 +2150,8 @@ class RotacionJugadorCompanion extends UpdateCompanion<RotacionJugadorData> {
           ..write('jugadorId: $jugadorId, ')
           ..write('minutos: $minutos, ')
           ..write('esEstrellaAtaque: $esEstrellaAtaque, ')
-          ..write('esEstrellaDefensa: $esEstrellaDefensa')
+          ..write('esEstrellaDefensa: $esEstrellaDefensa, ')
+          ..write('esSextoHombre: $esSextoHombre')
           ..write(')'))
         .toString();
   }
@@ -4938,7 +5058,7 @@ class $AjustesTable extends Ajustes with TableInfo<$AjustesTable, Ajuste> {
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'CHECK ("modo_oscuro" IN (0, 1))',
     ),
-    defaultValue: const Constant(false),
+    defaultValue: const Constant(true),
   );
   static const VerificationMeta _idiomaMeta = const VerificationMeta('idioma');
   @override
@@ -11713,6 +11833,17 @@ class $EfectosDeEventoTable extends EfectosDeEvento
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _claveEfectoMeta = const VerificationMeta(
+    'claveEfecto',
+  );
+  @override
+  late final GeneratedColumn<String> claveEfecto = GeneratedColumn<String>(
+    'clave_efecto',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _etiquetaMeta = const VerificationMeta(
     'etiqueta',
   );
@@ -11748,6 +11879,7 @@ class $EfectosDeEventoTable extends EfectosDeEvento
   List<GeneratedColumn> get $columns => [
     id,
     clave,
+    claveEfecto,
     etiqueta,
     factor,
     partidosRestantes,
@@ -11774,6 +11906,15 @@ class $EfectosDeEventoTable extends EfectosDeEvento
       );
     } else if (isInserting) {
       context.missing(_claveMeta);
+    }
+    if (data.containsKey('clave_efecto')) {
+      context.handle(
+        _claveEfectoMeta,
+        claveEfecto.isAcceptableOrUnknown(
+          data['clave_efecto']!,
+          _claveEfectoMeta,
+        ),
+      );
     }
     if (data.containsKey('etiqueta')) {
       context.handle(
@@ -11819,6 +11960,10 @@ class $EfectosDeEventoTable extends EfectosDeEvento
         DriftSqlType.string,
         data['${effectivePrefix}clave'],
       )!,
+      claveEfecto: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}clave_efecto'],
+      ),
       etiqueta: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}etiqueta'],
@@ -11847,7 +11992,19 @@ class EfectosDeEventoData extends DataClass
   /// Que evento lo produjo. Solo para poder contarlo; no se usa como clave.
   final String clave;
 
+  /// Cual de los efectos del catalogo es ('buen_rollo'), para buscar su
+  /// nombre en el idioma que tenga puesto el usuario.
+  ///
+  /// Nullable por las partidas empezadas antes de que los eventos se
+  /// tradujeran: aquellas filas solo guardaron [etiqueta], ya escrita en
+  /// espanol, y no hay forma de adivinar a que efecto correspondian.
+  final String? claveEfecto;
+
   /// Como se llama en pantalla ("Buen rollo en el vestuario").
+  ///
+  /// Desde que existe [claveEfecto] es solo el respaldo: se escribe en
+  /// espanol para que la fila se entienda al mirar la base de datos a mano,
+  /// pero lo que se ensena sale de traducir la clave.
   final String etiqueta;
 
   /// Multiplicador sobre el estado de forma de cada jugador del equipo.
@@ -11856,6 +12013,7 @@ class EfectosDeEventoData extends DataClass
   const EfectosDeEventoData({
     required this.id,
     required this.clave,
+    this.claveEfecto,
     required this.etiqueta,
     required this.factor,
     required this.partidosRestantes,
@@ -11865,6 +12023,9 @@ class EfectosDeEventoData extends DataClass
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['clave'] = Variable<String>(clave);
+    if (!nullToAbsent || claveEfecto != null) {
+      map['clave_efecto'] = Variable<String>(claveEfecto);
+    }
     map['etiqueta'] = Variable<String>(etiqueta);
     map['factor'] = Variable<double>(factor);
     map['partidos_restantes'] = Variable<int>(partidosRestantes);
@@ -11875,6 +12036,9 @@ class EfectosDeEventoData extends DataClass
     return EfectosDeEventoCompanion(
       id: Value(id),
       clave: Value(clave),
+      claveEfecto: claveEfecto == null && nullToAbsent
+          ? const Value.absent()
+          : Value(claveEfecto),
       etiqueta: Value(etiqueta),
       factor: Value(factor),
       partidosRestantes: Value(partidosRestantes),
@@ -11889,6 +12053,7 @@ class EfectosDeEventoData extends DataClass
     return EfectosDeEventoData(
       id: serializer.fromJson<int>(json['id']),
       clave: serializer.fromJson<String>(json['clave']),
+      claveEfecto: serializer.fromJson<String?>(json['claveEfecto']),
       etiqueta: serializer.fromJson<String>(json['etiqueta']),
       factor: serializer.fromJson<double>(json['factor']),
       partidosRestantes: serializer.fromJson<int>(json['partidosRestantes']),
@@ -11900,6 +12065,7 @@ class EfectosDeEventoData extends DataClass
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'clave': serializer.toJson<String>(clave),
+      'claveEfecto': serializer.toJson<String?>(claveEfecto),
       'etiqueta': serializer.toJson<String>(etiqueta),
       'factor': serializer.toJson<double>(factor),
       'partidosRestantes': serializer.toJson<int>(partidosRestantes),
@@ -11909,12 +12075,14 @@ class EfectosDeEventoData extends DataClass
   EfectosDeEventoData copyWith({
     int? id,
     String? clave,
+    Value<String?> claveEfecto = const Value.absent(),
     String? etiqueta,
     double? factor,
     int? partidosRestantes,
   }) => EfectosDeEventoData(
     id: id ?? this.id,
     clave: clave ?? this.clave,
+    claveEfecto: claveEfecto.present ? claveEfecto.value : this.claveEfecto,
     etiqueta: etiqueta ?? this.etiqueta,
     factor: factor ?? this.factor,
     partidosRestantes: partidosRestantes ?? this.partidosRestantes,
@@ -11923,6 +12091,9 @@ class EfectosDeEventoData extends DataClass
     return EfectosDeEventoData(
       id: data.id.present ? data.id.value : this.id,
       clave: data.clave.present ? data.clave.value : this.clave,
+      claveEfecto: data.claveEfecto.present
+          ? data.claveEfecto.value
+          : this.claveEfecto,
       etiqueta: data.etiqueta.present ? data.etiqueta.value : this.etiqueta,
       factor: data.factor.present ? data.factor.value : this.factor,
       partidosRestantes: data.partidosRestantes.present
@@ -11936,6 +12107,7 @@ class EfectosDeEventoData extends DataClass
     return (StringBuffer('EfectosDeEventoData(')
           ..write('id: $id, ')
           ..write('clave: $clave, ')
+          ..write('claveEfecto: $claveEfecto, ')
           ..write('etiqueta: $etiqueta, ')
           ..write('factor: $factor, ')
           ..write('partidosRestantes: $partidosRestantes')
@@ -11945,13 +12117,14 @@ class EfectosDeEventoData extends DataClass
 
   @override
   int get hashCode =>
-      Object.hash(id, clave, etiqueta, factor, partidosRestantes);
+      Object.hash(id, clave, claveEfecto, etiqueta, factor, partidosRestantes);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is EfectosDeEventoData &&
           other.id == this.id &&
           other.clave == this.clave &&
+          other.claveEfecto == this.claveEfecto &&
           other.etiqueta == this.etiqueta &&
           other.factor == this.factor &&
           other.partidosRestantes == this.partidosRestantes);
@@ -11960,12 +12133,14 @@ class EfectosDeEventoData extends DataClass
 class EfectosDeEventoCompanion extends UpdateCompanion<EfectosDeEventoData> {
   final Value<int> id;
   final Value<String> clave;
+  final Value<String?> claveEfecto;
   final Value<String> etiqueta;
   final Value<double> factor;
   final Value<int> partidosRestantes;
   const EfectosDeEventoCompanion({
     this.id = const Value.absent(),
     this.clave = const Value.absent(),
+    this.claveEfecto = const Value.absent(),
     this.etiqueta = const Value.absent(),
     this.factor = const Value.absent(),
     this.partidosRestantes = const Value.absent(),
@@ -11973,6 +12148,7 @@ class EfectosDeEventoCompanion extends UpdateCompanion<EfectosDeEventoData> {
   EfectosDeEventoCompanion.insert({
     this.id = const Value.absent(),
     required String clave,
+    this.claveEfecto = const Value.absent(),
     required String etiqueta,
     required double factor,
     required int partidosRestantes,
@@ -11983,6 +12159,7 @@ class EfectosDeEventoCompanion extends UpdateCompanion<EfectosDeEventoData> {
   static Insertable<EfectosDeEventoData> custom({
     Expression<int>? id,
     Expression<String>? clave,
+    Expression<String>? claveEfecto,
     Expression<String>? etiqueta,
     Expression<double>? factor,
     Expression<int>? partidosRestantes,
@@ -11990,6 +12167,7 @@ class EfectosDeEventoCompanion extends UpdateCompanion<EfectosDeEventoData> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (clave != null) 'clave': clave,
+      if (claveEfecto != null) 'clave_efecto': claveEfecto,
       if (etiqueta != null) 'etiqueta': etiqueta,
       if (factor != null) 'factor': factor,
       if (partidosRestantes != null) 'partidos_restantes': partidosRestantes,
@@ -11999,6 +12177,7 @@ class EfectosDeEventoCompanion extends UpdateCompanion<EfectosDeEventoData> {
   EfectosDeEventoCompanion copyWith({
     Value<int>? id,
     Value<String>? clave,
+    Value<String?>? claveEfecto,
     Value<String>? etiqueta,
     Value<double>? factor,
     Value<int>? partidosRestantes,
@@ -12006,6 +12185,7 @@ class EfectosDeEventoCompanion extends UpdateCompanion<EfectosDeEventoData> {
     return EfectosDeEventoCompanion(
       id: id ?? this.id,
       clave: clave ?? this.clave,
+      claveEfecto: claveEfecto ?? this.claveEfecto,
       etiqueta: etiqueta ?? this.etiqueta,
       factor: factor ?? this.factor,
       partidosRestantes: partidosRestantes ?? this.partidosRestantes,
@@ -12020,6 +12200,9 @@ class EfectosDeEventoCompanion extends UpdateCompanion<EfectosDeEventoData> {
     }
     if (clave.present) {
       map['clave'] = Variable<String>(clave.value);
+    }
+    if (claveEfecto.present) {
+      map['clave_efecto'] = Variable<String>(claveEfecto.value);
     }
     if (etiqueta.present) {
       map['etiqueta'] = Variable<String>(etiqueta.value);
@@ -12038,9 +12221,217 @@ class EfectosDeEventoCompanion extends UpdateCompanion<EfectosDeEventoData> {
     return (StringBuffer('EfectosDeEventoCompanion(')
           ..write('id: $id, ')
           ..write('clave: $clave, ')
+          ..write('claveEfecto: $claveEfecto, ')
           ..write('etiqueta: $etiqueta, ')
           ..write('factor: $factor, ')
           ..write('partidosRestantes: $partidosRestantes')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $PatrociniosActivosTable extends PatrociniosActivos
+    with TableInfo<$PatrociniosActivosTable, PatrociniosActivo> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PatrociniosActivosTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _categoriaMeta = const VerificationMeta(
+    'categoria',
+  );
+  @override
+  late final GeneratedColumn<String> categoria = GeneratedColumn<String>(
+    'categoria',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, categoria];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'patrocinios_activos';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PatrociniosActivo> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('categoria')) {
+      context.handle(
+        _categoriaMeta,
+        categoria.isAcceptableOrUnknown(data['categoria']!, _categoriaMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_categoriaMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {categoria},
+  ];
+  @override
+  PatrociniosActivo map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PatrociniosActivo(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      categoria: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}categoria'],
+      )!,
+    );
+  }
+
+  @override
+  $PatrociniosActivosTable createAlias(String alias) {
+    return $PatrociniosActivosTable(attachedDatabase, alias);
+  }
+}
+
+class PatrociniosActivo extends DataClass
+    implements Insertable<PatrociniosActivo> {
+  final int id;
+  final String categoria;
+  const PatrociniosActivo({required this.id, required this.categoria});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['categoria'] = Variable<String>(categoria);
+    return map;
+  }
+
+  PatrociniosActivosCompanion toCompanion(bool nullToAbsent) {
+    return PatrociniosActivosCompanion(
+      id: Value(id),
+      categoria: Value(categoria),
+    );
+  }
+
+  factory PatrociniosActivo.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PatrociniosActivo(
+      id: serializer.fromJson<int>(json['id']),
+      categoria: serializer.fromJson<String>(json['categoria']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'categoria': serializer.toJson<String>(categoria),
+    };
+  }
+
+  PatrociniosActivo copyWith({int? id, String? categoria}) => PatrociniosActivo(
+    id: id ?? this.id,
+    categoria: categoria ?? this.categoria,
+  );
+  PatrociniosActivo copyWithCompanion(PatrociniosActivosCompanion data) {
+    return PatrociniosActivo(
+      id: data.id.present ? data.id.value : this.id,
+      categoria: data.categoria.present ? data.categoria.value : this.categoria,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PatrociniosActivo(')
+          ..write('id: $id, ')
+          ..write('categoria: $categoria')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, categoria);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PatrociniosActivo &&
+          other.id == this.id &&
+          other.categoria == this.categoria);
+}
+
+class PatrociniosActivosCompanion extends UpdateCompanion<PatrociniosActivo> {
+  final Value<int> id;
+  final Value<String> categoria;
+  const PatrociniosActivosCompanion({
+    this.id = const Value.absent(),
+    this.categoria = const Value.absent(),
+  });
+  PatrociniosActivosCompanion.insert({
+    this.id = const Value.absent(),
+    required String categoria,
+  }) : categoria = Value(categoria);
+  static Insertable<PatrociniosActivo> custom({
+    Expression<int>? id,
+    Expression<String>? categoria,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (categoria != null) 'categoria': categoria,
+    });
+  }
+
+  PatrociniosActivosCompanion copyWith({
+    Value<int>? id,
+    Value<String>? categoria,
+  }) {
+    return PatrociniosActivosCompanion(
+      id: id ?? this.id,
+      categoria: categoria ?? this.categoria,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (categoria.present) {
+      map['categoria'] = Variable<String>(categoria.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PatrociniosActivosCompanion(')
+          ..write('id: $id, ')
+          ..write('categoria: $categoria')
           ..write(')'))
         .toString();
   }
@@ -12096,6 +12487,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $EfectosDeEventoTable efectosDeEvento = $EfectosDeEventoTable(
     this,
   );
+  late final $PatrociniosActivosTable patrociniosActivos =
+      $PatrociniosActivosTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -12128,6 +12521,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     ofertasTraspaso,
     entrenadores,
     efectosDeEvento,
+    patrociniosActivos,
   ];
 }
 
@@ -12157,6 +12551,7 @@ typedef $$JugadoresTableCreateCompanionBuilder =
       Value<int> salario,
       Value<int> aniosContrato,
       Value<int> ofertasRechazadas,
+      Value<DateTime?> fechaFichaje,
       Value<double> prestigioPrevio,
     });
 typedef $$JugadoresTableUpdateCompanionBuilder =
@@ -12185,6 +12580,7 @@ typedef $$JugadoresTableUpdateCompanionBuilder =
       Value<int> salario,
       Value<int> aniosContrato,
       Value<int> ofertasRechazadas,
+      Value<DateTime?> fechaFichaje,
       Value<double> prestigioPrevio,
     });
 
@@ -12314,6 +12710,11 @@ class $$JugadoresTableFilterComposer
 
   ColumnFilters<int> get ofertasRechazadas => $composableBuilder(
     column: $table.ofertasRechazadas,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fechaFichaje => $composableBuilder(
+    column: $table.fechaFichaje,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -12452,6 +12853,11 @@ class $$JugadoresTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<DateTime> get fechaFichaje => $composableBuilder(
+    column: $table.fechaFichaje,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<double> get prestigioPrevio => $composableBuilder(
     column: $table.prestigioPrevio,
     builder: (column) => ColumnOrderings(column),
@@ -12557,6 +12963,11 @@ class $$JugadoresTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<DateTime> get fechaFichaje => $composableBuilder(
+    column: $table.fechaFichaje,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<double> get prestigioPrevio => $composableBuilder(
     column: $table.prestigioPrevio,
     builder: (column) => column,
@@ -12615,6 +13026,7 @@ class $$JugadoresTableTableManager
                 Value<int> salario = const Value.absent(),
                 Value<int> aniosContrato = const Value.absent(),
                 Value<int> ofertasRechazadas = const Value.absent(),
+                Value<DateTime?> fechaFichaje = const Value.absent(),
                 Value<double> prestigioPrevio = const Value.absent(),
               }) => JugadoresCompanion(
                 id: id,
@@ -12641,6 +13053,7 @@ class $$JugadoresTableTableManager
                 salario: salario,
                 aniosContrato: aniosContrato,
                 ofertasRechazadas: ofertasRechazadas,
+                fechaFichaje: fechaFichaje,
                 prestigioPrevio: prestigioPrevio,
               ),
           createCompanionCallback:
@@ -12669,6 +13082,7 @@ class $$JugadoresTableTableManager
                 Value<int> salario = const Value.absent(),
                 Value<int> aniosContrato = const Value.absent(),
                 Value<int> ofertasRechazadas = const Value.absent(),
+                Value<DateTime?> fechaFichaje = const Value.absent(),
                 Value<double> prestigioPrevio = const Value.absent(),
               }) => JugadoresCompanion.insert(
                 id: id,
@@ -12695,6 +13109,7 @@ class $$JugadoresTableTableManager
                 salario: salario,
                 aniosContrato: aniosContrato,
                 ofertasRechazadas: ofertasRechazadas,
+                fechaFichaje: fechaFichaje,
                 prestigioPrevio: prestigioPrevio,
               ),
           withReferenceMapper: (p0) => p0
@@ -12853,6 +13268,7 @@ typedef $$RotacionJugadorTableCreateCompanionBuilder =
       required int minutos,
       Value<bool> esEstrellaAtaque,
       Value<bool> esEstrellaDefensa,
+      Value<bool> esSextoHombre,
     });
 typedef $$RotacionJugadorTableUpdateCompanionBuilder =
     RotacionJugadorCompanion Function({
@@ -12863,6 +13279,7 @@ typedef $$RotacionJugadorTableUpdateCompanionBuilder =
       Value<int> minutos,
       Value<bool> esEstrellaAtaque,
       Value<bool> esEstrellaDefensa,
+      Value<bool> esSextoHombre,
     });
 
 class $$RotacionJugadorTableFilterComposer
@@ -12906,6 +13323,11 @@ class $$RotacionJugadorTableFilterComposer
 
   ColumnFilters<bool> get esEstrellaDefensa => $composableBuilder(
     column: $table.esEstrellaDefensa,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get esSextoHombre => $composableBuilder(
+    column: $table.esSextoHombre,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -12953,6 +13375,11 @@ class $$RotacionJugadorTableOrderingComposer
     column: $table.esEstrellaDefensa,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get esSextoHombre => $composableBuilder(
+    column: $table.esSextoHombre,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$RotacionJugadorTableAnnotationComposer
@@ -12986,6 +13413,11 @@ class $$RotacionJugadorTableAnnotationComposer
 
   GeneratedColumn<bool> get esEstrellaDefensa => $composableBuilder(
     column: $table.esEstrellaDefensa,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get esSextoHombre => $composableBuilder(
+    column: $table.esSextoHombre,
     builder: (column) => column,
   );
 }
@@ -13034,6 +13466,7 @@ class $$RotacionJugadorTableTableManager
                 Value<int> minutos = const Value.absent(),
                 Value<bool> esEstrellaAtaque = const Value.absent(),
                 Value<bool> esEstrellaDefensa = const Value.absent(),
+                Value<bool> esSextoHombre = const Value.absent(),
               }) => RotacionJugadorCompanion(
                 id: id,
                 posicion: posicion,
@@ -13042,6 +13475,7 @@ class $$RotacionJugadorTableTableManager
                 minutos: minutos,
                 esEstrellaAtaque: esEstrellaAtaque,
                 esEstrellaDefensa: esEstrellaDefensa,
+                esSextoHombre: esSextoHombre,
               ),
           createCompanionCallback:
               ({
@@ -13052,6 +13486,7 @@ class $$RotacionJugadorTableTableManager
                 required int minutos,
                 Value<bool> esEstrellaAtaque = const Value.absent(),
                 Value<bool> esEstrellaDefensa = const Value.absent(),
+                Value<bool> esSextoHombre = const Value.absent(),
               }) => RotacionJugadorCompanion.insert(
                 id: id,
                 posicion: posicion,
@@ -13060,6 +13495,7 @@ class $$RotacionJugadorTableTableManager
                 minutos: minutos,
                 esEstrellaAtaque: esEstrellaAtaque,
                 esEstrellaDefensa: esEstrellaDefensa,
+                esSextoHombre: esSextoHombre,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -18310,6 +18746,7 @@ typedef $$EfectosDeEventoTableCreateCompanionBuilder =
     EfectosDeEventoCompanion Function({
       Value<int> id,
       required String clave,
+      Value<String?> claveEfecto,
       required String etiqueta,
       required double factor,
       required int partidosRestantes,
@@ -18318,6 +18755,7 @@ typedef $$EfectosDeEventoTableUpdateCompanionBuilder =
     EfectosDeEventoCompanion Function({
       Value<int> id,
       Value<String> clave,
+      Value<String?> claveEfecto,
       Value<String> etiqueta,
       Value<double> factor,
       Value<int> partidosRestantes,
@@ -18339,6 +18777,11 @@ class $$EfectosDeEventoTableFilterComposer
 
   ColumnFilters<String> get clave => $composableBuilder(
     column: $table.clave,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get claveEfecto => $composableBuilder(
+    column: $table.claveEfecto,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -18377,6 +18820,11 @@ class $$EfectosDeEventoTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get claveEfecto => $composableBuilder(
+    column: $table.claveEfecto,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get etiqueta => $composableBuilder(
     column: $table.etiqueta,
     builder: (column) => ColumnOrderings(column),
@@ -18407,6 +18855,11 @@ class $$EfectosDeEventoTableAnnotationComposer
 
   GeneratedColumn<String> get clave =>
       $composableBuilder(column: $table.clave, builder: (column) => column);
+
+  GeneratedColumn<String> get claveEfecto => $composableBuilder(
+    column: $table.claveEfecto,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get etiqueta =>
       $composableBuilder(column: $table.etiqueta, builder: (column) => column);
@@ -18459,12 +18912,14 @@ class $$EfectosDeEventoTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> clave = const Value.absent(),
+                Value<String?> claveEfecto = const Value.absent(),
                 Value<String> etiqueta = const Value.absent(),
                 Value<double> factor = const Value.absent(),
                 Value<int> partidosRestantes = const Value.absent(),
               }) => EfectosDeEventoCompanion(
                 id: id,
                 clave: clave,
+                claveEfecto: claveEfecto,
                 etiqueta: etiqueta,
                 factor: factor,
                 partidosRestantes: partidosRestantes,
@@ -18473,12 +18928,14 @@ class $$EfectosDeEventoTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 required String clave,
+                Value<String?> claveEfecto = const Value.absent(),
                 required String etiqueta,
                 required double factor,
                 required int partidosRestantes,
               }) => EfectosDeEventoCompanion.insert(
                 id: id,
                 clave: clave,
+                claveEfecto: claveEfecto,
                 etiqueta: etiqueta,
                 factor: factor,
                 partidosRestantes: partidosRestantes,
@@ -18510,6 +18967,153 @@ typedef $$EfectosDeEventoTableProcessedTableManager =
         >,
       ),
       EfectosDeEventoData,
+      PrefetchHooks Function()
+    >;
+typedef $$PatrociniosActivosTableCreateCompanionBuilder =
+    PatrociniosActivosCompanion Function({
+      Value<int> id,
+      required String categoria,
+    });
+typedef $$PatrociniosActivosTableUpdateCompanionBuilder =
+    PatrociniosActivosCompanion Function({
+      Value<int> id,
+      Value<String> categoria,
+    });
+
+class $$PatrociniosActivosTableFilterComposer
+    extends Composer<_$AppDatabase, $PatrociniosActivosTable> {
+  $$PatrociniosActivosTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get categoria => $composableBuilder(
+    column: $table.categoria,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PatrociniosActivosTableOrderingComposer
+    extends Composer<_$AppDatabase, $PatrociniosActivosTable> {
+  $$PatrociniosActivosTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get categoria => $composableBuilder(
+    column: $table.categoria,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PatrociniosActivosTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PatrociniosActivosTable> {
+  $$PatrociniosActivosTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get categoria =>
+      $composableBuilder(column: $table.categoria, builder: (column) => column);
+}
+
+class $$PatrociniosActivosTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PatrociniosActivosTable,
+          PatrociniosActivo,
+          $$PatrociniosActivosTableFilterComposer,
+          $$PatrociniosActivosTableOrderingComposer,
+          $$PatrociniosActivosTableAnnotationComposer,
+          $$PatrociniosActivosTableCreateCompanionBuilder,
+          $$PatrociniosActivosTableUpdateCompanionBuilder,
+          (
+            PatrociniosActivo,
+            BaseReferences<
+              _$AppDatabase,
+              $PatrociniosActivosTable,
+              PatrociniosActivo
+            >,
+          ),
+          PatrociniosActivo,
+          PrefetchHooks Function()
+        > {
+  $$PatrociniosActivosTableTableManager(
+    _$AppDatabase db,
+    $PatrociniosActivosTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PatrociniosActivosTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PatrociniosActivosTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PatrociniosActivosTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> categoria = const Value.absent(),
+              }) => PatrociniosActivosCompanion(id: id, categoria: categoria),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String categoria,
+              }) => PatrociniosActivosCompanion.insert(
+                id: id,
+                categoria: categoria,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PatrociniosActivosTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PatrociniosActivosTable,
+      PatrociniosActivo,
+      $$PatrociniosActivosTableFilterComposer,
+      $$PatrociniosActivosTableOrderingComposer,
+      $$PatrociniosActivosTableAnnotationComposer,
+      $$PatrociniosActivosTableCreateCompanionBuilder,
+      $$PatrociniosActivosTableUpdateCompanionBuilder,
+      (
+        PatrociniosActivo,
+        BaseReferences<
+          _$AppDatabase,
+          $PatrociniosActivosTable,
+          PatrociniosActivo
+        >,
+      ),
+      PatrociniosActivo,
       PrefetchHooks Function()
     >;
 
@@ -18581,4 +19185,6 @@ class $AppDatabaseManager {
       $$EntrenadoresTableTableManager(_db, _db.entrenadores);
   $$EfectosDeEventoTableTableManager get efectosDeEvento =>
       $$EfectosDeEventoTableTableManager(_db, _db.efectosDeEvento);
+  $$PatrociniosActivosTableTableManager get patrociniosActivos =>
+      $$PatrociniosActivosTableTableManager(_db, _db.patrociniosActivos);
 }

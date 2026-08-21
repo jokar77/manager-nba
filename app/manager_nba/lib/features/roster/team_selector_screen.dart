@@ -192,7 +192,12 @@ class _FichaDeEquipo extends StatelessWidget {
   Widget build(BuildContext context) {
     final e = Estilo.de(context);
     final info = infoDe(fila.codigo);
-    final acento = acentoDeEquipo(info.colorPrimario, info.colorSecundario);
+    // El nombre de la ciudad va sobre el panel neutro de la tarjeta, no
+    // sobre la franja de color del club: `acentoDeEquipo` (pensado para
+    // leerse encima del color primario) no sirve aquí, porque un segundo
+    // color de club oscuro se pierde en modo oscuro y uno claro en modo
+    // claro.
+    final acentoCiudad = colorLegibleComoTexto(info.colorSecundario, context);
     final textos = t(context);
 
     return PanelCortado(
@@ -257,7 +262,7 @@ class _FichaDeEquipo extends StatelessWidget {
                       Text(mayus(info.ciudad),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: rotulo(e, tamano: 9, color: acento)),
+                          style: rotulo(e, tamano: 9, color: acentoCiudad)),
                       const SizedBox(height: 2),
                       Text(mayus(info.apodo),
                           maxLines: 1,

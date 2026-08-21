@@ -5,6 +5,7 @@ import 'package:drift/drift.dart';
 import '../data/database/app_database.dart';
 import 'calendario_repository.dart';
 import 'contratos_repository.dart';
+import 'restriccion_de_fichaje.dart';
 import 'draft_repository.dart';
 import 'equipos_especiales.dart';
 import 'franquicia_repository.dart';
@@ -106,6 +107,12 @@ class MercadoDeTraspasos {
   final Map<String, int> puestosEsperados;
   final int anioDeDraft;
 
+  /// La fecha "de hoy" en la liga, para la restricción de recién fichados
+  /// (ver [restriccionDeFichajeReciente]). Se carga una sola vez con el
+  /// resto del mercado y no en cada comprobación: el buscador automático
+  /// evalúa miles de combinaciones sobre la misma foto.
+  final DateTime fechaActual;
+
   late final Map<int, Jugador> _jugadoresPorId = {
     for (final j in jugadores) j.id: j,
   };
@@ -131,6 +138,7 @@ class MercadoDeTraspasos {
     required this.picks,
     required this.puestosEsperados,
     required this.anioDeDraft,
+    required this.fechaActual,
   });
 
   Jugador? jugador(int id) => _jugadoresPorId[id];
@@ -169,12 +177,14 @@ Future<MercadoDeTraspasos> cargarMercado(AppDatabase db) async {
       await (db.select(db.temporada)..where((t) => t.id.equals(0)))
           .getSingleOrNull();
   final anioDeDraft = (temporada?.anioInicio ?? DateTime.now().year) + 1;
+  final fechaActual = await fechaActualDeLaLiga(db) ?? DateTime.now();
 
   return MercadoDeTraspasos(
     jugadores: jugadores,
     picks: picks,
     puestosEsperados: puestosEsperadosDeDraft(fuerza),
     anioDeDraft: anioDeDraft,
+    fechaActual: fechaActual,
   );
 }
 
@@ -357,6 +367,12 @@ RespuestaTraspaso evaluarMultipleEnMercado(
             aceptado: false,
             mensaje: 'Hay un jugador que ya no existe.',
             margen: 0);
+      }
+      final impedimento =
+          restriccionDeFichajeReciente(jugador, mercado.fechaActual);
+      if (impedimento != null) {
+        return RespuestaTraspaso(
+            aceptado: false, mensaje: impedimento, margen: 0);
       }
       origen = jugador.equipo;
       valor = valorDeTraspaso(jugador);

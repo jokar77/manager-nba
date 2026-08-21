@@ -21,7 +21,7 @@
 //
 // Al subirla, el `activate` borra las cachés viejas y la nueva se llena de
 // cero, así que no quedan mezclados ficheros de dos compilaciones.
-const CACHE = 'manager-nba-v11';
+const CACHE = 'manager-nba-v12';
 
 // Lo imprescindible para arrancar y jugar. Se descarga entero al instalar,
 // de una vez, para que baste con abrir el juego UNA vez con conexión.

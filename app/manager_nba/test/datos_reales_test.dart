@@ -80,6 +80,13 @@ void main() {
         greaterThan((deMedia(75) - deMedia(65)) * 4));
     // Un chaval con contrato de rookie cobra menos que un veterano igual.
     expect(deMedia(85, edad: 21), lessThan(deMedia(85, edad: 28)));
+
+    // Pero el descuento no puede desmentirse a sí mismo: un chaval de 22
+    // con una media de estrella de verdad tiene que seguir pidiendo más
+    // que un rotación cualquiera de treinta años, no menos. Con los
+    // factores viejos (0,45/0,7) esto fallaba: un 22 años de 87 pedía
+    // menos que un 75 veterano.
+    expect(deMedia(87, edad: 22), greaterThan(deMedia(75, edad: 30)));
   });
 
   test('tras crear la franquicia las 30 plantillas son jugables y con todos '

@@ -51,8 +51,11 @@ class Estilo {
   /// manda el color del club, no este.
   final Color marca;
 
-  /// Fondo y tinta de la placa de media, por tramos. Ver [placaDeMedia].
-  final List<TramoDeMedia> tramos;
+  /// Fondo y tinta de la placa de media: un único color para todas, sin
+  /// escalones — la media buena o mala se lee en la cifra, no en un
+  /// semáforo de colores sobre el cuadradito.
+  final Color placaFondo;
+  final Color placaTexto;
 
   const Estilo._({
     required this.fondo,
@@ -68,7 +71,8 @@ class Estilo {
     required this.bien,
     required this.mal,
     required this.marca,
-    required this.tramos,
+    required this.placaFondo,
+    required this.placaTexto,
   });
 
   static const oscuro = Estilo._(
@@ -85,12 +89,8 @@ class Estilo {
     bien: Color(0xFF5FD98D),
     mal: Color(0xFFFF8A8E),
     marca: Color(0xFFF08A4B),
-    tramos: [
-      TramoDeMedia(90, Color(0xFFF2C037), Color(0xFF17120A)),
-      TramoDeMedia(85, Color(0xFF48C98A), Color(0xFF06180F)),
-      TramoDeMedia(80, Color(0xFFA9B4C2), Color(0xFF0A0F16)),
-      TramoDeMedia(0, Color(0xFF59616D), Color(0xFFE7ECF3)),
-    ],
+    placaFondo: Color(0xFFA9B4C2),
+    placaTexto: Color(0xFF0A0F16),
   );
 
   static const claro = Estilo._(
@@ -107,43 +107,12 @@ class Estilo {
     bien: Color(0xFF1E8A55),
     mal: Color(0xFFC0353A),
     marca: Color(0xFFA8410E),
-    tramos: [
-      TramoDeMedia(90, Color(0xFFE0A81E), Color(0xFF1A1405)),
-      // El verde y el gris van más oscuros de lo que pedía el ojo: con los
-      // tonos de antes el blanco encima se quedaba en 3,2 y 4,3 de
-      // contraste, por debajo del 4,5 que hace falta para texto pequeño.
-      TramoDeMedia(85, Color(0xFF127A48), Color(0xFFFFFFFF)),
-      TramoDeMedia(80, Color(0xFF5A6675), Color(0xFFFFFFFF)),
-      TramoDeMedia(0, Color(0xFFAEB6C2), Color(0xFF1A1F27)),
-    ],
+    placaFondo: Color(0xFF5A6675),
+    placaTexto: Color(0xFFFFFFFF),
   );
 
   static Estilo de(BuildContext context) =>
       Theme.of(context).brightness == Brightness.dark ? oscuro : claro;
-
-  /// Los colores de la placa de la media de un jugador.
-  ///
-  /// El tramo se ve antes que el número: de un vistazo sabes si una
-  /// plantilla tiene estrellas o relleno sin leer catorce cifras.
-  ({Color fondo, Color texto}) placaDeMedia(int media) {
-    for (final tramo in tramos) {
-      if (media >= tramo.desde) {
-        return (fondo: tramo.fondo, texto: tramo.texto);
-      }
-    }
-    return (fondo: tramos.last.fondo, texto: tramos.last.texto);
-  }
-}
-
-/// Un tramo de la escala de medias: desde qué número aplica y con qué
-/// colores se pinta la placa.
-class TramoDeMedia {
-  /// Media mínima del tramo.
-  final int desde;
-  final Color fondo;
-  final Color texto;
-
-  const TramoDeMedia(this.desde, this.fondo, this.texto);
 }
 
 /// La tipografía de los titulares: condensada, para que quepan nombres
@@ -343,21 +312,38 @@ class PlacaEquipo extends StatelessWidget {
           // ilegibles.
           if (tamano >= 24)
             Center(
-              child: Text(
-                codigo,
-                style: TextStyle(
-                  fontFamily: familiaTitular,
-                  fontSize: tamano * 0.34,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.5,
-                  // Blanco puro sobre los dos triángulos: con el color del
-                  // equipo detrás, cualquier tinta fija falla en la mitad
-                  // de los equipos, y aquí el fondo son DOS colores a la
-                  // vez.
-                  color: Colors.white,
-                  shadows: const [
-                    Shadow(color: Colors.black54, blurRadius: 3),
-                  ],
+              child: Padding(
+                // El FittedBox necesita algo de aire para no rozar el
+                // borde: sin este margen, "LAL" quedaba pegado al filo en
+                // cuanto se reducía para que cupiera un código largo.
+                padding: EdgeInsets.all(tamano * 0.08),
+                // Los códigos reales son siempre 3 letras y ya cabían sin
+                // esto, pero los "equipos" que no son franquicias (Este,
+                // Oeste, Novatos, Sophomores del All-Star) no tienen un
+                // código corto — son la palabra entera. Sin encogerlo,
+                // "Sophomores" se salía del escudo entero. El FittedBox no
+                // cambia nada para un código de 3 letras: solo actúa
+                // cuando de verdad no cabe.
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    codigo,
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontFamily: familiaTitular,
+                      fontSize: tamano * 0.34,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                      // Blanco puro sobre los dos triángulos: con el color
+                      // del equipo detrás, cualquier tinta fija falla en la
+                      // mitad de los equipos, y aquí el fondo son DOS
+                      // colores a la vez.
+                      color: Colors.white,
+                      shadows: const [
+                        Shadow(color: Colors.black54, blurRadius: 3),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -462,7 +448,7 @@ class PlacaMedia extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colores = Estilo.de(context).placaDeMedia(media);
+    final e = Estilo.de(context);
     return Opacity(
       opacity: apagada ? 0.55 : 1,
       child: ClipPath(
@@ -470,7 +456,7 @@ class PlacaMedia extends StatelessWidget {
         child: Container(
           width: tamano,
           height: tamano,
-          color: colores.fondo,
+          color: e.placaFondo,
           alignment: Alignment.center,
           child: Text(
             '$media',
@@ -479,7 +465,7 @@ class PlacaMedia extends StatelessWidget {
               fontSize: tamano * 0.52,
               fontWeight: FontWeight.w800,
               height: 1,
-              color: colores.texto,
+              color: e.placaTexto,
             ),
           ),
         ),
@@ -1100,6 +1086,60 @@ class BotonDialogoSecundario extends StatelessWidget {
     return TextButton(
       onPressed: onPressed,
       child: Text(mayus(texto)),
+    );
+  }
+}
+
+/// La barra de progreso de una simulación: un segmento por partido, en
+/// verde o rojo según se va sabiendo el resultado de cada uno.
+///
+/// Sustituye al `LinearProgressIndicator` indeterminado de antes. No avanza
+/// literalmente partido a partido —la simulación calcula por semanas, no
+/// hay un enganche al motor para saber cuándo se resuelve cada partido
+/// suelto— pero sí se rellena en cuanto termina cada tramo, así que en una
+/// tirada larga ("simular hasta fin de temporada") se ve avanzar en varios
+/// saltos en vez de quedarse una barra girando sin decir nada durante
+/// medio minuto.
+///
+/// El número de segmentos no depende del ancho del texto ni de nada: es
+/// una fila de `Expanded`, así que 82 segmentos caben en un móvil igual de
+/// bien que 1, cada uno proporcionalmente más fino.
+class BarraProgresoSimulacion extends StatelessWidget {
+  /// Cuántos partidos hay que simular en total.
+  final int total;
+
+  /// Los ya resueltos, en orden: true si los ganaste.
+  final List<bool> resultados;
+
+  const BarraProgresoSimulacion({
+    super.key,
+    required this.total,
+    required this.resultados,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final e = Estilo.de(context);
+    if (total <= 0) return const SizedBox.shrink();
+
+    return SizedBox(
+      height: 6,
+      child: Row(
+        children: [
+          for (var i = 0; i < total; i++) ...[
+            if (i > 0) const SizedBox(width: 1.5),
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: i >= resultados.length
+                      ? e.lineaFuerte
+                      : (resultados[i] ? e.bien : e.mal),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

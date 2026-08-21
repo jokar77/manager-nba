@@ -6,6 +6,7 @@ import '../data/database/app_database.dart';
 import 'equipos_especiales.dart';
 import 'eventos_narrativos_repository.dart' show bonusSalarialDeEventos;
 import 'franquicia_repository.dart' show leerEquipoFranquicia;
+import 'patrocinadores_repository.dart' show bonusSalarialDePatrocinadores;
 import 'salarios.dart';
 
 /// Ofertas de renovación que admite un jugador antes de cortar la
@@ -62,15 +63,19 @@ Future<int> costeDelBanquillo(AppDatabase db, String equipo) async {
 /// Cuánto le queda a [equipo] por debajo del tope. Negativo si ya se pasó.
 ///
 /// Al equipo del usuario se le suma el margen que hayan dejado los eventos
-/// narrativos de esta temporada (un patrocinio da aire, una multa lo quita).
-/// A los otros 29 no: esas decisiones no las toman ellos, así que darles el
-/// mismo margen sería regalar dinero a toda la liga por algo que solo ha
-/// pasado en tu vestuario.
+/// narrativos de esta temporada (un patrocinio de evento da aire, una
+/// multa lo quita) y el de los patrocinadores fijos que tengas activos
+/// (ver `patrocinadores_repository.dart`) — dos fuentes de dinero
+/// distintas, se acumulan las dos. A los otros 29 no: esas decisiones no
+/// las toman ellos, así que darles el mismo margen sería regalar dinero a
+/// toda la liga por algo que solo ha pasado en tu franquicia.
 Future<int> espacioSalarial(AppDatabase db, String equipo) async {
   final base = topeSalarial - await masaSalarial(db, equipo);
   final tuEquipo = await leerEquipoFranquicia(db);
   if (equipo != tuEquipo) return base;
-  return base + await bonusSalarialDeEventos(db);
+  return base +
+      await bonusSalarialDeEventos(db) +
+      await bonusSalarialDePatrocinadores(db, equipoUsuario: equipo);
 }
 
 /// ¿Puede [equipo] pagar [salario]? Por encima del tope solo se puede

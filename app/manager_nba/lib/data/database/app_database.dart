@@ -33,6 +33,7 @@ part 'app_database.g.dart';
   OfertasTraspaso,
   Entrenadores,
   EfectosDeEvento,
+  PatrociniosActivos,
 ])
 class AppDatabase extends _$AppDatabase {
   /// Abre la partida guardada con el nombre [nombre]. Cada partida vive por
@@ -45,7 +46,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 24;
+  int get schemaVersion => 28;
 
   /// CUIDADO AL TOCAR ESTO: aquí se decide si una actualización del juego
   /// conserva las partidas guardadas o se las lleva por delante.
@@ -103,6 +104,40 @@ class AppDatabase extends _$AppDatabase {
           // es justo lo que tenia antes de que esto existiera.
           if (from < 24) {
             await m.addColumn(temporada, temporada.bonusSalarial);
+          }
+
+          // 25: fecha de fichaje como agente libre, para la restricción de
+          // traspaso de recién fichados. Aditiva: una partida en curso
+          // arranca con todo el mundo a null, que es exactamente "sin
+          // restricción" — nadie de la plantilla actual fichó "hoy".
+          if (from < 25) {
+            await m.addColumn(jugadores, jugadores.fechaFichaje);
+          }
+
+          // 26: el sexto hombre de la rotación. Aditiva: una partida en
+          // curso arranca sin nadie designado, que es un estado válido
+          // (nunca es obligatorio, igual que las estrellas de ataque y
+          // defensa).
+          if (from < 26) {
+            await m.addColumn(rotacionJugador, rotacionJugador.esSextoHombre);
+          }
+
+          // 27: los patrocinadores. Tabla nueva, así que una partida en
+          // curso arranca sin ninguno activo — se eligen la primera vez
+          // que se pase por el cambio de temporada, como cualquier otra
+          // decisión de pretemporada.
+          if (from < 27) {
+            await m.createTable(patrociniosActivos);
+          }
+
+          // 28: la clave del efecto de vestuario, para poder enseñar su
+          // nombre en el idioma del usuario en vez de en español fijo.
+          // Aditiva y nullable: los efectos que ya estuvieran en marcha se
+          // quedan con su etiqueta vieja y se siguen leyendo bien — no se
+          // puede adivinar a qué efecto del catálogo correspondían, y de
+          // todas formas se agotan en unos partidos.
+          if (from < 28) {
+            await m.addColumn(efectosDeEvento, efectosDeEvento.claveEfecto);
           }
         },
       );
