@@ -133,36 +133,41 @@ void main() {
       expect(claves, containsAll(['vestuario_roto', 'trabajo_con_la_ciudad']));
     });
 
-    test('el de ocio es el único que suma en la pista: es el barato', () async {
-      // Es lo que hace que la decisión no sea aritmética. Si todos costaran
-      // en proporción a lo que pagan, la respuesta sería siempre la misma
-      // cuenta; así depende de si te falta tope salarial o no.
-      expect(compromisoPorCategoria['ocio']!.esBueno, isTrue);
-      for (final categoria in ['camiseta', 'estadio', 'bebida']) {
-        expect(compromisoPorCategoria[categoria]!.esBueno, isFalse,
-            reason: '$categoria tiene que costar algo');
-      }
-      expect(bonusPorCategoria['ocio'],
-          lessThan(bonusPorCategoria['camiseta']!),
-          reason: 'el que no cuesta nada tiene que ser el que menos paga');
-    });
+  });
 
-    test('ningún compromiso se sale de los topes medidos de un efecto', () {
-      for (final entrada in compromisoPorCategoria.entries) {
-        expect(entrada.value.factor,
-            inInclusiveRange(minFactorDeEvento, maxFactorDeEvento),
-            reason: '${entrada.key}: un patrocinio no puede mover el equipo '
-                'más que cualquier otro efecto de vestuario');
-        expect(entrada.value.partidos,
-            inInclusiveRange(1, maxPartidosDeEfecto));
-      }
-    });
+  // Estos tres no tocan la base de datos: son comprobaciones sobre el mapa
+  // de compromisos. Van fuera del grupo a propósito — el `setUp` de ahí
+  // importa el dataset entero de jugadores y crea una franquicia, y hacer
+  // eso para leer un mapa constante es tiempo tirado en cada vuelta de CI.
+  test('el de ocio es el único que suma en la pista: es el barato', () {
+    // Es lo que hace que la decisión no sea aritmética. Si todos costaran
+    // en proporción a lo que pagan, la respuesta sería siempre la misma
+    // cuenta; así depende de si te falta tope salarial o no.
+    expect(compromisoPorCategoria['ocio']!.esBueno, isTrue);
+    for (final categoria in ['camiseta', 'estadio', 'bebida']) {
+      expect(compromisoPorCategoria[categoria]!.esBueno, isFalse,
+          reason: '$categoria tiene que costar algo');
+    }
+    expect(bonusPorCategoria['ocio'],
+        lessThan(bonusPorCategoria['camiseta']!),
+        reason: 'el que no cuesta nada tiene que ser el que menos paga');
+  });
 
-    test('cada categoría del catálogo tiene su compromiso escrito', () {
-      for (final categoria in categoriasPatrocinio) {
-        expect(compromisoPorCategoria[categoria], isNotNull,
-            reason: '$categoria se puede firmar y no pide nada a cambio');
-      }
-    });
+  test('ningún compromiso se sale de los topes medidos de un efecto', () {
+    for (final entrada in compromisoPorCategoria.entries) {
+      expect(entrada.value.factor,
+          inInclusiveRange(minFactorDeEvento, maxFactorDeEvento),
+          reason: '${entrada.key}: un patrocinio no puede mover el equipo '
+              'más que cualquier otro efecto de vestuario');
+      expect(entrada.value.partidos,
+          inInclusiveRange(1, maxPartidosDeEfecto));
+    }
+  });
+
+  test('cada categoría del catálogo tiene su compromiso escrito', () {
+    for (final categoria in categoriasPatrocinio) {
+      expect(compromisoPorCategoria[categoria], isNotNull,
+          reason: '$categoria se puede firmar y no pide nada a cambio');
+    }
   });
 }

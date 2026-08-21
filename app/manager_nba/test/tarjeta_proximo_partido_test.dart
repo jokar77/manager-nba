@@ -13,8 +13,39 @@ import 'package:manager_nba/domain/franquicia_repository.dart';
 import 'package:manager_nba/features/calendario/resumen_simulacion_screen.dart';
 import 'package:manager_nba/features/hub/home_hub_screen.dart';
 
-/// La tarjeta de próximo partido del menú principal: qué enseña, cuándo
-/// desaparece, y que tocar "Simular" de verdad simula sin salir del hub.
+// La tarjeta de próximo partido del menú principal: qué enseña, cuándo
+// desaparece, y que tocar "Simular" de verdad simula sin salir del hub.
+//
+// OJO CON `pumpAndSettle` EN ESTE FICHERO. Era EL test inestable de la
+// suite: pasaba siempre en local y tumbó la publicación en CI.
+//
+// El motivo: `testWidgets` corre en una zona de *fake async*, y
+// `pumpAndSettle` solo adelanta los temporizadores FALSOS. Pero cargar el
+// hub y simular un partido son futures de VERDAD contra SQLite, que se
+// resuelven fuera de esa zona. En una máquina rápida y sin carga daba
+// tiempo a que resolvieran solos antes del primer pump y todo parecía
+// determinista; en la de CI —más lenta y con treinta ficheros de test a la
+// vez— no llegaban, y el resumen todavía no estaba pintado cuando se
+// comprobaba.
+//
+// La solución es `_esperarA`: salir de la zona de fake async con `runAsync`
+// y dar vueltas hasta que lo que se espera esté de verdad en pantalla. Es
+// el mismo patrón que `flujo_completo_test.dart`.
+
+/// Espera a que [queSalga] esté pintado de verdad, dándole tiempo al
+/// trabajo real contra la base de datos. Ver la nota de arriba.
+Future<void> _esperarA(WidgetTester tester, Finder queSalga) async {
+  await tester.runAsync(() async {
+    for (var i = 0; i < 100; i++) {
+      if (queSalga.evaluate().isNotEmpty) return;
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      await tester.pump();
+    }
+  });
+  // Y ya dentro de la zona falsa otra vez, se rematan las animaciones.
+  await tester.pumpAndSettle();
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -56,7 +87,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       home: HomeHubScreen(db: db, equipo: 'DEN'),
     ));
-    await tester.pumpAndSettle();
+    await _esperarA(tester, find.textContaining('PRÓXIMO PARTIDO'));
 
     expect(find.textContaining('PRÓXIMO PARTIDO'), findsOneWidget);
     expect(find.text(infoDe(proximo.rival).apodo.toUpperCase()),
@@ -86,7 +117,11 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       home: HomeHubScreen(db: db, equipo: 'DEN'),
     ));
-    await tester.pumpAndSettle();
+    // Aquí se comprueba una AUSENCIA, así que hay que esperar a que el hub
+    // haya terminado de cargar: si no, "no está la tarjeta" sería cierto
+    // simplemente porque todavía no se ha pintado nada.
+    await _esperarA(tester, find.byType(HomeHubScreen));
+    await _esperarA(tester, find.text('CALENDARIO'));
 
     expect(find.textContaining('PRÓXIMO PARTIDO'), findsNothing);
     expect(find.text('SIMULAR 1 PARTIDO'), findsNothing);
@@ -107,10 +142,12 @@ void main() {
     await tester.pumpWidget(MaterialApp(
       home: HomeHubScreen(db: db, equipo: 'DEN'),
     ));
-    await tester.pumpAndSettle();
+    await _esperarA(tester, find.text('SIMULAR 1 PARTIDO'));
 
     await tester.tap(find.text('SIMULAR 1 PARTIDO'));
-    await tester.pumpAndSettle();
+    // Simular un partido es trabajo real contra SQLite: aquí es donde
+    // `pumpAndSettle` se quedaba corto en CI.
+    await _esperarA(tester, find.byType(ResumenSimulacionScreen));
 
     // Un partido jugado te lleva directo al resumen, sin pasar por el
     // Calendario: es justo lo que permite no tener que salir del menú.
@@ -118,7 +155,7 @@ void main() {
         reason: 'tras simular hay resultado, así que se enseña el resumen');
 
     await tester.pageBack();
-    await tester.pumpAndSettle();
+    await _esperarA(tester, find.byType(HomeHubScreen));
 
     expect(await partidosJugadosDeDen(), antes + 1,
         reason: 'de vuelta en el hub, el récord ya cuenta el partido nuevo');
