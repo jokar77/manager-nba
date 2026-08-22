@@ -1,0 +1,41 @@
+# Corre los tests en cualquier rama que no sea main.
+#
+# Existe porque `publicar.yml` solo se dispara en `main`, y ahí los tests
+# van pegados al despliegue: la única forma de probar algo en CI era
+# publicarlo. Eso deja el trabajo a medias sin red — y precisamente los
+# tests inestables de este proyecto solo se caían en CI, nunca en local.
+#
+# Aquí no se compila ni se publica nada: solo se pregunta si la suite pasa.
+name: Tests
+
+on:
+  push:
+    # En main no, que allí ya los corre `publicar.yml` antes de desplegar.
+    branches-ignore: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          # La misma que `publicar.yml`. Si aquí se probara con otra, un
+          # verde en rama no diría nada sobre si la publicación va a pasar.
+          flutter-version: 3.44.8
+
+      - name: Dependencias
+        working-directory: app/manager_nba
+        run: flutter pub get
+
+      - name: Analizador
+        working-directory: app/manager_nba
+        run: flutter analyze
+
+      - name: Tests
+        working-directory: app/manager_nba
+        run: flutter test
