@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../../data/database/app_database.dart';
@@ -44,7 +46,16 @@ class HomeHubScreen extends StatefulWidget {
   final AppDatabase db;
   final String equipo;
 
-  const HomeHubScreen({super.key, required this.db, required this.equipo});
+  /// Solo para los tests: siembra el azar de simular desde la tarjeta de
+  /// próximo partido. Ver `simularHastaConDialogo`.
+  final Random? random;
+
+  const HomeHubScreen({
+    super.key,
+    required this.db,
+    required this.equipo,
+    this.random,
+  });
 
   @override
   State<HomeHubScreen> createState() => _HomeHubScreenState();
@@ -492,6 +503,7 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
                 db: widget.db,
                 equipoUsuario: widget.equipo,
                 partido: estado.proximoPartido!,
+                random: widget.random,
                 // El closure que se le PASA a setState tiene que ser de
                 // bloque, no de flecha: `setState(() => x = y)` hace que el
                 // argumento devuelva el valor de la asignación (el propio
@@ -543,6 +555,7 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
                 db: widget.db,
                 equipoUsuario: widget.equipo,
                 partido: estado.proximoPartido!,
+                random: widget.random,
                 // Ver el comentario de la otra copia de este callback,
                 // arriba en _unaColumna.
                 onSimulado: () {
@@ -1139,11 +1152,15 @@ class _TarjetaProximoPartido extends StatefulWidget {
   /// hub recargue el récord y el siguiente partido pendiente.
   final VoidCallback onSimulado;
 
+  /// Solo para los tests. Ver `simularHastaConDialogo`.
+  final Random? random;
+
   const _TarjetaProximoPartido({
     required this.db,
     required this.equipoUsuario,
     required this.partido,
     required this.onSimulado,
+    this.random,
   });
 
   @override
@@ -1163,7 +1180,8 @@ class _TarjetaProximoPartidoState extends State<_TarjetaProximoPartido> {
     // nada que decidir (a diferencia de "simular hasta" una fecha lejana,
     // que sí puede arrastrar varios).
     final resultado = await simularHastaConDialogo(
-        context, widget.db, widget.equipoUsuario, widget.partido.fecha);
+        context, widget.db, widget.equipoUsuario, widget.partido.fecha,
+        random: widget.random);
     if (!mounted) return;
     setState(() => _simulando = false);
     widget.onSimulado();
@@ -1174,6 +1192,7 @@ class _TarjetaProximoPartidoState extends State<_TarjetaProximoPartido> {
           db: widget.db,
           equipoUsuario: widget.equipoUsuario,
           resultado: resultado,
+          random: widget.random,
         ),
       ));
       // Al volver del resumen puede haber más de un partido simulado (una

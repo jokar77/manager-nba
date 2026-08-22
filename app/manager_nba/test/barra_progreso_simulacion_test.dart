@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -95,21 +97,30 @@ void main() {
         (tester) async {
       // Nota sobre lo que este test NO comprueba: pillar el fotograma
       // intermedio en el que la barra está a medio rellenar es una carrera
-      // que no se puede hacer determinista aquí. La base de datos es en
-      // memoria y no hay E/S real que esperar, así que un `pump()` de la
-      // simulación de una semana entera a veces la deja a mitad y a veces
-      // ya terminada del todo — se comprobó directamente, saltando de un
-      // resultado a otro entre dos ejecuciones seguidas del mismo test. Lo
-      // que SÍ se puede comprobar sin depender de esa carrera es que la
-      // barra aparece y desaparece en los momentos correctos, y que el
-      // colorFor por resultado ya está cubierto aparte por el test de la
-      // pieza sola, más arriba.
+      // que no se puede hacer determinista aquí. Lo que SÍ se comprueba es
+      // que la barra aparece y desaparece en los momentos correctos; el
+      // color por resultado ya está cubierto por el test de la pieza sola,
+      // más arriba.
+      //
+      // EL `random: Random(1)` DE ABAJO NO SE PUEDE QUITAR. Era la causa
+      // de que este test fallara una de cada dos veces (2026-08-22).
+      //
+      // Mientras simulas, el juego decide al azar si te llega una oferta de
+      // traspaso o si salta un evento de vestuario. Las dos cosas ABREN UN
+      // DIÁLOGO Y PARAN LA SIMULACIÓN esperando respuesta, y aquí no hay
+      // nadie que conteste: el juego se queda parado para siempre y el test
+      // muere por agotamiento. Con `Random()` sin semilla eso salía unas
+      // veces sí y otras no.
+      //
+      // La semilla 1 está elegida porque con ella no cae ninguna de las dos
+      // en la semana que se simula. Si algún día cambia la probabilidad de
+      // las ofertas, habrá que buscar otra.
       tester.view.physicalSize = const Size(390, 844);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
       await tester.pumpWidget(MaterialApp(
-        home: CalendarioScreen(db: db, equipoUsuario: 'DEN'),
+        home: CalendarioScreen(db: db, equipoUsuario: 'DEN', random: Random(1)),
       ));
       await tester.pumpAndSettle();
 

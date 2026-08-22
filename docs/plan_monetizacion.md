@@ -1,6 +1,8 @@
 # Plan de monetización
 
-**Estado**: diseño acordado, sin implementar. Escrito el 2026-08-21.
+**Estado**: diseño acordado. Escrito el 2026-08-21; paso 1 (la capa de
+permisos) implementado el 2026-08-22 en `lib/domain/permisos.dart`, con
+`test/permisos_test.dart`. Del 2 en adelante, sin empezar.
 
 Decidido con el usuario:
 
@@ -35,13 +37,22 @@ Se hace con **una base de código y un interruptor de compilación**. Dos
 artefactos, un solo sitio donde vive la lógica:
 
 ```
-flutter build appbundle                                  -> gratis (con anuncios)
-flutter build appbundle --dart-define=EDICION=completa    -> Steam / build interna
+flutter build appbundle --dart-define=EDICION=gratis   -> Play (con anuncios)
+flutter build windows                                  -> Steam / build interna
+flutter run                                            -> desarrollo, todo abierto
 ```
 
 En Steam no hay anuncios ni compras: ese build sale ya con todo
 desbloqueado. Por eso "completa" tiene que poder venir **de la
 compilación** y no solo de haber pagado.
+
+**El que pide algo raro es el gratuito, no el completo.** La primera
+versión de este plan lo tenía al revés —`appbundle` a secas salía gratis—,
+y eso choca con la regla de más abajo de que el valor por defecto sea
+`completa`: si el defecto fuera `gratis`, los 576 tests y `flutter run`
+verían el juego capado y habría que tocarlos todos. Y puestos a
+equivocarse en un build, es preferible que a alguien se le abra de más a
+que quien ha pagado se quede fuera.
 
 ---
 
@@ -152,8 +163,10 @@ Esto suele pillar a la gente por sorpresa:
 
 ## Orden de trabajo propuesto
 
-1. **La capa de permisos** (Dart puro, con tests). No depende de tener
-   cuenta de AdMob ni de Play: se puede hacer ya.
+1. ~~**La capa de permisos** (Dart puro, con tests). No depende de tener
+   cuenta de AdMob ni de Play: se puede hacer ya.~~ **Hecho** (2026-08-22):
+   `Funcion`, `Edicion`, `Permisos` y la global `permisos`, con diez tests.
+   Nadie la consulta todavía: eso es el paso 3.
 2. **Los puertos** `Anuncios` y `Tienda`, con implementación de mentira.
 3. **Enchufar los tres bloqueos** a la capa de permisos.
 4. **La pantalla de compra** y el aviso de "esto es de la versión

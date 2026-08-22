@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
@@ -22,11 +24,16 @@ class ResumenSimulacionScreen extends StatefulWidget {
   final String equipoUsuario;
   final ResultadoLoteSimulado resultado;
 
+  /// Solo para los tests: siembra el azar de seguir simulando desde aquí.
+  /// Ver `simularHastaConDialogo`.
+  final Random? random;
+
   const ResumenSimulacionScreen({
     super.key,
     required this.db,
     required this.equipoUsuario,
     required this.resultado,
+    this.random,
   });
 
   @override
@@ -60,7 +67,7 @@ class _ResumenSimulacionScreenState extends State<ResumenSimulacionScreen> {
     });
     final nuevo = await simularHastaConDialogo(
         context, widget.db, widget.equipoUsuario, diaObjetivo,
-        onProgreso: (hastaAhora) {
+        random: widget.random, onProgreso: (hastaAhora) {
       if (mounted) setState(() => _progresoSimulacion = hastaAhora);
     });
     if (!mounted) return;

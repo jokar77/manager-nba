@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
@@ -29,10 +31,15 @@ class CalendarioScreen extends StatefulWidget {
   final AppDatabase db;
   final String equipoUsuario;
 
+  /// Solo para los tests: siembra el azar de lo que pasa mientras simulas.
+  /// Ver `simularHastaConDialogo`, que es quien lo usa.
+  final Random? random;
+
   const CalendarioScreen({
     super.key,
     required this.db,
     required this.equipoUsuario,
+    this.random,
   });
 
   @override
@@ -210,7 +217,7 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
     });
     final resultado = await simularHastaConDialogo(
         context, widget.db, widget.equipoUsuario, diaObjetivo,
-        onProgreso: (hastaAhora) {
+        random: widget.random, onProgreso: (hastaAhora) {
       if (mounted) setState(() => _progresoSimulacion = hastaAhora);
     });
 
@@ -225,6 +232,9 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
           db: widget.db,
           equipoUsuario: widget.equipoUsuario,
           resultado: resultado,
+          // Desde el resumen se puede seguir simulando, así que la semilla
+          // tiene que viajar con él o el azar volvería a entrar por ahí.
+          random: widget.random,
         ),
       ));
       if (!mounted) return;

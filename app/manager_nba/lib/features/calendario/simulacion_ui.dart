@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../../i18n/textos.dart';
@@ -92,10 +94,13 @@ Future<void> _plantearEventoNarrativo(
   BuildContext context,
   AppDatabase db,
   String equipoUsuario,
-  int partidosSimulados,
-) async {
+  int partidosSimulados, {
+  Random? random,
+}) async {
   final evento = await eventoQueSalta(db,
-      equipoUsuario: equipoUsuario, partidosSimulados: partidosSimulados);
+      equipoUsuario: equipoUsuario,
+      partidosSimulados: partidosSimulados,
+      random: random);
   if (evento == null || !context.mounted) return;
 
   final opcion = await plantearEvento(context, evento);
@@ -145,6 +150,21 @@ Future<ResultadoLoteSimulado> simularHastaConDialogo(
   /// motor para saber cuándo se resuelve cada partido suelto, así que la
   /// granularidad real es "por semana", no "por partido".
   void Function(List<PartidoSimuladoInfo> hastaAhora)? onProgreso,
+
+  /// El azar de lo que pasa MIENTRAS simulas: si te llega una oferta de
+  /// traspaso y si salta un evento de vestuario. En el juego se deja a
+  /// null, que es lo que da una partida distinta cada vez.
+  ///
+  /// Los tests lo siembran. No es un capricho: las dos cosas que decide
+  /// abren un diálogo y **paran la simulación esperando respuesta**, y en
+  /// un test no hay nadie que conteste, así que el juego se queda ahí
+  /// parado para siempre. Con el reloj de por medio eso pasaba unas veces
+  /// sí y otras no, que es de donde salían los tests inestables.
+  ///
+  /// El resultado de los partidos NO depende de esto: cada partido lleva
+  /// su semilla guardada en la tabla del calendario (`seedA`/`seedB`), así
+  /// que simular es reproducible por su cuenta.
+  Random? random,
 }) async {
   // Nada de simular con el banquillo vacío. Si acabas de despedir a tu
   // entrenador, aquí se te manda a buscar uno antes de seguir: es el mismo
@@ -230,7 +250,8 @@ Future<ResultadoLoteSimulado> simularHastaConDialogo(
     // un "simular hasta el final de temporada".
     if (context.mounted && tramo.simulados.isNotEmpty) {
       await _plantearEventoNarrativo(
-          context, db, equipoUsuario, tramo.simulados.length);
+          context, db, equipoUsuario, tramo.simulados.length,
+          random: random);
     }
 
     if (tramo.simulados.isNotEmpty) {
@@ -251,6 +272,7 @@ Future<ResultadoLoteSimulado> simularHastaConDialogo(
         equipoUsuario: equipoUsuario,
         partidosSimulados: tramo.simulados.length,
         fecha: cursor,
+        random: random,
       );
       if (await ofertasSinVer(db) > 0) {
         if (!context.mounted) break;

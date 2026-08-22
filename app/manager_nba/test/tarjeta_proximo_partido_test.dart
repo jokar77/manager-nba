@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -28,12 +30,43 @@ import 'package:manager_nba/features/hub/home_hub_screen.dart';
 // vez— no llegaban, y el resumen todavía no estaba pintado cuando se
 // comprobaba.
 //
-// La solución es `_esperarA`: salir de la zona de fake async con `runAsync`
-// y dar vueltas hasta que lo que se espera esté de verdad en pantalla. Es
-// el mismo patrón que `flujo_completo_test.dart`.
+// Media solución es `_esperarA`: salir de la zona de fake async con
+// `runAsync` y dar vueltas hasta que lo que se espera esté de verdad en
+// pantalla. Es el mismo patrón que `flujo_completo_test.dart`.
+//
+// LA OTRA MEDIA, Y LA QUE DE VERDAD LO ARREGLÓ (2026-08-22), ES EL
+// `random: Random(1)`. NO LO QUITES.
+//
+// Mientras simulas, el juego decide al azar si te llega una oferta de
+// traspaso o si salta un evento de vestuario. Las dos cosas abren un
+// diálogo y PARAN la simulación esperando respuesta; en un test no hay
+// nadie que conteste, así que se queda ahí colgado y ninguna espera del
+// mundo lo salva. Con `Random()` sin semilla pasaba unas veces sí y otras
+// no: de ahí la fama de inestable de este fichero.
+//
+// La semilla viaja HomeHubScreen -> simularHastaConDialogo -> las dos
+// funciones que tiran el dado. En el juego se deja a null, que es lo que
+// hace que cada partida sea distinta.
 
 /// Espera a que [queSalga] esté pintado de verdad, dándole tiempo al
 /// trabajo real contra la base de datos. Ver la nota de arriba.
+///
+/// Que el bucle se rinda EN SILENCIO al agotar las vueltas parece un
+/// descuido, pero es lo correcto: solo le está dando margen a la parte
+/// REAL del trabajo. La otra mitad —la animación del diálogo de
+/// simulación, la transición a la pantalla de resumen— cuelga de
+/// temporizadores FALSOS, que dentro de `runAsync` no avanzan por mucho
+/// que se espere. Quien la remata es el `pumpAndSettle` de abajo. Agotar
+/// las vueltas significa "hasta aquí llegó lo real, sigue tú".
+///
+/// Dos cosas comprobadas al intentar mejorar esto (2026-08-22):
+///
+///  - Pasarle una duración a ese `pump()`, para mover el reloj falso desde
+///    dentro, CUELGA el test para siempre: `pump` con duración no está
+///    soportado en `runAsync`. No lo intentes otra vez.
+///  - Convertir el agotamiento en un `fail()` hace que el test falle en
+///    esta espera en vez de en el `expect`. Puede ser preferible para
+///    diagnosticar, pero no arregla nada por sí solo.
 Future<void> _esperarA(WidgetTester tester, Finder queSalga) async {
   await tester.runAsync(() async {
     for (var i = 0; i < 100; i++) {
@@ -85,7 +118,7 @@ void main() {
     final proximo = pendientes.first;
 
     await tester.pumpWidget(MaterialApp(
-      home: HomeHubScreen(db: db, equipo: 'DEN'),
+      home: HomeHubScreen(db: db, equipo: 'DEN', random: Random(1)),
     ));
     await _esperarA(tester, find.textContaining('PRÓXIMO PARTIDO'));
 
@@ -115,7 +148,7 @@ void main() {
     });
 
     await tester.pumpWidget(MaterialApp(
-      home: HomeHubScreen(db: db, equipo: 'DEN'),
+      home: HomeHubScreen(db: db, equipo: 'DEN', random: Random(1)),
     ));
     // Aquí se comprueba una AUSENCIA, así que hay que esperar a que el hub
     // haya terminado de cargar: si no, "no está la tarjeta" sería cierto
@@ -140,7 +173,7 @@ void main() {
     final antes = await partidosJugadosDeDen();
 
     await tester.pumpWidget(MaterialApp(
-      home: HomeHubScreen(db: db, equipo: 'DEN'),
+      home: HomeHubScreen(db: db, equipo: 'DEN', random: Random(1)),
     ));
     await _esperarA(tester, find.text('SIMULAR 1 PARTIDO'));
 
