@@ -1,8 +1,11 @@
 # Plan de monetización
 
-**Estado**: diseño acordado. Escrito el 2026-08-21; paso 1 (la capa de
-permisos) implementado el 2026-08-22 en `lib/domain/permisos.dart`, con
-`test/permisos_test.dart`. Del 2 en adelante, sin empezar.
+**Estado**: diseño acordado. Escrito el 2026-08-21. El 2026-08-22 se
+hicieron los pasos 1 y 2 —la capa de permisos (`lib/domain/permisos.dart`)
+y los puertos `Anuncios` y `Tienda` (`lib/domain/anuncios.dart`,
+`lib/domain/tienda.dart`)— con sus tests. **Nada de esto lo consulta ni lo
+llama todavía el juego**: eso es el paso 3, y hasta entonces el juego se
+comporta exactamente igual que antes. Del 3 en adelante, sin empezar.
 
 Decidido con el usuario:
 
@@ -167,7 +170,10 @@ Esto suele pillar a la gente por sorpresa:
    cuenta de AdMob ni de Play: se puede hacer ya.~~ **Hecho** (2026-08-22):
    `Funcion`, `Edicion`, `Permisos` y la global `permisos`, con diez tests.
    Nadie la consulta todavía: eso es el paso 3.
-2. **Los puertos** `Anuncios` y `Tienda`, con implementación de mentira.
+2. ~~**Los puertos** `Anuncios` y `Tienda`, con implementación de
+   mentira.~~ **Hecho** (2026-08-22): `lib/domain/anuncios.dart` y
+   `lib/domain/tienda.dart`, con las de mentira como valor por defecto y
+   trece tests. Nadie los llama todavía: eso es el paso 3.
 3. **Enchufar los tres bloqueos** a la capa de permisos.
 4. **La pantalla de compra** y el aviso de "esto es de la versión
    completa".
