@@ -309,7 +309,10 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
                     }
                     final slots = snapshot.data!;
                     final hayPartidas = slots.any((s) => s.ocupada);
-                    final hayHueco = slots.any((s) => !s.ocupada);
+                    // Una ranura bloqueada no es un hueco: está ahí, pero
+                    // no se puede empezar nada en ella.
+                    final hayHueco =
+                        slots.any((s) => !s.ocupada && !s.bloqueada);
 
                     return ListView(
                       padding: const EdgeInsets.fromLTRB(20, 28, 20, 24),
@@ -484,6 +487,7 @@ class _FichaDeSlot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (resumen.bloqueada) return _bloqueada(context);
     if (!resumen.ocupada) return _vacia(context);
 
     final e = Estilo.de(context);
@@ -626,6 +630,44 @@ class _FichaDeSlot extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// La ranura que solo trae la versión completa: mismo hueco, con candado
+  /// y sin botón. Se enseña en vez de esconderse para que se vea que las
+  /// tres carreras en paralelo existen — es justo lo que se vende.
+  Widget _bloqueada(BuildContext context) {
+    final e = Estilo.de(context);
+    final textos = t(context);
+    return PanelCortado(
+      fondo: e.panelApagado,
+      corte: 14,
+      borde: Border.all(color: e.linea),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+        child: Row(
+          children: [
+            Icon(Icons.lock_outline, color: e.textoRotulo),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(mayus(textos.partidaNumero(resumen.numero)),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: rotulo(e, tamano: 9)),
+                  const SizedBox(height: 2),
+                  Text(textos.ranuraDeVersionCompleta,
+                      maxLines: 2,
+                      style: TextStyle(fontSize: 14, color: e.textoTenue)),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

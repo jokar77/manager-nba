@@ -259,6 +259,8 @@ class TextosEs extends Textos {
   @override
   String get simularUnMes => 'Simular 1 mes';
   @override
+  String get simularTemporadaEntera => 'Temporada entera';
+  @override
   String get verBracketCompleto => 'Ver bracket completo';
   @override
   String get empezarSiguienteTemporada => 'Empezar la siguiente temporada';
@@ -1035,6 +1037,8 @@ class TextosEs extends Textos {
   @override
   String get lasTresRanurasOcupadasAviso => 'Las tres ranuras están ocupadas: borra una para empezar de nuevo, o continúa una de las que ya tienes.';
   @override
+  String get ranuraDeVersionCompleta => 'Ranura de la versión completa';
+  @override
   String partidaNumero(int n) => 'PARTIDA $n';
   @override
   String get borrarEstaPartidaTooltip => 'Borrar esta partida';
@@ -1087,7 +1091,7 @@ class TextosEs extends Textos {
   @override
   String get tituloPatrocinadores => 'Patrocinadores';
   @override
-  String get explicacionPatrocinadores => 'Elige qué patrocinios firma tu franquicia esta temporada: cada uno activo suma margen de tope salarial.';
+  String get explicacionPatrocinadores => 'Cada patrocinio tiene varias ofertas: cuanto más largo el contrato, menos paga al año. Lo que firmes ocupa esa categoría hasta que caduque.';
   @override
   String get patrocinioEstadioLabel => 'Patrocinador del pabellón';
   @override
@@ -1099,7 +1103,17 @@ class TextosEs extends Textos {
   @override
   String fundadoEnAnio(int anio) => 'Fundado en $anio';
   @override
+  String get alAnioSufijo => 'al año';
+  @override
+  String sinPatrocinioFirmado(int ofertas) => ofertas == 1 ? 'Sin firmar · 1 oferta' : 'Sin firmar ·  ofertas';
+  @override
   String margenPatrocinio(String importe) => '+$importe de margen salarial';
   @override
   String get totalPatrociniosLabel => 'Margen total este año';
+  @override
+  String get patrocinadoresBloqueados => 'Los patrocinadores son de la versión completa. Mira un vídeo y los tienes los cuatro durante esta temporada.';
+  @override
+  String get verVideoPatrocinadores => 'VER VÍDEO Y DESBLOQUEAR';
+  @override
+  String get videoSinTerminar => 'El vídeo no se vio entero, así que siguen bloqueados. Puedes intentarlo otra vez.';
 }

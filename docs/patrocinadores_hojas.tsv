@@ -1,0 +1,386 @@
+GSW	1	Golden Gate Grid	Fundada en 1987 por un grupo de ingenieros eléctricos que trabajaron en el mantenimiento del puente Golden Gate. Hoy es la eléctrica regional que suministra energía a media Bahía, con una flota de torres de alta tensión pintadas del mismo naranja internacional del puente.
+GSW	2	FogCity Fiber	Empresa de telecomunicaciones lanzada en 2011 en un garaje de SoMa. Su eslogan original, "más rápido que la niebla", se convirtió en la campaña que la hizo famosa; hoy tiende fibra óptica por todo el norte de California.
+GSW	3	Mission Market	Puesto de burritos familiar abierto en 1974 en el Distrito de la Misión, ahora convertido en cadena regional de comida rápida mexicana con más de 40 locales.
+GSW	4	Bay Bytes Bank	Fintech fundada en 2015 por antiguos empleados de bancos de inversión de la bahía, especializada en préstamos para startups tecnológicas.
+GSW	5	Alcatraz Apps	Estudio de software fundado en 2009 que desarrolla aplicaciones de seguridad y ciberdefensa; su nombre juega con la idea de un sistema "imposible de hackear, como la prisión".
+GSW	6	Cable Car Cola	Embotelladora fundada en 1962 que homenajea los icónicos tranvías de la ciudad; sus latas antiguas de coleccionista se venden hoy como reliquia local.
+GSW	7	Painted Ladies Paint	Empresa familiar de pinturas fundada en 1968, especializada en los tonos pastel históricos de las casas victorianas de Alamo Square.
+GSW	9	Coit Tower Light	Compañía eléctrica boutique fundada en 1995, especializada en iluminación arquitectónica de monumentos y edificios históricos.
+GSW	10	Lombard Loops	Startup de movilidad urbana fundada en 2018 que diseña rutas turísticas en bicicleta eléctrica por las calles más empinadas de la ciudad.
+GSW	11	Ferry Clock Credit	Cooperativa de crédito fundada en 1930 cerca del Ferry Building, que originalmente prestaba dinero a estibadores y pescadores del puerto.
+GSW	12	Chinatown Gate Co	Importadora y distribuidora mayorista fundada en 1955 por una familia inmigrante, proveedora de mercancía para los comercios del barrio chino más antiguo de EE.
+GSW	13	Sourdough Steam	Panadería artesanal fundada en 1889, heredera de la receta original de masa madre que trajeron los buscadores de oro de la Fiebre de 1849.
+GSW	14	Sea Lion Solar	Empresa de energía solar fundada en 2012, cuyo nombre rinde homenaje a los leones marinos que colonizaron el muelle 39 en los noventa.
+GSW	15	Twin Peaks Transit	Operador de transporte público fundado en 1948, encargado históricamente de las líneas de tranvía que suben las colinas más pronunciadas de la ciudad.
+TOR	1	CN Grid Energy	Compañía eléctrica fundada en 1976, el mismo año de inauguración de la Torre CN, responsable del suministro energético del distrito financiero.
+TOR	2	Maple Circuit	Empresa de semiconductores fundada en 2001 en Waterloo, célebre por fabricar los primeros microchips "hechos en Canadá".
+TOR	3	Harbourfront Hydro	Utility hidroeléctrica fundada en 1922, que aprovecha las corrientes del lago Ontario para abastecer los muelles del puerto.
+TOR	4	Distillery Drafts	Cervecería artesanal instalada en 1998 en los antiguos edificios de ladrillo del Distillery District, reconvertidos de una destilería de whisky del siglo XIX.
+TOR	5	T-Dot Transit+	Operador de transporte metropolitano fundado en 1954, apodado con el mote callejero "T-Dot" que los propios torontonianos usan para su ciudad.
+TOR	7	Bay Street Bullion	Casa de inversión fundada en 1978 en el corazón del distrito financiero de Bay Street, el "Wall Street canadiense".
+TOR	8	Kensington Market	Colectivo de comerciantes fundado en 1911 por inmigrantes judíos y portugueses, hoy un mercado multicultural icónico de la ciudad.
+TOR	9	Casa Loma Stone	Empresa de cantería y restauración fundada en 1937, especializada en la conservación del castillo gótico Casa Loma y otras edificaciones históricas.
+TOR	10	Queen West Quilt	Taller textil y de moda fundado en 2007 en el barrio bohemio de Queen West, cuna de diseñadores independientes canadienses.
+TOR	11	Scarborough Bluffs	Empresa de turismo de naturaleza fundada en 1985, dedicada a excursiones guiadas por los acantilados de arcilla más famosos de la ciudad.
+TOR	12	High Park Cherry	Productora de bebidas fundada en 1999, célebre por su edición de temporada inspirada en los cerezos en flor de High Park.
+TOR	13	St Lawrence Peameal	Charcutería histórica fundada en 1803, la más antigua del mercado St. Lawrence, inventora del clásico sándwich de bacon peameal.
+TOR	15	Don Valley Brickworks	Fábrica de ladrillos fundada en 1889 en la cantera del valle Don, que suministró el material de construcción de medio Toronto antiguo.
+UTA	1	Wasatch Watts	Cooperativa eléctrica de montaña fundada en 1964, que aprovecha la nieve derretida de la cordillera Wasatch para generar energía hidroeléctrica.
+UTA	2	Great Salt Grid	Empresa de minerales industriales fundada en 1930, que extrae y procesa sal del Gran Lago Salado para uso energético y comercial.
+UTA	3	Temple Square Tea	Casa de infusiones fundada en 1978, ubicada cerca de las icónicas torres del templo, especializada en tés herbales sin cafeína.
+UTA	4	Powder Basin Gear	Marca de equipamiento de esquí fundada en 1985, nacida entre las estaciones de nieve en polvo que hicieron famosa la región.
+UTA	5	Beehive Bank	Banco fundado en 1896, cuyo nombre y logo homenajean el símbolo pionero de la colmena que representa la industriosidad del estado de Utah.
+UTA	6	Canyon Cola	Embotelladora regional fundada en 1958, inspirada en los cañones rojizos del desierto que rodean la ciudad.
+UTA	7	Bonneville Speed	Fabricante de vehículos eléctricos de alto rendimiento fundado en 2016, que realiza pruebas de velocidad en las salinas de Bonneville.
+UTA	8	Alta Alpine Oats	Empresa de alimentación saludable fundada en 2010, productora de avenas y cereales inspirados en los prados alpinos de Alta.
+UTA	10	Red Butte Botanical	Jardín botánico y vivero fundado en 1961, dedicado a la conservación de flora nativa del desierto de Utah.
+UTA	12	Zion Trail Tech	Startup de cartografía GPS fundada en 2014, especializada en rutas de senderismo por los parques nacionales del estado.
+UTA	13	Sugar House Sweets	Confitería histórica fundada en 1908 en el barrio de Sugar House, herencia de una antigua fábrica de azúcar de remolacha.
+UTA	14	Liberty Park Paddles	Empresa de ocio acuático fundada en 1975, operadora de botes de remo en el lago del parque Liberty.
+UTA	15	Oquirrh Optical	Fabricante de lentes de precisión fundado en 1992, nombrado por la cordillera Oquirrh que enmarca el valle por el oeste.
+WAS	1	Capitol Current DC	Compañía eléctrica federal fundada en 1932, proveedora histórica de energía a los edificios gubernamentales del National Mall.
+WAS	2	Potomac Power Bank	Banco de inversión fundado en 1901 a orillas del río Potomac, especializado en financiar infraestructuras públicas.
+WAS	3	Mall Mile Media	Agencia de publicidad fundada en 1994, célebre por sus campañas visibles a lo largo de la milla que separa el Capitolio del monumento a Lincoln.
+WAS	4	Cherry Blossom Chips	Marca de snacks fundada en 1965, lanzada para coincidir con el festival anual de los cerezos en flor de la ciudad.
+WAS	5	Beltway Bolts	Taller mecánico y de repuestos fundado en 1971, nombrado por la autopista de circunvalación I-495 que rodea la capital.
+WAS	6	Monument Mint	Compañía farmacéutica fundada en 1958, especializada en productos de bienestar y salud básica.
+WAS	7	Georgetown Gowns	Casa de moda fundada en 1949 en el histórico barrio de Georgetown, proveedora de vestidos de gala para eventos diplomáticos.
+WAS	9	Metro Motion	Operador del metro fundado en 1976, el mismo año de inauguración del sistema de transporte subterráneo de la ciudad.
+WAS	10	Tidal Basin Boats	Empresa de alquiler de embarcaciones fundada en 1920, operando botes de pedal en la cuenca frente al monumento a Jefferson.
+WAS	11	Adams Morgan Arts	Colectivo cultural fundado en 1991, motor de festivales multiculturales en uno de los barrios más diversos de la capital.
+WAS	12	Lincoln Ledger	Firma de contabilidad fundada en 1922, en el año de inauguración del monumento a Lincoln que inspira su nombre.
+WAS	13	Dupont Drinks	Compañía de bebidas fundada en 1977, con sede junto a la histórica fuente de Dupont Circle.
+WAS	14	Eastern Market Eats	Mercado de alimentos fundado en 1873, el más antiguo en funcionamiento continuo de la ciudad.
+WAS	15	Anacostia Roots	Organización de conservación ambiental fundada en 2003, dedicada a la restauración de los humedales del río Anacostia.
+SAS	1	Alamo Alloy	Fundición metalúrgica fundada en 1926, cercana al histórico fuerte de El Álamo, proveedora de estructuras de acero para toda la región.
+SAS	2	Riverwalk Roasts	Cafetería fundada en 1968 a orillas del célebre Paseo del Río, primera terraza flotante de café de la ciudad.
+SAS	3	Spurside Steel	Fábrica de herrajes fundada en 1954, especializada en espuelas y accesorios de montar de estilo vaquero tradicional.
+SAS	4	Fiesta Fizz	Embotelladora fundada en 1959, lanzada para las celebraciones anuales de Fiesta San Antonio con sus colores característicos.
+SAS	5	Mission Trail Bank	Banco regional fundado en 1890, con sucursales originales situadas junto a las cinco misiones históricas españolas.
+SAS	6	Hill Country Honey	Apicultura familiar fundada en 1972 en las colinas calizas del Texas Hill Country.
+SAS	7	Tower Tech	Empresa de telecomunicaciones fundada en 1968, el mismo año de construcción de la Torre de las Américas para la Feria Mundial.
+SAS	8	Pearl Lofts	Promotora inmobiliaria fundada en 2006, encargada de reconvertir la antigua fábrica de cerveza Pearl Brewery en lofts residenciales.
+SAS	9	Market Square Masa	Fábrica de tortillas fundada en 1942 junto al Mercado histórico, proveedora de masa fresca a restaurantes de todo el estado.
+SAS	10	Military City Motors	Concesionario de vehículos fundado en 1945, homenaje al apodo de la ciudad como "Military City USA" por su alta concentración de bases militares.
+SAS	11	San Pedro Springs	Embotelladora de agua mineral fundada en 1889, con manantial propio en el segundo parque público más antiguo del país.
+SAS	12	Tejano Tunes	Sello discográfico fundado en 1975, pionero en la difusión de música tejana y conjunto por toda la frontera.
+SAS	13	Brackenridge Botanical	Jardín botánico fundado en 1980, construido sobre los antiguos terrenos del parque Brackenridge.
+SAS	14	King William Crafts	Taller de ebanistería fundado en 1890 en el histórico barrio victoriano de King William.
+SAS	15	Confluence Canopy	Estudio de arquitectura fundado en 2015, responsable del diseño de pabellones sostenibles junto a la confluencia de los ríos de la ciudad.
+SAC	1	Capitol Current	Compañía eléctrica estatal fundada en 1911, proveedora histórica de energía al Capitolio de California.
+SAC	3	Almond Avenue	Cooperativa agrícola fundada en 1963, exportadora de almendras del Valle Central californiano.
+SAC	4	Tower Bridge Bits	Startup tecnológica fundada en 2012, con sede junto al icónico puente elevadizo dorado que da nombre a la marca.
+SAC	5	Farm to Fork Co	Colectivo de restaurantes fundado en 2005, pionero del movimiento "de la granja a la mesa" que hizo famosa a la ciudad.
+SAC	6	Gold Rush Grid	Banco fundado en 1852, en plena Fiebre del Oro, uno de los primeros en operar en la capital californiana.
+SAC	7	Old Sac Steamworks	Compañía ferroviaria fundada en 1863, operadora de las primeras locomotoras de vapor del Oeste americano.
+SAC	8	Delta Breeze	Marca de bebidas refrescantes fundada en 1988, nombrada por la brisa fresca que llega desde el delta del río Sacramento.
+SAC	9	American River Rafts	Empresa de deportes de aventura fundada en 1979, especializada en descensos de rafting por el Río Americano.
+SAC	10	Camellia City	Empresa de cosmética fundada en 1935, inspirada en la flor oficial de la ciudad.
+SAC	11	Railyards Solar	Compañía de energía renovable fundada en 2017, instalada en los antiguos patios ferroviarios reconvertidos de Sacramento.
+SAC	12	Sutter's Fort	Empresa de materiales de construcción fundada en 1839, con nombre del fuerte pionero que dio origen a la ciudad.
+SAC	13	Central Valley Citrus	Cooperativa citrícola fundada en 1920, exportadora de naranjas del Valle Central.
+SAC	14	K Street Kickers	Marca de calzado urbano fundada en 1998, nacida en la calle comercial peatonal más famosa del centro.
+SAC	15	Folsom Dam Power	Central hidroeléctrica fundada en 1955, responsable del suministro energético desde la presa de Folsom.
+PHO	1	Desert Sun Solar	Compañía de energía solar fundada en 1998, pionera en aprovechar los más de 300 días de sol al año del desierto de Sonora.
+PHO	2	Valley Volt	Fabricante de vehículos eléctricos fundado en 2015, con sede en el Valle del Sol.
+PHO	4	Red Rock Realty	Inmobiliaria fundada en 1985, especializada en propiedades con vistas a las formaciones rocosas rojas de la región.
+PHO	5	Camelback Chips	Marca de snacks fundada en 1991, nombrada por la icónica montaña con forma de camello que domina el paisaje urbano.
+PHO	6	Monsoon Media	Productora audiovisual fundada en 2003, inspirada en las intensas tormentas monzónicas del verano del desierto.
+PHO	7	Copper State Steel	Fundición metalúrgica fundada en 1912, homenaje al apodo de Arizona como el "Estado del Cobre".
+PHO	8	Papago Park Peaks	Empresa de turismo de aventura fundada en 1990, operando excursiones por las formaciones rocosas del parque Papago.
+PHO	9	Salt River Sips	Marca de bebidas fundada en 1980, con agua de manantial proveniente del Río Salado.
+PHO	10	Desert Botanical	Empresa de investigación agrícola fundada en 1939, vinculada al histórico jardín botánico del desierto.
+PHO	11	Superstition Gold	Compañía minera fundada en 1875, en referencia a las leyendas de oro perdido en las Montañas Superstition.
+PHO	12	Roosevelt Row	Colectivo de arte urbano fundado en 2002, motor del distrito artístico y de murales más vibrante de la ciudad.
+PHO	13	Haboob Hydro	Empresa de gestión hídrica fundada en 2008, nombrada por las intensas tormentas de polvo del desierto conocidas como "haboob".
+PHO	14	Scottsdale Saddles	Talabartería fundada en 1948, proveedora tradicional de monturas y arreos para ranchos de la zona.
+PHO	15	Grand Canyon Cargo	Empresa de logística aérea fundada en 1965, con rutas de carga que sobrevuelan el célebre cañón del estado.
+POR	1	Rose City Roasters	Tostadero de café fundado en 1993, homenaje al apodo floral de la ciudad, "la Ciudad de las Rosas".
+POR	2	Bridgetown Bikes	Fabricante de bicicletas fundado en 2001, aprovechando el apodo "Bridgetown" por los múltiples puentes que cruzan el río Willamette.
+POR	3	Rainier Rain Gear	Marca de ropa impermeable fundada en 1979, diseñada para el clima lluvioso característico del Pacífico Noroeste.
+POR	4	Timberline Tech	Empresa de software fundada en 2010, nombrada por la línea de árboles del monte Hood visible desde la ciudad.
+POR	6	Willamette Watts	Central hidroeléctrica fundada en 1889, generando energía a partir de las cascadas del río Willamette.
+POR	7	St Johns Steel	Empresa de construcción metálica fundada en 1931, responsable del mantenimiento del puente gótico de St. Johns.
+POR	8	Food Cart Fleet	Colectivo de food trucks fundado en 2004, pionero del boom de cocina callejera que hizo famosa a la ciudad.
+POR	9	Forest Park Forage	Empresa de alimentos silvestres fundada en 2013, recolectora de setas y plantas comestibles del bosque urbano más grande del país.
+POR	10	Doughnut Vault	Pastelería fundada en 1955, inspirada en la icónica tradición de donuts excéntricos de la ciudad.
+POR	13	Pearl District Pottery	Estudio de cerámica fundado en 1999, en el antiguo distrito industrial reconvertido en zona artística.
+POR	15	Columbia Cargo	Empresa naviera fundada en 1938, especializada en el transporte de mercancías por el río Columbia.
+ORL	1	ThemePark Power	Compañía eléctrica fundada en 1971, coincidiendo con la apertura de los primeros grandes parques temáticos de la ciudad.
+ORL	2	Citrus Circuit	Empresa de tecnología fundada en 1995, con nombre inspirado en los antiguos naranjales que ocupaban la región antes del turismo.
+ORL	3	Lake Eola Lights	Compañía de iluminación fundada en 1985, responsable del alumbrado ornamental de la fuente del lago Eola.
+ORL	4	I-Drive Inns	Cadena hotelera fundada en 1978, con sus primeros establecimientos en la famosa International Drive.
+ORL	5	MagicHour Media	Productora de espectáculos fundada en 2001, especializada en shows nocturnos y de fuegos artificiales.
+ORL	6	SpaceCoast Snacks	Marca de aperitivos fundada en 1988, nombrada por la cercana Costa Espacial de Florida y su historia aeroespacial.
+ORL	8	Orange Blossom Brew	Cervecería artesanal fundada en 2009, elaborando cervezas con notas cítricas de flor de azahar.
+ORL	9	Gator Creek Gear	Marca de ropa outdoor fundada en 1992, inspirada en los caimanes que habitan los pantanos y lagos de la región.
+ORL	10	Winter Park Woods	Ebanistería fundada en 1965 en el elegante barrio de Winter Park, célebre por sus robles centenarios.
+ORL	11	Pulse City Power	Empresa de energía urbana fundada en 2005, proveedora de electricidad para el centro de la ciudad.
+ORL	12	Boggy Creek Boats	Empresa de turismo de aventura fundada en 1975, operando excursiones en aerodeslizador por los pantanos cercanos.
+ORL	13	Milk District Malt	Lechería histórica fundada en 1940, en el barrio conocido como "Milk District" por sus antiguas fábricas lácteas.
+ORL	14	Celebration Solar	Empresa de energía renovable fundada en 2011, instalada en la comunidad planificada de Celebration.
+ORL	15	Kissimmee Cattle Co	Ganadería fundada en 1890, heredera de la tradición vaquera de los ranchos de Kissimmee anteriores al turismo.
+NYK	1	Empire Edge Bank	Banco de inversión fundado en 1931, el mismo año de inauguración del Empire State Building que inspira su logo.
+NYK	2	Broadway Bytes	Empresa de software para artes escénicas fundada en 1998, proveedora de sistemas de venta de entradas para los teatros de Broadway.
+NYK	3	Hudson Hydro	Compañía de gestión hídrica fundada en 1917, encargada del suministro de agua desde el río Hudson.
+NYK	4	Fifth Ave Fits	Casa de moda de lujo fundada en 1955, con boutique insignia en la Quinta Avenida.
+NYK	6	Liberty Lithium	Fabricante de baterías fundado en 2019, homenaje a la antorcha de la Estatua de la Libertad.
+NYK	8	Central Park Canopy	Empresa de paisajismo fundada en 1962, encargada del mantenimiento de la vegetación del parque más famoso de Manhattan.
+NYK	9	Wall Street Wealth	Firma de gestión de patrimonio fundada en 1889, con sede en el corazón del distrito financiero.
+NYK	10	Flatiron Fintech	Startup financiera fundada en 2013, con oficinas en el histórico edificio Flatiron.
+NYK	11	Yellow Cab Cargo	Empresa de logística urbana fundada en 1907, el mismo año de introducción del primer taxi amarillo de la ciudad.
+NYK	12	High Line Horticulture	Empresa de jardinería urbana fundada en 2009, encargada del mantenimiento del parque elevado High Line.
+NYK	13	Grand Central Clock	Empresa de relojería fundada en 1913, el año de inauguración de la Terminal Grand Central.
+NYK	14	Harlem Horns Jazz	Sello discográfico fundado en 1932, en pleno Renacimiento de Harlem, cuna del jazz neoyorquino.
+NYK	15	Times Square Tensor	Empresa de inteligencia artificial fundada en 2020, con sede en los rascacielos digitales de Times Square.
+PHI	1	Liberty Bell Bank	Banco fundado en 1876, en el centenario de la independencia, con sede cercana a la histórica campana de la libertad.
+PHI	2	Cheesesteak Co	Cadena de restaurantes fundada en 1930, especializada en el sándwich más famoso de la ciudad.
+PHI	3	Schuylkill Solar	Empresa de energía renovable fundada en 2010, instalada a orillas del río Schuylkill.
+PHI	4	Broad Street Bolts	Ferretería industrial fundada en 1954, ubicada en la histórica avenida Broad Street.
+PHI	5	Independence Ink	Editorial e imprenta fundada en 1776, coincidiendo con la firma de la Declaración de Independencia en la ciudad.
+PHI	6	Rocky Steps Wear	Marca de ropa deportiva fundada en 1976, inspirada en la célebre escalinata del Museo de Arte.
+PHI	7	Keystone Kilns	Fábrica de cerámica industrial fundada en 1901, homenaje al apodo de Pensilvania como el "Estado Clave".
+PHI	8	City Hall Spire	Empresa de telecomunicaciones fundada en 1994, con antena principal en la torre del Ayuntamiento.
+PHI	9	Ben Franklin Bridge	Compañía de ingeniería civil fundada en 1926, año de inauguración del puente que lleva el nombre del fundador de la ciudad.
+PHI	10	Reading Terminal Roast	Tostadero de café fundado en 1893, dentro del histórico mercado de la Terminal Reading.
+PHI	12	Fairmount Park	Empresa de gestión forestal fundada en 1855, encargada del mantenimiento de uno de los parques urbanos más grandes del país.
+PHI	13	South Street Sound	Tienda de discos fundada en 1977, epicentro de la escena musical alternativa de la calle South.
+PHI	14	Penns Landing Marine	Empresa naviera fundada en 1682, con sede en el punto donde William Penn desembarcó por primera vez.
+PHI	15	Boathouse Row	Club de remo fundado en 1858, operador de las históricas casas de botes iluminadas del río Schuylkill.
+MIN	1	Twin Cities Fiber	Empresa de telecomunicaciones fundada en 1999, con red compartida entre Minneapolis y su ciudad hermana, St. Paul.
+MIN	2	North Loop Noodles	Restaurante fundado en 2011 en el antiguo distrito de almacenes reconvertido en zona gastronómica.
+MIN	3	Lake Ice Labs	Empresa de tecnología fundada en 2014, nombrada por los más de 10.000 lagos que se congelan cada invierno en la región.
+MIN	4	Mill City Malt	Fábrica de malta fundada en 1880, heredera de la época dorada de los molinos harineros junto al río Mississippi.
+MIN	5	Prairie Wind Power	Compañía de energía eólica fundada en 2005, con parques de turbinas en las praderas de Minnesota.
+MIN	6	Skyway Snacks	Cadena de tiendas fundada en 1962, ubicada en la red de pasillos elevados que conectan el centro de la ciudad.
+MIN	7	Stone Arch Solar	Empresa de energía solar fundada en 2016, instalada junto al histórico puente de piedra sobre el río Mississippi.
+MIN	8	Cherry Spoon Creative	Agencia de diseño fundada en 1998, inspirada en la icónica escultura de la cuchara y la cereza del Jardín de Esculturas de Walker.
+MIN	9	Chain of Lakes Canoes	Empresa de alquiler de canoas fundada en 1925, operando en la cadena de lagos urbanos del sur de la ciudad.
+MIN	10	Foshay Financial	Firma de asesoría financiera fundada en 1929, con sede en el histórico rascacielos Foshay Tower.
+MIN	11	Loon Lake Water	Embotelladora de agua fundada en 1978, nombrada por el somorgujo, ave emblema del estado de Minnesota.
+MIN	13	St Anthony Forge	Fundición fundada en 1848, aprovechando la energía de las cataratas de San Antonio en los inicios industriales de la ciudad.
+MIN	14	Minnehaha Mist	Marca de bebidas fundada en 1965, inspirada en la cascada Minnehaha del parque homónimo.
+MIN	15	Nicollet Mall	Empresa de transporte urbano fundada en 1990, operando la línea de autobuses de la calle comercial peatonal Nicollet.
+NOP	1	French Quarter Fizz	Embotelladora fundada en 1920, con primeras bodegas en el histórico Barrio Francés.
+NOP	2	Bayou Bytes	Empresa de tecnología fundada en 2012, nombrada por los pantanos de cipreses que rodean la ciudad.
+NOP	3	Mardi Gras Mask Co	Taller artesanal de máscaras fundado en 1890, proveedor tradicional de los desfiles de Carnaval.
+NOP	4	Crescent City Cargo	Empresa naviera fundada en 1901, homenaje al apodo de "Ciudad Creciente" por la curva del río Mississippi.
+NOP	5	Jazz Alley Audio	Discográfica fundada en 1917, coincidiendo con el nacimiento del jazz en los clubes de la ciudad.
+NOP	6	Gumbo Grill	Restaurante fundado en 1955, especializado en el guiso criollo más representativo de Luisiana.
+NOP	7	St Charles Streetcar	Operador de tranvías fundado en 1835, gestor de una de las líneas de tranvía más antiguas en funcionamiento del país.
+NOP	8	Beignet Boys	Pastelería fundada en 1862, célebre por sus tradicionales beignets espolvoreados con azúcar glas.
+NOP	9	Pontchartrain Power	Compañía eléctrica fundada en 1956, año de construcción de la calzada que cruza el lago Pontchartrain.
+NOP	11	Jackson Square Iron	Herrería artística fundada en 1803, especializada en las rejas ornamentales del Barrio Francés.
+NOP	12	Voodoo Vod	Empresa de bebidas espirituosas fundada en 1994, inspirada en la tradición vudú de Luisiana.
+NOP	13	Riverboat Steam	Compañía naviera fundada en 1812, operadora de los históricos barcos de vapor de paletas del Mississippi.
+NOP	14	Magazine St Market	Colectivo de boutiques fundado en 1988, en la histórica calle comercial Magazine Street.
+NOP	15	Algiers Point	Empresa de transporte fluvial fundada en 1827, gestora del ferry que cruza el Mississippi hacia el barrio de Algiers.
+MIA	1	Ocean Drive Optics	Óptica fundada en 1985, con boutique original en el corazón art decó de Ocean Drive.
+MIA	2	Calle Ocho Café	Cafetería fundada en 1959, en plena Pequeña Habana, sirviendo café cubano tradicional desde su fundación.
+MIA	3	Heatwave Hydro	Marca de bebidas isotónicas fundada en 2001, pensada para combatir el calor tropical de la ciudad.
+MIA	4	PortMiami Pack	Empresa de logística portuaria fundada en 1960, operando en uno de los puertos de cruceros más activos del mundo.
+MIA	5	Neon Nights Bank	Banco fundado en 1988, en la época dorada de la estética neón de South Beach.
+MIA	6	Biscayne Breeze	Marca de moda náutica fundada en 1995, inspirada en las aguas turquesas de la bahía de Biscayne.
+MIA	7	Wynwood Walls	Empresa de pintura y arte urbano fundada en 2009, coincidiendo con el nacimiento del distrito de murales Wynwood.
+MIA	8	Brickell Capital	Firma de banca de inversión fundada en 2003, con sede en el distrito financiero de Brickell.
+MIA	9	Everglades Eco Tours	Empresa de ecoturismo fundada en 1974, operando excursiones guiadas por el parque nacional de los Everglades.
+MIA	10	South Beach Sun	Marca de protección solar fundada en 1978, nacida en las playas más famosas de Miami.
+MIA	11	Freedom Tower Tech	Empresa tecnológica fundada en 1997, con sede en la histórica Freedom Tower, antiguo centro de recepción de refugiados cubanos.
+MIA	12	Coconut Grove Co	Empresa agrícola fundada en 1873, en el barrio más antiguo y frondoso de la ciudad.
+MIA	13	Little Havana Cigars	Tabaquería fundada en 1961, heredera de la tradición cubana de torcido de puros a mano.
+MIA	14	Coral Gables Granite	Empresa de construcción fundada en 1925, año de fundación de la ciudad planificada de Coral Gables.
+MIA	15	Venetian Pool Resorts	Cadena hotelera fundada en 1923, año de apertura de la histórica piscina de estilo veneciano.
+LA	1	Sunset Solar	Empresa de energía renovable fundada en 2008, con paneles instalados a lo largo del icónico Sunset Boulevard.
+LA	2	Hollywood Studios	Productora audiovisual fundada en 1912, en los primeros años de la industria cinematográfica del barrio.
+LA	3	LA Street Tacos	Cadena de comida callejera fundada en 1978, pionera del boom de food trucks mexicanos de la ciudad.
+LA	4	CityView Capital	Firma de inversión inmobiliaria fundada en 1990, especializada en el desarrollo urbano del downtown de Los Ángeles.
+LA	5	LAX Global	Empresa de logística aeroportuaria fundada en 1930, con operaciones centradas en el aeropuerto internacional de la ciudad.
+LA	7	LA Icons Apparel	Marca de ropa fundada en 2002, inspirada en el Paseo de la Fama de Hollywood Boulevard.
+LA	8	Angelus Health	Cadena de clínicas fundada en 1945, con nombre derivado del apodo histórico "La Ciudad de los Ángeles".
+LA	9	Pacific Waves Beverages	Embotelladora fundada en 1965, con primeras plantas junto a las playas del Pacífico.
+LA	10	Griffith Realty	Inmobiliaria fundada en 1896, año de donación del parque Griffith a la ciudad por su fundador filantrópico.
+LA	11	LA Live Music	Sello discográfico fundado en 1971, motor de la escena musical del centro de Los Ángeles.
+LA	12	Metro Connect	Operador de transporte público fundado en 1990, gestor de la red de metro ligero de la ciudad.
+LA	13	Downtown Dining	Colectivo gastronómico fundado en 2015, impulsor de la revitalización culinaria del centro histórico.
+LA	14	LA Clean Energy	Empresa de energía eólica y solar fundada en 2012, con instalaciones en las colinas del área metropolitana.
+LA	15	Coastline Logistics	Empresa de transporte fundada en 1958, operando a lo largo de la autopista costera 101.
+MEM	1	Beale Street Blues	Sello discográfico fundado en 1909, en la histórica calle Beale, cuna del blues americano.
+MEM	2	River City Ribs	Restaurante de barbacoa fundado en 1948, homenaje al apodo de Memphis como "la Ciudad del Río".
+MEM	4	Cotton Belt Cargo	Empresa de logística fundada en 1873, en la época dorada del comercio de algodón por el río Mississippi.
+MEM	5	Delta Drift Cola	Embotelladora fundada en 1922, inspirada en el meandro del delta del Mississippi.
+MEM	6	Soulshine Solar	Empresa de energía renovable fundada en 2014, con nombre inspirado en la música soul nacida en los estudios de la ciudad.
+MEM	7	Hernando Steel	Empresa de construcción metálica fundada en 1949, año de planificación del puente Hernando de Soto sobre el Mississippi.
+MEM	8	Pyramid Power	Compañía eléctrica fundada en 1991, año de inauguración de la icónica Pirámide de Memphis.
+MEM	9	Bluff City Bank	Banco fundado en 1864, homenaje al apodo "Ciudad del Acantilado" por su ubicación sobre los altos del río.
+MEM	11	Overton Park Outdoor	Marca de ropa outdoor fundada en 1901, año de fundación del parque urbano Overton.
+MEM	12	Peabody Paddle	Empresa de ocio fundada en 1869, en homenaje a los icónicos patos del hotel Peabody.
+MEM	13	Main Street Trolley+	Operador de tranvías fundado en 1993, gestionando la línea histórica de la calle principal.
+MEM	15	Mud Island Marine	Empresa de turismo fluvial fundada en 1982, operando en la isla artificial del río Mississippi.
+MIL	1	Lakefront Lager	Cervecería fundada en 1987, junto a las orillas del lago Michigan.
+MIL	4	Cream City Concrete	Empresa de construcción fundada en 1868, en referencia al ladrillo color crema típico de la arquitectura local.
+MIL	5	Third Ward Threads	Taller de costura fundado en 1992, en el histórico distrito industrial reconvertido en zona de moda.
+MIL	6	Frozen Custard Co	Heladería fundada en 1938, especializada en el postre helado clásico del medio oeste americano.
+MIL	8	Hoan Bridge Steel	Empresa de ingeniería fundada en 1972, año de construcción del puente amarillo Hoan sobre la bahía.
+MIL	9	Menomonee Millwork	Carpintería industrial fundada en 1885, en el valle del río Menomonee, corazón industrial histórico de la ciudad.
+MIL	11	Domes Flora Tech	Empresa de horticultura fundada en 1967, año de construcción de las tres cúpulas del jardín botánico Mitchell Park.
+MIL	12	Jones Island Salt	Empresa de tratamiento de aguas fundada en 1925, con planta en la isla industrial Jones.
+MIL	13	Bay View Brew Labs	Tostadero de café fundado en 2015, en el vecindario junto a la bahía.
+MIL	14	KK Kayaks	Empresa de deportes acuáticos fundada en 1995, operando en el río Kinnickinnic.
+MIL	15	Bradford Beach Breeze	Club de playa fundado en 1915, en la playa urbana más popular de la ciudad junto al lago Michigan.
+IND	2	Circle City Credit	Cooperativa de crédito fundada en 1821, año de fundación de la ciudad diseñada en torno al Monumento Circle.
+IND	3	Cornbelt Chips	Marca de snacks fundada en 1965, homenaje al cinturón maicero que rodea la capital de Indiana.
+IND	5	Canal Walk Coffee	Cafetería fundada en 1988, junto al canal restaurado del centro de la ciudad.
+IND	6	Hoosier Health+	Cadena de clínicas fundada en 1946, con nombre derivado del gentilicio tradicional de los habitantes de Indiana.
+IND	7	White River Watts	Central hidroeléctrica fundada en 1913, aprovechando el caudal del río White que cruza la ciudad.
+IND	8	Mass Ave Media	Agencia de comunicación fundada en 2001, con sede en el distrito cultural de Massachusetts Avenue.
+IND	9	Fountain Square Foundry	Taller artesanal fundado en 1954, en el histórico barrio bohemio de Fountain Square.
+IND	10	Broad Ripple Brew	Cervecería artesanal fundada en 1994, en el animado barrio de Broad Ripple junto al canal.
+IND	11	Crossroads Cargo	Empresa de transporte fundada en 1937, homenaje al lema de Indiana como "el cruce de caminos de América".
+IND	12	Market Street Motors	Concesionario de vehículos eléctricos fundado en 2018, con sede en la histórica calle del mercado.
+IND	13	Union Station Vault	Banco fundado en 1888, año de construcción de la estación ferroviaria Union Station.
+IND	14	Pogues Run Pipes	Empresa de fontanería fundada en 1920, nombrada por el arroyo subterráneo que atraviesa el centro de la ciudad.
+IND	15	Mile Square Meals	Cadena de restaurantes fundada en 2010, en el kilómetro cuadrado original que dio forma al trazado urbano.
+HOU	1	Gulfstream Gas	Compañía petrolera fundada en 1921, con operaciones en las plataformas del Golfo de México.
+HOU	2	Space City Semis	Empresa de logística fundada en 1969, año del primer paseo lunar transmitido desde el Centro Espacial Johnson.
+HOU	3	Bayou Bites BBQ	Restaurante de barbacoa fundado en 1952, junto a los pantanos y arroyos que cruzan la ciudad.
+HOU	5	ShipChannel Steel	Fundición industrial fundada en 1914, año de apertura del Canal de Navegación de Houston.
+HOU	6	TexMex Threads	Marca de moda fundada en 1978, con diseños inspirados en la cultura fronteriza tex-mex.
+HOU	8	Montrose Mint	Farmacéutica fundada en 1985, con sede en el vibrante y diverso barrio de Montrose.
+HOU	9	Buffalo Bayou Brew	Cervecería artesanal fundada en 2011, junto al arroyo que da origen histórico a la ciudad.
+HOU	10	Galleria Gold	Empresa inmobiliaria fundada en 1970, año de apertura del centro comercial Galleria.
+HOU	11	TMC Med	Empresa biotecnológica fundada en 1945, con sede en el complejo médico más grande del mundo, el Texas Medical Center.
+HOU	12	Clutch City Coffee	Cafetería fundada en 1995, homenaje al apodo "Clutch City" que la ciudad se ganó en los años noventa.
+HOU	13	Sam Houston Solar	Empresa de energía fundada en 1836, año de fundación de la ciudad en honor al héroe de la independencia texana.
+HOU	14	Space Coast Snacks	Marca de aperitivos fundada en 1962, año de fundación del Centro Espacial Johnson.
+HOU	15	Loop 610 Logistics	Empresa de transporte fundada en 1965, año de finalización del anillo de circunvalación I-610.
+CLE	1	Erie Edge Steel	Fundición industrial fundada en 1904, junto a las orillas del lago Erie, corazón del acero del medio oeste.
+CLE	3	Cuyahoga Chips	Marca de snacks fundada en 1969, con nombre del sinuoso río Cuyahoga que atraviesa la ciudad.
+CLE	5	Flats Forge Coffee	Cafetería fundada en 1990, en el histórico distrito industrial de Los Flats junto al río.
+CLE	6	Script CLE Travel	Agencia de viajes fundada en 2016, con logo inspirado en la caligrafía tradicional del apodo "CLE".
+CLE	7	Terminal Tower Tech	Empresa de telecomunicaciones fundada en 1930, año de inauguración de la icónica Terminal Tower.
+CLE	9	Lakeview Solar	Empresa de energía renovable fundada en 2013, con paneles orientados hacia el lago Erie.
+CLE	10	Emerald Necklace Trail	Empresa de senderismo y ocio fundada en 1917, gestora de la red de parques metropolitanos que rodea la ciudad como un collar verde.
+CLE	11	North Coast Marine	Empresa naviera fundada en 1950, homenaje al apodo "Costa Norte" de la orilla del lago Erie.
+CLE	12	Cultural Gardens	Fundación cultural creada en 1936, gestora de los jardines internacionales que representan a las comunidades étnicas de la ciudad.
+CLE	13	Playhouse Square Arts	Organización teatral fundada en 1921, año de apertura del distrito de teatros más grande fuera de Nueva York.
+CLE	14	Ohio City Brewery	Cervecería fundada en 1836, en el histórico vecindario de Ohio City, cuna de la cerveza artesanal local.
+CLE	15	Burning River Brew	Cervecería fundada en 1998, con nombre irónico que recuerda al famoso incendio del río Cuyahoga de 1969, hoy símbolo de la recuperación ecológica de la ciudad.
+ATL	1	Peachvolt Energy	Compañía eléctrica fundada en 1969, cuyo logo cruza el melocotón del estado con un rayo. Suministra energía a todo el centro financiero.
+ATL	2	Beltline Bites	Cadena de restaurantes al aire libre fundada en 2011, con locales repartidos por el antiguo corredor ferroviario reconvertido en parque lineal.
+ATL	3	Hartsfield Hop	Cervecería fundada en 1998 junto al aeropuerto más transitado del mundo, célebre por su lúpulo de aterrizaje y sus latas con torre de control.
+ATL	5	Piedmont Pixels	Estudio de software y pantallas gigantes fundado en 2006, con sede junto al parque Piedmont y su mosaico verde por logo.
+ATL	6	ATL Forge Steel	Fundición y forja fundada en 1874, superviviente del incendio que arrasó la ciudad y proveedora del acero de sus primeros rascacielos.
+ATL	7	Phoenix Rising Bank	Banco fundado en 1889, cuyo nombre y logo recogen el ave fénix del sello municipal: la ciudad renacida de sus cenizas.
+ATL	8	Dogwood Blossom Dairy	Lácteos fundados en 1952, con la flor de cornejo que llena la ciudad cada primavera como marca de la casa.
+ATL	9	Ponce Corridor Motors	Concesionario y taller fundado en 1948 en la avenida Ponce de Leon, la vía comercial más larga y más rara de la ciudad.
+ATL	10	Stone Mountain Granite	Cantera fundada en 1869, extractora del granito gris que pavimentó media ciudad y llegó hasta las escaleras del Capitolio.
+ATL	12	Chattahoochee Rapids	Empresa de ocio fluvial fundada en 1976, dedicada al descenso en balsa por el río que da agua y fin de semana a la ciudad.
+ATL	13	Krog Tunnel Art	Colectivo de arte urbano fundado en 2004, encargado de repintar cada temporada el túnel de grafitis más fotografiado del sureste.
+ATL	14	World of Fizz Aquatics	Embotelladora y parque acuático fundados en 1993, con una atracción por cada sabor de su catálogo.
+ATL	15	Cabbagetown Cotton Mill	Fábrica textil fundada en 1881, cerrada en 1977 y reabierta como taller de moda por los nietos de sus antiguas hilanderas.
+BOS	1	Harbor Bean Co	Tostadero de café fundado en 1832 en los muelles, heredero del comercio que traía el grano desde las Antillas.
+BOS	2	Freedom Trail Fits	Marca de calzado fundada en 1984, especializada en botas cómodas para las cuatro millas de la ruta histórica de la ciudad.
+BOS	3	Beantown Bytes	Empresa de software fundada en 1997 por estudiantes de las universidades del río, con una alubia verde por icono.
+BOS	4	Charles River Bank	Banco fundado en 1822, con sedes gemelas en las dos orillas del río que separa la ciudad de Cambridge.
+BOS	5	North End Noodles	Fábrica de pasta fundada en 1911 por una familia siciliana, todavía en la misma calle estrecha del barrio italiano.
+BOS	6	Greenline Transit+	Operador de tranvías fundado en 1897, el mismo año en que la ciudad estrenó el primer metro del país.
+BOS	8	Beacon Hill Gaslight	Compañía de alumbrado fundada en 1853, la única que sigue encendiendo a mano las farolas de gas del barrio histórico.
+BOS	9	Cod Fisher's Catch	Pesquería fundada en 1748, dedicada al bacalao que dio nombre y dinero a la colonia entera.
+BOS	11	Newbury Street Threads	Casa de moda fundada en 1938 en la calle de las tiendas, con taller propio en un sótano de piedra rojiza.
+BOS	12	Tea Party Trade Co	Importadora fundada en 1790, con un guiño al cargamento que acabó en el puerto diecisiete años antes de que ella existiera.
+BOS	13	Faneuil Hall Fare	Comercializadora de mercado fundada en 1826, con puesto propio en la lonja que lleva doscientos años sin cerrar.
+BOS	15	Swan Boat Sails	Empresa de ocio fundada en 1877, operadora de los botes con forma de cisne del estanque del jardín público.
+BRK	1	Borough Brew Labs	Cervecería experimental fundada en 2009, con una B de ladrillo por logo y un puente colgante en cada etiqueta.
+BRK	2	Dumbo Drone Co	Fabricante de drones fundado en 2014 en un almacén bajo el puente, especializado en tomas aéreas del skyline.
+BRK	3	Coney Circuit	Empresa de electrónica de ocio fundada en 1987, proveedora de las máquinas del paseo marítimo desde su primera recreativa.
+BRK	4	Stoop Sneaker Lab	Marca de zapatillas fundada en 2005, nacida de las escalinatas de entrada donde el barrio se sienta a mirar pasar la tarde.
+BRK	5	Navy Yard Netsync	Empresa de redes fundada en 1999 en el antiguo astillero militar, hoy vivero de talleres y estudios.
+BRK	6	Brownstone Bites	Cadena de sándwiches fundada en 1968, con el mismo pan de centeno desde el primer local en un bajo de piedra rojiza.
+BRK	7	Williamsburg Waves	Emisora y estudio de sonido fundados en 1946 junto a los depósitos de agua del barrio, antena incluida.
+BRK	8	Prospect Park Provisions	Cooperativa de alimentación fundada en 1973, con puestos de temporada en las entradas del parque grande del distrito.
+BRK	9	Cyclone Coasters	Constructora de montañas rusas de madera fundada en 1927, el año de la que todavía funciona en el paseo marítimo.
+BRK	11	Red Hook Rope Works	Cordelería fundada en 1855 en los muelles, proveedora de amarras para los cargueros del puerto.
+BRK	13	Greenpoint Glassworks	Vidriería fundada en 1861, una de las cinco industrias que dieron fama al barrio antes de que el vidrio se fuera.
+BRK	14	Flatbush Fresh Produce	Distribuidora de fruta y verdura fundada en 1962 por comerciantes caribeños, con cajón de colores por logo.
+BRK	15	Gowanus Canal Current	Eléctrica de barrio fundada en 1989, con turbinas en el canal más famoso y peor oliente del distrito.
+CHO	1	Queen City Credit	Cooperativa de crédito fundada en 1913, con la corona de la reina que da apodo a la ciudad grabada en cada tarjeta.
+CHO	2	Carolina Canopy	Empresa de arboricultura fundada en 1965, responsable de las hileras de robles que hacen de la ciudad un bosque urbano.
+CHO	3	Banktown Bolts	Eléctrica fundada en 1972, encargada de mantener encendidas las torres de la segunda plaza financiera del país.
+CHO	4	Hornet Honey Co	Apicultura y mieles fundadas en 1957, con el avispero de la ciudad como emblema desde el primer tarro.
+CHO	5	Uptown Rails	Operador del tranvía urbano fundado en 2007, con la U azul de sus paradas por logotipo.
+CHO	6	Mint Hill Media	Productora audiovisual fundada en 1994, nombrada por la antigua casa de la moneda que acuñó el oro de la región.
+CHO	8	Freedom Park Flora	Vivero y floristería fundados en 1980, proveedores de los parterres del parque más visitado de la ciudad.
+CHO	9	NoDa Neon Arts	Colectivo de artistas del neón fundado en 1998, motor de las galerías del distrito artístico del norte.
+CHO	10	Catawba River Rapids	Empresa de deportes de aguas bravas fundada en 1991, con base en el río que abastece a media región.
+CHO	11	Panther Paw Steel	Acería fundada en 1934, con la huella de pantera que estampa en cada viga desde los años sesenta.
+CHO	12	South End Streetcar	Operador de tranvía histórico fundado en 1927, restaurador de los coches rojos que recorren el antiguo barrio industrial.
+CHO	13	Plaza Midwood Provisions	Tienda de ultramarinos fundada en 1946 en el barrio de los bungalós, mitad colmado y mitad cafetería.
+CHO	14	Camp North End Cargo	Operador logístico fundado en 1924 en la antigua fábrica de camiones, hoy nave de almacenes y estudios.
+CHI	1	Windy Watt Power	Eléctrica fundada en 1954, con parques eólicos plantados en el lago y el apodo de la ciudad en el nombre.
+CHI	2	DeepDish Digital	Estudio de software fundado en 2001, cuyo logo es la porción de pizza gruesa por la que se discute en toda la ciudad.
+CHI	3	El Loop Transit	Operador del tren elevado fundado en 1892, dueño del anillo de raíles que rodea y bautiza el centro.
+CHI	4	Lake Shore Layers	Marca de ropa de abrigo fundada en 1962, especializada en capas para el viento que entra del lago en enero.
+CHI	5	Steelbeam Bank	Banco fundado en 1885, el año del primer rascacielos con estructura de acero, financiado por esta misma casa.
+CHI	6	Navy Pier Nosh	Cadena de puestos de comida fundada en 1976, repartida por el muelle que la ciudad recuperó para pasear.
+CHI	7	Bean Reflection Studios	Estudio de fotografía fundado en 2006, nacido a la sombra de la escultura de acero pulido del parque del milenio.
+CHI	9	Magnificent Mile Threads	Casa de moda fundada en 1971, con escaparate en la avenida de las tiendas caras.
+CHI	10	River Walk Roasters	Tostadero de café fundado en 1999, con terrazas en el paseo que baja hasta el río en el corazón del centro.
+CHI	12	Union Station Steam	Empresa de calefacción urbana fundada en 1925, con la caldera original bajo la bóveda de la estación.
+CHI	13	Maxwell Street Grill	Cadena de perritos fundada en 1943 en el mercado callejero de inmigrantes, con la salchicha polaca por bandera.
+CHI	15	Buckingham Fountain Fizz	Embotelladora de refrescos fundada en 1927, homenaje a la fuente monumental estrenada aquel mismo verano.
+DAL	1	Lone Star Lithium	Fabricante de baterías fundado en 2010, con la estrella solitaria del estado recortada en cada celda.
+DAL	2	Cattle Drive Cuts	Carnicería mayorista fundada en 1873, heredera de las rutas ganaderas que cruzaban el norte del estado.
+DAL	3	Reunion Tower Bits	Empresa de telecomunicaciones fundada en 1978, con antenas en la bola de luces que preside el skyline.
+DAL	4	Prairie Oil Co	Petrolera fundada en 1931, nacida del pozo que cambió la economía del este del estado.
+DAL	5	Big D Denim	Marca de vaqueros fundada en 1955, con la inicial de la ciudad cosida en el bolsillo trasero.
+DAL	6	Trinity Trail Gear	Marca de equipamiento de senderismo fundada en 1988, especializada en las rutas del cinturón verde del río.
+DAL	7	Deep Ellum Vinyl	Sello discográfico fundado en 1968 en el barrio del blues, todavía prensando en vinilo en su primera nave.
+DAL	8	Fair Park Fizz	Embotelladora fundada en 1936, el año de la exposición del centenario del estado, celebrada en ese mismo parque.
+DAL	9	White Rock Boats	Club náutico y alquiler de veleros fundado en 1930 en el lago del este de la ciudad.
+DAL	10	Bishop Arts Bites	Colectivo de restaurantes fundado en 2004 en el distrito de galerías al sur del río.
+DAL	11	DFW Hop	Aerolínea regional fundada en 1974, el año de apertura del aeropuerto que la hizo posible.
+DAL	13	Victory Park Vault	Firma de inversión fundada en 1999, con sede en el distrito levantado alrededor del pabellón.
+DAL	14	Tortilla Flatiron Bakes	Panadería y tortillería fundada en 1962, con horno en el edificio triangular del centro.
+DAL	15	Katy Trail Cycles	Tienda y taller de bicicletas fundado en 1997, junto a la vía de tren reconvertida en carril verde.
+DEN	1	Mile High Malt	Cervecera fundada en 1873, la primera en ajustar sus recetas a la altitud exacta de la ciudad: 5.280 pies.
+DEN	2	Front Range Fiber	Operador de fibra óptica fundado en 2004, con el perfil de las montañas convertido en señal en su logo.
+DEN	3	Cherry Creek Chips	Fábrica de aperitivos fundada en 1958 junto al arroyo donde se encontró el oro que fundó la ciudad.
+DEN	4	Powderline Parks	Operador de estaciones de esquí fundado en 1961, dueño de los circuitos de nieve polvo de las montañas del oeste.
+DEN	5	Bronco Bronze Bank	Banco fundado en 1908, con la herradura de bronce del caballo salvaje en la puerta de su sede.
+DEN	6	Altitude Air	Aerolínea regional fundada en 1983, especializada en los aeropuertos de montaña más altos del país.
+DEN	7	Red Rocks Audio	Empresa de sonido fundada en 1972, encargada del equipo del anfiteatro natural entre paredes de arenisca roja.
+DEN	8	Union Station Clock	Relojería y mantenimiento de relojes públicos fundada en 1914, el año de la torre de la estación central.
+DEN	9	LoDo Lager	Cervecería fundada en 1994 en los almacenes de ladrillo del casco bajo, primera de la ola que revivió el barrio.
+DEN	10	Buffalo Bill Bytes	Empresa de software fundada en 1996, con el bisonte del oeste por icono y sede junto a la montaña del mismo nombre.
+DEN	11	Highlands Honey	Apicultura fundada en 1969, con colmenas repartidas por las laderas del noroeste de la ciudad.
+DEN	12	Platte River Pack	Empresa de mensajería fundada en 1980, con rutas que siguen el río que parte la ciudad en dos.
+DEN	13	Bluebird Solar	Instaladora de placas solares fundada en 2008, que aprovecha los trescientos días de sol al año de la meseta.
+DEN	14	Capitol Dome Credit	Cooperativa de crédito fundada en 1901, con la cúpula dorada del capitolio del estado en su moneda-logo.
+DEN	15	RiNo Mural Co	Colectivo de muralistas fundado en 2005, autor de las fachadas pintadas del antiguo distrito industrial del norte.
+DET	1	Motorcity Motors	Fabricante de motores fundado en 1903, el año en que la ciudad se convirtió en la capital del automóvil.
+DET	2	Belle Isle Brew	Cervecería fundada en 1957, con terraza frente a la fuente de la isla-parque del río.
+DET	3	Renaissance Rivets	Fábrica de remaches y tornillería fundada en 1977, el año del complejo de torres que dio nombre al renacimiento de la ciudad.
+DET	4	Great Lakes Grid	Eléctrica fundada en 1919, con la silueta de los cinco lagos partida por un rayo en su emblema.
+DET	7	Ambassador Span	Constructora de puentes fundada en 1929, el año del que cruza el río hasta Canadá.
+DET	8	Eastern Market Eats	Distribuidora de alimentación fundada en 1891, con nave propia en el mercado de productores más grande del país.
+DET	9	Riverwalk Watts	Hidroeléctrica fundada en 1948, con turbinas en la orilla que la ciudad convirtió en paseo.
+DET	10	Corktown Coffee	Tostadero fundado en 1936 en el barrio irlandés más antiguo de la ciudad.
+DET	11	Assembly Line Apps	Empresa de software industrial fundada en 2011, especializada en automatizar lo que aquí se inventó en 1913.
+DET	12	Spirit Plaza Sound	Empresa de sonido para eventos fundada en 1958, con el espíritu de bronce de la plaza mayor por logo.
+DET	13	Fisher Building Financial	Firma financiera fundada en 1928, con oficinas en el rascacielos dorado que llaman el mayor edificio de arte del mundo.
+DET	14	Eastern Market Ironworks	Herrería y estructuras fundadas en 1902, autora de las marquesinas de los cobertizos del mercado.
+DET	15	Chili Coney Co	Cadena de perritos con chile fundada en 1917 por dos hermanos griegos, con dos locales pared con pared que llevan un siglo compitiendo.
+OKC	1	Tornado Trail Gear	Marca de equipamiento de exterior fundada en 1991, especializada en refugios y kits para la temporada de tornados.
+OKC	2	Bricktown Brew	Cervecería fundada en 1993 en los almacenes de ladrillo junto al canal, primera del barrio reconvertido.
+OKC	3	Plains Petroleum	Petrolera fundada en 1928, con pozos entre los trigales que rodean la ciudad.
+OKC	4	Thunderhead Tech	Empresa de meteorología y sensores fundada en 2003, dedicada a avisar de las tormentas del corredor central.
+OKC	5	Cattlemen Cuts	Carnicería y asador fundados en 1910 junto a los corrales, con el sello de ganadería marcado en la puerta.
+OKC	6	Route 66 Retro	Cadena de moteles y cafeterías fundada en 1946 en la carretera madre, restaurada entera en los años noventa.
+OKC	8	Scissortail Solar	Instaladora de energía solar fundada en 2010, con el pájaro tijereta del estado posado en cada panel.
+OKC	9	Stockyards Steel	Acería y fabricante de vallado ganadero fundada en 1910, proveedora de los corrales históricos del oeste de la ciudad.
+OKC	10	Myriad Gardens Flora	Vivero y jardinería fundados en 1988, encargados del invernadero tubular del jardín botánico del centro.
+OKC	11	Red Earth Pottery	Alfarería fundada en 1978, con arcilla roja de la región y motivos de las naciones originarias del estado.
+OKC	12	Plaza District Prints	Imprenta y serigrafía fundadas en 1997, autora de los carteles del distrito de galerías y su feria anual.
+OKC	13	Overholser Oils	Refinería de aceites industriales fundada en 1936, nombrada por el lago y la mansión del fundador de la ciudad.
+OKC	14	Paseo Arts Paint	Fábrica de pinturas fundada en 1929, proveedora del barrio de estudios de estilo español desde su primera galería.
+OKC	15	Lake Hefner Lighthouse	Empresa de ocio náutico fundada en 1999, operadora de las escuelas de vela del lago y su faro postizo.

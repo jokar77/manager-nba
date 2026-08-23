@@ -2,6 +2,7 @@ import '../data/database/almacenamiento.dart';
 import '../data/database/app_database.dart';
 import 'franquicia_repository.dart';
 import 'nueva_temporada_repository.dart';
+import 'permisos.dart';
 
 /// Ranuras de guardado. Tres carreras en paralelo: empezar una partida nueva
 /// ya no borra la que tenías a medias.
@@ -223,6 +224,11 @@ class ResumenSlot {
   final int derrotas;
   final int titulos;
 
+  /// Si esta ranura es de las que solo trae la versión completa. Se enseña
+  /// igualmente, con su candado: esconderla dejaría al jugador sin saber
+  /// que existe, y lo que se vende aquí es comodidad, no un secreto.
+  final bool bloqueada;
+
   const ResumenSlot({
     required this.numero,
     this.equipo,
@@ -231,6 +237,7 @@ class ResumenSlot {
     this.victorias = 0,
     this.derrotas = 0,
     this.titulos = 0,
+    this.bloqueada = false,
   });
 
   bool get ocupada => equipo != null;
@@ -243,12 +250,30 @@ class ResumenSlot {
 /// El estado de las ranuras. Una ranura que no existe se devuelve vacía sin
 /// abrir nada: así consultar el menú no crea partidas que nadie ha empezado.
 Future<List<ResumenSlot>> leerResumenDeSlots() async {
+  final disponibles = ranurasDisponibles();
   final resumenes = <ResumenSlot>[];
   for (var slot = 1; slot <= numeroDeSlots; slot++) {
+    if (slot > disponibles) {
+      // Bloqueada: no se abre su fichero. Leerla sería trabajo para
+      // enseñar una partida que de todas formas no se puede tocar.
+      resumenes.add(ResumenSlot(numero: slot, bloqueada: true));
+      continue;
+    }
     resumenes.add(await leerResumenDeSlot(slot));
   }
   return resumenes;
 }
+
+/// Cuántas ranuras puede usar este jugador: las tres en la versión
+/// completa, solo la primera en la gratuita.
+///
+/// No se le pasa temporada a [Permisos.puede] a propósito: este menú se
+/// pinta ANTES de abrir ninguna partida, así que no hay ninguna temporada
+/// en curso contra la que medir un desbloqueo por vídeo. Y tampoco tendría
+/// sentido que la hubiera: una ranura que caduca al año siguiente sería
+/// una forma muy cara de perder una carrera.
+int ranurasDisponibles() =>
+    permisos.puede(Funcion.ranurasExtra) ? numeroDeSlots : 1;
 
 Future<ResumenSlot> leerResumenDeSlot(int slot) async {
   if (!await almacenDeSlots.existe(slot)) return ResumenSlot(numero: slot);

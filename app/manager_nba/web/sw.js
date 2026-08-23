@@ -21,7 +21,7 @@
 //
 // Al subirla, el `activate` borra las cachés viejas y la nueva se llena de
 // cero, así que no quedan mezclados ficheros de dos compilaciones.
-const CACHE = 'manager-nba-v12';
+const CACHE = 'manager-nba-v13';
 
 // Lo imprescindible para arrancar y jugar. Se descarga entero al instalar,
 // de una vez, para que baste con abrir el juego UNA vez con conexión.
@@ -81,6 +81,14 @@ const ESENCIALES = [
   'assets/assets/data/hof_players_simple.json',
   'assets/assets/data/retired_numbers.json',
   'assets/assets/data/camisetas_futuras.json',
+
+  // Los 386 logos de patrocinadores NO van aquí, y es a propósito: son 4,7
+  // MB que dispararían la primera descarga de 17 a casi 22, y en una
+  // partida solo se miran cuatro por temporada. Los recoge la regla de
+  // abajo —caché primero, red si falta— la primera vez que se abre la
+  // pantalla de patrocinadores con conexión. Sin conexión y sin haberla
+  // abierto nunca, la tarjeta enseña el icono de su categoría (ver
+  // `_LogoDePatrocinador` en patrocinadores_screen.dart).
 
   'icons/Icon-192.png',
   'icons/Icon-512.png',

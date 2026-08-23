@@ -87,6 +87,66 @@ void main() {
     });
   });
 
+  group('el anuncio de cambio de temporada', () {
+    late AnunciosDeMentira falsos;
+
+    setUp(() {
+      falsos = AnunciosDeMentira();
+      anuncios = falsos;
+    });
+
+    tearDown(() {
+      anuncios = AnunciosDeMentira();
+      permisos = Permisos();
+    });
+
+    test('en la versión completa no sale ninguno', () async {
+      permisos = Permisos();
+      await anuncioDeCambioDeTemporada();
+      expect(falsos.interstitialsPedidos, 0);
+    });
+
+    test('en la gratuita sale uno', () async {
+      permisos = Permisos(edicion: Edicion.gratis);
+      await anuncioDeCambioDeTemporada();
+      expect(falsos.interstitialsPedidos, 1);
+    });
+
+    test('uno por cambio, no dos seguidos', () async {
+      permisos = Permisos(edicion: Edicion.gratis);
+
+      // Dos años seguidos son dos anuncios; lo que no puede pasar es que
+      // un único cambio de temporada suelte dos, y eso lo garantiza el
+      // sitio de la llamada: la última línea de
+      // `ejecutarCambioDeTemporada`, que corre una vez por año.
+      await anuncioDeCambioDeTemporada();
+      await anuncioDeCambioDeTemporada();
+      expect(falsos.interstitialsPedidos, 2);
+    });
+
+    test('comprar corta la publicidad en el acto', () async {
+      permisos = Permisos(edicion: Edicion.gratis);
+      await anuncioDeCambioDeTemporada();
+      expect(falsos.interstitialsPedidos, 1);
+
+      permisos.registrarCompra();
+      await anuncioDeCambioDeTemporada();
+      expect(falsos.interstitialsPedidos, 1,
+          reason: 'quien paga deja de verlos desde el minuto siguiente');
+    });
+
+    test('un vídeo recompensado no quita la publicidad', () async {
+      // Son dos cosas distintas: el vídeo abre los patrocinadores de esa
+      // temporada, pero el interstitial de cambio de año sigue saliendo.
+      // Lo único que lo quita es comprar.
+      permisos = Permisos(edicion: Edicion.gratis)
+        ..desbloquearPorVideo(Funcion.patrocinadores, temporada: 1);
+
+      await anuncioDeCambioDeTemporada();
+      expect(falsos.interstitialsPedidos, 1);
+    });
+  });
+
   group('juntando los puertos con los permisos', () {
     test('comprar abre el juego entero y quita la publicidad', () async {
       final falsa = TiendaDeMentira()..ventaSaleBien = true;

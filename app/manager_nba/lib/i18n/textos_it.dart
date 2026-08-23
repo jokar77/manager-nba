@@ -260,6 +260,8 @@ class TextosIt extends Textos {
   @override
   String get simularUnMes => 'Simula 1 mese';
   @override
+  String get simularTemporadaEntera => 'Stagione intera';
+  @override
   String get verBracketCompleto => 'Vedi tabellone completo';
   @override
   String get empezarSiguienteTemporada => 'Inizia la prossima stagione';
@@ -1036,6 +1038,8 @@ class TextosIt extends Textos {
   @override
   String get lasTresRanurasOcupadasAviso => 'I tre slot sono tutti occupati: eliminane uno per iniziare da capo, oppure continua uno di quelli che hai già.';
   @override
+  String get ranuraDeVersionCompleta => 'Slot della versione completa';
+  @override
   String partidaNumero(int n) => 'PARTITA $n';
   @override
   String get borrarEstaPartidaTooltip => 'Elimina questa partita';
@@ -1088,7 +1092,10 @@ class TextosIt extends Textos {
   @override
   String get tituloPatrocinadores => 'Sponsor';
   @override
-  String get explicacionPatrocinadores => 'Scegli quali sponsor firma la tua franchigia questa stagione: ognuno attivo aggiunge margine sotto il tetto salariale.';
+  String get explicacionPatrocinadores =>
+      "Ogni sponsorizzazione ha più offerte: più lungo è il contratto, meno "
+      "paga all'anno. Quello che firmi occupa quella categoria fino alla "
+      "scadenza.";
   @override
   String get patrocinioEstadioLabel => 'Sponsor del palazzetto';
   @override
@@ -1100,7 +1107,17 @@ class TextosIt extends Textos {
   @override
   String fundadoEnAnio(int anio) => 'Fondata nel $anio';
   @override
+  String get alAnioSufijo => "all'anno";
+  @override
+  String sinPatrocinioFirmado(int ofertas) => ofertas == 1 ? 'Non firmato · 1 offerta' : 'Non firmato ·  offerte';
+  @override
   String margenPatrocinio(String importe) => '+$importe di margine salariale';
   @override
   String get totalPatrociniosLabel => "Margine totale quest'anno";
+  @override
+  String get patrocinadoresBloqueados => 'Gli sponsor sono della versione completa. Guarda un video e li hai tutti e quattro per questa stagione.';
+  @override
+  String get verVideoPatrocinadores => 'GUARDA IL VIDEO E SBLOCCA';
+  @override
+  String get videoSinTerminar => 'Il video non è stato visto per intero, quindi restano bloccati. Puoi riprovare.';
 }

@@ -259,6 +259,8 @@ class TextosEn extends Textos {
   @override
   String get simularUnMes => 'Simulate 1 month';
   @override
+  String get simularTemporadaEntera => 'Whole season';
+  @override
   String get verBracketCompleto => 'View full bracket';
   @override
   String get empezarSiguienteTemporada => 'Start next season';
@@ -1035,6 +1037,8 @@ class TextosEn extends Textos {
   @override
   String get lasTresRanurasOcupadasAviso => 'All three slots are full: delete one to start fresh, or continue one you already have.';
   @override
+  String get ranuraDeVersionCompleta => 'Full version slot';
+  @override
   String partidaNumero(int n) => 'SAVE $n';
   @override
   String get borrarEstaPartidaTooltip => 'Delete this save';
@@ -1087,7 +1091,7 @@ class TextosEn extends Textos {
   @override
   String get tituloPatrocinadores => 'Sponsors';
   @override
-  String get explicacionPatrocinadores => 'Choose which sponsors your franchise signs this season: each active one adds salary cap room.';
+  String get explicacionPatrocinadores => 'Each sponsorship has several offers: the longer the deal, the less it pays per year. Whatever you sign ties up that slot until it expires.';
   @override
   String get patrocinioEstadioLabel => 'Arena sponsor';
   @override
@@ -1099,7 +1103,17 @@ class TextosEn extends Textos {
   @override
   String fundadoEnAnio(int anio) => 'Founded in $anio';
   @override
+  String get alAnioSufijo => 'a year';
+  @override
+  String sinPatrocinioFirmado(int ofertas) => ofertas == 1 ? 'Unsigned · 1 offer' : 'Unsigned ·  offers';
+  @override
   String margenPatrocinio(String importe) => '+$importe salary cap room';
   @override
   String get totalPatrociniosLabel => 'Total room this year';
+  @override
+  String get patrocinadoresBloqueados => 'Sponsors are part of the full version. Watch a video and all four are yours for this season.';
+  @override
+  String get verVideoPatrocinadores => 'WATCH VIDEO TO UNLOCK';
+  @override
+  String get videoSinTerminar => "The video wasn't watched all the way through, so they stay locked. You can try again.";
 }

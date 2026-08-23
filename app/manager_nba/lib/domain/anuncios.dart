@@ -10,6 +10,8 @@
 /// otra de mentira, y una variable de biblioteca que se puede cambiar.
 library;
 
+import 'permisos.dart';
+
 /// Enseñar anuncios. Quién los enseña de verdad se decide en `main.dart`.
 abstract class Anuncios {
   /// Un anuncio a pantalla completa entre dos pantallas. Devuelve cuando
@@ -73,3 +75,28 @@ class AnunciosDeMentira implements Anuncios {
 /// Los anuncios en uso. La app lo deja como está salvo en Android, donde
 /// `main.dart` pone la implementación de AdMob; los tests lo sustituyen.
 Anuncios anuncios = AnunciosDeMentira();
+
+/// El único anuncio del juego: el que sale al terminar de pasar de
+/// temporada. No hay ningún otro sitio desde donde llamar a esto.
+///
+/// Es el final de una etapa larga —el año se cerró, el draft se eligió, la
+/// plantilla está lista— y por tanto el momento natural de cortar: una vez
+/// cada varias horas de juego, no una interrupción constante.
+///
+/// Las tres reglas que hay que respetar no se pueden comprobar desde aquí,
+/// así que van de la mano del sitio donde se llama
+/// (`ejecutarCambioDeTemporada`):
+///
+///  - **Nunca encima de un diálogo ni a mitad de una decisión.** Por eso se
+///    llama al FINAL del todo, cuando ya no queda ninguna pantalla del
+///    cambio de temporada abierta.
+///  - **Después de que la transición termine, no antes.**
+///  - **Uno por cambio de temporada, nunca dos seguidos.** Se cumple solo:
+///    `ejecutarCambioDeTemporada` corre una vez por año y esta es su
+///    última línea.
+///
+/// Quien ya pagó no ve nada: la comprobación es lo primero.
+Future<void> anuncioDeCambioDeTemporada() async {
+  if (!permisos.vePublicidad) return;
+  await anuncios.mostrarInterstitial();
+}

@@ -46,7 +46,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 28;
+  int get schemaVersion => 29;
 
   /// CUIDADO AL TOCAR ESTO: aquí se decide si una actualización del juego
   /// conserva las partidas guardadas o se las lleva por delante.
@@ -138,6 +138,23 @@ class AppDatabase extends _$AppDatabase {
           // todas formas se agotan en unos partidos.
           if (from < 28) {
             await m.addColumn(efectosDeEvento, efectosDeEvento.claveEfecto);
+          }
+
+          // 29: los patrocinios pasan a ser CONTRATOS. Antes cada categoría
+          // era un interruptor que daba una cantidad fija y se apagaba al
+          // cerrar el año; ahora se firma una marca concreta, por un dinero
+          // concreto y para varios años.
+          //
+          // Las tres son aditivas y nullable, así que una partida en curso
+          // no pierde nada: sus filas se quedan sin contrato y se leen como
+          // lo que eran —el bonus fijo de su categoría, un año— hasta que
+          // caduquen solas en el siguiente cambio de temporada.
+          if (from < 29) {
+            await m.addColumn(patrociniosActivos, patrociniosActivos.clave);
+            await m.addColumn(
+                patrociniosActivos, patrociniosActivos.bonusAnual);
+            await m.addColumn(
+                patrociniosActivos, patrociniosActivos.aniosRestantes);
           }
         },
       );

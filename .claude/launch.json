@@ -3,16 +3,8 @@
   "configurations": [
     {
       "name": "manager-nba-web",
-      "runtimeExecutable": "python",
-      "runtimeArgs": [
-        "-m",
-        "http.server",
-        "8080",
-        "--bind",
-        "127.0.0.1",
-        "--directory",
-        "app/manager_nba/build/web"
-      ],
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["tool/servidor_web.js"],
       "port": 8080
     }
   ]

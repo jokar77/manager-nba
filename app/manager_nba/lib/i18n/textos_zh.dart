@@ -264,6 +264,8 @@ class TextosZh extends Textos {
   @override
   String get simularUnMes => '模拟1个月';
   @override
+  String get simularTemporadaEntera => '模拟整个赛季';
+  @override
   String get verBracketCompleto => '查看完整对阵图';
   @override
   String get empezarSiguienteTemporada => '开始下个赛季';
@@ -1040,6 +1042,8 @@ class TextosZh extends Textos {
   @override
   String get lasTresRanurasOcupadasAviso => '三个存档位都已占满：删除一个才能重新开始，或者继续你已有的存档。';
   @override
+  String get ranuraDeVersionCompleta => '完整版存档位';
+  @override
   String partidaNumero(int n) => '存档$n';
   @override
   String get borrarEstaPartidaTooltip => '删除此存档';
@@ -1092,7 +1096,7 @@ class TextosZh extends Textos {
   @override
   String get tituloPatrocinadores => '赞助商';
   @override
-  String get explicacionPatrocinadores => '选择本赛季球队签约的赞助商：每激活一个都会增加薪资空间。';
+  String get explicacionPatrocinadores => '每类赞助都有多份报价：合同越长，年收入越低。签下之后，该类别会一直占用到合同到期。';
   @override
   String get patrocinioEstadioLabel => '主场馆赞助商';
   @override
@@ -1104,7 +1108,17 @@ class TextosZh extends Textos {
   @override
   String fundadoEnAnio(int anio) => '创立于$anio年';
   @override
+  String get alAnioSufijo => '每年';
+  @override
+  String sinPatrocinioFirmado(int ofertas) => '未签约 ·  份报价';
+  @override
   String margenPatrocinio(String importe) => '+$importe 薪资空间';
   @override
   String get totalPatrociniosLabel => '本年度总空间';
+  @override
+  String get patrocinadoresBloqueados => '赞助商属于完整版。观看一段视频，本赛季四个赞助商全部解锁。';
+  @override
+  String get verVideoPatrocinadores => '观看视频解锁';
+  @override
+  String get videoSinTerminar => '视频没有看完，赞助商仍处于锁定状态。可以再试一次。';
 }

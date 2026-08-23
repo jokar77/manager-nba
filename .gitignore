@@ -42,3 +42,11 @@ desktop.ini
 # `python docs/diseno/construir_vista.py` a partir de los .dc.html que sí
 # están en el repositorio. Guardarla sería tener el mismo trabajo dos veces.
 docs/diseno/vista-previa.html
+
+# Los logos de patrocinadores que se descartaron por llevar marca real.
+# NO se suben: este repositorio es público, y todo el proyecto evita a
+# propósito escudos, apodos y marcas reales (ver `equipos_info.dart` y el
+# plan de monetización). Subir justo los que se apartaron por eso sería
+# dejarlos publicados igualmente. Se quedan en local como material de
+# trabajo, por si hace falta volver a mirar de dónde salió cada recorte.
+docs/logos_con_marca_real/

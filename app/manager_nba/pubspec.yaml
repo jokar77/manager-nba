@@ -87,6 +87,12 @@ flutter:
     - assets/data/legado_real_scoring.json
     - assets/data/camisetas_futuras.json
 
+    # Los 386 logos de patrocinadores, uno por marca del catálogo (ver
+    # lib/domain/patrocinadores.dart). Se declara la carpeta entera y no
+    # fichero a fichero: son 386 líneas que habría que tocar cada vez que
+    # se regenera el catálogo. Pesan 4,7 MB en total.
+    - assets/logos/
+
   # La tipografía de los titulares del rediseño. Solo dos pesos, que son
   # los únicos que usa `familiaTitular` (ver lib/shared/estilo.dart): 190 KB
   # en total. Saira Condensed es SIL Open Font License; la licencia va al

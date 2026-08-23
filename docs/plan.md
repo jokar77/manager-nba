@@ -28,6 +28,290 @@ https://jokar77.github.io/manager-nba/
 - PowerShell 5.1 **no admite `&&`**; el Bash de Git sí. Los dos están
   disponibles y se usa el que convenga.
 
+## Patrocinadores: tres ofertas por categoría y contratos de varios años (23 de agosto de 2026)
+
+Puntos **3 y 4 de la lista 14**, hechos juntos porque son el mismo sitio.
+Antes cada categoría era un interruptor: una marca, un dinero fijo, y se
+apagaba sola al acabar el año. Ahora cada categoría se **despliega** y
+enseña hasta tres ofertas de marcas distintas de tu ciudad, cada una con su
+dinero al año y sus años de contrato.
+
+### Por qué el contrato largo paga MENOS al año
+
+Es lo único que hace que exista la decisión. Si el de cuatro años pagara
+más, se firmaría siempre el de cuatro y las otras dos tarjetas serían
+decorado. Al revés:
+
+| Duración | Paga al año |
+| --- | --- |
+| 1 año | ×1,35 sobre el base de la categoría |
+| 2 años | ×1,05 |
+| 4 años | ×0,82 |
+
+El corto es dinero YA para fichar este verano; el largo es tranquilidad
+barata. Y lo que inclina la balanza es que **el nivel de las ofertas se
+mueve de un año a otro** (×0,85 a ×1,15): firmar cuatro años cuando el
+verano viene bueno es protegerse de los veranos malos. Sin esa variación,
+esperar no costaría nada y nadie firmaría largo jamás.
+
+**Un test cazó un fallo de diseño aquí.** El factor que movía el dinero
+dependía de la MARCA y valía ±15%, y eso se comía la diferencia entre 1,35
+y 1,05: en Boston/ocio, el contrato de un año llegó a pagar 1.150.000 y el
+de dos 1.200.000. O sea el largo pagando más — la decisión desaparecida.
+Arreglado separando los factores: el nivel del año es **compartido por las
+tres ofertas** de una categoría (así el orden está garantizado por
+construcción, no por suerte) y a la marca le queda un empujón de ±4%,
+demasiado pequeño para invertir nada.
+
+### Hasta tres, no siempre tres
+
+Ocho de las 116 canteras —ciudad × categoría— tienen menos de tres marcas
+porque la hoja de esa ciudad no traía más de ese tipo: Charlotte, Cleveland
+y Milwaukee en *camiseta*, Nueva York en *estadio* y en *bebida*. Ahí salen
+las que hay. No se fuerza a tres repitiendo marca: tres tarjetas con el
+mismo logo se leen como un bug.
+
+### Los contratos, en la base (esquema 29)
+
+`PatrociniosActivos` gana tres columnas: `clave` (qué marca), `bonusAnual`
+(lo que prometió) y `aniosRestantes`.
+
+Es una **cuenta atrás y no una temporada final**, y eso es deliberado: la
+pantalla de patrocinadores corre ANTES de que suba el número de temporada
+(`finalizarPretemporada`), así que cualquier cuenta con números absolutos
+se equivoca en uno. Bajando de uno en uno al cerrar el año no hay
+off-by-one posible.
+
+`cerrarTemporada` ya no llama a `limpiarPatrocinios` sino a
+**`caducarPatrocinios`**: descuenta un año a todo y borra lo que se acaba.
+Lo que sobreviva sale con **candado** en la pantalla del año siguiente — ni
+se cambia de marca ni se rompe. Eso es exactamente lo que compraste al
+firmar largo. Y su compromiso de vestuario se paga **todos** los años que
+dure, que es la otra cara del trato.
+
+Las tres columnas son nullable **solo por la migración**. Una partida
+guardada con la versión anterior tiene filas sin contrato; se leen como lo
+que eran (el bonus fijo de su categoría, un año) y caducan solas en el
+primer cierre. Toda esa normalización vive en un único sitio,
+`_contratoDeFila`.
+
+**No hay tests de migración en el proyecto** —ni para la 24 ni para la 28—
+así que no se montó un arnés entero. Sí se cubrió lo que de verdad puede
+romperse: cinco tests que meten una fila «vieja» a mano y comprueban que se
+lee, que da su margen, que caduca y que se puede firmar encima.
+
+### Qué se puede tocar y qué no
+
+Un contrato heredado sale con candado. Uno que firmes **en esa misma
+pretemporada** se puede cambiar mientras no pulses Continuar. La pantalla
+lo distingue con un `Set` en memoria (`_firmadosAhora`) y no con una
+columna más: en cuanto sales de la pantalla deja de ser reciente, que es
+exactamente lo que significa.
+
+Solo se despliega **una categoría a la vez**. Con las cuatro abiertas son
+doce tarjetas con su historia cada una, y en un móvil eso es scroll
+infinito donde nadie compara nada.
+
+### Efectos secundarios
+
+- `patrocinadorDe` y `patrocinadoresDeTemporada` ya no existen: los
+  sustituyen `ofertasDe`, `ofertasDeTemporada` y `patrocinadorPorClave`
+  (para volver a saber quién era una marca firmada hace tres años).
+- El margen sale de lo que se **guardó al firmar**, no del catálogo de hoy:
+  un contrato de cuatro años paga lo que prometió aunque las ofertas de
+  este verano sean otras.
+- Dos textos nuevos en los siete idiomas (`alAnioSufijo`,
+  `sinPatrocinioFirmado`) y `explicacionPatrocinadores` reescrito. La
+  duración reutiliza `anios(n)`, que ya estaba.
+- `web/sw.js` sigue en `manager-nba-v13`: se subió antes en esta misma
+  sesión y no se ha publicado nada entre medias, así que cubre las dos
+  tandas de cambios.
+
+### Estado
+
+`flutter analyze` limpio en los dos paquetes. **655 tests en verde** en la
+app y **21** en `sim_engine`. Nada subido a git.
+
+**Una vuelta de cinco falló un test que no se pudo identificar ni
+reproducir** (las otras cuatro, verdes). Encaja con el residuo que ya
+estaba apuntado más abajo: `simularTramo` —la temporada regular— sigue sin
+aceptar semilla, así que un test que simule 82 partidos de verdad todavía
+puede variar. No es de este trabajo.
+
+## Patrocinadores con marca propia: 386 empresas y rotación anual (23 de agosto de 2026)
+
+La pantalla de patrocinadores era la misma cada pretemporada: cuatro
+empresas fijas por equipo, escritas a mano, con un icono genérico de
+Material por toda cara. Ahora cada ciudad tiene una **cantera de once a
+quince marcas propias con su logo**, y cada temporada se firma la
+siguiente de la lista en cada categoría.
+
+**La decisión del juego NO cambia.** Siguen siendo cuatro categorías con
+sus mismos bonus y sus mismos compromisos, y sigue tratándose de elegir
+*cuáles* de las cuatro firmas. Lo que cambia es que el año que viene el
+pabellón lo paga otra empresa, así que la pantalla deja de repetirse.
+
+### De dónde salen los datos
+
+| Fichero | Qué |
+|---|---|
+| `docs/patrocinadores_hojas.tsv` | 386 filas: equipo, número, nombre e historia |
+| `docs/patrocinadores_categorias.tsv` | En cuál de las cuatro categorías cae cada una |
+| `app/manager_nba/assets/logos/` | 386 JPG, `ATL_01.jpg`, uno por fila |
+| `docs/logos_con_marca_real/` | Los 50 descartados por llevar marca real. **Fuera de `assets/`**, no entran en la compilación |
+| `recortar_logos_patrocinadores.ps1` | Recorta las hojas de contacto 5×3 en imágenes sueltas |
+
+El catálogo de `lib/domain/patrocinadores.dart` **se genera**, no se
+escribe a mano. Debajo de la línea `// === CATÁLOGO GENERADO ===` manda el
+script; todo lo de arriba es a mano y se respeta:
+
+```
+cd app/manager_nba
+dart run tool/generar_patrocinadores.dart
+```
+
+Está en Dart y no en Python como los otros scripts de datos del repo
+**porque en esta máquina Python no está instalado** (solo los alias de la
+Microsoft Store, que no ejecutan nada). Quien pueda compilar el juego ya
+tiene el SDK de Dart.
+
+El generador aborta si una fila no tiene categoría o si le falta el logo,
+y avisa de los logos que no salen en ninguna fila — peso muerto dentro del
+`.apk`.
+
+### Las cuatro categorías, ensanchadas
+
+Las marcas del TSV son mucho más variadas que las cuatro de antes: hay
+tecnológicas, textiles, fundiciones, navieras y productoras. Se
+ensancharon las definiciones sin tocar el diseño:
+
+- **estadio** — energía, infraestructura, industria pesada, obra
+- **camiseta** — banca, finanzas, tecnología, moda (el patrocinio visible)
+- **bebida** — alimentación y bebida
+- **ocio** — transporte, parques, turismo, cultura, medios
+
+Con eso las 29 hojas tienen candidato en las cuatro. **Tres ciudades se
+quedan con una sola marca en alguna categoría** —Charlotte, Cleveland y
+Milwaukee en *camiseta*, Nueva York en *estadio* y en *bebida*— porque su
+hoja no traía más de ese tipo. Ahí esa categoría no rota. El test lo
+contempla a propósito (`if (cuantas < 2) continue`), no es un descuido.
+
+### La rotación no lleva semilla guardada
+
+`patrocinadorDe(equipo, categoria, temporada:)` recorre la cantera **en
+orden** y da la vuelta al llegar al final. El desplazamiento inicial sale
+de un FNV-1a de `equipo|categoria`.
+
+Es a propósito que no sea un sorteo: la partida se guarda solo con el
+número de temporada, sin ninguna semilla de patrocinio. Con una fórmula
+que depende solo de (equipo, categoría, temporada), **cargar una partida
+vieja devuelve exactamente los patrocinadores que tenía**. Un `Random`
+habría que guardarlo, y sería una migración de base de datos para nada.
+
+El hash está escrito a mano y no se usa `String.hashCode`: el de Dart
+**no** está garantizado entre versiones ni entre plataformas, y hace falta
+que el patrocinador de la temporada 12 sea el mismo en el móvil, en la web
+y dentro de tres versiones.
+
+### Los Ángeles
+
+El TSV trae una sola hoja `LA` con 14 marcas, pero el juego tiene LAC y
+LAL. **Comparten ciudad y comparten cantera**; no se duplicaron las
+entradas. Los separa la semilla, que lleva el código del equipo y no el de
+la hoja: el mismo año cada uno firma una marca distinta. Lo vigila un
+test.
+
+### Efectos secundarios que salieron por el camino
+
+- **`bonusSalarialDePatrocinadores` y `aplicarCompromisosDePatrocinio`
+  perdieron el parámetro `equipoUsuario`.** No lo usaban: el bonus y el
+  compromiso son fijos por categoría, no por marca. Era un parámetro que
+  mentía sobre lo que hacía la función.
+- **Un nombre real colado**: `Clutch City Coffee` (Houston) decía en su
+  historia *"ganado por los Rockets"*. Reescrito. El resto de guiños
+  —Hornet Honey, Panther Paw, Bronco Bronze, Thunderhead, MagicHour— son
+  al emblema o al clima de la ciudad, no a un equipo, y sus textos no
+  nombran a nadie.
+- **`web/sw.js` sube a `manager-nba-v13`.** Los 386 logos **no** van en la
+  lista de precarga: son 4,7 MB que dispararían la primera descarga de 17
+  a casi 22, y en una partida solo se miran cuatro por temporada. Los
+  recoge la regla de caché-primero-red-después la primera vez que se abre
+  la pantalla con conexión. Sin conexión y sin haberla abierto nunca, la
+  tarjeta cae al icono de su categoría (`errorBuilder` de
+  `_LogoDePatrocinador`).
+
+### El repo ya NO vive en OneDrive
+
+`flutter test` fallaba a ratos con *"Flutter failed to delete a directory at
+ios/Flutter/ephemeral/Packages/.packages"*. No era el código: OneDrive
+convierte esos enlaces en puntos de reanálisis de solo lectura y Flutter no
+puede borrarlos. Los 1.360 ficheros del repo eran **todos** puntos de
+reanálisis de OneDrive.
+
+Se movió el proyecto:
+
+```
+C:\Users\nanot\OneDrive\Documents\manager-nba   ->   C:\src\manager-nba
+```
+
+`C:\src` porque ahí está ya el SDK (`C:\src\flutter`). Se copió con
+robocopy dejando fuera `build/` y `.dart_tool/`, que Flutter rehace solo:
+914 ficheros, 13,6 MB, cero errores. Comprobado antes de tocar nada:
+`git fsck` limpio, el mismo `git status` fichero a fichero que el original,
+y los tests en verde en la ubicación nueva — ya sin tener que borrar los
+`ephemeral` a mano.
+
+**La carpeta vieja de OneDrive sigue ahí, intacta**, a la espera de que el
+usuario diga si se borra.
+
+**Lo que se pierde: la copia de seguridad automática de OneDrive.** Con
+todo el trabajo de las últimas sesiones **sin subir a git**, ahora mismo
+esto vive en un solo disco. Conviene commitear.
+
+**Cuidado al tener dos copias a la vez.** En la sesión del 23 de agosto se
+perdió un rato de trabajo en este mismo fichero por copiar OneDrive →
+`C:\src` DESPUÉS de haber editado el de `C:\src`: el `cp` se llevó por
+delante las ediciones nuevas. Comparar los md5 después de copiar no detecta
+nada — claro que salen iguales, acabas de sobrescribir uno con el otro.
+Ahora que el repo vive solo en `C:\src`, no hay dos copias que sincronizar.
+
+### La vista previa ya no depende de Python
+
+`.claude/launch.json` lanzaba `python -m http.server` y **Python no está
+instalado en esta máquina** (solo los alias de la Microsoft Store, que no
+ejecutan nada), así que la vista previa nunca arrancaba. Ahora usa
+`tool/servidor_web.js`, un servidor estático de Node sin dependencias —
+Node sí está (v24).
+
+Sirve `app/manager_nba/build/web` en `http://127.0.0.1:8080`. Hace tres
+cosas que el de Python no hacía bien:
+
+- **Tipos MIME correctos** para `.wasm` y `.js`. El navegador rechaza
+  CanvasKit y SQLite si llegan con el tipo equivocado.
+- **Cualquier ruta cae al `index.html`**, que es lo que espera el
+  enrutador de Flutter.
+- **`Cache-Control: no-store`**, para que `main.dart.js` y el service
+  worker no se queden pegados entre compilaciones.
+
+Sigue haciendo falta compilar antes, igual que con el de antes:
+
+```
+cd app/manager_nba
+flutter build web --release --no-web-resources-cdn --pwa-strategy=none
+```
+
+Comprobado sirviendo el build de verdad: `index.html`, `main.dart.js`
+(4,1 MB), `sqlite3.wasm` (748 KB) y `assets/assets/logos/DEN_05.jpg` todos
+200 con su tipo, y una ruta inventada cayendo al index. La app arranca en
+el navegador.
+
+
+### Estado
+
+`flutter analyze` limpio en `lib/` y en `test/`. **633 tests en verde**,
+doce más que antes: el catálogo nuevo, el logo de cada tarjeta y la
+rotación entre temporadas. Nada subido a git.
+
 ## Lo hecho el 19 de agosto de 2026 (la sesión más reciente)
 
 Cinco commits, todos subidos a `main`. De más antiguo a más nuevo:
@@ -4237,3 +4521,92 @@ tarjeta de próximo partido"). Todo lo de arriba —las listas 12 y 13
 enteras, el sistema de patrocinadores y la traducción de los eventos
 narrativos— es posterior y no se ha subido. Nada se sube sin que el
 usuario lo pida explícitamente.
+
+## El aviso del campeón se desbordaba en el móvil (a 2026-08-22)
+
+Quedaba apuntado como "fallo encontrado de paso, sin arreglar" al final
+del paso 3 de `plan_monetizacion.md`. Ya está arreglado.
+
+**Qué pasaba.** El diálogo de campeón (`shared/campeon_dialog.dart`, el
+que sale con la NBA Cup y con el anillo) ponía sus dos botones en un
+`Row` a secas. Un `Row` no dobla: lo que no cabe se sale por la derecha
+con las rayas amarillas y negras. Medido:
+
+| Caso | Ancho disponible | Se salía |
+| --- | --- | --- |
+| Campeón otro equipo, móvil de 390 px | 290 px | 92 px |
+| **Campeón tú**, móvil de 390 px | 290 px | **205 px** |
+| **Campeón tú**, tablet y escritorio | 400 px | **95 px** |
+
+O sea: era peor de lo apuntado. El aviso de "has ganado tú" lleva un
+botón más largo (*¡A celebrarlo!* en vez de *Cerrar*) y **se salía en
+todos los tamaños**, escritorio incluido, no solo en móviles.
+
+**El arreglo.** `OverflowBar` en lugar de `Row`, que es exactamente lo
+que llevan por dentro los `AlertDialog` del resto del juego: si los dos
+botones no caben de lado, se apilan en vertical. Una línea de widget, sin
+tocar textos ni tamaños.
+
+**Por qué no lo había cazado nadie.** A ese diálogo solo se llega
+simulando hasta diciembre (la Cup) o hasta el final de los playoffs, y
+ningún test recorría tanto en una pantalla estrecha.
+`simular_temporada_entera_test.dart` sí lo cruzaba, pero se había escrito
+a 1000 px justamente para esquivarlo; ahora corre a 390 px como los
+demás.
+
+**Dos lecciones para los tests de layout**, las dos aprendidas aquí en
+verde-que-mentía:
+
+* **Un desborde se canta al pintar, no al medir.** Mientras dura la
+  animación de entrada el diálogo va con opacidad 0, y a opacidad 0
+  Flutter se salta el pintado entero. La primera versión de
+  `dialogo_campeon_test.dart` paraba de avanzar fotogramas en cuanto
+  encontraba el texto —todavía en mitad de la animación— y pasaba en
+  verde con el `Row` roto. Hay que dejar que el diálogo termine de
+  aparecer.
+* **Un test que no comprueba que el diálogo se abrió no comprueba nada.**
+  Cuando el campeón eres tú, el aviso se abre *después* de un
+  `await HapticFeedback.heavyImpact()`, y en un test nadie contesta a ese
+  canal de plataforma: el `await` se queda colgado y el diálogo no
+  existe. El test pasaba sin haber mirado una sola pantalla. Se arregla
+  con un contestador de mentira en `SystemChannels.platform` y con un
+  `expect` de que el diálogo está ahí.
+
+~~Y de paso: `flutter test` a secas no funciona en este equipo. El proyecto
+vive dentro de OneDrive, `pub get` regenera
+`ios/Flutter/ephemeral/Packages/.packages` (y el de `macos`), OneDrive las
+bloquea antes de que Flutter pueda borrarlas y la orden muere ahí.
+Borrarlas a mano no vale, vuelven. Se corre **`flutter test --no-pub`**.~~
+**Ya no hace falta** (23 de agosto de 2026): el repo se sacó de OneDrive a
+`C:\src\manager-nba` y `flutter test` a secas funciona. Ver *"El repo ya
+NO vive en OneDrive"* arriba.
+
+## Lista bugs/mejora 14 (a 2026-08-22, de `lista_bugs_cambios_nba_manager_14.txt`)
+
+Por orden de más a menos importante:
+
+1. **UI alineación/roles**: la sección de "elegir estrella" y similares
+   ocupa demasiado espacio en pantalla. Rediseñarla para que sea mucho
+   más compacta. **SIN HACER** — es el único de los cuatro que queda.
+2. ~~**Patrocinadores, logos**: usar los logos/fotos de patrocinadores que
+   ya pasó el usuario, en vez de placeholders o diseño genérico.~~
+   **HECHO** el 23 de agosto de 2026: 386 marcas con su logo, ver
+   *"Patrocinadores con marca propia"* arriba.
+3. ~~**Patrocinadores, opciones**: en cada tipo de patrocinio debe abrirse
+   un desplegable/selector con 3 opciones distintas.~~ **HECHO** el 23 de
+   agosto de 2026: cada categoría se despliega con hasta tres ofertas de
+   marcas distintas de su ciudad. Ocho canteras de las 116 dan para menos
+   de tres y ahí salen las que hay.
+4. ~~**Patrocinadores, ofertas**: cada opción debe mostrar cantidades de
+   dinero diferentes y duraciones de contrato diferentes (años
+   distintos).~~ **HECHO** el 23 de agosto de 2026: uno, dos o cuatro
+   años, y cuanto más largo menos paga al año. Con contratos de verdad en
+   la base (esquema 29) que caducan solos.
+
+Los puntos 2, 3 y 4 se hicieron juntos, que era lo que convenía: son el
+mismo sitio (`features/temporada/patrocinadores_screen.dart` y
+`domain/patrocinadores.dart`). Ver *"Patrocinadores: tres ofertas por
+categoría y contratos de varios años"* arriba.
+
+~~**Pendiente de que lo dé el usuario**: los logos del punto 2.~~ Ya
+están, en `app/manager_nba/assets/logos/`.

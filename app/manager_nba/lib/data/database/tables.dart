@@ -269,6 +269,28 @@ class PatrociniosActivos extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get categoria => text()();
 
+  /// Qué marca concreta la patrocina, por la clave del catálogo
+  /// (`ATL_01`). Ver `Patrocinador.clave`.
+  ///
+  /// Las tres columnas de abajo son nullable solo por la migración: una
+  /// partida que venga de antes de la 29 tiene filas sin contrato, de
+  /// cuando el patrocinio era "encendido o apagado" y duraba un año fijo.
+  /// El código nuevo siempre las escribe; quien las lee las normaliza en un
+  /// único sitio (`_contratoDeFila` en `patrocinadores_repository.dart`).
+  TextColumn get clave => text().nullable()();
+
+  /// Lo que paga al año. Ya no es fijo por categoría: cada oferta trae el
+  /// suyo, y por eso hay que guardarlo — dentro de tres años el catálogo
+  /// puede haber cambiado y el contrato firmado manda.
+  IntColumn get bonusAnual => integer().nullable()();
+
+  /// Cuántas temporadas le quedan, esta incluida. Es una cuenta atrás y no
+  /// una temporada final a propósito: la pantalla de patrocinadores corre
+  /// ANTES de que suba el número de temporada (ver `finalizarPretemporada`),
+  /// así que cualquier cuenta con números absolutos se equivoca en uno.
+  /// Bajando de uno en uno al cerrar el año no hay off-by-one posible.
+  IntColumn get aniosRestantes => integer().nullable()();
+
   @override
   List<Set<Column>> get uniqueKeys => [
         {categoria},

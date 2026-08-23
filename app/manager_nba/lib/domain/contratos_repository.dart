@@ -75,7 +75,7 @@ Future<int> espacioSalarial(AppDatabase db, String equipo) async {
   if (equipo != tuEquipo) return base;
   return base +
       await bonusSalarialDeEventos(db) +
-      await bonusSalarialDePatrocinadores(db, equipoUsuario: equipo);
+      await bonusSalarialDePatrocinadores(db);
 }
 
 /// ¿Puede [equipo] pagar [salario]? Por encima del tope solo se puede

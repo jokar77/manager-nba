@@ -19,7 +19,7 @@ import 'franquicia_repository.dart';
 import 'hall_fama_repository.dart';
 import 'legado_real_repository.dart';
 import 'ofertas_repository.dart';
-import 'patrocinadores_repository.dart' show limpiarPatrocinios;
+import 'patrocinadores_repository.dart' show caducarPatrocinios;
 import 'progresion_repository.dart';
 import 'traspasos_cpu_repository.dart';
 
@@ -175,11 +175,18 @@ Future<CierreDeTemporada> cerrarTemporada(
   // sale entre medias (paso 2c de `ejecutarCambioDeTemporada`) y limpiar
   // después se llevaba por delante lo que acababas de elegir.
   //
-  // Se borran las dos cosas juntas porque acaban en la misma tabla: una
-  // bronca de vestuario y el compromiso de un patrocinador son el mismo
-  // tipo de efecto, y ninguno de los dos cruza de un año al siguiente.
+  // Los efectos de vestuario se borran enteros: una bronca y el compromiso
+  // de un patrocinador son el mismo tipo de efecto y ninguno cruza de un
+  // año al siguiente. Los compromisos de los contratos que sigan vivos los
+  // vuelve a poner `aplicarCompromisosDePatrocinio` al confirmar la
+  // pantalla de patrocinadores, unos pasos más adelante.
   await limpiarEventosDeLaTemporada(db);
-  await limpiarPatrocinios(db);
+
+  // Los patrocinios ya NO se borran todos: desde que son contratos de uno,
+  // dos o cuatro años, aquí solo se les descuenta un año y se van los que
+  // se acaban. Lo que sobreviva sale con candado en la pantalla del año
+  // que viene — eso es justo lo que compraste al firmar largo.
+  await caducarPatrocinios(db);
 
   // Ojo al orden: archivar tiene que ir antes de envejecer, porque guarda
   // el equipo y la media que tenía cada jugador *esta* temporada.

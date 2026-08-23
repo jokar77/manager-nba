@@ -182,8 +182,20 @@ class _DialogoCampeon extends StatelessWidget {
                   ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(8, 0, 12, 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                  // `OverflowBar` y no un `Row`: es lo que llevan por
+                  // dentro los `AlertDialog` del resto del juego, y hace lo
+                  // que hay que hacer cuando los dos botones no caben de
+                  // lado —apilarlos en vertical— en vez de salirse por la
+                  // derecha. Con un `Row` a secas, "Ver estadísticas" +
+                  // "Cerrar" se desbordaban 92 px en un móvil de 390: ahí
+                  // el diálogo se queda en 310 y la fila en 290. No se veía
+                  // porque a este aviso solo se llega simulando, y nadie
+                  // había recorrido un año entero en una pantalla estrecha.
+                  child: OverflowBar(
+                    alignment: MainAxisAlignment.end,
+                    overflowAlignment: OverflowBarAlignment.end,
+                    spacing: 8,
+                    overflowSpacing: 4,
                     children: [
                       if (etiquetaAccionExtra != null)
                         TextButton(

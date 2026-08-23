@@ -17,7 +17,8 @@ import 'package:manager_nba/domain/patrocinadores_repository.dart';
 ///
 /// Esto existe por un bug de verdad: `PatrocinadoresScreen` se enseña en el
 /// paso 2c de `ejecutarCambioDeTemporada`, pero `finalizarPretemporada` —que
-/// corre DESPUÉS, en el paso 4.5— llamaba a `limpiarPatrocinios`. O sea que
+/// corre DESPUÉS, en el paso 4.5— llamaba a `limpiarPatrocinios` (hoy
+/// `caducarPatrocinios`, y en `cerrarTemporada`). O sea que
 /// el juego te hacía elegir patrocinadores y te los borraba antes de
 /// dejarte gastar el dinero. El sistema entero no hacía nada en una partida
 /// ya empezada.
@@ -39,6 +40,11 @@ void main() {
 
   tearDown(() => db.close());
 
+  /// La oferta número [puesto] de esa categoría en la temporada 1: 0 es la
+  /// de un año, 1 la de dos y 2 la de cuatro (ver `aniosDeOferta`).
+  OfertaDePatrocinio oferta(String categoria, {int puesto = 0}) =>
+      ofertasDe('DEN', categoria, temporada: 1)[puesto];
+
   test('lo que eliges en la pantalla de patrocinadores sigue puesto después '
       'de la pretemporada', () async {
     // El orden real del cambio de temporada: primero cierras el año, luego
@@ -46,10 +52,10 @@ void main() {
     // pretemporada (paso 4.5).
     final cierre = await cerrarTemporada(db, random: Random(1));
 
-    await alternarPatrocinio(db, 'camiseta', activo: true);
-    await alternarPatrocinio(db, 'estadio', activo: true);
+    await firmarPatrocinio(db, oferta('camiseta'));
+    await firmarPatrocinio(db, oferta('estadio'));
     final margenElegido =
-        await bonusSalarialDePatrocinadores(db, equipoUsuario: 'DEN');
+        await bonusSalarialDePatrocinadores(db);
     expect(margenElegido, greaterThan(0));
 
     await finalizarPretemporada(db, cierre, const [], random: Random(1));
@@ -57,7 +63,7 @@ void main() {
     expect(await leerPatrociniosActivos(db), {'camiseta', 'estadio'},
         reason: 'la pretemporada estaba borrando los patrocinadores que '
             'acababas de elegir');
-    expect(await bonusSalarialDePatrocinadores(db, equipoUsuario: 'DEN'),
+    expect(await bonusSalarialDePatrocinadores(db),
         margenElegido);
   });
 
@@ -66,7 +72,7 @@ void main() {
     final cierre = await cerrarTemporada(db, random: Random(2));
     final sinPatrocinio = await espacioSalarial(db, 'DEN');
 
-    await alternarPatrocinio(db, 'camiseta', activo: true);
+    await firmarPatrocinio(db, oferta('camiseta'));
     await finalizarPretemporada(db, cierre, const [], random: Random(2));
 
     // El espacio salarial cambia entre las dos llamadas por muchas cosas
@@ -74,22 +80,61 @@ void main() {
     // número absoluto sino que el patrocinio esté sumando su parte.
     final conPatrocinio = await espacioSalarial(db, 'DEN');
     final sinEl = conPatrocinio -
-        await bonusSalarialDePatrocinadores(db, equipoUsuario: 'DEN');
+        await bonusSalarialDePatrocinadores(db);
     expect(conPatrocinio, greaterThan(sinEl),
         reason: 'el patrocinio de la camiseta tiene que dar margen para '
             'fichar, que es todo el sentido que tiene elegirlo');
     expect(sinPatrocinio, isNotNull);
   });
 
+  test('un contrato de varios años cruza el cambio de temporada, con un año '
+      'menos y pagando lo mismo', () async {
+    // Es lo que compras al firmar largo. Denver tiene cuatro marcas de
+    // bebida, así que ahí sí hay tercera oferta.
+    final larga = oferta('bebida', puesto: 2);
+    expect(larga.anios, 4);
+
+    var cierre = await cerrarTemporada(db, random: Random(3));
+    await firmarPatrocinio(db, larga);
+    await finalizarPretemporada(db, cierre, const [], random: Random(3));
+
+    // Y ahora el año siguiente entero.
+    cierre = await cerrarTemporada(db, random: Random(4));
+
+    final contrato = (await leerContratosDePatrocinio(db))['bebida'];
+    expect(contrato, isNotNull,
+        reason: 'un contrato de cuatro años no se va al primer verano');
+    expect(contrato!.aniosRestantes, 3);
+    expect(contrato.clave, larga.patrocinador.clave,
+        reason: 'sigue siendo la misma marca, no la que tocaría este año');
+    expect(contrato.bonusAnual, larga.bonusAnual,
+        reason: 'paga lo que prometió el día que se firmó');
+  });
+
+  test('el de un año NO cruza: la categoría queda libre para el verano '
+      'siguiente', () async {
+    var cierre = await cerrarTemporada(db, random: Random(5));
+    final corta = oferta('estadio');
+    expect(corta.anios, 1);
+    await firmarPatrocinio(db, corta);
+    await finalizarPretemporada(db, cierre, const [], random: Random(5));
+
+    cierre = await cerrarTemporada(db, random: Random(6));
+
+    expect(await leerPatrociniosActivos(db), isEmpty,
+        reason: 'un contrato de un año se agota en su temporada');
+  });
+
+
   group('lo que piden a cambio', () {
     test('firmar deja su compromiso en el vestuario, y no firmar no deja '
         'nada', () async {
-      await aplicarCompromisosDePatrocinio(db, equipoUsuario: 'DEN');
+      await aplicarCompromisosDePatrocinio(db);
       expect(await leerEfectosActivos(db), isEmpty,
           reason: 'sin patrocinios firmados no hay nada que cumplir');
 
-      await alternarPatrocinio(db, 'camiseta', activo: true);
-      await aplicarCompromisosDePatrocinio(db, equipoUsuario: 'DEN');
+      await firmarPatrocinio(db, oferta('camiseta'));
+      await aplicarCompromisosDePatrocinio(db);
 
       final activos = await leerEfectosActivos(db);
       expect(activos, hasLength(1));
@@ -102,11 +147,11 @@ void main() {
       // Volver atrás y volver a entrar en la pantalla es normal. Si cada
       // confirmación apilara los compromisos encima de los anteriores, dos
       // vueltas dejarían al equipo con el doble de castigo.
-      await alternarPatrocinio(db, 'camiseta', activo: true);
-      await alternarPatrocinio(db, 'estadio', activo: true);
+      await firmarPatrocinio(db, oferta('camiseta'));
+      await firmarPatrocinio(db, oferta('estadio'));
 
-      await aplicarCompromisosDePatrocinio(db, equipoUsuario: 'DEN');
-      await aplicarCompromisosDePatrocinio(db, equipoUsuario: 'DEN');
+      await aplicarCompromisosDePatrocinio(db);
+      await aplicarCompromisosDePatrocinio(db);
 
       expect(await leerEfectosActivos(db), hasLength(2));
     });
@@ -125,8 +170,8 @@ void main() {
       );
       await resolverEvento(db, evento, evento.opciones.first);
 
-      await alternarPatrocinio(db, 'ocio', activo: true);
-      await aplicarCompromisosDePatrocinio(db, equipoUsuario: 'DEN');
+      await firmarPatrocinio(db, oferta('ocio'));
+      await aplicarCompromisosDePatrocinio(db);
 
       final claves =
           (await leerEfectosActivos(db)).map((e) => e.clave).toSet();

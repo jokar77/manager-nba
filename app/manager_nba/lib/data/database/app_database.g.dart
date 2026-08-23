@@ -12260,8 +12260,45 @@ class $PatrociniosActivosTable extends PatrociniosActivos
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _claveMeta = const VerificationMeta('clave');
   @override
-  List<GeneratedColumn> get $columns => [id, categoria];
+  late final GeneratedColumn<String> clave = GeneratedColumn<String>(
+    'clave',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _bonusAnualMeta = const VerificationMeta(
+    'bonusAnual',
+  );
+  @override
+  late final GeneratedColumn<int> bonusAnual = GeneratedColumn<int>(
+    'bonus_anual',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _aniosRestantesMeta = const VerificationMeta(
+    'aniosRestantes',
+  );
+  @override
+  late final GeneratedColumn<int> aniosRestantes = GeneratedColumn<int>(
+    'anios_restantes',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    categoria,
+    clave,
+    bonusAnual,
+    aniosRestantes,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -12285,6 +12322,27 @@ class $PatrociniosActivosTable extends PatrociniosActivos
     } else if (isInserting) {
       context.missing(_categoriaMeta);
     }
+    if (data.containsKey('clave')) {
+      context.handle(
+        _claveMeta,
+        clave.isAcceptableOrUnknown(data['clave']!, _claveMeta),
+      );
+    }
+    if (data.containsKey('bonus_anual')) {
+      context.handle(
+        _bonusAnualMeta,
+        bonusAnual.isAcceptableOrUnknown(data['bonus_anual']!, _bonusAnualMeta),
+      );
+    }
+    if (data.containsKey('anios_restantes')) {
+      context.handle(
+        _aniosRestantesMeta,
+        aniosRestantes.isAcceptableOrUnknown(
+          data['anios_restantes']!,
+          _aniosRestantesMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -12306,6 +12364,18 @@ class $PatrociniosActivosTable extends PatrociniosActivos
         DriftSqlType.string,
         data['${effectivePrefix}categoria'],
       )!,
+      clave: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}clave'],
+      ),
+      bonusAnual: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}bonus_anual'],
+      ),
+      aniosRestantes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}anios_restantes'],
+      ),
     );
   }
 
@@ -12319,12 +12389,49 @@ class PatrociniosActivo extends DataClass
     implements Insertable<PatrociniosActivo> {
   final int id;
   final String categoria;
-  const PatrociniosActivo({required this.id, required this.categoria});
+
+  /// Qué marca concreta la patrocina, por la clave del catálogo
+  /// (`ATL_01`). Ver `Patrocinador.clave`.
+  ///
+  /// Las tres columnas de abajo son nullable solo por la migración: una
+  /// partida que venga de antes de la 29 tiene filas sin contrato, de
+  /// cuando el patrocinio era "encendido o apagado" y duraba un año fijo.
+  /// El código nuevo siempre las escribe; quien las lee las normaliza en un
+  /// único sitio (`_contratoDeFila` en `patrocinadores_repository.dart`).
+  final String? clave;
+
+  /// Lo que paga al año. Ya no es fijo por categoría: cada oferta trae el
+  /// suyo, y por eso hay que guardarlo — dentro de tres años el catálogo
+  /// puede haber cambiado y el contrato firmado manda.
+  final int? bonusAnual;
+
+  /// Cuántas temporadas le quedan, esta incluida. Es una cuenta atrás y no
+  /// una temporada final a propósito: la pantalla de patrocinadores corre
+  /// ANTES de que suba el número de temporada (ver `finalizarPretemporada`),
+  /// así que cualquier cuenta con números absolutos se equivoca en uno.
+  /// Bajando de uno en uno al cerrar el año no hay off-by-one posible.
+  final int? aniosRestantes;
+  const PatrociniosActivo({
+    required this.id,
+    required this.categoria,
+    this.clave,
+    this.bonusAnual,
+    this.aniosRestantes,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['categoria'] = Variable<String>(categoria);
+    if (!nullToAbsent || clave != null) {
+      map['clave'] = Variable<String>(clave);
+    }
+    if (!nullToAbsent || bonusAnual != null) {
+      map['bonus_anual'] = Variable<int>(bonusAnual);
+    }
+    if (!nullToAbsent || aniosRestantes != null) {
+      map['anios_restantes'] = Variable<int>(aniosRestantes);
+    }
     return map;
   }
 
@@ -12332,6 +12439,15 @@ class PatrociniosActivo extends DataClass
     return PatrociniosActivosCompanion(
       id: Value(id),
       categoria: Value(categoria),
+      clave: clave == null && nullToAbsent
+          ? const Value.absent()
+          : Value(clave),
+      bonusAnual: bonusAnual == null && nullToAbsent
+          ? const Value.absent()
+          : Value(bonusAnual),
+      aniosRestantes: aniosRestantes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(aniosRestantes),
     );
   }
 
@@ -12343,6 +12459,9 @@ class PatrociniosActivo extends DataClass
     return PatrociniosActivo(
       id: serializer.fromJson<int>(json['id']),
       categoria: serializer.fromJson<String>(json['categoria']),
+      clave: serializer.fromJson<String?>(json['clave']),
+      bonusAnual: serializer.fromJson<int?>(json['bonusAnual']),
+      aniosRestantes: serializer.fromJson<int?>(json['aniosRestantes']),
     );
   }
   @override
@@ -12351,17 +12470,38 @@ class PatrociniosActivo extends DataClass
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'categoria': serializer.toJson<String>(categoria),
+      'clave': serializer.toJson<String?>(clave),
+      'bonusAnual': serializer.toJson<int?>(bonusAnual),
+      'aniosRestantes': serializer.toJson<int?>(aniosRestantes),
     };
   }
 
-  PatrociniosActivo copyWith({int? id, String? categoria}) => PatrociniosActivo(
+  PatrociniosActivo copyWith({
+    int? id,
+    String? categoria,
+    Value<String?> clave = const Value.absent(),
+    Value<int?> bonusAnual = const Value.absent(),
+    Value<int?> aniosRestantes = const Value.absent(),
+  }) => PatrociniosActivo(
     id: id ?? this.id,
     categoria: categoria ?? this.categoria,
+    clave: clave.present ? clave.value : this.clave,
+    bonusAnual: bonusAnual.present ? bonusAnual.value : this.bonusAnual,
+    aniosRestantes: aniosRestantes.present
+        ? aniosRestantes.value
+        : this.aniosRestantes,
   );
   PatrociniosActivo copyWithCompanion(PatrociniosActivosCompanion data) {
     return PatrociniosActivo(
       id: data.id.present ? data.id.value : this.id,
       categoria: data.categoria.present ? data.categoria.value : this.categoria,
+      clave: data.clave.present ? data.clave.value : this.clave,
+      bonusAnual: data.bonusAnual.present
+          ? data.bonusAnual.value
+          : this.bonusAnual,
+      aniosRestantes: data.aniosRestantes.present
+          ? data.aniosRestantes.value
+          : this.aniosRestantes,
     );
   }
 
@@ -12369,49 +12509,77 @@ class PatrociniosActivo extends DataClass
   String toString() {
     return (StringBuffer('PatrociniosActivo(')
           ..write('id: $id, ')
-          ..write('categoria: $categoria')
+          ..write('categoria: $categoria, ')
+          ..write('clave: $clave, ')
+          ..write('bonusAnual: $bonusAnual, ')
+          ..write('aniosRestantes: $aniosRestantes')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, categoria);
+  int get hashCode =>
+      Object.hash(id, categoria, clave, bonusAnual, aniosRestantes);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is PatrociniosActivo &&
           other.id == this.id &&
-          other.categoria == this.categoria);
+          other.categoria == this.categoria &&
+          other.clave == this.clave &&
+          other.bonusAnual == this.bonusAnual &&
+          other.aniosRestantes == this.aniosRestantes);
 }
 
 class PatrociniosActivosCompanion extends UpdateCompanion<PatrociniosActivo> {
   final Value<int> id;
   final Value<String> categoria;
+  final Value<String?> clave;
+  final Value<int?> bonusAnual;
+  final Value<int?> aniosRestantes;
   const PatrociniosActivosCompanion({
     this.id = const Value.absent(),
     this.categoria = const Value.absent(),
+    this.clave = const Value.absent(),
+    this.bonusAnual = const Value.absent(),
+    this.aniosRestantes = const Value.absent(),
   });
   PatrociniosActivosCompanion.insert({
     this.id = const Value.absent(),
     required String categoria,
+    this.clave = const Value.absent(),
+    this.bonusAnual = const Value.absent(),
+    this.aniosRestantes = const Value.absent(),
   }) : categoria = Value(categoria);
   static Insertable<PatrociniosActivo> custom({
     Expression<int>? id,
     Expression<String>? categoria,
+    Expression<String>? clave,
+    Expression<int>? bonusAnual,
+    Expression<int>? aniosRestantes,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (categoria != null) 'categoria': categoria,
+      if (clave != null) 'clave': clave,
+      if (bonusAnual != null) 'bonus_anual': bonusAnual,
+      if (aniosRestantes != null) 'anios_restantes': aniosRestantes,
     });
   }
 
   PatrociniosActivosCompanion copyWith({
     Value<int>? id,
     Value<String>? categoria,
+    Value<String?>? clave,
+    Value<int?>? bonusAnual,
+    Value<int?>? aniosRestantes,
   }) {
     return PatrociniosActivosCompanion(
       id: id ?? this.id,
       categoria: categoria ?? this.categoria,
+      clave: clave ?? this.clave,
+      bonusAnual: bonusAnual ?? this.bonusAnual,
+      aniosRestantes: aniosRestantes ?? this.aniosRestantes,
     );
   }
 
@@ -12424,6 +12592,15 @@ class PatrociniosActivosCompanion extends UpdateCompanion<PatrociniosActivo> {
     if (categoria.present) {
       map['categoria'] = Variable<String>(categoria.value);
     }
+    if (clave.present) {
+      map['clave'] = Variable<String>(clave.value);
+    }
+    if (bonusAnual.present) {
+      map['bonus_anual'] = Variable<int>(bonusAnual.value);
+    }
+    if (aniosRestantes.present) {
+      map['anios_restantes'] = Variable<int>(aniosRestantes.value);
+    }
     return map;
   }
 
@@ -12431,7 +12608,10 @@ class PatrociniosActivosCompanion extends UpdateCompanion<PatrociniosActivo> {
   String toString() {
     return (StringBuffer('PatrociniosActivosCompanion(')
           ..write('id: $id, ')
-          ..write('categoria: $categoria')
+          ..write('categoria: $categoria, ')
+          ..write('clave: $clave, ')
+          ..write('bonusAnual: $bonusAnual, ')
+          ..write('aniosRestantes: $aniosRestantes')
           ..write(')'))
         .toString();
   }
@@ -18973,11 +19153,17 @@ typedef $$PatrociniosActivosTableCreateCompanionBuilder =
     PatrociniosActivosCompanion Function({
       Value<int> id,
       required String categoria,
+      Value<String?> clave,
+      Value<int?> bonusAnual,
+      Value<int?> aniosRestantes,
     });
 typedef $$PatrociniosActivosTableUpdateCompanionBuilder =
     PatrociniosActivosCompanion Function({
       Value<int> id,
       Value<String> categoria,
+      Value<String?> clave,
+      Value<int?> bonusAnual,
+      Value<int?> aniosRestantes,
     });
 
 class $$PatrociniosActivosTableFilterComposer
@@ -18996,6 +19182,21 @@ class $$PatrociniosActivosTableFilterComposer
 
   ColumnFilters<String> get categoria => $composableBuilder(
     column: $table.categoria,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get clave => $composableBuilder(
+    column: $table.clave,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get bonusAnual => $composableBuilder(
+    column: $table.bonusAnual,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get aniosRestantes => $composableBuilder(
+    column: $table.aniosRestantes,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -19018,6 +19219,21 @@ class $$PatrociniosActivosTableOrderingComposer
     column: $table.categoria,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get clave => $composableBuilder(
+    column: $table.clave,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get bonusAnual => $composableBuilder(
+    column: $table.bonusAnual,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get aniosRestantes => $composableBuilder(
+    column: $table.aniosRestantes,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$PatrociniosActivosTableAnnotationComposer
@@ -19034,6 +19250,19 @@ class $$PatrociniosActivosTableAnnotationComposer
 
   GeneratedColumn<String> get categoria =>
       $composableBuilder(column: $table.categoria, builder: (column) => column);
+
+  GeneratedColumn<String> get clave =>
+      $composableBuilder(column: $table.clave, builder: (column) => column);
+
+  GeneratedColumn<int> get bonusAnual => $composableBuilder(
+    column: $table.bonusAnual,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get aniosRestantes => $composableBuilder(
+    column: $table.aniosRestantes,
+    builder: (column) => column,
+  );
 }
 
 class $$PatrociniosActivosTableTableManager
@@ -19078,14 +19307,29 @@ class $$PatrociniosActivosTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> categoria = const Value.absent(),
-              }) => PatrociniosActivosCompanion(id: id, categoria: categoria),
+                Value<String?> clave = const Value.absent(),
+                Value<int?> bonusAnual = const Value.absent(),
+                Value<int?> aniosRestantes = const Value.absent(),
+              }) => PatrociniosActivosCompanion(
+                id: id,
+                categoria: categoria,
+                clave: clave,
+                bonusAnual: bonusAnual,
+                aniosRestantes: aniosRestantes,
+              ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
                 required String categoria,
+                Value<String?> clave = const Value.absent(),
+                Value<int?> bonusAnual = const Value.absent(),
+                Value<int?> aniosRestantes = const Value.absent(),
               }) => PatrociniosActivosCompanion.insert(
                 id: id,
                 categoria: categoria,
+                clave: clave,
+                bonusAnual: bonusAnual,
+                aniosRestantes: aniosRestantes,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

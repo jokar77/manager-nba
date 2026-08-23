@@ -3,9 +3,12 @@
 **Estado**: diseño acordado. Escrito el 2026-08-21. El 2026-08-22 se
 hicieron los pasos 1 y 2 —la capa de permisos (`lib/domain/permisos.dart`)
 y los puertos `Anuncios` y `Tienda` (`lib/domain/anuncios.dart`,
-`lib/domain/tienda.dart`)— con sus tests. **Nada de esto lo consulta ni lo
-llama todavía el juego**: eso es el paso 3, y hasta entonces el juego se
-comporta exactamente igual que antes. Del 3 en adelante, sin empezar.
+`lib/domain/tienda.dart`)— y el 3 a medias: los bloqueos de patrocinadores
+y ranuras ya están enchufados.
+
+**Cuidado con probarlo**: `EDICION` vale `completa` por defecto, así que
+con `flutter run` no se ve ningún bloqueo. Para verlos hace falta
+compilar o ejecutar con `--dart-define=EDICION=gratis`.
 
 Decidido con el usuario:
 
@@ -174,7 +177,31 @@ Esto suele pillar a la gente por sorpresa:
    mentira.~~ **Hecho** (2026-08-22): `lib/domain/anuncios.dart` y
    `lib/domain/tienda.dart`, con las de mentira como valor por defecto y
    trece tests. Nadie los llama todavía: eso es el paso 3.
-3. **Enchufar los tres bloqueos** a la capa de permisos.
+3. ~~**Enchufar los tres bloqueos** a la capa de permisos.~~ **Hecho**
+   (2026-08-22). Los tres: patrocinadores (bloqueados, con el vídeo que
+   los abre esa temporada), ranuras (una en gratis, las otras dos con
+   candado a la vista) y *simular la temporada entera*.
+
+   Ese tercero **no existía en el juego** y se hizo aquí: el botón está en
+   la tarjeta de próximo partido del menú, pero no simula ahí — lleva al
+   Calendario y la simulación se ve avanzar sobre las fechas, con su barra
+   de progreso. Simular ochenta partidos a ciegas desde el menú sería un
+   botón que se queda pensando sin contar nada, y si algo te para por el
+   camino (una oferta, el vestuario), te para en la pantalla donde esa
+   parada tiene sentido.
+
+   El **interstitial al pasar de temporada** también está puesto: es la
+   última línea de `ejecutarCambioDeTemporada`, para que no pueda caer
+   encima de un diálogo ni a mitad de una decisión.
+
+   **Fallo encontrado de paso** (ya arreglado el 2026-08-22): al simular
+   una temporada entera se pasa por el aviso del campeón de la Copa, y su
+   fila de botones se desbordaba. Resultó ser peor de lo apuntado —92 px
+   en un móvil de 390, pero **205 px** en el aviso de "has ganado tú", y
+   ese se salía también en tablet y escritorio—. El arreglo es cambiar el
+   `Row` por un `OverflowBar` en `shared/campeon_dialog.dart`, con
+   `dialogo_campeon_test.dart` vigilándolo a los tres tamaños. El detalle
+   está en `plan.md`.
 4. **La pantalla de compra** y el aviso de "esto es de la versión
    completa".
 5. **AdMob y Play Billing de verdad**, cuando existan las cuentas.

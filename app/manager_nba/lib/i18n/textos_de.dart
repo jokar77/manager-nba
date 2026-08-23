@@ -260,6 +260,8 @@ class TextosDe extends Textos {
   @override
   String get simularUnMes => '1 Monat simulieren';
   @override
+  String get simularTemporadaEntera => 'Ganze Saison';
+  @override
   String get verBracketCompleto => 'Komplettes Playoff-Schema ansehen';
   @override
   String get empezarSiguienteTemporada => 'Nächste Saison beginnen';
@@ -1036,6 +1038,8 @@ class TextosDe extends Textos {
   @override
   String get lasTresRanurasOcupadasAviso => 'Alle drei Slots sind belegt: lösche einen, um neu zu beginnen, oder setze einen deiner vorhandenen fort.';
   @override
+  String get ranuraDeVersionCompleta => 'Slot der Vollversion';
+  @override
   String partidaNumero(int n) => 'SPIELSTAND $n';
   @override
   String get borrarEstaPartidaTooltip => 'Diesen Spielstand löschen';
@@ -1088,7 +1092,7 @@ class TextosDe extends Textos {
   @override
   String get tituloPatrocinadores => 'Sponsoren';
   @override
-  String get explicacionPatrocinadores => 'Wähle, welche Sponsoren dein Team diese Saison unter Vertrag nimmt: jeder aktive gibt zusätzlichen Gehaltsspielraum.';
+  String get explicacionPatrocinadores => 'Jedes Sponsoring hat mehrere Angebote: je länger der Vertrag, desto weniger zahlt er pro Jahr. Was du unterschreibst, belegt diese Kategorie bis zum Vertragsende.';
   @override
   String get patrocinioEstadioLabel => 'Hallensponsor';
   @override
@@ -1100,7 +1104,17 @@ class TextosDe extends Textos {
   @override
   String fundadoEnAnio(int anio) => 'Gegründet $anio';
   @override
+  String get alAnioSufijo => 'pro Jahr';
+  @override
+  String sinPatrocinioFirmado(int ofertas) => ofertas == 1 ? 'Nicht unterschrieben · 1 Angebot' : 'Nicht unterschrieben ·  Angebote';
+  @override
   String margenPatrocinio(String importe) => '+$importe Gehaltsspielraum';
   @override
   String get totalPatrociniosLabel => 'Gesamter Spielraum dieses Jahr';
+  @override
+  String get patrocinadoresBloqueados => 'Sponsoren gehören zur Vollversion. Sieh dir ein Video an und du hast alle vier für diese Saison.';
+  @override
+  String get verVideoPatrocinadores => 'VIDEO ANSEHEN UND FREISCHALTEN';
+  @override
+  String get videoSinTerminar => 'Das Video wurde nicht zu Ende gesehen, sie bleiben also gesperrt. Du kannst es noch einmal versuchen.';
 }

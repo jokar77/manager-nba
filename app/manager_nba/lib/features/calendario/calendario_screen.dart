@@ -35,11 +35,22 @@ class CalendarioScreen extends StatefulWidget {
   /// Ver `simularHastaConDialogo`, que es quien lo usa.
   final Random? random;
 
+  /// Arranca simulando todo lo que queda de temporada regular en cuanto se
+  /// abre la pantalla.
+  ///
+  /// Es lo que hace el botón "Simular temporada entera" del menú: en vez
+  /// de simular a ciegas desde el hub, te trae aquí y lo ves avanzar sobre
+  /// el calendario, con su barra de progreso. Y si algo te para por el
+  /// camino —una oferta, un evento de vestuario— te para en la pantalla
+  /// donde esa parada tiene sentido.
+  final bool simularTemporadaAlAbrir;
+
   const CalendarioScreen({
     super.key,
     required this.db,
     required this.equipoUsuario,
     this.random,
+    this.simularTemporadaAlAbrir = false,
   });
 
   @override
@@ -60,10 +71,35 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
   final _scrollController = ScrollController();
   final Map<String, GlobalKey> _clavesPorMes = {};
 
+  /// Para que la simulación automática de "temporada entera" arranque una
+  /// sola vez. `_recargarDatos` se llama muchas veces —al volver de otras
+  /// pantallas, tras cada simulación—, y sin esto volvería a lanzarse cada
+  /// vez que el jugador regresara al calendario.
+  bool _yaSimuloLaTemporada = false;
+
   @override
   void initState() {
     super.initState();
     _recargarDatos(scrollearAlActual: true);
+  }
+
+  /// Arranca la simulación de todo lo que queda de temporada regular, si
+  /// se entró con esa intención desde el menú.
+  ///
+  /// Se hace después de cargar los datos y no en `initState` porque hace
+  /// falta el calendario para saber hasta qué día hay que llegar.
+  void _simularTemporadaSiTocaAlAbrir() {
+    if (!widget.simularTemporadaAlAbrir || _yaSimuloLaTemporada) return;
+    if (_partidos.isEmpty || _temporadaCompleta) return;
+    final ultimo = _partidos.last.fecha;
+    if (proximaFechaPendiente(_partidos) == null) return;
+
+    _yaSimuloLaTemporada = true;
+    // Tras el primer fotograma: si se lanzara en mitad del build, el
+    // primer `setState` de la simulación caería sobre un widget que
+    // todavía se está montando.
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _simularHasta(ultimo));
   }
 
   @override
@@ -125,6 +161,7 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
     if (scrollearAlActual) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollearAlMesActual());
     }
+    _simularTemporadaSiTocaAlAbrir();
   }
 
   String? _campeonDePlayoffs(List<Serie> series) =>

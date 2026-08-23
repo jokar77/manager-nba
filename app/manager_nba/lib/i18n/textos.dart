@@ -256,6 +256,10 @@ abstract class Textos {
   String get simularUnaSemana;
   String get unMes;
   String get simularUnMes;
+
+  /// Simular de golpe todo lo que queda de temporada regular. Se lanza
+  /// desde el hub y lleva al Calendario, que es donde se ve avanzar.
+  String get simularTemporadaEntera;
   String get verBracketCompleto;
   String get empezarSiguienteTemporada;
   String get simularPartidoDePlayoffs;
@@ -676,6 +680,11 @@ abstract class Textos {
   String sePierdeCarreraDeAviso(String nombre);
   String get borrarBtn;
   String get lasTresRanurasOcupadasAviso;
+
+  /// La ranura que solo trae la versión completa. Sale con candado en vez
+  /// de esconderse: lo que se vende es comodidad, no un secreto.
+  String get ranuraDeVersionCompleta;
+
   String partidaNumero(int n);
   String get borrarEstaPartidaTooltip;
   String get ranuraVaciaLabel;
@@ -712,6 +721,26 @@ abstract class Textos {
   String get patrocinioBebidaLabel;
   String get patrocinioOcioLabel;
   String fundadoEnAnio(int anio);
+
+  /// El sufijo del dinero de una oferta: "al año". Va suelto, en pequeño y
+  /// al lado de la cifra, que es lo que se lee de verdad.
+  String get alAnioSufijo;
+
+  /// La cabecera de una categoría sin firmar, con cuántas ofertas hay
+  /// dentro. Son hasta tres, pero algunas ciudades tienen menos marcas de
+  /// ese tipo (ver `ofertasDe`), así que el número va por delante.
+  String sinPatrocinioFirmado(int ofertas);
   String margenPatrocinio(String importe);
   String get totalPatrociniosLabel;
+
+  // --- Patrocinadores bloqueados (versión gratuita) ------------------------
+  /// Por qué salen los cuatro apagados y qué hacer para abrirlos.
+  String get patrocinadoresBloqueados;
+
+  /// El botón que enseña el vídeo recompensado.
+  String get verVideoPatrocinadores;
+
+  /// Cuando el vídeo se cierra antes de tiempo. No es un error del juego,
+  /// así que se cuenta sin dramatismo y se deja volver a intentarlo.
+  String get videoSinTerminar;
 }

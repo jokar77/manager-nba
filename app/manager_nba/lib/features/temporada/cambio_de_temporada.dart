@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../data/database/app_database.dart';
+import '../../domain/anuncios.dart';
 import '../../domain/draft_repository.dart';
 import '../../domain/nueva_temporada_repository.dart';
 import '../../domain/entrenadores_repository.dart';
@@ -150,5 +151,16 @@ Future<bool> ejecutarCambioDeTemporada(
       onContinuar: () => Navigator.of(context).pop(),
     ),
   ));
+
+  // 7) Y el anuncio de la versión gratuita, aquí y en ningún otro sitio
+  // del juego.
+  //
+  // Va en la ÚLTIMA línea a propósito: ya no queda ninguna pantalla del
+  // cambio de temporada abierta, así que no puede caer encima de un
+  // diálogo ni a mitad de una decisión. Y como esta función corre una vez
+  // por año, sale uno por cambio y nunca dos seguidos.
+  //
+  // Si añades pasos al cambio de temporada, van ANTES de esto.
+  await anuncioDeCambioDeTemporada();
   return context.mounted;
 }
