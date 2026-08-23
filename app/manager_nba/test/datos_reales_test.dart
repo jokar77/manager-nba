@@ -24,27 +24,30 @@ void main() {
   });
 
   Future<Jugador> porNombreReal(String nombre) async {
-    return (db.select(db.jugadores)..where((t) => t.nombreReal.equals(nombre)))
-        .getSingle();
+    return (db.select(
+      db.jugadores,
+    )..where((t) => t.nombreReal.equals(nombre))).getSingle();
   }
 
-  test('los dorsales, salarios y equipos reales llegan a la base tal cual',
-      () async {
-    final curry = await porNombreReal('Stephen Curry');
-    expect(curry.dorsal, 30);
-    expect(curry.salario, 62587158);
-    expect(curry.equipo, 'GSW');
+  test(
+    'los dorsales, salarios y equipos reales llegan a la base tal cual',
+    () async {
+      final curry = await porNombreReal('Stephen Curry');
+      expect(curry.dorsal, 30);
+      expect(curry.salario, 62587158);
+      expect(curry.equipo, 'GSW');
 
-    final jokic = await porNombreReal('Nikola Jokić');
-    expect(jokic.dorsal, 15);
-    expect(jokic.salario, 59033114);
-    expect(jokic.aniosContrato, 2);
+      final jokic = await porNombreReal('Nikola Jokić');
+      expect(jokic.dorsal, 15);
+      expect(jokic.salario, 59033114);
+      expect(jokic.aniosContrato, 2);
 
-    // Traspaso recogido de la fuente: en el dataset original estaba en MIL.
-    final giannis = await porNombreReal('Giannis Antetokounmpo');
-    expect(giannis.equipo, 'MIA');
-    expect(giannis.dorsal, 7);
-  });
+      // Traspaso recogido de la fuente: en el dataset original estaba en MIL.
+      final giannis = await porNombreReal('Giannis Antetokounmpo');
+      expect(giannis.equipo, 'MIA');
+      expect(giannis.dorsal, 7);
+    },
+  );
 
   test('a quien no tenemos contrato real se le estima uno dentro de la '
       'escala de la liga', () async {
@@ -59,11 +62,13 @@ void main() {
 
     // La escala tiene que discriminar: los mejores cobran mucho más que la
     // media de la liga.
-    final ordenados = [...jugadores]..sort((a, b) => b.media.compareTo(a.media));
+    final ordenados = [...jugadores]
+      ..sort((a, b) => b.media.compareTo(a.media));
     final top20 = ordenados.take(20);
     final mediaTop = top20.map((j) => j.salario).reduce((a, b) => a + b) / 20;
     final mediaLiga =
-        jugadores.map((j) => j.salario).reduce((a, b) => a + b) / jugadores.length;
+        jugadores.map((j) => j.salario).reduce((a, b) => a + b) /
+        jugadores.length;
     expect(mediaTop, greaterThan(mediaLiga * 2.5));
   });
 
@@ -76,8 +81,10 @@ void main() {
     expect(deMedia(70), lessThan(deMedia(80)));
     expect(deMedia(80), lessThan(deMedia(90)));
     // El salto de 85 a 95 tiene que ser mucho mayor que el de 65 a 75.
-    expect(deMedia(95) - deMedia(85),
-        greaterThan((deMedia(75) - deMedia(65)) * 4));
+    expect(
+      deMedia(95) - deMedia(85),
+      greaterThan((deMedia(75) - deMedia(65)) * 4),
+    );
     // Un chaval con contrato de rookie cobra menos que un veterano igual.
     expect(deMedia(85, edad: 21), lessThan(deMedia(85, edad: 28)));
 
@@ -89,13 +96,47 @@ void main() {
     expect(deMedia(87, edad: 22), greaterThan(deMedia(75, edad: 30)));
   });
 
+  test('a quien ya jugó su temporada de rookie real no se le vuelve a '
+      'contar como rookie en el juego', () async {
+    // Bug real de la lista 15: al importar, quien no tiene `draft_year` en
+    // el dataset cae al cálculo por edad (`edad - 20`, ver
+    // `_temporadasPrevias` en jugadores_importer.dart), y eso confunde
+    // "acabo de debutar" con "soy joven". Cooper Flagg fue el caso que lo
+    // delató: novato real de 2025, pero con `draft_year: null` en el
+    // dataset (el cruce con el histórico de Kaggle no llega a las clases
+    // más recientes) su edad de 19 lo dejaba en 0 temporadas previas — o
+    // sea, rookie otra vez en la partida, aunque ya hubiera jugado su año
+    // real de novato.
+    //
+    // Arreglado poniéndole `draft_year` a mano a los de la clase de 2024 y
+    // 2025 que trae el dataset (ver docs/plan.md; no cubre el dataset
+    // entero, solo a quien esto afectaba de verdad — jóvenes cuya edad por
+    // sí sola los dejaba en 0 o 1).
+    //
+    // Sin contraejemplo con un novato real de la clase de 2026 —Aday Mara,
+    // el que pedía la lista— porque ni siquiera se importa: es un
+    // prospecto que aún no ha jugado un partido de la NBA, así que el
+    // dataset no tiene medias que darle y la importación lo descarta por
+    // no tener los campos obligatorios (ver `_camposObligatorios` en
+    // jugadores_importer.dart). Los novatos de verdad de la próxima clase
+    // entran por el draft simulado del juego, no por este dataset.
+    final flagg = await porNombreReal('Cooper Flagg');
+    expect(
+      flagg.temporadasPrevias,
+      greaterThanOrEqualTo(1),
+      reason:
+          'ya jugó su temporada de novato en la vida real (2025-26); '
+          'si sale en 0 vuelve a colarse como rookie en el juego',
+    );
+  });
+
   test('tras crear la franquicia las 30 plantillas son jugables y con todos '
       'los puestos cubiertos', () async {
     await crearFranquicia(db, 'LAL');
 
-    final jugadores = await (db.select(db.jugadores)
-          ..where((t) => t.retirado.equals(false)))
-        .get();
+    final jugadores = await (db.select(
+      db.jugadores,
+    )..where((t) => t.retirado.equals(false))).get();
     final porEquipo = <String, List<Jugador>>{};
     for (final j in jugadores) {
       if (!esFranquicia(j.equipo)) continue;
@@ -109,20 +150,28 @@ void main() {
       // se recortaban, y eso mandaba a la agencia libre del año 1 a medio
       // centenar de jugadores que en la vida real tienen contrato. El tope
       // vuelve a aplicarse en el cierre del draft de cada verano.
-      expect(entry.value.length, greaterThanOrEqualTo(plantillaMinima),
-          reason: '${entry.key} tiene ${entry.value.length} jugadores');
+      expect(
+        entry.value.length,
+        greaterThanOrEqualTo(plantillaMinima),
+        reason: '${entry.key} tiene ${entry.value.length} jugadores',
+      );
 
       for (final puesto in posicionesEquipo) {
-        expect(entry.value.where((j) => juegaComodoDe(j, puesto)).length,
-            greaterThanOrEqualTo(2),
-            reason: '${entry.key} no puede cubrir $puesto');
+        expect(
+          entry.value.where((j) => juegaComodoDe(j, puesto)).length,
+          greaterThanOrEqualTo(2),
+          reason: '${entry.key} no puede cubrir $puesto',
+        );
       }
 
       // Dorsales únicos dentro del equipo.
       final dorsales = entry.value.map((j) => j.dorsal).toList();
       expect(dorsales.every((d) => d != null), isTrue);
-      expect(dorsales.toSet().length, dorsales.length,
-          reason: '${entry.key} repite dorsal');
+      expect(
+        dorsales.toSet().length,
+        dorsales.length,
+        reason: '${entry.key} repite dorsal',
+      );
     }
   });
 }
