@@ -144,6 +144,56 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
     );
   }
 
+  /// Los tres roles elegidos. Son **obligatorios** para guardar, igual que
+  /// los diez huecos: un equipo sin estrella de ataque ni sexto hombre es
+  /// un equipo a medio montar, y el motor los usa.
+  ///
+  /// No hace falta comprobar que haya candidatos: en cuanto la rotación
+  /// está completa hay diez jugadores para las estrellas y cinco suplentes
+  /// para el sexto hombre. Por eso [_intentarGuardar] mira la alineación
+  /// primero — al revés se pediría un sexto hombre sin suplentes de los
+  /// que sacarlo.
+  bool get _rolesCompletos =>
+      _estrellaAtaqueId != null &&
+      _estrellaDefensaId != null &&
+      _sextoHombreId != null;
+
+  /// Cuántas veces se ha intentado guardar con los roles a medias. Se le
+  /// pasa a la banda, que se abre y parpadea cada vez que sube.
+  int _avisosDeRoles = 0;
+
+  /// Intenta guardar, y si no se puede **dice qué falta**.
+  ///
+  /// Antes el botón salía deshabilitado y ya está. Eso tiene un problema
+  /// que se ve en cuanto alguien lo usa: un botón muerto no explica nada,
+  /// y desde que la banda de roles se pliega en móvil, lo que falta puede
+  /// estar además doblado. Así que el botón siempre responde, y cuando no
+  /// se puede guardar señala el sitio.
+  Future<void> _intentarGuardar() async {
+    final textos = t(context);
+
+    if (!_rotacionCompleta) {
+      _avisar(textos.faltaAlineacionAviso);
+      return;
+    }
+    if (!_rolesCompletos) {
+      // La banda se abre sola y parpadea: el mensaje dice qué falta y el
+      // parpadeo dice dónde.
+      setState(() => _avisosDeRoles++);
+      _avisar(textos.faltanRolesAviso);
+      return;
+    }
+    await _guardar();
+  }
+
+  void _avisar(String mensaje) {
+    ScaffoldMessenger.of(context)
+      // Sin esto, dos toques seguidos encolan dos avisos y el segundo sale
+      // cuando ya no viene a cuento.
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(mensaje)));
+  }
+
   /// En qué hueco (puesto + titular/suplente) está ya [jugadorId], si está
   /// en alguno.
   (String, bool)? _huecoDe(int jugadorId) {
@@ -509,6 +559,7 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
           onCambiarEstrellaDefensa: (id) =>
               setState(() => _estrellaDefensaId = id),
           onCambiarSextoHombre: (id) => setState(() => _sextoHombreId = id),
+          senalDeAviso: _avisosDeRoles,
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
@@ -517,7 +568,10 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
                 ? t(context).empezarTemporadaBtn
                 : t(context).guardarRotacionBtn,
             color: acento,
-            onTap: _rotacionCompleta ? _guardar : null,
+            // Siempre pulsable: si falta algo, `_intentarGuardar` dice qué
+            // y señala dónde. Un botón apagado no explica ninguna de las
+            // dos cosas.
+            onTap: _intentarGuardar,
           ),
         ),
       ],
@@ -899,6 +953,17 @@ const _iconoAtaque = Icons.local_fire_department;
 const _iconoDefensa = Icons.shield;
 const _iconoSextoHombre = Icons.bolt;
 
+/// Identificadores estables de los tres desplegables de rol, sin traducir.
+///
+/// Misma idea que las claves de `_HuecoJugador`: la etiqueta que se ve
+/// cambia con el idioma, esto no. Y aquí hacen falta además porque señalar
+/// uno de los tres por posición no funciona — un finder indexado revienta
+/// dentro de `tap`, que por debajo busca el `View` que lo contiene y le
+/// aplica el mismo índice.
+const claveRolAtaque = Key('rol-estrella-ataque');
+const claveRolDefensa = Key('rol-estrella-defensa');
+const claveRolSextoHombre = Key('rol-sexto-hombre');
+
 class _SelectorEstrellas extends StatefulWidget {
   final Map<int, Jugador> jugadoresPorId;
   final Set<int> idsAsignados;
@@ -912,6 +977,15 @@ class _SelectorEstrellas extends StatefulWidget {
   final void Function(int?) onCambiarEstrellaDefensa;
   final void Function(int?) onCambiarSextoHombre;
 
+  /// Un contador que la pantalla sube cada vez que alguien intenta guardar
+  /// con roles sin elegir. Cuando cambia, la banda se abre sola y parpadea.
+  ///
+  /// Es un contador y no un `bool` a propósito: hace falta poder avisar dos
+  /// veces seguidas. Con un booleano, el segundo intento no cambiaría nada
+  /// y el parpadeo no se repetiría — justo cuando quien lo necesita es
+  /// alguien que ya no se enteró la primera vez.
+  final int senalDeAviso;
+
   const _SelectorEstrellas({
     required this.jugadoresPorId,
     required this.idsAsignados,
@@ -922,21 +996,56 @@ class _SelectorEstrellas extends StatefulWidget {
     required this.onCambiarEstrellaAtaque,
     required this.onCambiarEstrellaDefensa,
     required this.onCambiarSextoHombre,
+    required this.senalDeAviso,
   });
 
   @override
   State<_SelectorEstrellas> createState() => _SelectorEstrellasState();
 }
 
-class _SelectorEstrellasState extends State<_SelectorEstrellas> {
+class _SelectorEstrellasState extends State<_SelectorEstrellas>
+    with SingleTickerProviderStateMixin {
+  /// El parpadeo del aviso. Es finito —dos idas y vueltas y para— y no un
+  /// `repeat()`: una animación que no termina nunca deja colgado a
+  /// `pumpAndSettle` en los tests, y en la pantalla sería un semáforo.
+  late final AnimationController _parpadeo = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 900),
+  );
+
+  late final Animation<double> _intensidad = TweenSequence<double>([
+    TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 1),
+    TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 1),
+    TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 1),
+    TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 1),
+  ]).animate(_parpadeo);
+
+  @override
+  void didUpdateWidget(covariant _SelectorEstrellas anterior) {
+    super.didUpdateWidget(anterior);
+    if (widget.senalDeAviso != anterior.senalDeAviso) {
+      // Abrirla es la mitad del aviso: parpadear una banda plegada diría
+      // "aquí hay algo" pero no dejaría verlo ni arreglarlo.
+      setState(() => _abierto = true);
+      _parpadeo.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _parpadeo.dispose();
+    super.dispose();
+  }
+
   /// Solo cuenta en pantalla estrecha: en ancho los tres están siempre a la
   /// vista, porque ahí caben en una fila y no le quitan sitio a nada.
   ///
-  /// Arranca plegado incluso sin nada elegido, y se puede: los tres roles
-  /// son opcionales —guardar solo pide titular y suplente en los cinco
-  /// puestos, ver `_rotacionCompleta`— y «Alinear automáticamente» los
-  /// rellena solo. El resumen de la banda dice a quién hay puesto, así que
-  /// plegado no esconde nada: lo dobla.
+  /// Arranca plegado aunque los tres roles sean **obligatorios** para
+  /// guardar (ver `_rolesCompletos`), y se puede por dos cosas: el resumen
+  /// de la banda dice a quién hay puesto y a quién no —plegado no esconde,
+  /// dobla— y si alguien intenta guardar sin elegirlos, la banda se abre
+  /// sola y parpadea. O sea que no hay forma de quedarse atascado sin
+  /// saber por qué.
   bool _abierto = false;
 
   @override
@@ -961,6 +1070,7 @@ class _SelectorEstrellasState extends State<_SelectorEstrellas> {
     );
 
     Widget selector({
+      required Key clave,
       required String etiqueta,
       required Color color,
       required int? valor,
@@ -1005,6 +1115,7 @@ class _SelectorEstrellasState extends State<_SelectorEstrellas> {
                 borderSide: BorderSide(color: color, width: 2),
               ),
             ),
+            key: clave,
             initialValue: opciones.contains(valor) ? valor : null,
             items: [
               item(null, t(context).ningunaOpcion),
@@ -1020,6 +1131,7 @@ class _SelectorEstrellasState extends State<_SelectorEstrellas> {
 
     final selectores = [
       selector(
+        clave: claveRolAtaque,
         etiqueta: t(context).estrellaAtaqueLabel,
         color: colorAtaque,
         valor: widget.estrellaAtaqueId,
@@ -1027,6 +1139,7 @@ class _SelectorEstrellasState extends State<_SelectorEstrellas> {
         onChanged: widget.onCambiarEstrellaAtaque,
       ),
       selector(
+        clave: claveRolDefensa,
         etiqueta: t(context).estrellaDefensaLabel,
         color: colorDefensa,
         valor: widget.estrellaDefensaId,
@@ -1034,6 +1147,7 @@ class _SelectorEstrellasState extends State<_SelectorEstrellas> {
         onChanged: widget.onCambiarEstrellaDefensa,
       ),
       selector(
+        clave: claveRolSextoHombre,
         etiqueta: t(context).sextoHombreLabel,
         color: colorSextoHombre,
         valor: widget.sextoHombreId,
@@ -1042,11 +1156,25 @@ class _SelectorEstrellasState extends State<_SelectorEstrellas> {
       ),
     ];
 
-    return Container(
-      decoration: BoxDecoration(
-        color: e.marcador,
-        border: Border(top: BorderSide(color: e.lineaFuerte)),
-      ),
+    return AnimatedBuilder(
+      animation: _intensidad,
+      builder: (context, hijo) {
+        final fuerza = _intensidad.value;
+        return Container(
+          decoration: BoxDecoration(
+            // El fondo se tiñe hacia el color de aviso y la línea de arriba
+            // engorda: son las dos cosas que se ven sin estar mirando ahí.
+            color: Color.lerp(e.marcador, e.mal, fuerza * 0.28),
+            border: Border(
+              top: BorderSide(
+                color: Color.lerp(e.lineaFuerte, e.mal, fuerza)!,
+                width: 1 + fuerza * 2,
+              ),
+            ),
+          ),
+          child: hijo,
+        );
+      },
       child: LayoutBuilder(
         builder: (context, restricciones) {
           if (restricciones.maxWidth >= _anchoMinimoParaTresSelectores) {

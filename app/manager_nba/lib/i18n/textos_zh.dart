@@ -203,7 +203,8 @@ class TextosZh extends Textos {
   @override
   String comoFicharA(String nombre) => '怎样签下$nombre？';
   @override
-  String get sinConQueConvencerles => '你现在拿不出有说服力的筹码：无论是阵容还是选秀权，都不足以在不伤筋动骨的情况下打动对方。';
+  String get sinConQueConvencerles =>
+      '你现在拿不出有说服力的筹码：无论是阵容还是选秀权，都不足以在不伤筋动骨的情况下打动对方。';
 
   @override
   String get campeonesDeLaNba => 'NBA总冠军';
@@ -230,7 +231,8 @@ class TextosZh extends Textos {
   @override
   String get seJugaraProximoPartido => '将进行你的下一场比赛。';
   @override
-  String seJugaranDeUnaVez(int partidos, int dia, int mes) => '截至$mes月$dia日剩余的$partidos场比赛将一次性模拟完成。';
+  String seJugaranDeUnaVez(int partidos, int dia, int mes) =>
+      '截至$mes月$dia日剩余的$partidos场比赛将一次性模拟完成。';
   @override
   String get simular => '模拟';
   @override
@@ -248,7 +250,20 @@ class TextosZh extends Textos {
   @override
   String get descEventoAllStar => '本周末你没有比赛。趁这个机会看看联盟排名吧。';
   @override
-  List<String> get nombresMeses => ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+  List<String> get nombresMeses => [
+    '1月',
+    '2月',
+    '3月',
+    '4月',
+    '5月',
+    '6月',
+    '7月',
+    '8月',
+    '9月',
+    '10月',
+    '11月',
+    '12月',
+  ];
   @override
   List<String> get diasSemanaAbrev => ['一', '二', '三', '四', '五', '六', '日'];
   @override
@@ -276,14 +291,16 @@ class TextosZh extends Textos {
   @override
   String get simularPlayoffsCompletos => '模拟完整季后赛';
   @override
-  String get serieDecididaFaltaResto => '你的系列赛已经结束——还需要等对阵图的其余部分揭晓，才能知道你的下一个对手。';
+  String get serieDecididaFaltaResto =>
+      '你的系列赛已经结束——还需要等对阵图的其余部分揭晓，才能知道你的下一个对手。';
   @override
   String get simularRestoDeRonda => '模拟本轮剩余比赛';
 
   @override
   String ofertaTitulo(int n) => n == 1 ? '你收到了一份报价' : '你有多份报价';
   @override
-  String ofertaMensaje(int n) => n == 1 ? '一支球队询问了你的一名球员，并提出了报价。' : '有$n支球队询问了你的球员。';
+  String ofertaMensaje(int n) =>
+      n == 1 ? '一支球队询问了你的一名球员，并提出了报价。' : '有$n支球队询问了你的球员。';
   @override
   String get masTarde => '稍后再看';
   @override
@@ -299,11 +316,13 @@ class TextosZh extends Textos {
   @override
   String get allStarWeekendMayus => 'ALL STAR WEEKEND';
   @override
-  String resultadoAllStar(
-      {required bool esteGana,
-      required int local,
-      required int visitante,
-      String? mvp}) => '全明星赛已经结束。${esteGana ? "东部" : "西部"}以$local-$visitante赢得比赛。${mvp == null ? "" : "\n\n全场MVP：$mvp。"}';
+  String resultadoAllStar({
+    required bool esteGana,
+    required int local,
+    required int visitante,
+    String? mvp,
+  }) =>
+      '全明星赛已经结束。${esteGana ? "东部" : "西部"}以$local-$visitante赢得比赛。${mvp == null ? "" : "\n\n全场MVP：$mvp。"}';
   @override
   String get verFinDeSemana => '查看全明星周末';
   @override
@@ -319,6 +338,7 @@ class TextosZh extends Textos {
     final p = perdidos;
     return '$n场比赛·$g胜$p负';
   }
+
   @override
   String get lesionesActivasAhora => '当前的伤病情况';
   @override
@@ -365,7 +385,15 @@ class TextosZh extends Textos {
   @override
   String get rondaFinalNba => 'NBA总决赛';
   @override
-  List<String> get nombresDeRondaBracket => ['第一\n轮', '半决赛', '西部\n决赛', 'NBA\n总决赛', '东部\n决赛', '半决赛', '第一\n轮'];
+  List<String> get nombresDeRondaBracket => [
+    '第一\n轮',
+    '半决赛',
+    '西部\n决赛',
+    'NBA\n总决赛',
+    '东部\n决赛',
+    '半决赛',
+    '第一\n轮',
+  ];
   @override
   String get esperandoAlPlayIn => '等待附加赛结果';
   @override
@@ -374,7 +402,8 @@ class TextosZh extends Textos {
   @override
   String despedirConfirmacion(String nombre) => '解雇$nombre？';
   @override
-  String despedirConTiempoRestante(int anios, String importe) => '他的合同还剩$anios个赛季，这笔钱你必须照付：$importe在合同到期前都无法用来签下他的继任者。';
+  String despedirConTiempoRestante(int anios, String importe) =>
+      '他的合同还剩$anios个赛季，这笔钱你必须照付：$importe在合同到期前都无法用来签下他的继任者。';
   @override
   String get despedirSinContrato => '他将成为自由身，可以与任何球队签约。在你找到新教练之前，你的球队将没有教练执教。';
   @override
@@ -384,13 +413,17 @@ class TextosZh extends Textos {
   @override
   String get dirigiendoAOtroEquipo => '正在执教其他球队';
   @override
-  String get sePuedeOfertarPeroTrabajo => '你可以向他们发出报价，但他们已有工作在身：需要开出更有诚意的条件才能说服他们，而且你挖走教练的球队会立刻寻找替代人选。';
+  String get sePuedeOfertarPeroTrabajo =>
+      '你可以向他们发出报价，但他们已有工作在身：需要开出更有诚意的条件才能说服他们，而且你挖走教练的球队会立刻寻找替代人选。';
   @override
-  String get avisoObligatorioTexto => '没有教练无法继续比赛。请签下一位教练：如果没有中意的人选或预算不够，你随时可以以底薪签下一位。';
+  String get avisoObligatorioTexto =>
+      '没有教练无法继续比赛。请签下一位教练：如果没有中意的人选或预算不够，你随时可以以底薪签下一位。';
   @override
-  String mediaDeTuEquipoEs(int n) => '你球队的平均能力值是$n。教练越出色，对球队前景的要求就越高——金钱只能弥补部分差距。';
+  String mediaDeTuEquipoEs(int n) =>
+      '你球队的平均能力值是$n。教练越出色，对球队前景的要求就越高——金钱只能弥补部分差距。';
   @override
-  String pideAlAnioYTemporadas(String importe, int anios) => '要求年薪$importe，合同$anios个赛季。';
+  String pideAlAnioYTemporadas(String importe, int anios) =>
+      '要求年薪$importe，合同$anios个赛季。';
   @override
   String noLlegaMasaSalarial(String importe) => '你的薪资空间不够：最多只能提供$importe。';
   @override
@@ -402,9 +435,11 @@ class TextosZh extends Textos {
   @override
   String get sueldoEntrenadorCuentaEnMasa => '教练的薪水计入你的薪资总额：在这里花掉的钱就不能用来签球员了。';
   @override
-  String contratoResumen(String importeAlAnio, String duracion) => '$importeAlAnio·合同$duracion';
+  String contratoResumen(String importeAlAnio, String duracion) =>
+      '$importeAlAnio·合同$duracion';
   @override
-  String trayectoriaEstaTemporada(int victorias, int derrotas) => '本赛季：$victorias胜$derrotas负';
+  String trayectoriaEstaTemporada(int victorias, int derrotas) =>
+      '本赛季：$victorias胜$derrotas负';
   @override
   String temporadasDirigiendo(int n) => '执教$n个赛季';
   @override
@@ -434,13 +469,20 @@ class TextosZh extends Textos {
   String get campeonNba => 'NBA总冠军';
 
   @override
-  String descripcionHueco(bool esTitular, String nombrePosicion) => esTitular ? '$nombrePosicion首发' : '$nombrePosicion替补';
+  String descripcionHueco(bool esTitular, String nombrePosicion) =>
+      esTitular ? '$nombrePosicion首发' : '$nombrePosicion替补';
   @override
   String get tituloTitular => '首发';
   @override
   String get tituloSuplente => '替补';
   @override
-  Map<String, String> get nombresDePosiciones => {'PG': '控球后卫 (PG)', 'SG': '得分后卫 (SG)', 'SF': '小前锋 (SF)', 'PF': '大前锋 (PF)', 'C': '中锋 (C)'};
+  Map<String, String> get nombresDePosiciones => {
+    'PG': '控球后卫 (PG)',
+    'SG': '得分后卫 (SG)',
+    'SF': '小前锋 (SF)',
+    'PF': '大前锋 (PF)',
+    'C': '中锋 (C)',
+  };
   @override
   String get minutosTitularLabel => '首发时间：';
   @override
@@ -462,9 +504,15 @@ class TextosZh extends Textos {
   @override
   String get elegirJugadorPlaceholder => '——选择球员——';
   @override
-  String huecoConJugador(String etiqueta, String nombre, String posicion, int media) => '$etiqueta：$nombre（$posicion，综合评分$media）';
+  String huecoConJugador(
+    String etiqueta,
+    String nombre,
+    String posicion,
+    int media,
+  ) => '$etiqueta：$nombre（$posicion，综合评分$media）';
   @override
-  String lesionConDetalle(String motivo, int partidos, String fecha) => '$motivo（$partidos场）——预计$fecha复出——期间由替补出场';
+  String lesionConDetalle(String motivo, int partidos, String fecha) =>
+      '$motivo（$partidos场）——预计$fecha复出——期间由替补出场';
   @override
   String get fueraDeSusDosPosiciones => '不在其擅长的两个位置（表现会略差）';
   @override
@@ -478,6 +526,10 @@ class TextosZh extends Textos {
   @override
   String get ningunaOpcion => '无';
   @override
+  String get faltaAlineacionAviso => "请补齐阵容：每个位置都需要首发和替补。";
+  @override
+  String get faltanRolesAviso => "还需要选出进攻核心、防守核心和第六人。";
+  @override
   String get sinPicksPropios => '你没有属于自己的选秀权了：全部交易出去了。';
   @override
   String get traspasadoATiPorOtroEquipo => '由其他球队交易而来';
@@ -489,9 +541,11 @@ class TextosZh extends Textos {
   String get rotacionCompleta => '完整轮换';
 
   @override
-  String nombreConPosicionYMedia(String nombre, String posicion, int media) => '$nombre（$posicion，综合评分$media）';
+  String nombreConPosicionYMedia(String nombre, String posicion, int media) =>
+      '$nombre（$posicion，综合评分$media）';
   @override
-  String yaAsignadoIntercambio(String descripcionHueco) => '目前是$descripcionHueco——将互换位置';
+  String yaAsignadoIntercambio(String descripcionHueco) =>
+      '目前是$descripcionHueco——将互换位置';
   @override
   String get tituloTusPicksDeDraft => '你的选秀权';
 
@@ -523,7 +577,8 @@ class TextosZh extends Textos {
   @override
   String contadorAgentesLibres(int n) => '$n名自由球员';
   @override
-  String contadorAgentesLibresFiltrado(int visibles, int total) => '共$total名自由球员中的$visibles名（已应用筛选）';
+  String contadorAgentesLibresFiltrado(int visibles, int total) =>
+      '共$total名自由球员中的$visibles名（已应用筛选）';
   @override
   String get empezarLaTemporadaBtn => '开始赛季';
   @override
@@ -535,7 +590,8 @@ class TextosZh extends Textos {
   @override
   String faltanFichajesParaMinimo(int n) => '还差$n名球员才达到最低人数。';
   @override
-  String otrosEquiposJuegan(int max, int n, int atras) => '其他29支球队都有$max人。你有$n人也能开始，但少了$atras人。';
+  String otrosEquiposJuegan(int max, int n, int atras) =>
+      '其他29支球队都有$max人。你有$n人也能开始，但少了$atras人。';
   @override
   String sinRecambioEn(String lista) => '以下位置无替补：$lista。';
   @override
@@ -571,13 +627,20 @@ class TextosZh extends Textos {
   @override
   String porEncimaDelTope(String cantidad) => '你已超出工资帽$cantidad：只能开出底薪合同。';
   @override
-  String teQuedanBajoElTope(String espacio, String tope) => '在$tope的工资帽下，你还剩$espacio空间。';
+  String teQuedanBajoElTope(String espacio, String tope) =>
+      '在$tope的工资帽下，你还剩$espacio空间。';
   @override
   String get seAcaboLaNegociacion => '谈判\n已结束';
   @override
   String ofrecerConN(int n) => '报价（$n）';
   @override
-  String subtituloRenovacion(String posicion, int edad, int media, String cobraba, String pide) => '$posicion·$edad岁·综合评分$media\n原薪水$cobraba·要价$pide';
+  String subtituloRenovacion(
+    String posicion,
+    int edad,
+    int media,
+    String cobraba,
+    String pide,
+  ) => '$posicion·$edad岁·综合评分$media\n原薪水$cobraba·要价$pide';
   @override
   String get cerramosElTraspaso => '确认成交？';
   @override
@@ -594,13 +657,18 @@ class TextosZh extends Textos {
   String ofertaNDeM(int n, int m) => '第$n个报价（共$m个）';
   @override
   String lineaJugadorOferta(
-          String nombre, String posicion, int media, String contrato) => '$nombre·$posicion·$media·$contrato';
+    String nombre,
+    String posicion,
+    int media,
+    String contrato,
+  ) => '$nombre·$posicion·$media·$contrato';
   @override
   String get ultimoAnioContrato => '最后一年';
   @override
   String aniosDeContrato(int n) => '$n年';
   @override
-  String contratoAnioMillones(String anios, String millones) => '$anios·$millones/年';
+  String contratoAnioMillones(String anios, String millones) =>
+      '$anios·$millones/年';
   @override
   String get tePiden => '对方索要';
   @override
@@ -630,7 +698,8 @@ class TextosZh extends Textos {
   @override
   String get tituloTraspasos => '交易';
   @override
-  String get fechaLimiteTraspasosBanner => '本赛季交易截止日期已过：你还能继续浏览市场，但要到明年才能完成任何交易。';
+  String get fechaLimiteTraspasosBanner =>
+      '本赛季交易截止日期已过：你还能继续浏览市场，但要到明年才能完成任何交易。';
   @override
   String get noCuadraMeteATercero => '凑不齐？加入第三支球队';
   @override
@@ -684,7 +753,13 @@ class TextosZh extends Textos {
   @override
   String get tituloPartidosDeLaSerie => '系列赛比赛';
   @override
-  String partidoNMarcador(int n, String local, int marcadorLocal, int marcadorVisitante, String visitante) => '第$n场：$local $marcadorLocal - $marcadorVisitante $visitante';
+  String partidoNMarcador(
+    int n,
+    String local,
+    int marcadorLocal,
+    int marcadorVisitante,
+    String visitante,
+  ) => '第$n场：$local $marcadorLocal - $marcadorVisitante $visitante';
   @override
   String get unNuevoNombreHof => '一位新成员入选名人堂。';
   @override
@@ -694,13 +769,15 @@ class TextosZh extends Textos {
   @override
   String get queEsPuntuacionCarrera => '什么是生涯评分？';
   @override
-  String get explicacionPuntuacionCarreraTexto => '概括球员的整个职业生涯，而不是单一的孤立数字：\n\n• 个人荣誉（MVP、最佳防守球员、最佳阵容、最佳新秀、进步最快球员）。\n• 总冠军戒指和NBA杯冠军头衔。\n• 曾经达到的巅峰水平。\n• 根据出场赛季数累积的得分、助攻和篮板。\n\n至少需要打满6个赛季并超过某个门槛才能入选：一个没有荣誉的稳定首发是不够的，必须真正举足轻重。';
+  String get explicacionPuntuacionCarreraTexto =>
+      '概括球员的整个职业生涯，而不是单一的孤立数字：\n\n• 个人荣誉（MVP、最佳防守球员、最佳阵容、最佳新秀、进步最快球员）。\n• 总冠军戒指和NBA杯冠军头衔。\n• 曾经达到的巅峰水平。\n• 根据出场赛季数累积的得分、助攻和篮板。\n\n至少需要打满6个赛季并超过某个门槛才能入选：一个没有荣誉的稳定首发是不够的，必须真正举足轻重。';
   @override
   String get entendido => '知道了';
   @override
   String noSePudoCargarHof(String error) => '无法加载名人堂。\n$error';
   @override
-  String get todaviaNadieEnHof => '名人堂目前还没有成员。只有已退役、拥有伟大生涯的球员才能入选：荣誉、戒指和多年的高水准表现。';
+  String get todaviaNadieEnHof =>
+      '名人堂目前还没有成员。只有已退役、拥有伟大生涯的球员才能入选：荣誉、戒指和多年的高水准表现。';
   @override
   String get nuevoChip => '新';
 
@@ -723,7 +800,8 @@ class TextosZh extends Textos {
   @override
   String get retiradaRealDeLaFranquicia => '球队真实退役记录';
   @override
-  String retiradaEnLaTemporada(String etiquetaTemporada) => '$etiquetaTemporada退役';
+  String retiradaEnLaTemporada(String etiquetaTemporada) =>
+      '$etiquetaTemporada退役';
   @override
   String nPartidos(int n) => '$n场比赛';
   @override
@@ -754,14 +832,17 @@ class TextosZh extends Textos {
   @override
   String get verCalendarioBtn => '查看赛程';
   @override
-  String statsPremioLinea(String pts, String ast, String reb) => '场均$pts分, $ast助攻, $reb篮板';
+  String statsPremioLinea(String pts, String ast, String reb) =>
+      '场均$pts分, $ast助攻, $reb篮板';
 
   @override
   String temporadaN(int n) => '第$n赛季';
   @override
-  String arrancaLaTemporada(int n, int anioInicio, int anioFin) => '第$n赛季开幕（$anioInicio-$anioFin）';
+  String arrancaLaTemporada(int n, int anioInicio, int anioFin) =>
+      '第$n赛季开幕（$anioInicio-$anioFin）';
   @override
-  String get plantillaHaCambiadoAviso => '你的阵容发生了变化：请在第一场比赛前检查一下——系统已经自动生成了一套首发阵容。';
+  String get plantillaHaCambiadoAviso =>
+      '你的阵容发生了变化：请在第一场比赛前检查一下——系统已经自动生成了一套首发阵容。';
   @override
   String get tusEleccionesDelDraft => '你的选秀权';
   @override
@@ -777,13 +858,15 @@ class TextosZh extends Textos {
   @override
   String get movimientosEnLaLiga => '联盟动态';
   @override
-  String recibeA(String equipoA, String jugadorB, String posicionB) => '$equipoA得到$jugadorB（$posicionB）';
+  String recibeA(String equipoA, String jugadorB, String posicionB) =>
+      '$equipoA得到$jugadorB（$posicionB）';
   @override
   String get tambienSeRetiran => '同时退役的还有';
   @override
   String yNMas(int n) => '另外还有$n人';
   @override
-  String posicionMediaSeparador(String posicion, int media) => '$posicion·综合评分$media· ';
+  String posicionMediaSeparador(String posicion, int media) =>
+      '$posicion·综合评分$media· ';
 
   @override
   String camisetaDeXRetirada(String nombre) => '$nombre的球衣已退役。';
@@ -838,12 +921,15 @@ class TextosZh extends Textos {
   @override
   String get ordenarPorLabel => '排序方式：';
   @override
-  String posicionEdadMedia(String posicion, int edad, int media) => '$posicion·$edad岁·综合评分$media';
+  String posicionEdadMedia(String posicion, int edad, int media) =>
+      '$posicion·$edad岁·综合评分$media';
 
   @override
-  String cuartosCopaSeSiembranAviso(String nbaCup) => '当全联盟的小组赛阶段结束后，$nbaCup八强对阵就会确定。';
+  String cuartosCopaSeSiembranAviso(String nbaCup) =>
+      '当全联盟的小组赛阶段结束后，$nbaCup八强对阵就会确定。';
   @override
-  String get finalSeJuegaDesdeCalendarioAviso => '决赛需要在赛程中进行：如果你晋级决赛，它会像赛季中的普通一天一样标注出来。';
+  String get finalSeJuegaDesdeCalendarioAviso =>
+      '决赛需要在赛程中进行：如果你晋级决赛，它会像赛季中的普通一天一样标注出来。';
   @override
   String get cuartosDeFinalLabel => '四分之一决赛';
   @override
@@ -892,7 +978,8 @@ class TextosZh extends Textos {
   @override
   String get peorDerrotaLabel => '最差失利';
   @override
-  String partidosJugadosVictoriasPct(int partidos, int pct) => '$partidos场比赛·胜率$pct%';
+  String partidosJugadosVictoriasPct(int partidos, int pct) =>
+      '$partidos场比赛·胜率$pct%';
   @override
   String get todaviaNoHayClasificacion => '暂无排名。';
   @override
@@ -905,7 +992,8 @@ class TextosZh extends Textos {
   @override
   String get risingStarsSubtituloPendiente => '最佳新秀对阵二年级球员，同一个周末举行。';
   @override
-  String get votacionAbreCuandoRuedeBalonAviso => '投票会在赛季开打后开启。随着你模拟比赛，你会看到谁正在凭借多少票数赢得名额。';
+  String get votacionAbreCuandoRuedeBalonAviso =>
+      '投票会在赛季开打后开启。随着你模拟比赛，你会看到谁正在凭借多少票数赢得名额。';
   @override
   String get verEstadisticasBtn => '查看数据';
   @override
@@ -917,7 +1005,8 @@ class TextosZh extends Textos {
   @override
   String get recuentoCerradoAviso => '投票已结束：以下是最终当选名单。';
   @override
-  String votacionAbiertaConPorcentaje(int pct) => '投票进行中，本赛季已完成$pct%。继续模拟，票数还会变化。';
+  String votacionAbiertaConPorcentaje(int pct) =>
+      '投票进行中，本赛季已完成$pct%。继续模拟，票数还会变化。';
   @override
   String get votacionFinalLabel => '最终投票结果';
   @override
@@ -931,7 +1020,8 @@ class TextosZh extends Textos {
   @override
   String get seQuedanFueraLabel => '落选球员';
   @override
-  String posicionValoracion(String posicion, String valoracion) => '$posicion·评分$valoracion';
+  String posicionValoracion(String posicion, String valoracion) =>
+      '$posicion·评分$valoracion';
 
   @override
   String get noLlegoACompletarNingunaTemporada => '从未在你手下完整效力过一个赛季。';
@@ -966,27 +1056,34 @@ class TextosZh extends Textos {
   @override
   String get sinTitulosNiPremiosIndividuales => '没有冠军或个人荣誉。';
   @override
-  String resumenCarreraTotales(int temporadas, String posicion, int partidos) => '$temporadas个赛季·$posicion·$partidos场比赛';
+  String resumenCarreraTotales(int temporadas, String posicion, int partidos) =>
+      '$temporadas个赛季·$posicion·$partidos场比赛';
   @override
-  String totalesCarreraLinea(String pts, String ast, String reb) => '总计：$pts分·$ast助攻·$reb篮板';
+  String totalesCarreraLinea(String pts, String ast, String reb) =>
+      '总计：$pts分·$ast助攻·$reb篮板';
   @override
-  String temporadasPreviasAviso(int n) => '其中$n个赛季是在你接手之前：那些赛季没有数据记录，下面的平均数据是你执教以来的。';
+  String temporadasPreviasAviso(int n) =>
+      '其中$n个赛季是在你接手之前：那些赛季没有数据记录，下面的平均数据是你执教以来的。';
   @override
   String get antesDeTuPartidaTitulo => '在你的存档之前';
   @override
-  String temporadasYaJugadasCuandoCogisteElEquipo(int n) => '在你接手球队之前，他已经打了$n个赛季。';
+  String temporadasYaJugadasCuandoCogisteElEquipo(int n) =>
+      '在你接手球队之前，他已经打了$n个赛季。';
   @override
   String get produccionDeReferenciaAviso => '存档开始时他的参考数据。那些赛季没有逐场比赛的数据记录。';
   @override
-  String sinEstadisticasDeCarreraAviso(String nombre) => '$nombre没有生涯数据记录：他所处的年代早于游戏数据覆盖的范围。他在历史上的地位是真实的，只是没有具体数字。';
+  String sinEstadisticasDeCarreraAviso(String nombre) =>
+      '$nombre没有生涯数据记录：他所处的年代早于游戏数据覆盖的范围。他在历史上的地位是真实的，只是没有具体数字。';
   @override
   String get suCarreraEnLaNbaReal => '他的真实NBA生涯';
   @override
   String conEquipoEnLaNbaReal(String equipo) => '在真实NBA效力$equipo期间';
   @override
-  String temporadasPartidos(int temporadas, int partidos) => '$temporadas个赛季·$partidos场比赛';
+  String temporadasPartidos(int temporadas, int partidos) =>
+      '$temporadas个赛季·$partidos场比赛';
   @override
-  String rangoTemporadasPartidos(String desde, String hasta, int partidos) => '$desde至$hasta·$partidos场比赛';
+  String rangoTemporadasPartidos(String desde, String hasta, int partidos) =>
+      '$desde至$hasta·$partidos场比赛';
   @override
   String rangoPartidos(String rango, int partidos) => '$rango·$partidos场比赛';
   @override
@@ -1009,7 +1106,10 @@ class TextosZh extends Textos {
   @override
   String get bracketDeEliminatorias => '季后赛对阵表';
   @override
-  String hallOfFameYCamisetasRetiradasSubtitulo(String hallOfFame, String camisetas) => '$hallOfFame和$camisetas';
+  String hallOfFameYCamisetasRetiradasSubtitulo(
+    String hallOfFame,
+    String camisetas,
+  ) => '$hallOfFame和$camisetas';
   @override
   String get salarialLabel => '薪资';
 
@@ -1028,7 +1128,8 @@ class TextosZh extends Textos {
   @override
   String sobrescribirLaPartidaN(int n) => '覆盖存档$n？';
   @override
-  String get sePerderaEnteraAviso => '该存档位已经有一段正在进行的生涯，将会被完全清除：阵容、赛程和荣誉。此操作无法撤销。';
+  String get sePerderaEnteraAviso =>
+      '该存档位已经有一段正在进行的生涯，将会被完全清除：阵容、赛程和荣誉。此操作无法撤销。';
   @override
   String get sobrescribirBtn => '覆盖';
   @override
@@ -1036,7 +1137,8 @@ class TextosZh extends Textos {
   @override
   String borrarLaPartidaN(int n) => '删除存档$n？';
   @override
-  String sePierdeCarreraDeAviso(String nombre) => '$nombre的整段生涯都会消失：阵容、赛程、荣誉、传奇球员和退役球衣。此操作无法撤销。';
+  String sePierdeCarreraDeAviso(String nombre) =>
+      '$nombre的整段生涯都会消失：阵容、赛程、荣誉、传奇球员和退役球衣。此操作无法撤销。';
   @override
   String get borrarBtn => '删除';
   @override
@@ -1096,7 +1198,8 @@ class TextosZh extends Textos {
   @override
   String get tituloPatrocinadores => '赞助商';
   @override
-  String get explicacionPatrocinadores => '每类赞助都有多份报价：合同越长，年收入越低。签下之后，该类别会一直占用到合同到期。';
+  String get explicacionPatrocinadores =>
+      '每类赞助都有多份报价：合同越长，年收入越低。签下之后，该类别会一直占用到合同到期。';
   @override
   String get patrocinioEstadioLabel => '主场馆赞助商';
   @override

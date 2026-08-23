@@ -50,20 +50,20 @@ enum Idioma {
   /// El idioma guardado, o español si el código no se reconoce (una partida
   /// vieja, o un código que ya no existe).
   static Idioma desdeCodigo(String? codigo) => Idioma.values.firstWhere(
-        (i) => i.codigo == codigo,
-        orElse: () => Idioma.espanol,
-      );
+    (i) => i.codigo == codigo,
+    orElse: () => Idioma.espanol,
+  );
 }
 
 Textos textosDe(Idioma idioma) => switch (idioma) {
-      Idioma.espanol => const TextosEs(),
-      Idioma.ingles => const TextosEn(),
-      Idioma.frances => const TextosFr(),
-      Idioma.portugues => const TextosPt(),
-      Idioma.aleman => const TextosDe(),
-      Idioma.italiano => const TextosIt(),
-      Idioma.chino => const TextosZh(),
-    };
+  Idioma.espanol => const TextosEs(),
+  Idioma.ingles => const TextosEn(),
+  Idioma.frances => const TextosFr(),
+  Idioma.portugues => const TextosPt(),
+  Idioma.aleman => const TextosDe(),
+  Idioma.italiano => const TextosIt(),
+  Idioma.chino => const TextosZh(),
+};
 
 /// Deja los textos del idioma activo al alcance de toda la interfaz.
 ///
@@ -186,6 +186,7 @@ abstract class Textos {
   String get pestanaJugadores;
   String get conferenciaEste;
   String get conferenciaOeste;
+
   /// Cabecera de sección tal cual se enseña, ya compuesta entera: el
   /// orden "CONFERENCIA ESTE" no es el mismo en todos los idiomas.
   String get tituloConferenciaEste;
@@ -278,11 +279,12 @@ abstract class Textos {
   String get irATraspasos;
   String get seguirSimulando;
   String get allStarWeekendMayus;
-  String resultadoAllStar(
-      {required bool esteGana,
-      required int local,
-      required int visitante,
-      String? mvp});
+  String resultadoAllStar({
+    required bool esteGana,
+    required int local,
+    required int visitante,
+    String? mvp,
+  });
   String get verFinDeSemana;
   String finalCupProgramada(String fecha);
 
@@ -379,7 +381,11 @@ abstract class Textos {
   String get guardarRotacionBtn;
   String get elegirJugadorPlaceholder;
   String huecoConJugador(
-      String etiqueta, String nombre, String posicion, int media);
+    String etiqueta,
+    String nombre,
+    String posicion,
+    int media,
+  );
   String lesionConDetalle(String motivo, int partidos, String fecha);
   String get fueraDeSusDosPosiciones;
   String get sinPartidosJugadosTemporada;
@@ -387,6 +393,15 @@ abstract class Textos {
   String get estrellaDefensaLabel;
   String get sextoHombreLabel;
   String get ningunaOpcion;
+
+  /// Al intentar guardar con la alineación a medias. Sustituye al botón
+  /// muerto de antes: deshabilitado no decía QUÉ faltaba.
+  String get faltaAlineacionAviso;
+
+  /// Al intentar guardar sin haber elegido los tres roles. Va con la banda
+  /// resaltada, que es lo que señala dónde hay que mirar.
+  String get faltanRolesAviso;
+
   String get sinPicksPropios;
   String get traspasadoATiPorOtroEquipo;
   String get ataqueYDefensaTitulo;
@@ -437,7 +452,13 @@ abstract class Textos {
   String teQuedanBajoElTope(String espacio, String tope);
   String get seAcaboLaNegociacion;
   String ofrecerConN(int n);
-  String subtituloRenovacion(String posicion, int edad, int media, String cobraba, String pide);
+  String subtituloRenovacion(
+    String posicion,
+    int edad,
+    int media,
+    String cobraba,
+    String pide,
+  );
   String get cerramosElTraspaso;
   String seVanYLlegan(String piden, String ofrecen);
   String get tituloOfertasRecibidasScreen;
@@ -449,7 +470,11 @@ abstract class Textos {
   // se juzga es el jugador (nivel y contrato), no cómo le ha ido en la
   // temporada que ya se está negociando dejar atrás.
   String lineaJugadorOferta(
-      String nombre, String posicion, int media, String contrato);
+    String nombre,
+    String posicion,
+    int media,
+    String contrato,
+  );
   String get ultimoAnioContrato;
   String aniosDeContrato(int n);
   String contratoAnioMillones(String anios, String millones);
@@ -495,7 +520,13 @@ abstract class Textos {
   String get unDorsalQueNoVolvera;
   String get dorsalesQueNoVolveran;
   String get tituloPartidosDeLaSerie;
-  String partidoNMarcador(int n, String local, int marcadorLocal, int marcadorVisitante, String visitante);
+  String partidoNMarcador(
+    int n,
+    String local,
+    int marcadorLocal,
+    int marcadorVisitante,
+    String visitante,
+  );
   String get unNuevoNombreHof;
   String nNombresNuevosHof(int n);
   String entroEnAnio(int anio);
@@ -663,7 +694,10 @@ abstract class Textos {
   String get premiosDeFinDeTemporadaSubtitulo;
   String get seDesbloqueaAlTerminarTemporadaRegular;
   String get bracketDeEliminatorias;
-  String hallOfFameYCamisetasRetiradasSubtitulo(String hallOfFame, String camisetas);
+  String hallOfFameYCamisetasRetiradasSubtitulo(
+    String hallOfFame,
+    String camisetas,
+  );
   String get salarialLabel;
 
   String get sigueDondeLoDejaste;

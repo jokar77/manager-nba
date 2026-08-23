@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:manager_nba/domain/slots_repository.dart';
+import 'package:manager_nba/features/roster/roster_config_screen.dart'
+    show claveRolAtaque, claveRolDefensa, claveRolSextoHombre;
 import 'package:manager_nba/main.dart';
 
 /// Prueba de extremo a extremo del flujo completo, sin necesitar un
@@ -95,6 +97,46 @@ void main() {
     }
 
     expect(find.textContaining('elegir jugador'), findsNothing);
+
+    // 4.5) Los tres roles: estrella de ataque, estrella de defensa y sexto
+    // hombre. Son obligatorios para empezar, igual que los diez huecos —
+    // sin ellos el botón avisa y no arranca la temporada.
+    //
+    // A 1024 px de ancho la banda de roles va siempre desplegada, así que
+    // los tres desplegables están a la vista sin tener que abrirla.
+    // Por su clave y no por posición: un finder indexado (`.at(i)`)
+    // revienta dentro de `tap`, que por debajo busca el `View` que lo
+    // contiene y le aplica el mismo índice — y `View` solo hay uno.
+    for (final clave in [
+      claveRolAtaque,
+      claveRolDefensa,
+      claveRolSextoHombre,
+    ]) {
+      // Sin `ensureVisible`: la banda de roles es un pie fijo y siempre
+      // está a la vista. Y llamarlo hacía daño — sube buscando un
+      // `Scrollable` y el primero que encuentra es el `PageView` del
+      // `TabBarView`, así que con el campo de más a la derecha cambiaba de
+      // pestaña y la banda entera desaparecía del árbol.
+      final desplegable = find.byKey(clave);
+      await tester.tap(desplegable);
+      await tester.pumpAndSettle();
+
+      // El primer item con jugador de verdad: "Ninguna" lleva value null.
+      //
+      // Se busca el NOMBRE y se toca `.last` en vez de tocar el
+      // `DropdownMenuItem` por índice. Por índice no vale: los tres campos
+      // cerrados también pintan su propio item, así que la lista mezcla
+      // los del menú abierto con los de fuera, y tocar uno de esos no
+      // selecciona nada — el menú se quedaba abierto y la vuelta siguiente
+      // no encontraba ni un desplegable.
+      final item = tester
+          .widgetList<DropdownMenuItem<int?>>(
+            find.byType(DropdownMenuItem<int?>, skipOffstage: false),
+          )
+          .firstWhere((it) => it.value != null);
+      await tester.tap(find.text((item.child as Text).data!).last);
+      await tester.pumpAndSettle();
+    }
 
     // 5) Guardar rotación -> arranca la temporada -> menú principal.
     // Los títulos y los botones del rediseño van en MAYÚSCULAS (ver

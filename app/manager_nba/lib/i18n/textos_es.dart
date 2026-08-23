@@ -87,7 +87,8 @@ class TextosEs extends Textos {
   @override
   String get resumenTemporada => 'Resumen de la temporada';
   @override
-  String get resumenTemporadaDetalle => 'Récord, todos tus partidos y promedios';
+  String get resumenTemporadaDetalle =>
+      'Récord, todos tus partidos y promedios';
   @override
   String get playoffs => 'Playoffs';
   @override
@@ -188,7 +189,8 @@ class TextosEs extends Textos {
   @override
   String traspasoCerradoCon(String equipo) => 'Traspaso cerrado con $equipo.';
   @override
-  String get fechaLimiteTraspasosPasada => 'Ya ha pasado la fecha límite de traspasos: no se pueden cerrar más operaciones esta temporada.';
+  String get fechaLimiteTraspasosPasada =>
+      'Ya ha pasado la fecha límite de traspasos: no se pueden cerrar más operaciones esta temporada.';
 
   @override
   String get tituloConferenciaEste => 'CONFERENCIA ESTE';
@@ -198,7 +200,8 @@ class TextosEs extends Textos {
   @override
   String comoFicharA(String nombre) => '¿Cómo fichar a $nombre?';
   @override
-  String get sinConQueConvencerles => 'No tienes con qué convencerles ahora mismo: ni tu plantilla ni tus picks les llegan sin dejarte roto.';
+  String get sinConQueConvencerles =>
+      'No tienes con qué convencerles ahora mismo: ni tu plantilla ni tus picks les llegan sin dejarte roto.';
 
   @override
   String get campeonesDeLaNba => 'Campeones de la NBA';
@@ -209,9 +212,11 @@ class TextosEs extends Textos {
   @override
   String seLlevaElTitulo(String nombre) => '$nombre se lleva el título.';
   @override
-  String get enhorabuenaAnillo => '¡Enhorabuena! Lo has conseguido: el anillo es vuestro. La próxima temporada toca defenderlo.';
+  String get enhorabuenaAnillo =>
+      '¡Enhorabuena! Lo has conseguido: el anillo es vuestro. La próxima temporada toca defenderlo.';
   @override
-  String get enhorabuenaCup => '¡Enhorabuena! Habéis ganado la NBA Cup. El anillo es otra historia: la temporada sigue.';
+  String get enhorabuenaCup =>
+      '¡Enhorabuena! Habéis ganado la NBA Cup. El anillo es otra historia: la temporada sigue.';
   @override
   String get aCelebrarlo => '¡A celebrarlo!';
   @override
@@ -225,7 +230,8 @@ class TextosEs extends Textos {
   @override
   String get seJugaraProximoPartido => 'Se jugará tu próximo partido.';
   @override
-  String seJugaranDeUnaVez(int partidos, int dia, int mes) => 'Se jugarán de una vez los $partidos partidos que te quedan hasta el $dia/$mes.';
+  String seJugaranDeUnaVez(int partidos, int dia, int mes) =>
+      'Se jugarán de una vez los $partidos partidos que te quedan hasta el $dia/$mes.';
   @override
   String get simular => 'Simular';
   @override
@@ -237,13 +243,29 @@ class TextosEs extends Textos {
   @override
   String get tituloEventoAllStar => 'Fin de semana de las estrellas';
   @override
-  String get descEventoFinAgenciaLibre => 'A partir de aquí ya no se puede fichar agentes libres.';
+  String get descEventoFinAgenciaLibre =>
+      'A partir de aquí ya no se puede fichar agentes libres.';
   @override
-  String get descEventoFechaLimiteTraspasos => 'Último día para hacer traspasos esta temporada.';
+  String get descEventoFechaLimiteTraspasos =>
+      'Último día para hacer traspasos esta temporada.';
   @override
-  String get descEventoAllStar => 'No hay partido tuyo este fin de semana. Aprovecha para revisar la Clasificación.';
+  String get descEventoAllStar =>
+      'No hay partido tuyo este fin de semana. Aprovecha para revisar la Clasificación.';
   @override
-  List<String> get nombresMeses => ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+  List<String> get nombresMeses => [
+    'Enero',
+    'Febrero',
+    'Marzo',
+    'Abril',
+    'Mayo',
+    'Junio',
+    'Julio',
+    'Agosto',
+    'Septiembre',
+    'Octubre',
+    'Noviembre',
+    'Diciembre',
+  ];
   @override
   List<String> get diasSemanaAbrev => ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
   @override
@@ -267,24 +289,30 @@ class TextosEs extends Textos {
   @override
   String get simularPartidoDePlayoffs => 'Simular partido de playoffs';
   @override
-  String get noClasificasteAPlayoffs => 'No clasificaste a los playoffs esta temporada.';
+  String get noClasificasteAPlayoffs =>
+      'No clasificaste a los playoffs esta temporada.';
   @override
   String get simularPlayoffsCompletos => 'Simular playoffs completos';
   @override
-  String get serieDecididaFaltaResto => 'Tu serie está decidida — falta el resto del bracket para saber tu próximo rival.';
+  String get serieDecididaFaltaResto =>
+      'Tu serie está decidida — falta el resto del bracket para saber tu próximo rival.';
   @override
   String get simularRestoDeRonda => 'Simular el resto de la ronda';
 
   @override
-  String ofertaTitulo(int n) => n == 1 ? 'Te ha llegado una oferta' : 'Tienes ofertas';
+  String ofertaTitulo(int n) =>
+      n == 1 ? 'Te ha llegado una oferta' : 'Tienes ofertas';
   @override
-  String ofertaMensaje(int n) => n == 1 ? 'Un equipo ha preguntado por uno de tus jugadores y te ha puesto una propuesta sobre la mesa.' : 'Hay $n equipos que han preguntado por jugadores tuyos.';
+  String ofertaMensaje(int n) => n == 1
+      ? 'Un equipo ha preguntado por uno de tus jugadores y te ha puesto una propuesta sobre la mesa.'
+      : 'Hay $n equipos que han preguntado por jugadores tuyos.';
   @override
   String get masTarde => 'Más tarde';
   @override
   String verOfertaBoton(int n) => n == 1 ? 'Ver la oferta' : 'Ver las ofertas';
   @override
-  String get preguntaSeguirSimulando => 'Has llegado a esta fecha límite de la temporada. ¿Sigues simulando o paras para hacer movimientos?';
+  String get preguntaSeguirSimulando =>
+      'Has llegado a esta fecha límite de la temporada. ¿Sigues simulando o paras para hacer movimientos?';
   @override
   String get irAAgenciaLibre => 'Ir a Agencia libre';
   @override
@@ -294,17 +322,21 @@ class TextosEs extends Textos {
   @override
   String get allStarWeekendMayus => 'ALL STAR WEEKEND';
   @override
-  String resultadoAllStar(
-      {required bool esteGana,
-      required int local,
-      required int visitante,
-      String? mvp}) => 'Se ha jugado el All-Star. ${esteGana ? "El Este" : "El Oeste"} se lleva el partido por $local-$visitante.${mvp == null ? "" : "\n\nMVP del partido: $mvp."}';
+  String resultadoAllStar({
+    required bool esteGana,
+    required int local,
+    required int visitante,
+    String? mvp,
+  }) =>
+      'Se ha jugado el All-Star. ${esteGana ? "El Este" : "El Oeste"} se lleva el partido por $local-$visitante.${mvp == null ? "" : "\n\nMVP del partido: $mvp."}';
   @override
   String get verFinDeSemana => 'Ver el fin de semana';
   @override
-  String finalCupProgramada(String fecha) => '¡A la Final de la NBA Cup! La juegas el $fecha: simula hasta ese día.';
+  String finalCupProgramada(String fecha) =>
+      '¡A la Final de la NBA Cup! La juegas el $fecha: simula hasta ese día.';
   @override
-  String fechaCorta(int dia, int mes) => '$dia de ${nombresMeses[mes - 1].toLowerCase()}';
+  String fechaCorta(int dia, int mes) =>
+      '$dia de ${nombresMeses[mes - 1].toLowerCase()}';
 
   @override
   String get sinPartidosTitulo => 'Sin partidos';
@@ -314,13 +346,15 @@ class TextosEs extends Textos {
     final p = perdidos;
     return '$n partidos · $g-$p';
   }
+
   @override
   String get lesionesActivasAhora => 'Lesiones activas ahora mismo';
   @override
   String get verLosPremios => 'Ver los premios';
 
   @override
-  String get playoffsSeSiembranAlTerminar => 'Los playoffs se siembran al terminar tu temporada regular (82 partidos).';
+  String get playoffsSeSiembranAlTerminar =>
+      'Los playoffs se siembran al terminar tu temporada regular (82 partidos).';
   @override
   String get verCelebracion => 'Ver celebración';
   @override
@@ -334,7 +368,8 @@ class TextosEs extends Textos {
   @override
   String get bracketTitulo => 'Bracket';
   @override
-  String get primeraRondaEsperaPlayIn => 'La primera ronda no empieza hasta que el Play-In decida quién es el 7 y el 8.';
+  String get primeraRondaEsperaPlayIn =>
+      'La primera ronda no empieza hasta que el Play-In decida quién es el 7 y el 8.';
   @override
   String get playInGanadorEntra7 => 'El ganador entra como 7';
   @override
@@ -360,7 +395,15 @@ class TextosEs extends Textos {
   @override
   String get rondaFinalNba => 'Final NBA';
   @override
-  List<String> get nombresDeRondaBracket => ['Primera\nronda', 'Semifinales', 'Final\nOeste', 'FINAL\nNBA', 'Final\nEste', 'Semifinales', 'Primera\nronda'];
+  List<String> get nombresDeRondaBracket => [
+    'Primera\nronda',
+    'Semifinales',
+    'Final\nOeste',
+    'FINAL\nNBA',
+    'Final\nEste',
+    'Semifinales',
+    'Primera\nronda',
+  ];
   @override
   String get esperandoAlPlayIn => 'Esperando al Play-In';
   @override
@@ -369,9 +412,11 @@ class TextosEs extends Textos {
   @override
   String despedirConfirmacion(String nombre) => '¿Despedir a $nombre?';
   @override
-  String despedirConTiempoRestante(int anios, String importe) => 'Le quedan $anios ${anios == 1 ? "temporada" : "temporadas"} de contrato y hay que pagárselas igual: $importe que NO podrás gastarte en su sustituto hasta que se cumplan.';
+  String despedirConTiempoRestante(int anios, String importe) =>
+      'Le quedan $anios ${anios == 1 ? "temporada" : "temporadas"} de contrato y hay que pagárselas igual: $importe que NO podrás gastarte en su sustituto hasta que se cumplan.';
   @override
-  String get despedirSinContrato => 'Se quedará libre y podrá firmar por cualquier equipo. Hasta que fiches a otro, tu equipo jugará sin entrenador.';
+  String get despedirSinContrato =>
+      'Se quedará libre y podrá firmar por cualquier equipo. Hasta que fiches a otro, tu equipo jugará sin entrenador.';
   @override
   String get ficharPorElMinimoBtn => 'Fichar por el mínimo';
   @override
@@ -379,37 +424,48 @@ class TextosEs extends Textos {
   @override
   String get dirigiendoAOtroEquipo => 'Dirigiendo a otro equipo';
   @override
-  String get sePuedeOfertarPeroTrabajo => 'Se les puede hacer una oferta, pero tienen trabajo: hace falta bastante más para convencerles, y el equipo al que se lo quites buscará sustituto en el acto.';
+  String get sePuedeOfertarPeroTrabajo =>
+      'Se les puede hacer una oferta, pero tienen trabajo: hace falta bastante más para convencerles, y el equipo al que se lo quites buscará sustituto en el acto.';
   @override
-  String get avisoObligatorioTexto => 'No puedes jugar sin entrenador. Ficha a alguien para seguir: si no te convence nadie o no te llega el presupuesto, siempre puedes firmar a uno por el mínimo.';
+  String get avisoObligatorioTexto =>
+      'No puedes jugar sin entrenador. Ficha a alguien para seguir: si no te convence nadie o no te llega el presupuesto, siempre puedes firmar a uno por el mínimo.';
   @override
-  String mediaDeTuEquipoEs(int n) => 'La media de tu equipo es $n. Cuanto mejor es un entrenador, mejor proyecto pide — y el dinero solo tapa parte de la diferencia.';
+  String mediaDeTuEquipoEs(int n) =>
+      'La media de tu equipo es $n. Cuanto mejor es un entrenador, mejor proyecto pide — y el dinero solo tapa parte de la diferencia.';
   @override
-  String pideAlAnioYTemporadas(String importe, int anios) => 'Pide $importe al año y $anios temporadas.';
+  String pideAlAnioYTemporadas(String importe, int anios) =>
+      'Pide $importe al año y $anios temporadas.';
   @override
-  String noLlegaMasaSalarial(String importe) => 'No te llega la masa salarial: solo puedes ofrecer $importe.';
+  String noLlegaMasaSalarial(String importe) =>
+      'No te llega la masa salarial: solo puedes ofrecer $importe.';
   @override
   String get tuEntrenadorLabel => 'Tu entrenador';
   @override
   String get masaSalarialConBanquillo => 'Masa salarial (con banquillo)';
   @override
-  String get porEncimaDelTopeSoloMinimo => 'Estás por encima del tope: solo puedes firmar por el sueldo mínimo.';
+  String get porEncimaDelTopeSoloMinimo =>
+      'Estás por encima del tope: solo puedes firmar por el sueldo mínimo.';
   @override
-  String get sueldoEntrenadorCuentaEnMasa => 'El sueldo del entrenador cuenta en tu masa salarial: lo que gastes aquí no lo tienes para jugadores.';
+  String get sueldoEntrenadorCuentaEnMasa =>
+      'El sueldo del entrenador cuenta en tu masa salarial: lo que gastes aquí no lo tienes para jugadores.';
   @override
-  String contratoResumen(String importeAlAnio, String duracion) => '$importeAlAnio · $duracion de contrato';
+  String contratoResumen(String importeAlAnio, String duracion) =>
+      '$importeAlAnio · $duracion de contrato';
   @override
-  String trayectoriaEstaTemporada(int victorias, int derrotas) => 'Esta temporada: $victorias-$derrotas';
+  String trayectoriaEstaTemporada(int victorias, int derrotas) =>
+      'Esta temporada: $victorias-$derrotas';
   @override
   String temporadasDirigiendo(int n) => '$n temporadas dirigiendo';
   @override
   String anillos(int n) => n == 1 ? '1 anillo' : '$n anillos';
   @override
-  String entrenadorDelAnio(int n) => n == 1 ? '1 Entrenador del Año' : '$n veces Entrenador del Año';
+  String entrenadorDelAnio(int n) =>
+      n == 1 ? '1 Entrenador del Año' : '$n veces Entrenador del Año';
   @override
   String dirigeAEquipo(String apodo) => 'Dirige a $apodo';
   @override
-  String pideImportePorAnios(String importe, int anios) => 'Pide $importe × $anios ${anios == 1 ? "año" : "años"}';
+  String pideImportePorAnios(String importe, int anios) =>
+      'Pide $importe × $anios ${anios == 1 ? "año" : "años"}';
   @override
   String get noCabeEnPresupuesto => 'No te cabe en el presupuesto de banquillo';
   @override
@@ -429,13 +485,20 @@ class TextosEs extends Textos {
   String get campeonNba => 'Campeón NBA';
 
   @override
-  String descripcionHueco(bool esTitular, String nombrePosicion) => esTitular ? 'titular de $nombrePosicion' : 'suplente de $nombrePosicion';
+  String descripcionHueco(bool esTitular, String nombrePosicion) =>
+      esTitular ? 'titular de $nombrePosicion' : 'suplente de $nombrePosicion';
   @override
   String get tituloTitular => 'Titular';
   @override
   String get tituloSuplente => 'Suplente';
   @override
-  Map<String, String> get nombresDePosiciones => {'PG': 'Base (PG)', 'SG': 'Escolta (SG)', 'SF': 'Alero (SF)', 'PF': 'Ala-pívot (PF)', 'C': 'Pívot (C)'};
+  Map<String, String> get nombresDePosiciones => {
+    'PG': 'Base (PG)',
+    'SG': 'Escolta (SG)',
+    'SF': 'Alero (SF)',
+    'PF': 'Ala-pívot (PF)',
+    'C': 'Pívot (C)',
+  };
   @override
   String get minutosTitularLabel => 'Minutos titular: ';
   @override
@@ -457,13 +520,21 @@ class TextosEs extends Textos {
   @override
   String get elegirJugadorPlaceholder => '— elegir jugador —';
   @override
-  String huecoConJugador(String etiqueta, String nombre, String posicion, int media) => '$etiqueta: $nombre ($posicion, media $media)';
+  String huecoConJugador(
+    String etiqueta,
+    String nombre,
+    String posicion,
+    int media,
+  ) => '$etiqueta: $nombre ($posicion, media $media)';
   @override
-  String lesionConDetalle(String motivo, int partidos, String fecha) => '$motivo ($partidos partidos) — vuelve el $fecha — jugará el suplente mientras tanto';
+  String lesionConDetalle(String motivo, int partidos, String fecha) =>
+      '$motivo ($partidos partidos) — vuelve el $fecha — jugará el suplente mientras tanto';
   @override
-  String get fueraDeSusDosPosiciones => 'Fuera de sus dos posiciones (rendirá algo peor)';
+  String get fueraDeSusDosPosiciones =>
+      'Fuera de sus dos posiciones (rendirá algo peor)';
   @override
-  String get sinPartidosJugadosTemporada => 'Sin partidos jugados esta temporada';
+  String get sinPartidosJugadosTemporada =>
+      'Sin partidos jugados esta temporada';
   @override
   String get estrellaAtaqueLabel => 'Estrella ataque';
   @override
@@ -473,7 +544,14 @@ class TextosEs extends Textos {
   @override
   String get ningunaOpcion => 'Ninguna';
   @override
-  String get sinPicksPropios => 'No te queda ninguna elección propia: las has traspasado todas.';
+  String get faltaAlineacionAviso =>
+      "Completa la alineación: cada puesto necesita titular y suplente.";
+  @override
+  String get faltanRolesAviso =>
+      "Te falta elegir la estrella de ataque, la de defensa y el sexto hombre.";
+  @override
+  String get sinPicksPropios =>
+      'No te queda ninguna elección propia: las has traspasado todas.';
   @override
   String get traspasadoATiPorOtroEquipo => 'Traspasado a ti por otro equipo';
   @override
@@ -484,14 +562,17 @@ class TextosEs extends Textos {
   String get rotacionCompleta => 'Rotación completa';
 
   @override
-  String nombreConPosicionYMedia(String nombre, String posicion, int media) => '$nombre ($posicion, media $media)';
+  String nombreConPosicionYMedia(String nombre, String posicion, int media) =>
+      '$nombre ($posicion, media $media)';
   @override
-  String yaAsignadoIntercambio(String descripcionHueco) => 'ahora $descripcionHueco — se intercambian';
+  String yaAsignadoIntercambio(String descripcionHueco) =>
+      'ahora $descripcionHueco — se intercambian';
   @override
   String get tituloTusPicksDeDraft => 'Tus picks de draft';
 
   @override
-  String lesionSimple(String motivo, String fecha) => '$motivo, vuelve el $fecha';
+  String lesionSimple(String motivo, String fecha) =>
+      '$motivo, vuelve el $fecha';
 
   @override
   String get rechazar => 'Rechazar';
@@ -502,7 +583,8 @@ class TextosEs extends Textos {
   @override
   String get verTuPlantilla => 'Ver tu plantilla';
   @override
-  String get agenciaLibreCerrada => 'La agencia libre ha cerrado por esta temporada: ya se pasó la fecha límite. Puedes seguir mirando el mercado, pero no fichar hasta el año que viene.';
+  String get agenciaLibreCerrada =>
+      'La agencia libre ha cerrado por esta temporada: ya se pasó la fecha límite. Puedes seguir mirando el mercado, pero no fichar hasta el año que viene.';
   @override
   String get completarConContratosMinimos => 'Completar con contratos mínimos';
   @override
@@ -514,23 +596,29 @@ class TextosEs extends Textos {
   @override
   String get noQuedaNadieEnMercado => 'No queda nadie en el mercado.';
   @override
-  String get nadieEncajaConFiltro => 'Nadie del mercado encaja con lo que has pedido. Prueba a quitar algún filtro.';
+  String get nadieEncajaConFiltro =>
+      'Nadie del mercado encaja con lo que has pedido. Prueba a quitar algún filtro.';
   @override
   String contadorAgentesLibres(int n) => '$n agentes libres';
   @override
-  String contadorAgentesLibresFiltrado(int visibles, int total) => '$visibles de $total agentes libres (hay filtros puestos)';
+  String contadorAgentesLibresFiltrado(int visibles, int total) =>
+      '$visibles de $total agentes libres (hay filtros puestos)';
   @override
   String get empezarLaTemporadaBtn => 'Empezar la temporada';
   @override
-  String get completaLaPlantillaParaContinuar => 'Completa la plantilla para continuar';
+  String get completaLaPlantillaParaContinuar =>
+      'Completa la plantilla para continuar';
   @override
-  String plantillaAlCompletoConN(int n) => 'Plantilla al completo: $n jugadores.';
+  String plantillaAlCompletoConN(int n) =>
+      'Plantilla al completo: $n jugadores.';
   @override
   String plantillaDeMax(int n, int max) => 'Plantilla: $n de $max jugadores.';
   @override
-  String faltanFichajesParaMinimo(int n) => 'Faltan $n fichajes para el mínimo.';
+  String faltanFichajesParaMinimo(int n) =>
+      'Faltan $n fichajes para el mínimo.';
   @override
-  String otrosEquiposJuegan(int max, int n, int atras) => 'Los otros 29 equipos juegan con $max. Con $n puedes empezar, pero vas $atras por detrás.';
+  String otrosEquiposJuegan(int max, int n, int atras) =>
+      'Los otros 29 equipos juegan con $max. Con $n puedes empezar, pero vas $atras por detrás.';
   @override
   String sinRecambioEn(String lista) => 'Sin recambio en: $lista.';
   @override
@@ -548,9 +636,11 @@ class TextosEs extends Textos {
   @override
   String get insultoOferta => 'Se lo va a tomar como un insulto.';
   @override
-  String get ofertaImprobable => 'Muy improbable que la acepte así: el sueldo, los años o ambos se quedan cortos.';
+  String get ofertaImprobable =>
+      'Muy improbable que la acepte así: el sueldo, los años o ambos se quedan cortos.';
   @override
-  String get ofertaSePuedePensar => 'Se lo puede pensar; no las tiene todas consigo.';
+  String get ofertaSePuedePensar =>
+      'Se lo puede pensar; no las tiene todas consigo.';
   @override
   String get ofertaProbableAceptar => 'Es probable que acepte.';
   @override
@@ -560,27 +650,39 @@ class TextosEs extends Textos {
   @override
   String get tituloRenovaciones => 'Renovaciones';
   @override
-  String get ningunContratoSeAcaba => 'No se te acaba ningún contrato: la plantilla sigue atada un año más.';
+  String get ningunContratoSeAcaba =>
+      'No se te acaba ningún contrato: la plantilla sigue atada un año más.';
   @override
-  String continuarConNAgenciaLibre(int n) => 'Continuar ($n se van a la agencia libre)';
+  String continuarConNAgenciaLibre(int n) =>
+      'Continuar ($n se van a la agencia libre)';
   @override
-  String porEncimaDelTope(String cantidad) => 'Estás $cantidad por encima del tope: solo puedes ofrecer contratos del mínimo.';
+  String porEncimaDelTope(String cantidad) =>
+      'Estás $cantidad por encima del tope: solo puedes ofrecer contratos del mínimo.';
   @override
-  String teQuedanBajoElTope(String espacio, String tope) => 'Te quedan $espacio bajo el tope de $tope.';
+  String teQuedanBajoElTope(String espacio, String tope) =>
+      'Te quedan $espacio bajo el tope de $tope.';
   @override
   String get seAcaboLaNegociacion => 'Se acabó\nla negociación';
   @override
   String ofrecerConN(int n) => 'Ofrecer ($n)';
   @override
-  String subtituloRenovacion(String posicion, int edad, int media, String cobraba, String pide) => '$posicion · $edad años · media $media\nCobraba $cobraba · pide $pide';
+  String subtituloRenovacion(
+    String posicion,
+    int edad,
+    int media,
+    String cobraba,
+    String pide,
+  ) => '$posicion · $edad años · media $media\nCobraba $cobraba · pide $pide';
   @override
   String get cerramosElTraspaso => '¿Cerramos el traspaso?';
   @override
-  String seVanYLlegan(String piden, String ofrecen) => 'Se van $piden y llegan $ofrecen.';
+  String seVanYLlegan(String piden, String ofrecen) =>
+      'Se van $piden y llegan $ofrecen.';
   @override
   String get tituloOfertasRecibidasScreen => 'Ofertas recibidas';
   @override
-  String get nadieTePideNadaAhora => 'Ahora mismo nadie te ha pedido nada. Sigue simulando: las ofertas llegan durante la temporada.';
+  String get nadieTePideNadaAhora =>
+      'Ahora mismo nadie te ha pedido nada. Sigue simulando: las ofertas llegan durante la temporada.';
   @override
   String get ofertaAnterior => 'Oferta anterior';
   @override
@@ -589,13 +691,18 @@ class TextosEs extends Textos {
   String ofertaNDeM(int n, int m) => 'Oferta $n de $m';
   @override
   String lineaJugadorOferta(
-          String nombre, String posicion, int media, String contrato) => '$nombre · $posicion · $media · $contrato';
+    String nombre,
+    String posicion,
+    int media,
+    String contrato,
+  ) => '$nombre · $posicion · $media · $contrato';
   @override
   String get ultimoAnioContrato => 'Último año';
   @override
   String aniosDeContrato(int n) => '$n años';
   @override
-  String contratoAnioMillones(String anios, String millones) => '$anios · $millones al año';
+  String contratoAnioMillones(String anios, String millones) =>
+      '$anios · $millones al año';
   @override
   String get tePiden => 'Te piden';
   @override
@@ -613,19 +720,24 @@ class TextosEs extends Textos {
   @override
   String get traspasoCerradoSimple => 'Traspaso cerrado.';
   @override
-  String get fechaLimiteTraspasosNoMasOperaciones => 'Ya ha pasado la fecha límite de traspasos: no se pueden cerrar más operaciones esta temporada.';
+  String get fechaLimiteTraspasosNoMasOperaciones =>
+      'Ya ha pasado la fecha límite de traspasos: no se pueden cerrar más operaciones esta temporada.';
   @override
   String quienSeLlevaA(String nombre) => '¿Quién se lleva a $nombre?';
   @override
-  String quienSeLlevaPaquete(int n) => '¿Quién se lleva el paquete de $n piezas?';
+  String quienSeLlevaPaquete(int n) =>
+      '¿Quién se lleva el paquete de $n piezas?';
   @override
-  String get ningunEquipoTeDariaNada => 'Ningún equipo te daría a cambio nada que merezca la pena.';
+  String get ningunEquipoTeDariaNada =>
+      'Ningún equipo te daría a cambio nada que merezca la pena.';
   @override
-  String get noTienesConQueConvencer => 'No tienes con qué convencerles: ni tu plantilla ni tus picks les llegan sin dejarte roto.';
+  String get noTienesConQueConvencer =>
+      'No tienes con qué convencerles: ni tu plantilla ni tus picks les llegan sin dejarte roto.';
   @override
   String get tituloTraspasos => 'Traspasos';
   @override
-  String get fechaLimiteTraspasosBanner => 'La fecha límite de traspasos ya ha pasado esta temporada: puedes seguir mirando el mercado, pero no cerrar nada hasta el año que viene.';
+  String get fechaLimiteTraspasosBanner =>
+      'La fecha límite de traspasos ya ha pasado esta temporada: puedes seguir mirando el mercado, pero no cerrar nada hasta el año que viene.';
   @override
   String get noCuadraMeteATercero => '¿No cuadra? Mete a un tercero';
   @override
@@ -645,7 +757,8 @@ class TextosEs extends Textos {
   @override
   String get eleccionesDeDraft => 'Elecciones de draft';
   @override
-  String get yaHasPuestoTodo => 'Ya has puesto sobre la mesa todo lo que este equipo tenía disponible.';
+  String get yaHasPuestoTodo =>
+      'Ya has puesto sobre la mesa todo lo que este equipo tenía disponible.';
   @override
   String get sacarDeLaOperacion => 'Sacar de la operación';
   @override
@@ -653,17 +766,20 @@ class TextosEs extends Textos {
   @override
   String get anadirEquipoBtn => 'Añadir equipo';
   @override
-  String get tocaParaElegirJugadoresOPicks => 'Toca para elegir\njugadores o picks';
+  String get tocaParaElegirJugadoresOPicks =>
+      'Toca para elegir\njugadores o picks';
 
   @override
-  String get mercadoCerradoNoSeBuscan => 'El mercado está cerrado: ya pasó la fecha límite de traspasos. No se pueden buscar operaciones hasta el año que viene.';
+  String get mercadoCerradoNoSeBuscan =>
+      'El mercado está cerrado: ya pasó la fecha límite de traspasos. No se pueden buscar operaciones hasta el año que viene.';
   @override
   String get ultimoAnioMinuscula => 'último año';
 
   @override
   String get tituloLegado => 'Legado';
   @override
-  String get explicacionPuntuacionCarreraTooltip => 'Qué significa la puntuación de carrera';
+  String get explicacionPuntuacionCarreraTooltip =>
+      'Qué significa la puntuación de carrera';
   @override
   String get hallOfFame => 'Hall of Fame';
   @override
@@ -679,46 +795,61 @@ class TextosEs extends Textos {
   @override
   String get tituloPartidosDeLaSerie => 'Partidos de la serie';
   @override
-  String partidoNMarcador(int n, String local, int marcadorLocal, int marcadorVisitante, String visitante) => 'Partido $n: $local $marcadorLocal - $marcadorVisitante $visitante';
+  String partidoNMarcador(
+    int n,
+    String local,
+    int marcadorLocal,
+    int marcadorVisitante,
+    String visitante,
+  ) => 'Partido $n: $local $marcadorLocal - $marcadorVisitante $visitante';
   @override
   String get unNuevoNombreHof => 'Un nuevo nombre entra en el Hall of Fame.';
   @override
-  String nNombresNuevosHof(int n) => '$n nombres nuevos entran en el Hall of Fame.';
+  String nNombresNuevosHof(int n) =>
+      '$n nombres nuevos entran en el Hall of Fame.';
   @override
   String entroEnAnio(int anio) => 'Entró en $anio';
   @override
   String get queEsPuntuacionCarrera => '¿Qué es la puntuación de carrera?';
   @override
-  String get explicacionPuntuacionCarreraTexto => 'Resume lo que ha dado de sí toda la carrera de un jugador, no un solo número aislado:\n\n• Trofeos individuales (MVP, Mejor Defensor, quintetos, Rookie del Año, Más Mejorado).\n• Anillos de campeón y títulos de la NBA Cup.\n• El pico de nivel que llegó a alcanzar.\n• Los puntos, asistencias y rebotes que acumuló, según cuántas temporadas jugó.\n\nHace falta al menos 6 temporadas jugadas y superar un umbral para entrar: un titular sólido sin premios no basta, tiene que haber sido importante de verdad.';
+  String get explicacionPuntuacionCarreraTexto =>
+      'Resume lo que ha dado de sí toda la carrera de un jugador, no un solo número aislado:\n\n• Trofeos individuales (MVP, Mejor Defensor, quintetos, Rookie del Año, Más Mejorado).\n• Anillos de campeón y títulos de la NBA Cup.\n• El pico de nivel que llegó a alcanzar.\n• Los puntos, asistencias y rebotes que acumuló, según cuántas temporadas jugó.\n\nHace falta al menos 6 temporadas jugadas y superar un umbral para entrar: un titular sólido sin premios no basta, tiene que haber sido importante de verdad.';
   @override
   String get entendido => 'Entendido';
   @override
-  String noSePudoCargarHof(String error) => 'No se ha podido cargar el Hall of Fame.\n$error';
+  String noSePudoCargarHof(String error) =>
+      'No se ha podido cargar el Hall of Fame.\n$error';
   @override
-  String get todaviaNadieEnHof => 'Todavía no hay nadie en el Hall of Fame. Solo entran jugadores ya retirados con una carrera de las grandes: premios, anillos y muchos años a buen nivel.';
+  String get todaviaNadieEnHof =>
+      'Todavía no hay nadie en el Hall of Fame. Solo entran jugadores ya retirados con una carrera de las grandes: premios, anillos y muchos años a buen nivel.';
   @override
   String get nuevoChip => 'NUEVO';
 
   @override
   String get enActivoLeyenda => 'En activo: todavía puede subir puestos';
   @override
-  String get todaviaNoHayEstadisticas => 'Todavía no hay estadísticas que mostrar.';
+  String get todaviaNoHayEstadisticas =>
+      'Todavía no hay estadísticas que mostrar.';
   @override
-  String noSePudieronCargarCamisetas(String error) => 'No se han podido cargar las camisetas retiradas.\n$error';
+  String noSePudieronCargarCamisetas(String error) =>
+      'No se han podido cargar las camisetas retiradas.\n$error';
   @override
-  String get todaviaNoHayCamisetaEnLiga => 'Todavía no hay ninguna camiseta retirada en la liga. Cuando se retire una leyenda podrás honrarla.';
+  String get todaviaNoHayCamisetaEnLiga =>
+      'Todavía no hay ninguna camiseta retirada en la liga. Cuando se retire una leyenda podrás honrarla.';
   @override
   String get franquiciaLabel => 'Franquicia';
   @override
   String get todaLaLigaOpcion => 'Toda la liga';
   @override
-  String equipoTodaviaNoHaRetirado(String equipo) => '$equipo todavía no ha retirado ninguna camiseta.';
+  String equipoTodaviaNoHaRetirado(String equipo) =>
+      '$equipo todavía no ha retirado ninguna camiseta.';
   @override
   String get tuEquipoBadge => 'TU EQUIPO';
   @override
   String get retiradaRealDeLaFranquicia => 'Retirada real de la franquicia';
   @override
-  String retiradaEnLaTemporada(String etiquetaTemporada) => 'Retirada en la $etiquetaTemporada';
+  String retiradaEnLaTemporada(String etiquetaTemporada) =>
+      'Retirada en la $etiquetaTemporada';
   @override
   String nPartidos(int n) => n == 1 ? '1 partido' : '$n partidos';
   @override
@@ -745,24 +876,29 @@ class TextosEs extends Textos {
   @override
   String get tituloPremiosDeLaTemporada => 'Premios de la temporada';
   @override
-  String noSePudieronCargarPremios(String error) => 'No se han podido cargar los premios.\n$error';
+  String noSePudieronCargarPremios(String error) =>
+      'No se han podido cargar los premios.\n$error';
   @override
   String get verCalendarioBtn => 'Ver calendario';
   @override
-  String statsPremioLinea(String pts, String ast, String reb) => '$pts pts, $ast ast, $reb reb';
+  String statsPremioLinea(String pts, String ast, String reb) =>
+      '$pts pts, $ast ast, $reb reb';
 
   @override
   String temporadaN(int n) => 'Temporada $n';
   @override
-  String arrancaLaTemporada(int n, int anioInicio, int anioFin) => 'Arranca la temporada $n ($anioInicio-$anioFin)';
+  String arrancaLaTemporada(int n, int anioInicio, int anioFin) =>
+      'Arranca la temporada $n ($anioInicio-$anioFin)';
   @override
-  String get plantillaHaCambiadoAviso => 'Tu plantilla ha cambiado: revísala antes del primer partido — se ha dejado una alineación automática hecha.';
+  String get plantillaHaCambiadoAviso =>
+      'Tu plantilla ha cambiado: revísala antes del primer partido — se ha dejado una alineación automática hecha.';
   @override
   String get tusEleccionesDelDraft => 'Tus elecciones del draft';
   @override
   String get seRetiranDeTuEquipo => 'Se retiran de tu equipo';
   @override
-  String cuelgaLasBotasCon(int edad, int media) => 'Cuelga las botas con $edad años y media $media';
+  String cuelgaLasBotasCon(int edad, int media) =>
+      'Cuelga las botas con $edad años y media $media';
   @override
   String get hanDadoUnPasoAdelante => 'Han dado un paso adelante';
   @override
@@ -772,24 +908,28 @@ class TextosEs extends Textos {
   @override
   String get movimientosEnLaLiga => 'Movimientos en la liga';
   @override
-  String recibeA(String equipoA, String jugadorB, String posicionB) => '$equipoA recibe a $jugadorB ($posicionB)';
+  String recibeA(String equipoA, String jugadorB, String posicionB) =>
+      '$equipoA recibe a $jugadorB ($posicionB)';
   @override
   String get tambienSeRetiran => 'También se retiran';
   @override
   String yNMas(int n) => 'y $n más';
   @override
-  String posicionMediaSeparador(String posicion, int media) => '$posicion · media $media · ';
+  String posicionMediaSeparador(String posicion, int media) =>
+      '$posicion · media $media · ';
 
   @override
   String camisetaDeXRetirada(String nombre) => 'Camiseta de $nombre retirada.';
   @override
   String get tituloSeRetiran => 'Se retiran';
   @override
-  String get estaTemporadaNoSeRetiraNadie => 'Esta temporada no se retira nadie.';
+  String get estaTemporadaNoSeRetiraNadie =>
+      'Esta temporada no se retira nadie.';
   @override
   String get restoDeLaLiga => 'Resto de la liga';
   @override
-  String get suCamisetaYaRetiradaSola => ' · su camiseta ya se ha retirado sola (leyenda real)';
+  String get suCamisetaYaRetiradaSola =>
+      ' · su camiseta ya se ha retirado sola (leyenda real)';
   @override
   String get camisetaRetiradaSufijo => ' · camiseta retirada';
 
@@ -833,12 +973,15 @@ class TextosEs extends Textos {
   @override
   String get ordenarPorLabel => 'Ordenar por: ';
   @override
-  String posicionEdadMedia(String posicion, int edad, int media) => '$posicion · $edad años · media $media';
+  String posicionEdadMedia(String posicion, int edad, int media) =>
+      '$posicion · $edad años · media $media';
 
   @override
-  String cuartosCopaSeSiembranAviso(String nbaCup) => 'Los cuartos de la $nbaCup se siembran en cuanto termina la fase de grupos de toda la liga.';
+  String cuartosCopaSeSiembranAviso(String nbaCup) =>
+      'Los cuartos de la $nbaCup se siembran en cuanto termina la fase de grupos de toda la liga.';
   @override
-  String get finalSeJuegaDesdeCalendarioAviso => 'La Final se juega desde el calendario: si eres finalista la tienes marcada como un día más de tu temporada.';
+  String get finalSeJuegaDesdeCalendarioAviso =>
+      'La Final se juega desde el calendario: si eres finalista la tienes marcada como un día más de tu temporada.';
   @override
   String get cuartosDeFinalLabel => 'Cuartos de final';
   @override
@@ -855,7 +998,8 @@ class TextosEs extends Textos {
   @override
   String get tituloResumenDeLaTemporada => 'Resumen de la temporada';
   @override
-  String noSePudoCargarResumen(String error) => 'No se ha podido cargar el resumen.\n$error';
+  String noSePudoCargarResumen(String error) =>
+      'No se ha podido cargar el resumen.\n$error';
   @override
   String temporadaConEtiqueta(String etiqueta) => 'Temporada $etiqueta';
   @override
@@ -887,38 +1031,47 @@ class TextosEs extends Textos {
   @override
   String get peorDerrotaLabel => 'Peor derrota';
   @override
-  String partidosJugadosVictoriasPct(int partidos, int pct) => '$partidos partidos · $pct% de victorias';
+  String partidosJugadosVictoriasPct(int partidos, int pct) =>
+      '$partidos partidos · $pct% de victorias';
   @override
   String get todaviaNoHayClasificacion => 'Todavía no hay clasificación.';
   @override
   String get columnaPJ => 'PJ';
   @override
-  String posicionMedia(String posicion, int media) => '$posicion · media $media';
+  String posicionMedia(String posicion, int media) =>
+      '$posicion · media $media';
 
   @override
-  String get allStarSubtituloPendiente => 'Se juega en el descanso de febrero. Simula hasta el fin de semana de las estrellas para verlo.';
+  String get allStarSubtituloPendiente =>
+      'Se juega en el descanso de febrero. Simula hasta el fin de semana de las estrellas para verlo.';
   @override
-  String get risingStarsSubtituloPendiente => 'Los mejores rookies contra los de segundo año, el mismo fin de semana.';
+  String get risingStarsSubtituloPendiente =>
+      'Los mejores rookies contra los de segundo año, el mismo fin de semana.';
   @override
-  String get votacionAbreCuandoRuedeBalonAviso => 'La votación abre cuando ruede el balón. Según vayas jugando jornadas irás viendo quién se está ganando el puesto y por cuántos votos.';
+  String get votacionAbreCuandoRuedeBalonAviso =>
+      'La votación abre cuando ruede el balón. Según vayas jugando jornadas irás viendo quién se está ganando el puesto y por cuántos votos.';
   @override
   String get verEstadisticasBtn => 'Ver estadísticas';
   @override
   String mvpConNombre(String nombre) => 'MVP · $nombre';
   @override
-  String lineaMvpPtsAstReb(int pts, int ast, int reb) => '$pts pts · $ast ast · $reb reb';
+  String lineaMvpPtsAstReb(int pts, int ast, int reb) =>
+      '$pts pts · $ast ast · $reb reb';
   @override
   String escrutadoPorcentaje(int pct) => 'Escrutado el $pct% de los votos...';
   @override
-  String get recuentoCerradoAviso => 'Recuento cerrado: estos fueron los elegidos.';
+  String get recuentoCerradoAviso =>
+      'Recuento cerrado: estos fueron los elegidos.';
   @override
-  String votacionAbiertaConPorcentaje(int pct) => 'Votación abierta, con el $pct% de la temporada jugado. Sigue simulando y los votos se moverán.';
+  String votacionAbiertaConPorcentaje(int pct) =>
+      'Votación abierta, con el $pct% de la temporada jugado. Sigue simulando y los votos se moverán.';
   @override
   String get votacionFinalLabel => 'Votación final';
   @override
   String get votacionDeAficionadosLabel => 'Votación de aficionados';
   @override
-  String conferenciaConNombre(String conferenciaLabel) => 'Conferencia $conferenciaLabel';
+  String conferenciaConNombre(String conferenciaLabel) =>
+      'Conferencia $conferenciaLabel';
   @override
   String get titularesLabel => 'Titulares';
   @override
@@ -926,10 +1079,12 @@ class TextosEs extends Textos {
   @override
   String get seQuedanFueraLabel => 'Se quedan fuera';
   @override
-  String posicionValoracion(String posicion, String valoracion) => '$posicion · $valoracion de valoración';
+  String posicionValoracion(String posicion, String valoracion) =>
+      '$posicion · $valoracion de valoración';
 
   @override
-  String get noLlegoACompletarNingunaTemporada => 'No llegó a completar ninguna temporada contigo.';
+  String get noLlegoACompletarNingunaTemporada =>
+      'No llegó a completar ninguna temporada contigo.';
   @override
   String get tituloTrayectoria => 'Trayectoria';
   @override
@@ -957,54 +1112,74 @@ class TextosEs extends Textos {
   @override
   String get premioMasMejoradoCorto => 'Más Mejorado';
   @override
-  String get sinTitulosNiPremiosCarreraNba => 'Sin títulos ni premios en su carrera NBA.';
+  String get sinTitulosNiPremiosCarreraNba =>
+      'Sin títulos ni premios en su carrera NBA.';
   @override
-  String get sinTitulosNiPremiosIndividuales => 'Sin títulos ni premios individuales.';
+  String get sinTitulosNiPremiosIndividuales =>
+      'Sin títulos ni premios individuales.';
   @override
-  String resumenCarreraTotales(int temporadas, String posicion, int partidos) => '$temporadas temporadas · $posicion · $partidos partidos';
+  String resumenCarreraTotales(int temporadas, String posicion, int partidos) =>
+      '$temporadas temporadas · $posicion · $partidos partidos';
   @override
-  String totalesCarreraLinea(String pts, String ast, String reb) => 'Totales: $pts pts · $ast ast · $reb reb';
+  String totalesCarreraLinea(String pts, String ast, String reb) =>
+      'Totales: $pts pts · $ast ast · $reb reb';
   @override
-  String temporadasPreviasAviso(int n) => '$n de ellas antes de que cogieras el mando: de esas no hay estadísticas, las medias de abajo son las de tu era.';
+  String temporadasPreviasAviso(int n) =>
+      '$n de ellas antes de que cogieras el mando: de esas no hay estadísticas, las medias de abajo son las de tu era.';
   @override
   String get antesDeTuPartidaTitulo => 'Antes de tu partida';
   @override
-  String temporadasYaJugadasCuandoCogisteElEquipo(int n) => '$n ${n == 1 ? 'temporada' : 'temporadas'} ya jugadas cuando cogiste el equipo.';
+  String temporadasYaJugadasCuandoCogisteElEquipo(int n) =>
+      '$n ${n == 1 ? 'temporada' : 'temporadas'} ya jugadas cuando cogiste el equipo.';
   @override
-  String get produccionDeReferenciaAviso => 'Su producción de referencia al empezar la partida. De aquellos años no hay estadísticas partido a partido.';
+  String get produccionDeReferenciaAviso =>
+      'Su producción de referencia al empezar la partida. De aquellos años no hay estadísticas partido a partido.';
   @override
-  String sinEstadisticasDeCarreraAviso(String nombre) => 'De $nombre no hay estadísticas de carrera: es de una época anterior a la que cubren los datos del juego. Su sitio en la historia está, los números no.';
+  String sinEstadisticasDeCarreraAviso(String nombre) =>
+      'De $nombre no hay estadísticas de carrera: es de una época anterior a la que cubren los datos del juego. Su sitio en la historia está, los números no.';
   @override
   String get suCarreraEnLaNbaReal => 'Su carrera en la NBA real';
   @override
   String conEquipoEnLaNbaReal(String equipo) => 'Con $equipo en la NBA real';
   @override
-  String temporadasPartidos(int temporadas, int partidos) => '$temporadas temporadas · $partidos partidos';
+  String temporadasPartidos(int temporadas, int partidos) =>
+      '$temporadas temporadas · $partidos partidos';
   @override
-  String rangoTemporadasPartidos(String desde, String hasta, int partidos) => '$desde a $hasta · $partidos partidos';
+  String rangoTemporadasPartidos(String desde, String hasta, int partidos) =>
+      '$desde a $hasta · $partidos partidos';
   @override
-  String rangoPartidos(String rango, int partidos) => '$rango · $partidos partidos';
+  String rangoPartidos(String rango, int partidos) =>
+      '$rango · $partidos partidos';
   @override
   String temporadaMinuscula(int n) => 'temporada $n';
 
   @override
-  String get nadieTePropuestoNadaAhora => 'Nadie te ha propuesto nada por ahora';
+  String get nadieTePropuestoNadaAhora =>
+      'Nadie te ha propuesto nada por ahora';
   @override
-  String get unEquipoQuiereAUnoDeTusJugadores => 'Un equipo quiere a uno de tus jugadores';
+  String get unEquipoQuiereAUnoDeTusJugadores =>
+      'Un equipo quiere a uno de tus jugadores';
   @override
-  String nEquiposHanPreguntado(int n) => '$n equipos han preguntado por jugadores tuyos';
+  String nEquiposHanPreguntado(int n) =>
+      '$n equipos han preguntado por jugadores tuyos';
   @override
-  String cuadroYResultadosDeLaCopa(String nbaCup) => 'Cuadro y resultados de la $nbaCup';
+  String cuadroYResultadosDeLaCopa(String nbaCup) =>
+      'Cuadro y resultados de la $nbaCup';
   @override
-  String get seDesbloqueaAlTerminarFaseDeGrupos => 'Se desbloquea al terminar la fase de grupos';
+  String get seDesbloqueaAlTerminarFaseDeGrupos =>
+      'Se desbloquea al terminar la fase de grupos';
   @override
   String get premiosDeFinDeTemporadaSubtitulo => 'Premios de fin de temporada';
   @override
-  String get seDesbloqueaAlTerminarTemporadaRegular => 'Se desbloquea al terminar la temporada regular';
+  String get seDesbloqueaAlTerminarTemporadaRegular =>
+      'Se desbloquea al terminar la temporada regular';
   @override
   String get bracketDeEliminatorias => 'Bracket de eliminatorias';
   @override
-  String hallOfFameYCamisetasRetiradasSubtitulo(String hallOfFame, String camisetas) => '$hallOfFame y $camisetas';
+  String hallOfFameYCamisetasRetiradasSubtitulo(
+    String hallOfFame,
+    String camisetas,
+  ) => '$hallOfFame y $camisetas';
   @override
   String get salarialLabel => 'Salarial';
 
@@ -1015,7 +1190,8 @@ class TextosEs extends Textos {
   @override
   String get enQueRanuraQuieresEmpezar => '¿En qué ranura quieres empezar?';
   @override
-  String get eligeLaPartidaQueQuieresCargar => 'Elige la partida que quieres cargar';
+  String get eligeLaPartidaQueQuieresCargar =>
+      'Elige la partida que quieres cargar';
   @override
   String get nuevaPartidaBtn => 'Nueva partida';
   @override
@@ -1023,7 +1199,8 @@ class TextosEs extends Textos {
   @override
   String sobrescribirLaPartidaN(int n) => '¿Sobrescribir la partida $n?';
   @override
-  String get sePerderaEnteraAviso => 'Esa ranura ya tiene una carrera en marcha y se perderá entera: plantillas, calendario y palmarés. Esto no se puede deshacer.';
+  String get sePerderaEnteraAviso =>
+      'Esa ranura ya tiene una carrera en marcha y se perderá entera: plantillas, calendario y palmarés. Esto no se puede deshacer.';
   @override
   String get sobrescribirBtn => 'Sobrescribir';
   @override
@@ -1031,11 +1208,13 @@ class TextosEs extends Textos {
   @override
   String borrarLaPartidaN(int n) => '¿Borrar la partida $n?';
   @override
-  String sePierdeCarreraDeAviso(String nombre) => 'Se pierde toda la carrera de $nombre: plantillas, calendario, palmarés, leyendas y camisetas retiradas. Esto no se puede deshacer.';
+  String sePierdeCarreraDeAviso(String nombre) =>
+      'Se pierde toda la carrera de $nombre: plantillas, calendario, palmarés, leyendas y camisetas retiradas. Esto no se puede deshacer.';
   @override
   String get borrarBtn => 'Borrar';
   @override
-  String get lasTresRanurasOcupadasAviso => 'Las tres ranuras están ocupadas: borra una para empezar de nuevo, o continúa una de las que ya tienes.';
+  String get lasTresRanurasOcupadasAviso =>
+      'Las tres ranuras están ocupadas: borra una para empezar de nuevo, o continúa una de las que ya tienes.';
   @override
   String get ranuraDeVersionCompleta => 'Ranura de la versión completa';
   @override
@@ -1091,7 +1270,8 @@ class TextosEs extends Textos {
   @override
   String get tituloPatrocinadores => 'Patrocinadores';
   @override
-  String get explicacionPatrocinadores => 'Cada patrocinio tiene varias ofertas: cuanto más largo el contrato, menos paga al año. Lo que firmes ocupa esa categoría hasta que caduque.';
+  String get explicacionPatrocinadores =>
+      'Cada patrocinio tiene varias ofertas: cuanto más largo el contrato, menos paga al año. Lo que firmes ocupa esa categoría hasta que caduque.';
   @override
   String get patrocinioEstadioLabel => 'Patrocinador del pabellón';
   @override
@@ -1105,15 +1285,18 @@ class TextosEs extends Textos {
   @override
   String get alAnioSufijo => 'al año';
   @override
-  String sinPatrocinioFirmado(int ofertas) => ofertas == 1 ? 'Sin firmar · 1 oferta' : 'Sin firmar ·  ofertas';
+  String sinPatrocinioFirmado(int ofertas) =>
+      ofertas == 1 ? 'Sin firmar · 1 oferta' : 'Sin firmar ·  ofertas';
   @override
   String margenPatrocinio(String importe) => '+$importe de margen salarial';
   @override
   String get totalPatrociniosLabel => 'Margen total este año';
   @override
-  String get patrocinadoresBloqueados => 'Los patrocinadores son de la versión completa. Mira un vídeo y los tienes los cuatro durante esta temporada.';
+  String get patrocinadoresBloqueados =>
+      'Los patrocinadores son de la versión completa. Mira un vídeo y los tienes los cuatro durante esta temporada.';
   @override
   String get verVideoPatrocinadores => 'VER VÍDEO Y DESBLOQUEAR';
   @override
-  String get videoSinTerminar => 'El vídeo no se vio entero, así que siguen bloqueados. Puedes intentarlo otra vez.';
+  String get videoSinTerminar =>
+      'El vídeo no se vio entero, así que siguen bloqueados. Puedes intentarlo otra vez.';
 }

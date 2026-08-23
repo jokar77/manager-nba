@@ -28,6 +28,78 @@ https://jokar77.github.io/manager-nba/
 - PowerShell 5.1 **no admite `&&`**; el Bash de Git sí. Los dos están
   disponibles y se usa el que convenga.
 
+## Los tres roles pasan a ser obligatorios, y el botón lo dice (23 de agosto de 2026)
+
+Va justo detrás de plegar la banda, y es su consecuencia: si algo es
+obligatorio y además está doblado, hace falta que el juego señale dónde.
+
+### El botón ya no está muerto
+
+Antes salía deshabilitado mientras faltara algo. Un botón apagado tiene un
+problema que se ve en cuanto alguien lo usa: **no explica qué falta**. Se
+queda gris y el jugador se queda mirándolo.
+
+Ahora **siempre responde**, y cuando no se puede guardar dice por qué:
+
+| Qué falta | Qué pasa al pulsar |
+| --- | --- |
+| Huecos de la alineación | Aviso: completa la alineación |
+| Alguno de los tres roles | Aviso + **la banda se abre sola y parpadea** |
+| Nada | Guarda |
+
+El orden importa y no es casual: los roles se piden **después** de los diez
+huecos, porque el sexto hombre sale de los suplentes y sin alineación no
+hay suplentes de los que sacarlo.
+
+### El aviso: abrir y parpadear
+
+Abrir la banda es la mitad del aviso. Parpadear una banda plegada diría
+"aquí hay algo" sin dejar verlo ni arreglarlo, así que primero se abre y
+después se resalta: el fondo se tiñe hacia el color de aviso y la línea de
+arriba engorda, dos idas y vueltas en 900 ms.
+
+El parpadeo es **finito a propósito**. Un `repeat()` deja colgado a
+`pumpAndSettle` en los tests, y en pantalla sería un semáforo.
+
+Y la señal es un **contador**, no un `bool`. Con un booleano el segundo
+intento no cambiaría nada y no volvería a parpadear — justo cuando quien lo
+necesita es alguien que no se enteró la primera vez. Hay un test para eso.
+
+### Claves estables en los tres desplegables
+
+`claveRolAtaque`, `claveRolDefensa` y `claveRolSextoHombre`, misma idea que
+las de `_HuecoJugador`: la etiqueta que se ve cambia con el idioma, la
+clave no.
+
+Aquí hacían falta además por un motivo técnico que costó encontrar:
+**señalar uno de los tres por posición no funciona**. Un finder indexado
+(`.at(i)`) revienta dentro de `tap`, que por debajo busca el `View` que
+contiene al widget y le aplica el mismo índice — y `View` solo hay uno.
+
+### Y otro que costó más: `ensureVisible` cambiaba de pestaña
+
+En los tests, `ensureVisible` sobre el desplegable de más a la derecha
+hacía **desaparecer la banda entera**. No es un bug de la banda: la banda
+es un pie fijo y ya está a la vista, pero `ensureVisible` sube buscando un
+`Scrollable` y el primero que encuentra es el `PageView` del `TabBarView`.
+Lo centraba cambiando de pestaña.
+
+Queda apuntado porque volverá a pasar: **en esta pantalla, nada de
+`ensureVisible` sobre lo que esté fuera del `ListView` de los puestos.**
+
+### Estado
+
+`flutter analyze` limpio en los dos paquetes. **666 tests en verde**, cinco
+más. `flutter build web` correcto; `web/sw.js` sigue en `manager-nba-v13`,
+que ya cubre todo lo de hoy porque no se ha publicado nada entre medias.
+
+`flujo_completo_test.dart` ahora elige los tres roles antes de empezar la
+temporada, que es lo que hay que hacer de verdad desde este cambio.
+
+**La comprobación visual sigue pendiente**: el panel del navegador no se
+puede mostrar en esta sesión, así que el parpadeo está probado por sus
+efectos (la banda se abre, el aviso sale, no se guarda), no mirándolo.
+
 ## La banda de roles se pliega en móvil (23 de agosto de 2026)
 
 Punto **1 de la lista 14**, el último que quedaba. Con esto la lista 14 está
