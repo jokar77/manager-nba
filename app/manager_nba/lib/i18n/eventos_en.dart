@@ -9,6 +9,9 @@ class EventosEn extends TextosDeEventos {
   const EventosEn();
 
   @override
+  String get jugadorGenerico => 'the player';
+
+  @override
   Map<String, String> get etiquetasDeEfecto => const {
     'buen_rollo': 'Good vibes in the locker room',
     'piernas_cansadas': 'Heavy legs',
@@ -141,7 +144,7 @@ class EventosEn extends TextosDeEventos {
       },
     ),
     'estrella_pide_descanso': TextoDeEvento(
-      titulo: 'Your best player wants rest',
+      titulo: '{jugador} wants rest',
       texto:
           'He has been playing through soreness since November. He is '
           'not injured, but he is asking to sit a few games so he is whole '
@@ -160,9 +163,9 @@ class EventosEn extends TextosDeEventos {
       },
     ),
     'joven_pide_minutos': TextoDeEvento(
-      titulo: 'A young player wants minutes',
+      titulo: '{jugador} wants minutes',
       texto:
-          'One of your kids has spent half a season glued to the bench. '
+          '{jugador} has spent half a season glued to the bench. '
           'His agent called: either he plays, or he finds somewhere else '
           'next summer.',
       opciones: {
@@ -316,11 +319,11 @@ class EventosEn extends TextosDeEventos {
       },
     ),
     'veterano_de_vestuario': TextoDeEvento(
-      titulo: 'A veteran offers to talk to the group',
+      titulo: '{jugador} offers to talk to the group',
       texto:
-          'The oldest man on the roster asks for five minutes with the '
-          'team, no coaching staff in the room. He says some things are '
-          'better said player to player.',
+          '{jugador}, the oldest man on the roster, asks for five minutes '
+          'with the team, no coaching staff in the room. He says some '
+          'things are better said player to player.',
       opciones: {
         'dejales_solos': TextoDeOpcion(
           'Leave them to it',
@@ -358,10 +361,10 @@ class EventosEn extends TextosDeEventos {
 
     // --- Segunda tanda -------------------------------------------
     'rumor_de_traspaso': TextoDeEvento(
-      titulo: 'He read his name in the rumours',
+      titulo: '{jugador} read his name in the rumours',
       texto:
-          'A reporter wrote that you are listening to offers for one of '
-          'your starters. He asks you straight out, with half the locker '
+          'A reporter wrote that you are listening to offers for '
+          '{jugador}. He asks you straight out, with half the locker '
           'room standing there.',
       opciones: {
         'prometerle_que_se_queda': TextoDeOpcion(
@@ -407,7 +410,7 @@ class EventosEn extends TextosDeEventos {
       },
     ),
     'jugador_llega_tarde': TextoDeEvento(
-      titulo: 'Somebody is late again',
+      titulo: '{jugador} is late again',
       texto:
           'Third time this month he has walked in after practice '
           'started. You let the first two slide. Everybody saw this one.',
@@ -486,7 +489,7 @@ class EventosEn extends TextosDeEventos {
       },
     ),
     'metida_de_pata_en_redes': TextoDeEvento(
-      titulo: 'A player blew up on social media',
+      titulo: '{jugador} blew up on social media',
       texto:
           'He posted at three in the morning that the officials are out '
           'to get him. He deleted it in twenty minutes; by then everyone '

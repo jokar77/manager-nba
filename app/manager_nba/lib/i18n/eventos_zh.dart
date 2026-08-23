@@ -10,6 +10,9 @@ class EventosZh extends TextosDeEventos {
   const EventosZh();
 
   @override
+  String get jugadorGenerico => '这名球员';
+
+  @override
   Map<String, String> get etiquetasDeEfecto => const {
     'buen_rollo': '更衣室气氛融洽',
     'piernas_cansadas': '双腿疲惫',
@@ -128,7 +131,7 @@ class EventosZh extends TextosDeEventos {
       },
     ),
     'estrella_pide_descanso': TextoDeEvento(
-      titulo: '头号球星想休息',
+      titulo: '{jugador}想休息',
       texto: '他从十一月起就带着伤病在打。人没伤，但想歇几场，好在赛季末保持完整状态。',
       opciones: {
         'que_descanse': TextoDeOpcion(
@@ -142,8 +145,8 @@ class EventosZh extends TextosDeEventos {
       },
     ),
     'joven_pide_minutos': TextoDeEvento(
-      titulo: '年轻球员想要出场时间',
-      texto: '你的一个小将半个赛季都钉在板凳上。他的经纪人来电话了：要么给他上，要么明夏另谋出路。',
+      titulo: '{jugador}想要出场时间',
+      texto: '{jugador}半个赛季都钉在板凳上。他的经纪人来电话了：要么给他上，要么明夏另谋出路。',
       opciones: {
         'dale_minutos': TextoDeOpcion(
           '给他上场时间',
@@ -249,8 +252,8 @@ class EventosZh extends TextosDeEventos {
       },
     ),
     'veterano_de_vestuario': TextoDeEvento(
-      titulo: '一名老将想跟全队谈谈',
-      texto: '队里资历最老的球员想跟球队单独待五分钟，教练组不在场。他说有些话球员之间讲更合适。',
+      titulo: '{jugador}想跟全队谈谈',
+      texto: '{jugador}，队里资历最老的球员，想跟球队单独待五分钟，教练组不在场。他说有些话球员之间讲更合适。',
       opciones: {
         'dejales_solos': TextoDeOpcion(
           '让他们单独谈',
@@ -279,8 +282,8 @@ class EventosZh extends TextosDeEventos {
 
     // --- Segunda tanda -------------------------------------------
     'rumor_de_traspaso': TextoDeEvento(
-      titulo: '他在流言里看到了自己的名字',
-      texto: '有记者写道，你正在听关于某位首发的报价。他当着半个更衣室的面，直接问到你脸上。',
+      titulo: '{jugador}在流言里看到了自己的名字',
+      texto: '有记者写道，你正在听关于{jugador}的报价。他当着半个更衣室的面，直接问到你脸上。',
       opciones: {
         'prometerle_que_se_queda': TextoDeOpcion(
           '答应他不会走',
@@ -311,7 +314,7 @@ class EventosZh extends TextosDeEventos {
       },
     ),
     'jugador_llega_tarde': TextoDeEvento(
-      titulo: '又有人迟到了',
+      titulo: '{jugador}又迟到了',
       texto: '这个月第三次了，他到的时候训练早就开始。前两次你都放过去了。这一次，所有人都看见了。',
       opciones: {
         'multarle': TextoDeOpcion('罚款', '罚单在更衣室里被议论，大家心里都不痛快，但接下来一周没人再迟到。'),
@@ -362,7 +365,7 @@ class EventosZh extends TextosDeEventos {
       },
     ),
     'metida_de_pata_en_redes': TextoDeEvento(
-      titulo: '有球员在社交媒体上捅了篓子',
+      titulo: '{jugador}在社交媒体上捅了篓子',
       texto: '他凌晨三点发文说裁判在针对他。二十分钟后删了；那时候截图早就传遍了。',
       opciones: {
         'multarle_y_zanjarlo': TextoDeOpcion(

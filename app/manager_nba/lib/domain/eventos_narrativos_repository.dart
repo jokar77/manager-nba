@@ -9,6 +9,7 @@ import '../data/database/app_database.dart';
 import '../i18n/textos_eventos.dart';
 import 'entrenadores_repository.dart' show leerEntrenadorDe;
 import 'eventos_narrativos.dart';
+import 'posiciones.dart';
 
 // Casi todo el que lee eventos necesita también el catálogo: se reexporta
 // para no tener que importar los dos ficheros en cada sitio.
@@ -159,6 +160,67 @@ Future<ContextoDeEvento> contextoDe(
     tieneEntrenador: await leerEntrenadorDe(db, equipoUsuario) != null,
     jugadoresJovenes: plantilla.where((j) => j.edad <= 23).length,
   );
+}
+
+/// El nombre en pantalla (`nombreFicticio`) de quien protagoniza [evento],
+/// según el [RolDeProtagonista] que le toque, buscando en tu rotación
+/// guardada de 10 (ver `franquicia_repository.dart`) — los "10 que están
+/// participando" de la lista de bugs.
+///
+/// Null si el evento no habla de nadie en concreto
+/// (`evento.protagonista == null`) o si la rotación todavía no está
+/// completa: no debería pasar en una partida real (no se puede jugar ni un
+/// partido sin rotación completa, y sin partidos jugados no salta ningún
+/// evento), pero un test puede montar un evento de prueba sin rotación, y
+/// aquí no se revienta por eso — se cae al genérico del idioma
+/// (`TextosDeEventos.jugadorGenerico`).
+Future<String?> nombreDelProtagonista(
+  AppDatabase db,
+  EventoNarrativo evento,
+  Random rng,
+) async {
+  final rol = evento.protagonista;
+  if (rol == null) return null;
+
+  final rotacion = await db.select(db.rotacionJugador).get();
+  if (rotacion.length < posicionesEquipo.length * 2) return null;
+
+  final ids = rotacion.map((f) => f.jugadorId).toSet();
+  final jugadores = await (db.select(db.jugadores)
+        ..where((t) => t.id.isIn(ids) & t.retirado.equals(false)))
+      .get();
+  if (jugadores.isEmpty) return null;
+  final porId = {for (final j in jugadores) j.id: j};
+
+  Jugador mejorPor(List<Jugador> pool, Comparable Function(Jugador) clave) =>
+      ([...pool]..sort((a, b) => clave(b).compareTo(clave(a)))).first;
+
+  switch (rol) {
+    case RolDeProtagonista.estrella:
+      final estrellas = rotacion
+          .where((f) => f.esEstrellaAtaque || f.esEstrellaDefensa)
+          .map((f) => porId[f.jugadorId])
+          .whereType<Jugador>()
+          .toList();
+      final pool = estrellas.isNotEmpty ? estrellas : jugadores;
+      return mejorPor(pool, (j) => j.media).nombreFicticio;
+    case RolDeProtagonista.joven:
+      final jovenes = jugadores.where((j) => j.edad <= 23).toList();
+      final pool = jovenes.isNotEmpty ? jovenes : jugadores;
+      return pool[rng.nextInt(pool.length)].nombreFicticio;
+    case RolDeProtagonista.veterano:
+      return mejorPor(jugadores, (j) => j.edad).nombreFicticio;
+    case RolDeProtagonista.titular:
+      final titulares = rotacion
+          .where((f) => f.esTitular)
+          .map((f) => porId[f.jugadorId])
+          .whereType<Jugador>()
+          .toList();
+      final pool = titulares.isNotEmpty ? titulares : jugadores;
+      return pool[rng.nextInt(pool.length)].nombreFicticio;
+    case RolDeProtagonista.cualquiera:
+      return jugadores[rng.nextInt(jugadores.length)].nombreFicticio;
+  }
 }
 
 /// ¿Salta un evento en este tramo? Devuelve el evento a plantear, o null.

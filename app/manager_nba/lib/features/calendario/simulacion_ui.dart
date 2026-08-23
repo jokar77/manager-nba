@@ -103,12 +103,20 @@ Future<void> _plantearEventoNarrativo(
       random: random);
   if (evento == null || !context.mounted) return;
 
-  final opcion = await plantearEvento(context, evento);
+  // Lista 15, punto 2: si el evento habla de alguien en concreto, el nombre
+  // real de tu rotación de 10, no "un jugador" o "tu mejor jugador".
+  final nombreProtagonista =
+      await nombreDelProtagonista(db, evento, random ?? Random());
+  if (!context.mounted) return;
+
+  final opcion = await plantearEvento(context, evento,
+      nombreProtagonista: nombreProtagonista);
   if (opcion == null) return;
 
   await resolverEvento(db, evento, opcion);
   if (!context.mounted) return;
-  await contarConsecuencia(context, evento, opcion);
+  await contarConsecuencia(context, evento, opcion,
+      nombreProtagonista: nombreProtagonista);
 }
 
 /// Si el banquillo está vacío, lleva a la pantalla de entrenadores y no

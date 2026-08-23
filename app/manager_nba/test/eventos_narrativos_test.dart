@@ -405,4 +405,95 @@ void main() {
       expect(contexto.mediaDelEquipo, greaterThan(0));
     });
   });
+
+  // -------------------------------------------------------------------------
+  // Lista 15, punto 2: nombrar al jugador exacto, no "un jugador"
+  // -------------------------------------------------------------------------
+
+  group('protagonista de un evento', () {
+    late AppDatabase db;
+
+    setUp(() async {
+      db = AppDatabase.forTesting(NativeDatabase.memory());
+      await importarJugadoresSiHaceFalta(db);
+      await crearFranquicia(db, 'DEN');
+    });
+
+    tearDown(() => db.close());
+
+    EventoNarrativo eventoDe(RolDeProtagonista rol) => EventoNarrativo(
+          clave: 'prueba_protagonista',
+          protagonista: rol,
+          opciones: const [OpcionDeEvento(clave: 'ok')],
+        );
+
+    test('un evento sin rol de protagonista no busca a nadie', () async {
+      final evento = EventoNarrativo(
+        clave: 'sin_protagonista',
+        opciones: const [OpcionDeEvento(clave: 'ok')],
+      );
+      expect(await nombreDelProtagonista(db, evento, Random(1)), isNull);
+    });
+
+    test('sin rotación completa, no revienta: devuelve null', () async {
+      // El caso de este mismo `setUp`: `crearFranquicia` no monta rotación.
+      expect(await leerRotacion(db), isEmpty);
+      expect(
+          await nombreDelProtagonista(
+              db, eventoDe(RolDeProtagonista.veterano), Random(1)),
+          isNull);
+    });
+
+    test('con la rotación completa, cada rol saca a alguien de los 10 de '
+        'verdad', () async {
+      final plantilla = await (db.select(db.jugadores)
+            ..where((t) =>
+                t.equipo.equals('DEN') & t.retirado.equals(false)))
+          .get();
+      await guardarRotacion(db, generarRotacionAutomatica(plantilla));
+      final rotacion = await leerRotacion(db);
+      final porId = {for (final j in plantilla) j.id: j};
+      final porNombre = {for (final j in plantilla) j.nombreFicticio: j};
+
+      Jugador jugadorDe(String? nombre) {
+        expect(nombre, isNotNull);
+        return porNombre[nombre]!;
+      }
+
+      for (final rol in RolDeProtagonista.values) {
+        final nombre =
+            await nombreDelProtagonista(db, eventoDe(rol), Random(2));
+        final elegido = jugadorDe(nombre);
+        expect(rotacion.map((f) => f.jugadorId), contains(elegido.id),
+            reason: '$rol nombró a alguien fuera de la rotación de 10');
+      }
+
+      // La estrella: el de más media de los marcados como estrella de
+      // ataque o de defensa (ver `generarRotacionAutomatica`).
+      final estrellas = rotacion
+          .where((f) => f.esEstrellaAtaque || f.esEstrellaDefensa)
+          .map((f) => porId[f.jugadorId]!)
+          .toList();
+      final mediaMaxima =
+          estrellas.map((j) => j.media).reduce((a, b) => a > b ? a : b);
+      final elegidaEstrella = jugadorDe(await nombreDelProtagonista(
+          db, eventoDe(RolDeProtagonista.estrella), Random(3)));
+      expect(elegidaEstrella.media, mediaMaxima);
+
+      // El veterano: el de más edad de la rotación entera.
+      final edadMaxima = rotacion
+          .map((f) => porId[f.jugadorId]!.edad)
+          .reduce((a, b) => a > b ? a : b);
+      final elegidoVeterano = jugadorDe(await nombreDelProtagonista(
+          db, eventoDe(RolDeProtagonista.veterano), Random(4)));
+      expect(elegidoVeterano.edad, edadMaxima);
+
+      // El titular: tiene que ser uno de los 5 marcados como titular.
+      final idsTitulares =
+          rotacion.where((f) => f.esTitular).map((f) => f.jugadorId).toSet();
+      final elegidoTitular = jugadorDe(await nombreDelProtagonista(
+          db, eventoDe(RolDeProtagonista.titular), Random(5)));
+      expect(idsTitulares, contains(elegidoTitular.id));
+    });
+  });
 }

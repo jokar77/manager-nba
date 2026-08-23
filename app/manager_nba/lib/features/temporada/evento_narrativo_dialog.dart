@@ -12,14 +12,24 @@ import '../../shared/pantalla.dart';
 /// cancelar): "no hacer nada" es una de las opciones del catálogo cuando
 /// tiene sentido, así que escaparse tocando fuera sería una respuesta gratis
 /// que no existe en el guion.
+///
+/// [nombreProtagonista] es, si el evento habla de alguien en concreto (ver
+/// `RolDeProtagonista`), el nombre real sacado de tu rotación de 10 — lo
+/// resuelve `nombreDelProtagonista` en `eventos_narrativos_repository.dart`
+/// antes de llamar aquí. Null en los eventos que son del vestuario en
+/// general.
 Future<OpcionDeEvento?> plantearEvento(
   BuildContext context,
-  EventoNarrativo evento,
-) {
+  EventoNarrativo evento, {
+  String? nombreProtagonista,
+}) {
   return showDialog<OpcionDeEvento>(
     context: context,
     barrierDismissible: false,
-    builder: (context) => _DialogoDeEvento(evento: evento),
+    builder: (context) => _DialogoDeEvento(
+      evento: evento,
+      nombreProtagonista: nombreProtagonista,
+    ),
   );
 }
 
@@ -30,12 +40,16 @@ Future<OpcionDeEvento?> plantearEvento(
 Future<void> contarConsecuencia(
   BuildContext context,
   EventoNarrativo evento,
-  OpcionDeEvento opcion,
-) {
+  OpcionDeEvento opcion, {
+  String? nombreProtagonista,
+}) {
+  final eventosIdioma = t(context).eventos;
   return showDialog<void>(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text(t(context).eventos.de(evento.clave).titulo,
+      title: Text(
+          eventosIdioma.conNombre(
+              eventosIdioma.de(evento.clave).titulo, nombreProtagonista),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: titular(Estilo.de(context), tamano: 20)),
@@ -43,8 +57,9 @@ Future<void> contarConsecuencia(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(t(context).eventos.opcion(evento.clave, opcion.clave)
-              .consecuencia),
+          Text(eventosIdioma.conNombre(
+              eventosIdioma.opcion(evento.clave, opcion.clave).consecuencia,
+              nombreProtagonista)),
           if (opcion.efectos.isNotEmpty || opcion.bonusSalarial != 0) ...[
             const SizedBox(height: 16),
             ...opcion.efectos.map((e) => _FilaDeEfecto(efecto: e)),
@@ -69,15 +84,17 @@ Future<void> contarConsecuencia(
 
 class _DialogoDeEvento extends StatelessWidget {
   final EventoNarrativo evento;
+  final String? nombreProtagonista;
 
-  const _DialogoDeEvento({required this.evento});
+  const _DialogoDeEvento({required this.evento, this.nombreProtagonista});
 
   @override
   Widget build(BuildContext context) {
     final compacto = tamanoDe(context).esCompacto;
 
     final e = Estilo.de(context);
-    final guion = t(context).eventos.de(evento.clave);
+    final eventosIdioma = t(context).eventos;
+    final guion = eventosIdioma.de(evento.clave);
 
     return AlertDialog(
       title: Row(
@@ -87,7 +104,8 @@ class _DialogoDeEvento extends StatelessWidget {
           Expanded(
             // Sin mayúsculas: el título de un evento es una frase del
             // guion, y los demás diálogos del juego tampoco las usan.
-            child: Text(guion.titulo,
+            child: Text(
+                eventosIdioma.conNombre(guion.titulo, nombreProtagonista),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: titular(e, tamano: 20)),
@@ -101,7 +119,7 @@ class _DialogoDeEvento extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(guion.texto,
+              Text(eventosIdioma.conNombre(guion.texto, nombreProtagonista),
                   style: TextStyle(fontSize: 14.5, height: 1.4, color: e.texto)),
               const SizedBox(height: 18),
               // Los botones van en el cuerpo y no en `actions` porque son
@@ -113,8 +131,10 @@ class _DialogoDeEvento extends StatelessWidget {
                 (opcion) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: BotonPerfilado(
-                    texto: guion.opciones[opcion.clave]?.etiqueta ??
-                        opcion.clave,
+                    texto: eventosIdioma.conNombre(
+                        guion.opciones[opcion.clave]?.etiqueta ??
+                            opcion.clave,
+                        nombreProtagonista),
                     color: e.texto,
                     alto: 52,
                     // Tal cual está escrita: es una frase, no un rótulo.
@@ -147,6 +167,13 @@ class _FilaDeEfecto extends StatelessWidget {
     final etiqueta = t(context).eventos.etiquetaDeEfecto(efecto.clave) ??
         efecto.etiquetaGuardada ??
         efecto.clave;
+    // Lista 15, punto 2: antes esta fila solo enseñaba una etiqueta y un
+    // icono de flecha, sin ningún número — "vestuario tenso" no dice si eso
+    // es un +1% o un -3%. El porcentaje es el mismo que mueve
+    // `multiplicadorDeEventos`; se redondea porque ya es una magnitud
+    // pequeña a propósito (ver `eventos_narrativos.dart`).
+    final puntos = ((efecto.factor - 1) * 100).round();
+    final magnitud = '${puntos > 0 ? '+' : ''}$puntos%';
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
@@ -161,6 +188,10 @@ class _FilaDeEfecto extends StatelessWidget {
                 style: TextStyle(
                     fontSize: 13.5, fontWeight: FontWeight.w600, color: color)),
           ),
+          const SizedBox(width: 8),
+          Text(magnitud,
+              maxLines: 1,
+              style: cifra(e, tamano: 13, color: color)),
           const SizedBox(width: 8),
           Text(t(context).nPartidos(efecto.partidos),
               maxLines: 1,

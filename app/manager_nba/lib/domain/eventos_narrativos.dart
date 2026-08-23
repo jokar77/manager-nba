@@ -178,6 +178,32 @@ class ContextoDeEvento {
   bool get vaBien => victoriasProyectadas > 50;
 }
 
+/// A qué jugador de tu rotación de 10 (ver `franquicia_repository.dart`) se
+/// refiere un evento, para poder decir su nombre en vez de "un jugador".
+///
+/// Lista 15, punto 2: antes ningún evento nombraba a nadie ("tu mejor
+/// jugador", "un veterano", "uno de tus titulares"), así que la misma frase
+/// podía referirse a cualquiera de la plantilla sin que el usuario supiera
+/// a quién. Resuelto en `eventos_narrativos_repository.dart`, que busca el
+/// nombre real en tu rotación guardada según este rol.
+enum RolDeProtagonista {
+  /// El mejor de tus dos estrellas marcadas, o el de más media si por lo
+  /// que sea no hay ninguna marcada todavía.
+  estrella,
+
+  /// Uno de tus jugadores de 23 años o menos, al azar.
+  joven,
+
+  /// El de más edad de la rotación.
+  veterano,
+
+  /// Uno de tus cinco titulares, al azar.
+  titular,
+
+  /// Cualquiera de los diez de la rotación, sin más criterio.
+  cualquiera,
+}
+
 /// Un evento del catálogo.
 class EventoNarrativo {
   /// Identificador estable. Se guarda para no repetir el mismo evento dos
@@ -192,10 +218,16 @@ class EventoNarrativo {
   /// Cuándo puede salir. Null = en cualquier momento.
   final bool Function(ContextoDeEvento)? cuando;
 
+  /// Si este evento habla de un jugador concreto, qué papel busca en tu
+  /// rotación. Null en los eventos que son del vestuario en general (la
+  /// mayoría) y no de nadie en particular.
+  final RolDeProtagonista? protagonista;
+
   const EventoNarrativo({
     required this.clave,
     required this.opciones,
     this.cuando,
+    this.protagonista,
   });
 
   bool encajaEn(ContextoDeEvento contexto) =>
@@ -341,6 +373,7 @@ final List<EventoNarrativo> catalogoDeEventos = [
 
   EventoNarrativo(
     clave: 'estrella_pide_descanso',
+    protagonista: RolDeProtagonista.estrella,
     cuando: (c) => c.partidosJugados >= 30 && c.partidosJugados <= 65,
     opciones: const [
       OpcionDeEvento(
@@ -370,6 +403,7 @@ final List<EventoNarrativo> catalogoDeEventos = [
 
   EventoNarrativo(
     clave: 'joven_pide_minutos',
+    protagonista: RolDeProtagonista.joven,
     cuando: (c) => c.jugadoresJovenes >= 2 && c.partidosJugados >= 15,
     opciones: const [
       OpcionDeEvento(
@@ -615,6 +649,7 @@ final List<EventoNarrativo> catalogoDeEventos = [
 
   EventoNarrativo(
     clave: 'veterano_de_vestuario',
+    protagonista: RolDeProtagonista.veterano,
     cuando: (c) => c.vaMal || c.partidosJugados >= 40,
     opciones: const [
       OpcionDeEvento(
@@ -690,6 +725,7 @@ final List<EventoNarrativo> catalogoDeEventos = [
 
   EventoNarrativo(
     clave: 'rumor_de_traspaso',
+    protagonista: RolDeProtagonista.titular,
     cuando: (c) => c.partidosJugados >= 20,
     opciones: const [
       OpcionDeEvento(
@@ -764,6 +800,7 @@ final List<EventoNarrativo> catalogoDeEventos = [
 
   EventoNarrativo(
     clave: 'jugador_llega_tarde',
+    protagonista: RolDeProtagonista.cualquiera,
     cuando: (c) => c.partidosJugados >= 10,
     opciones: const [
       OpcionDeEvento(
@@ -898,6 +935,7 @@ final List<EventoNarrativo> catalogoDeEventos = [
 
   EventoNarrativo(
     clave: 'metida_de_pata_en_redes',
+    protagonista: RolDeProtagonista.cualquiera,
     cuando: (c) => c.partidosJugados >= 8,
     opciones: const [
       OpcionDeEvento(

@@ -5,6 +5,9 @@ class EventosIt extends TextosDeEventos {
   const EventosIt();
 
   @override
+  String get jugadorGenerico => 'il giocatore';
+
+  @override
   Map<String, String> get etiquetasDeEfecto => const {
     'buen_rollo': 'Bel clima nello spogliatoio',
     'piernas_cansadas': 'Gambe pesanti',
@@ -135,7 +138,7 @@ class EventosIt extends TextosDeEventos {
       },
     ),
     'estrella_pide_descanso': TextoDeEvento(
-      titulo: 'Il tuo giocatore migliore chiede riposo',
+      titulo: '{jugador} chiede riposo',
       texto:
           'Gioca con dei fastidi da novembre. Non è infortunato, ma '
           'chiede di saltare qualche partita per arrivare intero a fine '
@@ -154,9 +157,9 @@ class EventosIt extends TextosDeEventos {
       },
     ),
     'joven_pide_minutos': TextoDeEvento(
-      titulo: 'Un giovane chiede minuti',
+      titulo: '{jugador} chiede minuti',
       texto:
-          'Uno dei tuoi ragazzi è incollato alla panchina da mezza '
+          '{jugador} è incollato alla panchina da mezza '
           'stagione. Il suo agente ha chiamato: o gioca, o l’estate '
           'prossima si cerca sistemazione altrove.',
       opciones: {
@@ -311,11 +314,11 @@ class EventosIt extends TextosDeEventos {
       },
     ),
     'veterano_de_vestuario': TextoDeEvento(
-      titulo: 'Un veterano si offre di parlare al gruppo',
+      titulo: '{jugador} si offre di parlare al gruppo',
       texto:
-          'Il più anziano della rosa ti chiede cinque minuti con la '
-          'squadra, senza staff tecnico nella stanza. Dice che certe cose '
-          'si dicono meglio tra giocatori.',
+          '{jugador}, il più anziano della rosa, ti chiede cinque minuti '
+          'con la squadra, senza staff tecnico nella stanza. Dice che '
+          'certe cose si dicono meglio tra giocatori.',
       opciones: {
         'dejales_solos': TextoDeOpcion(
           'Lasciali soli',
@@ -354,10 +357,10 @@ class EventosIt extends TextosDeEventos {
 
     // --- Segunda tanda -------------------------------------------
     'rumor_de_traspaso': TextoDeEvento(
-      titulo: 'Ha letto il suo nome tra le voci di mercato',
+      titulo: '{jugador} ha letto il suo nome tra le voci di mercato',
       texto:
-          'Un giornalista ha scritto che stai ascoltando offerte per uno '
-          'dei tuoi titolari. Te lo chiede in faccia, davanti a mezzo '
+          'Un giornalista ha scritto che stai ascoltando offerte per '
+          '{jugador}. Te lo chiede in faccia, davanti a mezzo '
           'spogliatoio.',
       opciones: {
         'prometerle_que_se_queda': TextoDeOpcion(
@@ -403,7 +406,7 @@ class EventosIt extends TextosDeEventos {
       },
     ),
     'jugador_llega_tarde': TextoDeEvento(
-      titulo: 'Uno arriva tardi un’altra volta',
+      titulo: '{jugador} arriva tardi un’altra volta',
       texto:
           'Terza volta questo mese che si presenta ad allenamento già '
           'iniziato. Le prime due hai lasciato correre. Questa l’hanno '
@@ -483,7 +486,7 @@ class EventosIt extends TextosDeEventos {
       },
     ),
     'metida_de_pata_en_redes': TextoDeEvento(
-      titulo: 'Un giocatore l’ha combinata sui social',
+      titulo: '{jugador} l’ha combinata sui social',
       texto:
           'Ha scritto alle tre di notte che gli arbitri ce l’hanno con '
           'lui. L’ha cancellato in venti minuti; a quel punto lo avevano '

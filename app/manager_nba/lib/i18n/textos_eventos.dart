@@ -99,4 +99,17 @@ abstract class TextosDeEventos {
   /// versión anterior puede traer claves que ya no existen. Quien lo llama
   /// tiene una etiqueta de reserva para ese caso.
   String? etiquetaDeEfecto(String clave) => etiquetasDeEfecto[clave];
+
+  /// La palabra que sustituye al hueco `{jugador}` del guion cuando no se ha
+  /// podido resolver a nadie en concreto de tu rotación (ver
+  /// `nombreDelProtagonista` en `eventos_narrativos_repository.dart`) — en la
+  /// práctica no debería pasar nunca en una partida real, solo en un test que
+  /// monta un evento sin rotación.
+  String get jugadorGenerico;
+
+  /// Sustituye el hueco `{jugador}` de [texto] por [nombre]. Si el evento no
+  /// habla de nadie en concreto, [texto] no trae ese hueco y esto no cambia
+  /// nada.
+  String conNombre(String texto, String? nombre) =>
+      texto.replaceAll('{jugador}', nombre ?? jugadorGenerico);
 }

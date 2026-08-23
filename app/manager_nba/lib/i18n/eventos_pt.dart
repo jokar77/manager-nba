@@ -6,6 +6,9 @@ class EventosPt extends TextosDeEventos {
   const EventosPt();
 
   @override
+  String get jugadorGenerico => 'o jogador';
+
+  @override
   Map<String, String> get etiquetasDeEfecto => const {
     'buen_rollo': 'Clima bom no vestiário',
     'piernas_cansadas': 'Pernas pesadas',
@@ -136,7 +139,7 @@ class EventosPt extends TextosDeEventos {
       },
     ),
     'estrella_pide_descanso': TextoDeEvento(
-      titulo: 'Seu melhor jogador pede descanso',
+      titulo: '{jugador} pede descanso',
       texto:
           'Ele joga com dores desde novembro. Não está machucado, mas '
           'pede para ficar de fora de alguns jogos e chegar inteiro no '
@@ -155,9 +158,9 @@ class EventosPt extends TextosDeEventos {
       },
     ),
     'joven_pide_minutos': TextoDeEvento(
-      titulo: 'Um garoto quer minutos',
+      titulo: '{jugador} quer minutos',
       texto:
-          'Um dos seus moleques passou meia temporada grudado no banco. '
+          '{jugador} passou meia temporada grudado no banco. '
           'O empresário ligou: ou ele joga, ou no verão que vem procura a '
           'vida em outro lugar.',
       opciones: {
@@ -308,11 +311,11 @@ class EventosPt extends TextosDeEventos {
       },
     ),
     'veterano_de_vestuario': TextoDeEvento(
-      titulo: 'Um veterano se oferece para falar com o grupo',
+      titulo: '{jugador} se oferece para falar com o grupo',
       texto:
-          'O mais rodado do elenco pede cinco minutos com o time, sem a '
-          'comissão técnica na sala. Diz que tem coisa que se resolve '
-          'melhor entre jogadores.',
+          '{jugador}, o mais rodado do elenco, pede cinco minutos com o '
+          'time, sem a comissão técnica na sala. Diz que tem coisa que se '
+          'resolve melhor entre jogadores.',
       opciones: {
         'dejales_solos': TextoDeOpcion(
           'Deixe eles sozinhos',
@@ -350,10 +353,10 @@ class EventosPt extends TextosDeEventos {
 
     // --- Segunda tanda -------------------------------------------
     'rumor_de_traspaso': TextoDeEvento(
-      titulo: 'Ele leu o nome dele nos rumores',
+      titulo: '{jugador} leu o nome dele nos rumores',
       texto:
-          'Um jornalista publicou que você está ouvindo propostas por um '
-          'dos seus titulares. Ele pergunta na sua cara, com meio '
+          'Um jornalista publicou que você está ouvindo propostas por '
+          '{jugador}. Ele pergunta na sua cara, com meio '
           'vestiário ali do lado.',
       opciones: {
         'prometerle_que_se_queda': TextoDeOpcion(
@@ -399,7 +402,7 @@ class EventosPt extends TextosDeEventos {
       },
     ),
     'jugador_llega_tarde': TextoDeEvento(
-      titulo: 'Um deles chegou atrasado de novo',
+      titulo: '{jugador} chegou atrasado de novo',
       texto:
           'Terceira vez no mês que ele aparece com o treino já '
           'começado. Nas duas primeiras você deixou passar. Essa aqui todo '
@@ -477,7 +480,7 @@ class EventosPt extends TextosDeEventos {
       },
     ),
     'metida_de_pata_en_redes': TextoDeEvento(
-      titulo: 'Um jogador se enrolou nas redes',
+      titulo: '{jugador} se enrolou nas redes',
       texto:
           'Postou às três da manhã que a arbitragem está pegando no pé '
           'dele. Apagou em vinte minutos; a essa altura todo mundo já '
