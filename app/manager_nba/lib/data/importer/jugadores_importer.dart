@@ -21,14 +21,17 @@ const _rutaAssetDatosReales = 'assets/data/datos_reales.json';
 /// [anadirJugadoresQueFaltenDelDataset]). Si se queda desfasado no se rompe
 /// nada, simplemente el relleno deja de dispararse — por eso hay un test
 /// que lo compara con el asset de verdad y falla si no cuadran.
-const jugadoresUtilizablesDelDataset = 586;
+const jugadoresUtilizablesDelDataset = 646;
 
 /// Campos que deben venir informados para poder simular con un jugador.
-/// Unos ~59 jugadores del dataset (prospectos de un draft aún no jugado,
-/// ej. Cameron Boozer) solo traen `media`/`potencial`/`edad_retiro` y
-/// tienen el resto de atributos y estadísticas a null: se descartan del
-/// import porque el motor de simulación no tiene con qué calcular su
-/// aportación a un partido.
+///
+/// La clase de draft 2026 (60 prospectos, Lista 15 punto 1) llegó primero
+/// sin esto — solo traían `media`/`potencial`/`edad_retiro` de un mock
+/// draft, y se descartaban del import por no tener con qué calcular su
+/// aportación a un partido — y se completó a mano (ver `docs/plan.md`) a
+/// partir de un CSV con las medias reales de ataque/defensa; lo que el CSV
+/// no traía (tiro3, pts/ast/trb por partido) se estimó a partir de esas dos
+/// y del puesto, a falta de partidos NBA de verdad que medir.
 const _camposObligatorios = [
   'atr_tiro3',
   'atr_ataque',

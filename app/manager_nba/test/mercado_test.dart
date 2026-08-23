@@ -243,12 +243,25 @@ void main() {
             ..orderBy([(t) => OrderingTerm.desc(t.media)]))
           .get();
       final estrella = delBoston.first;
-      // Se deja al equipo pegado al tope con el resto de sueldos, de modo
-      // que renovarle a él no quepa de ninguna manera.
+      // Se deja al equipo muy por encima del tope con el resto de sueldos —
+      // no solo pegado a él — para que no quepa de ninguna manera por
+      // grande que sea la plantilla ni cuánto le ofrezcan a la estrella.
+      //
+      // Con 12M por cabeza esto dependía de CUÁNTOS jugadores tuviera BOS:
+      // pegado al tope con la plantilla de entonces, pero con margen real en
+      // cuanto la plantilla creciera (como pasó al completar la clase de
+      // draft 2026 con datos reales — Lista 15, docs/plan.md). Ese margen no
+      // rompía solo BOS: `resolverVencimientosDeLaCpu` reparte un único
+      // `Random` entre las 29 CPU antes de llegar aquí, así que un margen
+      // que a veces alcanza y a veces no deja el resultado a merced de en
+      // qué orden exacto aceptan o rechazan los otros 28 equipos, y eso
+      // cambia con cualquier retoque del dataset, no solo con la plantilla
+      // de Boston. Con la plantilla muy por encima del tope ya no importa:
+      // no cabe pase lo que pase antes en el reparto.
       await (db.update(db.jugadores)
             ..where((t) =>
                 t.equipo.equals('BOS') & t.id.equals(estrella.id).not()))
-          .write(const JugadoresCompanion(salario: Value(12000000)));
+          .write(const JugadoresCompanion(salario: Value(20000000)));
       await (db.update(db.jugadores)..where((t) => t.id.equals(estrella.id)))
           .write(const JugadoresCompanion(
               salario: Value(1000000), aniosContrato: Value(1)));

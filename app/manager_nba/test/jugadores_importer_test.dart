@@ -21,14 +21,23 @@ void main() {
   });
 
   test(
-      'importa el dataset real, descartando jugadores sin atributos '
-      '(prospectos de draft aún no jugado)', () async {
+      'la clase de draft 2026 ya no se descarta: tiene atributos reales, '
+      'no solo el mock draft', () async {
+    // Hasta la sesión del 24 de agosto de 2026 los ~60 prospectos de la
+    // clase de draft 2026 solo traían `media`/`potencial` de un mock
+    // draft; sin atr_tiro3/atr_ataque/atr_defensa/pts_pg/ast_pg/trb_pg/
+    // factor_longevidad, `_camposObligatorios` los descartaba enteros del
+    // import. Eso tapaba sin querer un bug de Rising Stars (ver
+    // docs/plan.md, Lista 15 punto 1): al arreglar la clasificación de
+    // rookies, el juego se quedó sin ningún novato de verdad jugable.
+    // Se completaron con datos reales de un CSV, y ahora entran todos.
     await importarJugadoresSiHaceFalta(db);
     final filas = await db.select(db.jugadores).get();
-
-    // El JSON trae 645 jugadores; ~59 son prospectos sin stats reales.
-    expect(filas.length, greaterThan(560));
-    expect(filas.length, lessThan(645));
+    final boozer = filas.where((j) => j.nombreReal == 'Cameron Boozer');
+    expect(boozer, isNotEmpty,
+        reason: 'antes se descartaba por no tener atributos reales');
+    expect(boozer.first.draftYear, 2026);
+    expect(boozer.first.temporadasPrevias, 0);
   });
 
   test('las estrellas que se perdieron la temporada entera por lesión '
