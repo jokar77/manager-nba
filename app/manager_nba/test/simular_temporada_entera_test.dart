@@ -284,4 +284,65 @@ void main() {
       );
     });
   });
+
+  testWidgets('«temporada entera» no juega el play-in ni los playoffs', (
+    tester,
+  ) async {
+    // La regla: la simulación de temporada es de la LIGA REGULAR. El
+    // play-in y el bracket se juegan desde el panel de playoffs, uno a
+    // uno o de golpe, pero siempre porque el jugador lo pide — nunca de
+    // rebote al simular el año.
+    permisos = Permisos();
+
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: CalendarioScreen(db: db, equipoUsuario: 'DEN', random: Random(7)),
+      ),
+    );
+    await _esperarA(tester, find.text('1 SEMANA'));
+
+    Future<int> jugados() async {
+      final r = await (db.select(
+        db.resultadoTemporada,
+      )..where((t) => t.equipo.equals('DEN'))).getSingle();
+      return r.victorias + r.derrotas;
+    }
+
+    await tester.tap(find.text('TEMPORADA ENTERA'));
+    await tester.runAsync(() async {
+      for (var i = 0; i < 400; i++) {
+        // Si un evento para la simulación, se le contesta «seguir». Es
+        // parte de lo que se comprueba: simular el año no se salta las
+        // decisiones del camino.
+        final seguir = find.text('SEGUIR SIMULANDO');
+        if (seguir.evaluate().isNotEmpty) await tester.tap(seguir);
+        await Future<void>.delayed(const Duration(milliseconds: 30));
+        await tester.pump();
+      }
+    });
+    await tester.pumpAndSettle();
+
+    expect(
+      await jugados(),
+      greaterThan(40),
+      reason: 'tiene que haber simulado media temporada larga',
+    );
+
+    // Y ni un solo partido de postemporada. Da igual dónde se haya
+    // quedado la liga regular: lo que no puede es haber tocado el cuadro.
+    final series = await db.select(db.seriesPlayoffs).get();
+    for (final s in series) {
+      expect(
+        s.victoriasA + s.victoriasB,
+        0,
+        reason:
+            'ronda ${s.ronda}: simular la temporada no puede jugar la '
+            'postemporada por su cuenta',
+      );
+    }
+  });
 }

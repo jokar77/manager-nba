@@ -28,6 +28,64 @@ https://jokar77.github.io/manager-nba/
 - PowerShell 5.1 **no admite `&&`**; el Bash de Git sí. Los dos están
   disponibles y se usa el que convenga.
 
+## PENDIENTE / LEAD: «temporada entera» se planta en el partido 53 de 82
+
+**Sin resolver.** Encontrado el 23 de agosto de 2026 y anotado aquí porque
+es lo más gordo que hay abierto ahora mismo.
+
+Al pulsar «Temporada entera» en el calendario, la simulación llega al
+partido **53 de 82** y se para sola. **No hay ningún diálogo esperando**
+—se comprobó volcando todos los textos en pantalla en ese momento: solo se
+ve el calendario— y `_simulando` vuelve a false, o sea que
+`simularHastaConDialogo` ha retornado por su cuenta.
+
+Hay que volver a darle al botón para seguir. No es un cuelgue, pero sí es
+"el botón no hace lo que dice".
+
+### Lo que se descartó
+
+- **No es el objetivo.** `_simularTemporadaEntera` apunta a
+  `_partidos.last.fecha`, y `leerPartidos` ordena por fecha ascendente, así
+  que el destino es el último partido de verdad.
+- **No es el diálogo de la fecha límite.** Se llegó a sospechar y se probó
+  contestándole «SEGUIR SIMULANDO» desde el test; el finder no encuentra
+  nada porque no hay diálogo.
+- **No es la etapa sin partidos.** La hipótesis era que el parón del
+  All-Star dejaba un tramo vacío y la condición
+  `quedaCamino && tramo.simulados.isNotEmpty` cortaba el lote. Se probó a
+  adelantar el cursor a `metaParcial` cuando el tramo no avanza: **el
+  resultado no cambia**, se sigue parando en 53. El arreglo se revirtió por
+  eso — no se deja en el árbol un cambio que no arregla nada.
+
+### Por dónde seguir
+
+Instrumentar las salidas de `simularHastaConDialogo` (`lib/features/
+calendario/simulacion_ui.dart`, hay dos `break` sueltos más los de
+`!context.mounted`) y ver por cuál sale de verdad. Quedan por mirar la rama
+de ofertas entrantes y `_avisarSiHuboAllStar`.
+
+**Ojo con los tests de esta zona**: los rótulos de botones y de botones de
+diálogo van en MAYÚSCULAS (`mayus` en `shared/estilo.dart`), así que
+`find.text('Seguir simulando')` no encuentra nada. Es
+`find.text('SEGUIR SIMULANDO')`. Se perdió un rato con eso.
+
+## Lo que sí se comprobó de «temporada entera» (23 de agosto de 2026)
+
+Lo que pidió el usuario, con test cada cosa:
+
+1. **Para en los eventos.** Ya funcionaba: `simularHastaConDialogo` avanza
+   en etapas de una semana y en cada una mira ofertas entrantes, eventos de
+   vestuario, All-Star, Copa y fechas límite. Lo de las fechas límite abre
+   diálogo y espera respuesta.
+2. **No juega el play-in ni los playoffs.** Test nuevo: se simula el año y
+   se comprueba que **ninguna serie del cuadro tiene un solo partido
+   jugado**. El play-in y el bracket salen del panel de playoffs, siempre
+   porque el jugador lo pide.
+
+### Estado
+
+`flutter analyze` limpio en los dos paquetes. **671 tests en verde**.
+
 ## La barra del calendario, reordenada (23 de agosto de 2026)
 
 Antes: `[Simular 1 partido] [1 semana] [1 mes]`.
