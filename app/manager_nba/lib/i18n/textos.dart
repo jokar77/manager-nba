@@ -251,7 +251,6 @@ abstract class Textos {
   /// usa el propio calendario.
   List<String> get diasSemanaAbrev;
 
-  String get unPartido;
   String get simularUnPartido;
   String get unaSemana;
   String get simularUnaSemana;
@@ -375,17 +374,10 @@ abstract class Textos {
   String get alinearAutomaticamenteBtn;
   String get pestanaAlineacion;
   String get pestanaEstadisticas;
-  String alineacionDeEquipo(String equipo);
   String get tusPicksDeDraft;
   String get empezarTemporadaBtn;
   String get guardarRotacionBtn;
   String get elegirJugadorPlaceholder;
-  String huecoConJugador(
-    String etiqueta,
-    String nombre,
-    String posicion,
-    int media,
-  );
   String lesionConDetalle(String motivo, int partidos, String fecha);
   String get fueraDeSusDosPosiciones;
   String get sinPartidosJugadosTemporada;
@@ -404,7 +396,6 @@ abstract class Textos {
 
   String get sinPicksPropios;
   String get traspasadoATiPorOtroEquipo;
-  String get ataqueYDefensaTitulo;
   String get quintetoInicial;
   String get rotacionCompleta;
 
@@ -452,13 +443,6 @@ abstract class Textos {
   String teQuedanBajoElTope(String espacio, String tope);
   String get seAcaboLaNegociacion;
   String ofrecerConN(int n);
-  String subtituloRenovacion(
-    String posicion,
-    int edad,
-    int media,
-    String cobraba,
-    String pide,
-  );
   String get cerramosElTraspaso;
   String seVanYLlegan(String piden, String ofrecen);
   String get tituloOfertasRecibidasScreen;
@@ -606,7 +590,6 @@ abstract class Textos {
   String eleccionNumero(int n);
   String get teTocaElegir;
   String get ordenarPorLabel;
-  String posicionEdadMedia(String posicion, int edad, int media);
 
   String cuartosCopaSeSiembranAviso(String nbaCup);
   String get finalSeJuegaDesdeCalendarioAviso;
@@ -765,7 +748,6 @@ abstract class Textos {
   /// ese tipo (ver `ofertasDe`), así que el número va por delante.
   String sinPatrocinioFirmado(int ofertas);
   String margenPatrocinio(String importe);
-  String get totalPatrociniosLabel;
 
   // --- Patrocinadores bloqueados (versión gratuita) ------------------------
   /// Por qué salen los cuatro apagados y qué hacer para abrirlos.

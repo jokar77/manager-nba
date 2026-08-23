@@ -269,8 +269,6 @@ class TextosEs extends Textos {
   @override
   List<String> get diasSemanaAbrev => ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
   @override
-  String get unPartido => '1 partido';
-  @override
   String get simularUnPartido => 'Simular 1 partido';
   @override
   String get unaSemana => '1 semana';
@@ -510,8 +508,6 @@ class TextosEs extends Textos {
   @override
   String get pestanaEstadisticas => 'Estadísticas';
   @override
-  String alineacionDeEquipo(String equipo) => 'Alineación: $equipo';
-  @override
   String get tusPicksDeDraft => 'Tus picks de draft';
   @override
   String get empezarTemporadaBtn => 'Empezar temporada';
@@ -519,13 +515,6 @@ class TextosEs extends Textos {
   String get guardarRotacionBtn => 'Guardar rotación';
   @override
   String get elegirJugadorPlaceholder => '— elegir jugador —';
-  @override
-  String huecoConJugador(
-    String etiqueta,
-    String nombre,
-    String posicion,
-    int media,
-  ) => '$etiqueta: $nombre ($posicion, media $media)';
   @override
   String lesionConDetalle(String motivo, int partidos, String fecha) =>
       '$motivo ($partidos partidos) — vuelve el $fecha — jugará el suplente mientras tanto';
@@ -554,8 +543,6 @@ class TextosEs extends Textos {
       'No te queda ninguna elección propia: las has traspasado todas.';
   @override
   String get traspasadoATiPorOtroEquipo => 'Traspasado a ti por otro equipo';
-  @override
-  String get ataqueYDefensaTitulo => 'Ataque y defensa';
   @override
   String get quintetoInicial => 'Quinteto inicial';
   @override
@@ -665,14 +652,6 @@ class TextosEs extends Textos {
   String get seAcaboLaNegociacion => 'Se acabó\nla negociación';
   @override
   String ofrecerConN(int n) => 'Ofrecer ($n)';
-  @override
-  String subtituloRenovacion(
-    String posicion,
-    int edad,
-    int media,
-    String cobraba,
-    String pide,
-  ) => '$posicion · $edad años · media $media\nCobraba $cobraba · pide $pide';
   @override
   String get cerramosElTraspaso => '¿Cerramos el traspaso?';
   @override
@@ -972,9 +951,6 @@ class TextosEs extends Textos {
   String get teTocaElegir => '¡Te toca elegir!';
   @override
   String get ordenarPorLabel => 'Ordenar por: ';
-  @override
-  String posicionEdadMedia(String posicion, int edad, int media) =>
-      '$posicion · $edad años · media $media';
 
   @override
   String cuartosCopaSeSiembranAviso(String nbaCup) =>
@@ -1289,8 +1265,6 @@ class TextosEs extends Textos {
       ofertas == 1 ? 'Sin firmar · 1 oferta' : 'Sin firmar ·  ofertas';
   @override
   String margenPatrocinio(String importe) => '+$importe de margen salarial';
-  @override
-  String get totalPatrociniosLabel => 'Margen total este año';
   @override
   String get patrocinadoresBloqueados =>
       'Los patrocinadores son de la versión completa. Mira un vídeo y los tienes los cuatro durante esta temporada.';

@@ -46,9 +46,9 @@ void main() {
     await crearFranquicia(db, 'DEN');
     await importarEntrenadoresSiHaceFalta(db);
     await asignarEntrenadoresQueFalten(db);
-    final plantilla = await (db.select(db.jugadores)
-          ..where((t) => t.equipo.equals('DEN')))
-        .get();
+    final plantilla = await (db.select(
+      db.jugadores,
+    )..where((t) => t.equipo.equals('DEN'))).get();
     await guardarRotacion(db, generarRotacionAutomatica(plantilla));
   });
 
@@ -62,14 +62,17 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
 
-    await tester.pumpWidget(MaterialApp(
-      home: HomeHubScreen(db: db, equipo: 'DEN', random: Random(1)),
-    ));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: HomeHubScreen(db: db, equipo: 'DEN', random: Random(1)),
+      ),
+    );
     await _esperarA(tester, find.text('SIMULAR 1 PARTIDO'));
   }
 
-  testWidgets('el botón está en el menú, junto al de un partido',
-      (tester) async {
+  testWidgets('el botón está en el menú, junto al de un partido', (
+    tester,
+  ) async {
     permisos = Permisos();
     await abrirHub(tester);
 
@@ -77,13 +80,17 @@ void main() {
     expect(find.byIcon(Icons.fast_forward), findsOneWidget);
   });
 
-  testWidgets('en la versión gratuita sale con candado y no responde',
-      (tester) async {
+  testWidgets('en la versión gratuita sale con candado y no responde', (
+    tester,
+  ) async {
     permisos = Permisos(edicion: Edicion.gratis);
     await abrirHub(tester);
 
-    expect(find.text('TEMPORADA ENTERA'), findsOneWidget,
-        reason: 'se enseña bloqueado, no se esconde: es lo que se vende');
+    expect(
+      find.text('TEMPORADA ENTERA'),
+      findsOneWidget,
+      reason: 'se enseña bloqueado, no se esconde: es lo que se vende',
+    );
     expect(find.byIcon(Icons.lock_outline), findsOneWidget);
     expect(find.byIcon(Icons.fast_forward), findsNothing);
 
@@ -101,14 +108,15 @@ void main() {
     expect(find.byIcon(Icons.lock_outline), findsNothing);
   });
 
-  testWidgets('tocarlo lleva al Calendario y allí simula el año entero',
-      (tester) async {
+  testWidgets('tocarlo lleva al Calendario y allí simula el año entero', (
+    tester,
+  ) async {
     permisos = Permisos();
 
     Future<int> jugados() async {
-      final r = await (db.select(db.resultadoTemporada)
-            ..where((t) => t.equipo.equals('DEN')))
-          .getSingle();
+      final r = await (db.select(
+        db.resultadoTemporada,
+      )..where((t) => t.equipo.equals('DEN'))).getSingle();
       return r.victorias + r.derrotas;
     }
 
@@ -139,24 +147,141 @@ void main() {
     });
     await tester.pumpAndSettle();
 
-    expect(await jugados(), greaterThan(0),
-        reason: 'entrar al calendario con la intención de simular el año '
-            'tiene que empezar a simular solo');
+    expect(
+      await jugados(),
+      greaterThan(0),
+      reason:
+          'entrar al calendario con la intención de simular el año '
+          'tiene que empezar a simular solo',
+    );
   });
 
   testWidgets('entrar al calendario a mano NO simula nada', (tester) async {
     permisos = Permisos();
 
-    await tester.pumpWidget(MaterialApp(
-      home: CalendarioScreen(
-          db: db, equipoUsuario: 'DEN', random: Random(1)),
-    ));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: CalendarioScreen(db: db, equipoUsuario: 'DEN', random: Random(1)),
+      ),
+    );
     await _esperarA(tester, find.text('1 SEMANA'));
 
-    final r = await (db.select(db.resultadoTemporada)
-          ..where((t) => t.equipo.equals('DEN')))
-        .getSingle();
-    expect(r.victorias + r.derrotas, 0,
-        reason: 'abrir el calendario para mirarlo no puede jugarte el año');
+    final r = await (db.select(
+      db.resultadoTemporada,
+    )..where((t) => t.equipo.equals('DEN'))).getSingle();
+    expect(
+      r.victorias + r.derrotas,
+      0,
+      reason: 'abrir el calendario para mirarlo no puede jugarte el año',
+    );
+  });
+
+  group('la barra de saltos del calendario', () {
+    Future<void> abrirCalendario(WidgetTester tester) async {
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: CalendarioScreen(
+            db: db,
+            equipoUsuario: 'DEN',
+            random: Random(1),
+          ),
+        ),
+      );
+      await _esperarA(tester, find.text('1 SEMANA'));
+    }
+
+    testWidgets('ya no lleva "1 partido": eso se hace desde el menú', (
+      tester,
+    ) async {
+      permisos = Permisos();
+      await abrirCalendario(tester);
+
+      expect(find.text('1 PARTIDO'), findsNothing);
+      expect(
+        find.text('SIMULAR 1 PARTIDO'),
+        findsNothing,
+        reason: 'el mismo botón dos veces le quitaba sitio al calendario',
+      );
+    });
+
+    testWidgets('son tres saltos y «temporada» va a la derecha del todo', (
+      tester,
+    ) async {
+      permisos = Permisos();
+      await abrirCalendario(tester);
+
+      final semana = tester.getCenter(find.text('1 SEMANA')).dx;
+      final mes = tester.getCenter(find.text('1 MES')).dx;
+      final temporada = tester.getCenter(find.text('TEMPORADA ENTERA')).dx;
+
+      // De menos a más, y el salto más gordo el último: es el único que
+      // puede acabar el año de un toque.
+      expect(semana, lessThan(mes));
+      expect(mes, lessThan(temporada));
+    });
+
+    testWidgets('en la gratuita sale con candado y no simula nada', (
+      tester,
+    ) async {
+      permisos = Permisos(edicion: Edicion.gratis);
+      await abrirCalendario(tester);
+
+      // Se enseña igualmente: esconderlo dejaría sin ver lo que se ofrece.
+      expect(find.text('TEMPORADA ENTERA'), findsOneWidget);
+      expect(find.byIcon(Icons.lock_outline), findsOneWidget);
+
+      await tester.tap(find.text('TEMPORADA ENTERA'));
+      await tester.pumpAndSettle();
+
+      final r = await (db.select(
+        db.resultadoTemporada,
+      )..where((t) => t.equipo.equals('DEN'))).getSingle();
+      expect(r.victorias + r.derrotas, 0, reason: 'bloqueado es bloqueado');
+    });
+
+    testWidgets('con la versión completa, el botón simula el año entero', (
+      tester,
+    ) async {
+      permisos = Permisos();
+      await abrirCalendario(tester);
+      expect(find.byIcon(Icons.fast_forward), findsOneWidget);
+
+      Future<int> jugados() async {
+        final r = await (db.select(
+          db.resultadoTemporada,
+        )..where((t) => t.equipo.equals('DEN'))).getSingle();
+        return r.victorias + r.derrotas;
+      }
+
+      expect(await jugados(), 0);
+      await tester.tap(find.text('TEMPORADA ENTERA'));
+
+      // Con esperas de VERDAD, no solo adelantando el reloj falso: la
+      // simulación es asíncrona y necesita tiempo real para avanzar.
+      await tester.runAsync(() async {
+        for (var i = 0; i < 200; i++) {
+          if (await jugados() > 20) return;
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          await tester.pump();
+        }
+      });
+      await tester.pumpAndSettle();
+
+      // Veinte partidos y no los 82: lo que se prueba aquí es que el botón
+      // dispara la simulación del AÑO y no un partido suelto, y para eso
+      // basta verla arrancar y correr. Esperar al último partido serían
+      // veinte segundos de test sin comprobar nada nuevo.
+      expect(
+        await jugados(),
+        greaterThan(20),
+        reason:
+            'el botón del calendario tiene que simular el año entero, '
+            'no un partido',
+      );
+    });
   });
 }

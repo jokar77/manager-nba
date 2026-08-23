@@ -11,6 +11,7 @@ import '../../data/database/app_database.dart';
 import '../../domain/calendario_repository.dart';
 import '../../domain/equipos_info.dart';
 import '../../domain/fin_temporada_repository.dart';
+import '../../domain/permisos.dart';
 import '../../domain/playoffs_repository.dart';
 import '../../domain/nueva_temporada_repository.dart';
 import '../../domain/tipo_evento_temporada.dart';
@@ -77,6 +78,33 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
   /// vez que el jugador regresara al calendario.
   bool _yaSimuloLaTemporada = false;
 
+  /// En qué temporada va la partida. Solo se usa para el permiso de
+  /// «Temporada»; hasta que se carga, ese botón sale bloqueado, que es el
+  /// lado seguro.
+  int? _temporadaActual;
+
+  /// Si esta partida puede simular el año de golpe. En la versión gratuita
+  /// no: es uno de los tres bloqueos (ver `permisos.dart`).
+  bool get _puedeTemporadaEntera =>
+      _temporadaActual != null &&
+      permisos.puede(
+        Funcion.simularTemporadaEntera,
+        temporada: _temporadaActual,
+      );
+
+  /// Simula lo que quede de temporada regular, sobre el calendario y con su
+  /// barra de progreso.
+  ///
+  /// Es lo mismo que hace el botón del menú al traerte aquí — de hecho
+  /// [_simularTemporadaSiTocaAlAbrir] llama a esto — pero desde el propio
+  /// calendario, que es donde uno está cuando quiere acabar el año.
+  void _simularTemporadaEntera() {
+    if (_partidos.isEmpty || _temporadaCompleta) return;
+    if (proximaFechaPendiente(_partidos) == null) return;
+    _yaSimuloLaTemporada = true;
+    _simularHasta(_partidos.last.fecha);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -90,16 +118,13 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
   /// falta el calendario para saber hasta qué día hay que llegar.
   void _simularTemporadaSiTocaAlAbrir() {
     if (!widget.simularTemporadaAlAbrir || _yaSimuloLaTemporada) return;
-    if (_partidos.isEmpty || _temporadaCompleta) return;
-    final ultimo = _partidos.last.fecha;
-    if (proximaFechaPendiente(_partidos) == null) return;
-
     _yaSimuloLaTemporada = true;
     // Tras el primer fotograma: si se lanzara en mitad del build, el
     // primer `setState` de la simulación caería sobre un widget que
     // todavía se está montando.
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => _simularHasta(ultimo));
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _simularTemporadaEntera(),
+    );
   }
 
   @override
@@ -149,12 +174,17 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
         await temporadaRegularCompleta(widget.db, widget.equipoUsuario);
     final series =
         temporadaCompleta ? await leerSeries(widget.db) : <Serie>[];
+    // El número de temporada solo hace falta para saber si «Temporada»
+    // está desbloqueado: el vídeo recompensado abre esa función durante una
+    // temporada y solo esa (ver `permisos.dart`).
+    final temporada = await leerTemporada(widget.db);
     if (!mounted) return;
     setState(() {
       _partidos = partidos;
       _eventos = eventos;
       _temporadaCompleta = temporadaCompleta;
       _seriesPlayoffs = series;
+      _temporadaActual = temporada.numero;
       _cargando = false;
     });
     _campeonPlayoffsYaVisto = _campeonDePlayoffs(series) != null;
@@ -388,13 +418,12 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
                 children: [
                 _BotonesAvanceRapido(
                   habilitado: !_simulando && proximoPendiente != null,
-                  onSimular1Partido: proximoPendiente == null
-                      ? null
-                      : () => _simularHasta(proximoPendiente),
                   onSimular1Semana: () => _simularHasta(
                       fechaActualDeLaTemporada(_partidos).add(const Duration(days: 7))),
                   onSimular1Mes: () => _simularHasta(
                       fechaActualDeLaTemporada(_partidos).add(const Duration(days: 30))),
+                  onSimularTemporada: _simularTemporadaEntera,
+                  puedeTemporada: _puedeTemporadaEntera,
                 ),
                 if (_simulando)
                   Padding(
@@ -483,23 +512,40 @@ String _descripcionEvento(Textos textos, String tipo) {
   };
 }
 
+/// Los saltos de simulación del calendario, de menos a más: una semana, un
+/// mes y lo que quede de temporada.
+///
+/// **Ya no está "Simular 1 partido"**, y no es un olvido: el partido
+/// siguiente se simula desde la tarjeta del menú, que además enseña contra
+/// quién juegas. Tenerlo también aquí era el mismo botón dos veces, y le
+/// quitaba sitio a los que sí son propios del calendario.
+///
+/// El orden es de menos a más y **«Temporada» va a la derecha del todo**:
+/// es el salto más gordo y el único que puede acabar el año de un toque,
+/// así que no conviene tenerlo pegado a los otros dos.
 class _BotonesAvanceRapido extends StatelessWidget {
   final bool habilitado;
-  final VoidCallback? onSimular1Partido;
   final VoidCallback onSimular1Semana;
   final VoidCallback onSimular1Mes;
+  final VoidCallback onSimularTemporada;
+
+  /// En la versión gratuita simular el año entero está bloqueado. El botón
+  /// se enseña igualmente, con candado: esconderlo dejaría sin ver lo que
+  /// se está ofreciendo.
+  final bool puedeTemporada;
 
   const _BotonesAvanceRapido({
     required this.habilitado,
-    required this.onSimular1Partido,
     required this.onSimular1Semana,
     required this.onSimular1Mes,
+    required this.onSimularTemporada,
+    required this.puedeTemporada,
   });
 
   @override
   Widget build(BuildContext context) {
     // En un móvil cada botón se queda con unos 120 píxeles y "Simular 1
-    // partido" no cabe en una línea: la fila crecía a tres renglones y le
+    // semana" no cabe en una línea: la fila crecía a tres renglones y le
     // robaba al calendario el alto que necesita para enseñar el mes entero.
     // El verbo se sobreentiende, así que en compacto se cae.
     final compacto = tamanoDe(context).esCompacto;
@@ -511,15 +557,6 @@ class _BotonesAvanceRapido extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(10, 10, 10, 6),
       child: Row(
         children: [
-          Expanded(
-            child: BotonPerfilado(
-              texto: compacto ? textos.unPartido : textos.simularUnPartido,
-              color: e.texto,
-              alto: 44,
-              onTap: habilitado ? onSimular1Partido : null,
-            ),
-          ),
-          const SizedBox(width: 8),
           Expanded(
             child: BotonPerfilado(
               texto: compacto ? textos.unaSemana : textos.simularUnaSemana,
@@ -535,6 +572,16 @@ class _BotonesAvanceRapido extends StatelessWidget {
               color: e.texto,
               alto: 44,
               onTap: habilitado ? onSimular1Mes : null,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: BotonPerfilado(
+              texto: textos.simularTemporadaEntera,
+              icono: puedeTemporada ? Icons.fast_forward : Icons.lock_outline,
+              color: e.texto,
+              alto: 44,
+              onTap: habilitado && puedeTemporada ? onSimularTemporada : null,
             ),
           ),
         ],

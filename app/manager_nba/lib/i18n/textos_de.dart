@@ -271,8 +271,6 @@ class TextosDe extends Textos {
   @override
   List<String> get diasSemanaAbrev => ['M', 'D', 'M', 'D', 'F', 'S', 'S'];
   @override
-  String get unPartido => '1 Spiel';
-  @override
   String get simularUnPartido => '1 Spiel simulieren';
   @override
   String get unaSemana => '1 Woche';
@@ -514,8 +512,6 @@ class TextosDe extends Textos {
   @override
   String get pestanaEstadisticas => 'Statistiken';
   @override
-  String alineacionDeEquipo(String equipo) => 'Aufstellung: $equipo';
-  @override
   String get tusPicksDeDraft => 'Deine Draft-Picks';
   @override
   String get empezarTemporadaBtn => 'Saison starten';
@@ -523,13 +519,6 @@ class TextosDe extends Textos {
   String get guardarRotacionBtn => 'Aufstellung speichern';
   @override
   String get elegirJugadorPlaceholder => '— Spieler wählen —';
-  @override
-  String huecoConJugador(
-    String etiqueta,
-    String nombre,
-    String posicion,
-    int media,
-  ) => '$etiqueta: $nombre ($posicion, Gesamtwert $media)';
   @override
   String lesionConDetalle(String motivo, int partidos, String fecha) =>
       '$motivo ($partidos Spiele) — zurück am $fecha — in der Zwischenzeit spielt der Ersatzspieler';
@@ -558,8 +547,6 @@ class TextosDe extends Textos {
   @override
   String get traspasadoATiPorOtroEquipo =>
       'Von einem anderen Team zu dir transferiert';
-  @override
-  String get ataqueYDefensaTitulo => 'Angriff und Verteidigung';
   @override
   String get quintetoInicial => 'Starting Five';
   @override
@@ -669,15 +656,6 @@ class TextosDe extends Textos {
   String get seAcaboLaNegociacion => 'Verhandlung\nbeendet';
   @override
   String ofrecerConN(int n) => 'Anbieten ($n)';
-  @override
-  String subtituloRenovacion(
-    String posicion,
-    int edad,
-    int media,
-    String cobraba,
-    String pide,
-  ) =>
-      '$posicion · $edad Jahre · Gesamtwert $media\nVerdiente $cobraba · fordert $pide';
   @override
   String get cerramosElTraspaso => 'Deal abschließen?';
   @override
@@ -982,9 +960,6 @@ class TextosDe extends Textos {
   String get teTocaElegir => 'Du bist am Zug!';
   @override
   String get ordenarPorLabel => 'Sortieren nach: ';
-  @override
-  String posicionEdadMedia(String posicion, int edad, int media) =>
-      '$posicion · $edad Jahre · Gesamtwert $media';
 
   @override
   String cuartosCopaSeSiembranAviso(String nbaCup) =>
@@ -1302,8 +1277,6 @@ class TextosDe extends Textos {
       : 'Nicht unterschrieben ·  Angebote';
   @override
   String margenPatrocinio(String importe) => '+$importe Gehaltsspielraum';
-  @override
-  String get totalPatrociniosLabel => 'Gesamter Spielraum dieses Jahr';
   @override
   String get patrocinadoresBloqueados =>
       'Sponsoren gehören zur Vollversion. Sieh dir ein Video an und du hast alle vier für diese Saison.';

@@ -267,8 +267,6 @@ class TextosZh extends Textos {
   @override
   List<String> get diasSemanaAbrev => ['一', '二', '三', '四', '五', '六', '日'];
   @override
-  String get unPartido => '1场';
-  @override
   String get simularUnPartido => '模拟1场比赛';
   @override
   String get unaSemana => '1周';
@@ -494,8 +492,6 @@ class TextosZh extends Textos {
   @override
   String get pestanaEstadisticas => '数据统计';
   @override
-  String alineacionDeEquipo(String equipo) => '阵容：$equipo';
-  @override
   String get tusPicksDeDraft => '你的选秀权';
   @override
   String get empezarTemporadaBtn => '开始赛季';
@@ -503,13 +499,6 @@ class TextosZh extends Textos {
   String get guardarRotacionBtn => '保存阵容';
   @override
   String get elegirJugadorPlaceholder => '——选择球员——';
-  @override
-  String huecoConJugador(
-    String etiqueta,
-    String nombre,
-    String posicion,
-    int media,
-  ) => '$etiqueta：$nombre（$posicion，综合评分$media）';
   @override
   String lesionConDetalle(String motivo, int partidos, String fecha) =>
       '$motivo（$partidos场）——预计$fecha复出——期间由替补出场';
@@ -533,8 +522,6 @@ class TextosZh extends Textos {
   String get sinPicksPropios => '你没有属于自己的选秀权了：全部交易出去了。';
   @override
   String get traspasadoATiPorOtroEquipo => '由其他球队交易而来';
-  @override
-  String get ataqueYDefensaTitulo => '进攻与防守';
   @override
   String get quintetoInicial => '首发五人';
   @override
@@ -633,14 +620,6 @@ class TextosZh extends Textos {
   String get seAcaboLaNegociacion => '谈判\n已结束';
   @override
   String ofrecerConN(int n) => '报价（$n）';
-  @override
-  String subtituloRenovacion(
-    String posicion,
-    int edad,
-    int media,
-    String cobraba,
-    String pide,
-  ) => '$posicion·$edad岁·综合评分$media\n原薪水$cobraba·要价$pide';
   @override
   String get cerramosElTraspaso => '确认成交？';
   @override
@@ -920,9 +899,6 @@ class TextosZh extends Textos {
   String get teTocaElegir => '轮到你选择了！';
   @override
   String get ordenarPorLabel => '排序方式：';
-  @override
-  String posicionEdadMedia(String posicion, int edad, int media) =>
-      '$posicion·$edad岁·综合评分$media';
 
   @override
   String cuartosCopaSeSiembranAviso(String nbaCup) =>
@@ -1216,8 +1192,6 @@ class TextosZh extends Textos {
   String sinPatrocinioFirmado(int ofertas) => '未签约 ·  份报价';
   @override
   String margenPatrocinio(String importe) => '+$importe 薪资空间';
-  @override
-  String get totalPatrociniosLabel => '本年度总空间';
   @override
   String get patrocinadoresBloqueados => '赞助商属于完整版。观看一段视频，本赛季四个赞助商全部解锁。';
   @override

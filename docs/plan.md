@@ -28,6 +28,67 @@ https://jokar77.github.io/manager-nba/
 - PowerShell 5.1 **no admite `&&`**; el Bash de Git sí. Los dos están
   disponibles y se usa el que convenga.
 
+## La barra del calendario, reordenada (23 de agosto de 2026)
+
+Antes: `[Simular 1 partido] [1 semana] [1 mes]`.
+Ahora: `[1 semana] [1 mes] [Temporada entera]`.
+
+**Fuera "Simular 1 partido"**, y no es un olvido: el partido siguiente se
+simula desde la tarjeta del menú, que además enseña contra quién juegas.
+Tenerlo también aquí era el mismo botón dos veces, y le quitaba sitio a los
+saltos que sí son propios del calendario.
+
+**Dentro "Temporada entera", a la derecha del todo.** El orden queda de
+menos a más, y el salto más gordo —el único que puede acabar el año de un
+toque— el último, no pegado a los otros dos.
+
+Ya existía la función: era el botón del menú, que traía aquí y arrancaba
+solo (`simularTemporadaAlAbrir`). Lo que faltaba era poder lanzarlo **desde
+el propio calendario**, que es donde uno está cuando quiere acabar el año.
+Ahora `_simularTemporadaSiTocaAlAbrir` delega en `_simularTemporadaEntera`,
+así que el camino es el mismo por los dos lados.
+
+Respeta el bloqueo de la versión gratuita: sale con candado y no simula,
+igual que el del menú. Se enseña igualmente en vez de esconderlo — esconder
+lo bloqueado deja sin ver lo que se está ofreciendo.
+
+Para saber si está desbloqueado hace falta el número de temporada (el vídeo
+recompensado abre la función durante una temporada y solo esa), así que el
+calendario ahora lo lee en `_recargarDatos`. Mientras no ha cargado, el
+botón sale bloqueado: es el lado seguro.
+
+## Limpieza: 205 líneas de textos que no usaba nadie (23 de agosto de 2026)
+
+Al quitar "Simular 1 partido" quedó huérfana su etiqueta compacta
+(`unPartido`). Eso llevó a barrer el fichero entero, y había más: **siete
+claves declaradas en `Textos` y traducidas a los siete idiomas que no
+llamaba nadie**.
+
+`unPartido`, `alineacionDeEquipo`, `ataqueYDefensaTitulo`,
+`huecoConJugador`, `posicionEdadMedia`, `subtituloRenovacion` y
+`totalPatrociniosLabel` — 205 líneas entre la clase abstracta y las siete
+implementaciones.
+
+Cómo se buscaron, por si hay que repetirlo: sacar los nombres de las claves
+de `textos.dart` y comprobar cuáles no aparecen en ningún `.dart` de fuera
+de `lib/i18n/`. Después de la limpieza no queda ninguna.
+
+Duele poco quitarlas y ahorra bastante: cada clave que sobra es una línea
+que traducir siete veces la próxima vez que alguien añada un idioma.
+
+### Estado
+
+`flutter analyze` limpio en los dos paquetes. **670 tests en verde**,
+cuatro más: que el botón de un partido ya no está, que los tres saltos van
+en orden con «temporada» a la derecha, que en la gratuita sale con candado
+y no simula, y que con la completa simula el año.
+
+`flutter build web` correcto. `web/sw.js` sigue en `manager-nba-v13`, que
+cubre todo lo de hoy porque no se ha publicado nada entre medias.
+
+**La comprobación visual sigue pendiente**: el panel del navegador no se
+puede mostrar en esta sesión.
+
 ## Los tres roles pasan a ser obligatorios, y el botón lo dice (23 de agosto de 2026)
 
 Va justo detrás de plegar la banda, y es su consecuencia: si algo es
