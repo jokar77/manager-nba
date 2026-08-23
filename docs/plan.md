@@ -28,197 +28,189 @@ https://jokar77.github.io/manager-nba/
 - PowerShell 5.1 **no admite `&&`**; el Bash de Git sí. Los dos están
   disponibles y se usa el que convenga.
 
-## EN CURSO — Lista 15, punto 1 (bug de rookies): parche aplicado, expone un hueco real (Rising Stars), pendiente de datos del usuario
+## EN CURSO — Lista 15, punto 1 CERRADO con datos reales; punto 2 hecho; verificando
 
-Sesión del 23 de agosto de 2026. Retomado tras el `/compact`: se confirmó
-`flutter analyze .` limpio y se corrió la suite completa. El parche del
-punto 1 funciona (Cooper Flagg y compañía ya no se cuelan como rookies),
-pero al hacerlo bien **destapó un problema distinto y real**: el juego
-se queda sin clase de rookies de verdad al empezar una franquicia nueva.
-El usuario ya lo sabe y va a mandar las medias reales de los rookies de
-esta temporada — es el mismo "no podemos estar sin los verdaderos
-rookies" que dijo él mismo al retomar. Ver el apartado nuevo más abajo
-antes de tocar nada.
+Sesión del 24 de agosto de 2026, continuación directa de la de ayer.
 
-### Estado del árbol de trabajo AHORA MISMO
+### La clase de draft 2026 ya tiene datos reales (cierra el hueco de Rising Stars)
 
-```
-git status -s
- M app/manager_nba/assets/data/jugadores.json
- M app/manager_nba/test/datos_reales_test.dart
-```
+El usuario pasó `Draft_2K27_Orden_Real_Atributos_Generados.csv` (60
+prospectos: Pick, Jugador, Equipo, Posicion, Altura, Dorsal, Media_OVR,
+Potencial, Ataque, Defensa) y pidió aplicarlo al juego cambiándoles el
+nombre 1-2 letras — el mismo tratamiento que ya llevan el resto de
+jugadores reales del dataset (`nombre_ficticio` vs `nombre_real`, ver
+`preparar_datos_nba_v27.py`, función `generar_nombre_parecido` /
+`mutar_palabra` / tabla `SUSTITUCIONES`).
 
-Rama `respaldo/trabajo-en-curso`. **Nada commiteado todavía** (ver
-"Qué falta" más abajo: se decidió no commitear hasta anotar el hueco de
-Rising Stars, para que el commit no parezca esconder 4 tests en rojo).
+De los 60, **59 ya existían** en `jugadores.json` como placeholders con
+`draft_year: 2026` pero con `atr_tiro3`/`atr_ataque`/`atr_defensa`/
+`pts_pg`/`ast_pg`/`trb_pg`/`factor_longevidad` a `null` — por eso el
+import los descartaba (`_camposObligatorios` en `jugadores_importer.dart`)
+y por eso Rising Stars se quedó sin clase de novatos de verdad (ver la
+sesión de ayer). El otro (**Chris Cenac Jr.**) no tenía placeholder y se
+creó de cero.
 
-`flutter analyze .` → limpio. `flutter test --no-pub` (suite completa,
-~673 tests) → **4 fallando**, los cuatro en `allstar_repository_test.dart`,
-grupo "Rising Stars":
-- "enfrenta a los novatos con los de segundo año..."
-- "tiene su propio MVP, distinto del premio del All-Star"
-- "no se vuelve a jugar si ya se jugó"
-- "al año siguiente los novatos son otros..."
+Aplicado con un script de Node (Python no está instalado aquí):
+`C:\Users\nanot\AppData\Local\Temp\claude\...\scratchpad\aplicar_rookies_2026.js`
+(en el scratchpad de la sesión, no en el repo). Qué hace:
 
-Todos fallan porque `jugarRisingStarsSiHaceFalta` devuelve `null`: no hay
-`convocadosPorConferencia` (10) jugadores IMPORTABLES con
-`temporadasPrevias == 0` para el equipo de novatos. Confirmado con un
-script Node contando sobre `jugadores.json` tras aplicar tanto el filtro
-de import (`_camposObligatorios`) como el cálculo de `temporadasPrevias`:
-solo **3** pasan ambos filtros (Drake Powell, Cam Christie, Trentyn
-Flowers). Antes del parche del punto 1 había más (~26 jugadores mal
-clasificados por el fallback de edad rellenaban el hueco sin querer) —
-o sea, el bug viejo estaba tapando esto sin querer. Al arreglarlo bien,
-queda al descubierto que el dataset **no trae ninguna estadística real
-de la clase de draft que de verdad debería ser "rookie" al arrancar la
-partida** (los prospectos 2026 tipo Aday Mara no tienen partidos NBA
-jugados, así que no tienen medias que dar y el import los descarta por
-`_camposObligatorios`, como ya se documentó en el punto anterior).
+- **De la CSV, tal cual**: `media` (Media_OVR), `potencial`, `atr_ataque`
+  (Ataque), `atr_defensa` (Defensa), `posicion` (el combo "PG / SG" tal
+  cual — `normalizarPosicion`/`posicionSecundariaDeclarada` en
+  `jugador_mapping.dart`/`posiciones.dart` ya saben partirlo por `/`),
+  `equipo` (remapeando 3 códigos: CSV usa BKN/CHA/PHX, el juego usa
+  BRK/CHO/PHO — el resto de códigos ya coincidían).
+- **Ya estaban bien puestos** (no se tocan): `edad` (19), `edad_retiro`
+  (36), `draft_year` (2026) — los 59 placeholders ya los traían así.
+- **Estimados, a falta de partidos NBA reales que medir** (el CSV no trae
+  esto): `atr_tiro3`, `pts_pg`, `ast_pg`, `trb_pg` — interpolación lineal
+  a trozos desde `Ataque`/`Defensa`, con un factor por puesto (un base más
+  rebotador y menos asistente que un base, etc.). `factor_longevidad`
+  fijo a `1.0` (la moda de la distribución triangular que usa el script
+  de Python para todo el mundo). Documentado en el propio script y en el
+  comentario de `_camposObligatorios`.
+- **`nombre_ficticio`**: regenerado para los 60 con un puerto a Node de
+  `generar_nombre_parecido`/`mutar_palabra`/`SUSTITUCIONES` (mismo
+  algoritmo, mismas sustituciones de letra — `a↔e`, `o↔u`, `s↔z`, etc.,
+  2 letras cambiadas repartidas entre nombre y apellido según su
+  longitud). RNG sembrada por el nombre real (no `Math.random()`), para
+  que sea reproducible. Antes de este cambio los 59 placeholders tenían
+  `nombre_ficticio == nombre_real` sin ofuscar — se quedaban así porque
+  nunca habían pasado por `aplicar_nombres_parecidos` al no tener
+  atributos con los que jugar.
 
-**No se ha tocado nada para maquillar esto**: ni bajar el umbral de
-`convocadosPorConferencia`, ni inventar medias, ni marcar los tests como
-`skip`. Los 4 tests siguen en rojo a propósito, porque están señalando un
-hueco real de datos, no un bug de lógica.
+Subido también `jugadoresUtilizablesDelDataset` de 586 a **646** en
+`jugadores_importer.dart` (ahora los 646 jugadores del asset pasan el
+filtro; antes 60 se quedaban fuera). Ver el test
+`jugadores_importer_test.dart` que compara esta constante contra el
+asset de verdad.
 
-### La causa real del bug (nada que ver con la lógica de premios)
+Verificado con Node antes de escribir: 59 matches exactos + 1 sin match
+(Chris Cenac Jr.) contra los 59 placeholders `draft_year: 2026`; cero
+`nombre_ficticio` repetidos en los 646 tras el cambio; el JSON
+reserializado con `JSON.stringify(data, null, 2)` es byte a byte idéntico
+al original antes de tocar nada (mismo indentado/orden de claves), así
+que el diff que queda es solo el cambio real de valores + la fila nueva
+de Chris Cenac Jr. al final del array.
 
-El código que decide quién es rookie (`premios_repository.dart` para el
-Rookie del Año, `allstar_repository.dart` para el Rising Stars) **ya
-estaba bien** — los dos usan el historial simulado
-(`historialEstadisticasJugador` / `experienciaEnLaLiga`) para descalificar
-a quien ya jugó una temporada, y hay tests de sobra que lo confirman
-(`premios_repository_test.dart`, el test "un jugador joven que ya jugó una
-temporada no puede repetir como Rookie del Año").
+### Lista 15, punto 2: los eventos ya nombran al jugador exacto
 
-El bug real está en el **DATO de partida**: `jugadores_importer.dart`
-calcula `temporadasPrevias` (cuántos años reales lleva un jugador antes de
-que arranque tu partida) así:
+`lib/domain/eventos_narrativos.dart`: nuevo enum `RolDeProtagonista`
+(`estrella`, `joven`, `veterano`, `titular`, `cualquiera`) y campo
+`protagonista` en `EventoNarrativo`, puesto en los 6 eventos que de
+verdad hablan de un jugador concreto: `estrella_pide_descanso`,
+`joven_pide_minutos`, `veterano_de_vestuario`, `rumor_de_traspaso`,
+`jugador_llega_tarde`, `metida_de_pata_en_redes`. El resto (vestuario en
+general) se queda sin protagonista, tal cual.
 
-```dart
-const _anioDelDataset = 2026;
-int _temporadasPrevias(mapa) {
-  final draft = mapa['draft_year'] as int?;
-  final anos = draft != null
-      ? _anioDelDataset - draft
-      : (mapa['edad'] as int) - 20;   // <- el fallback, y el problema
-  return anos.clamp(0, 24);
-}
-```
+`lib/domain/eventos_narrativos_repository.dart`: `nombreDelProtagonista`
+busca en **tu rotación guardada de 10** (`db.rotacionJugador` — "los 10
+que están participando" de la lista de bugs) según el rol: la estrella
+marcada de más media, un joven (≤23) al azar, el más veterano de la
+rotación, un titular al azar, o cualquiera de los 10. Null si el evento
+no habla de nadie o si la rotación no está completa (no debería pasar en
+partida real — no se puede jugar sin rotación completa — pero un test
+puede montar un evento suelto sin rotación, y no revienta por eso).
 
-Cuando `draft_year` es `null` en el dataset, se estima por edad. Y
-`assets/data/jugadores.json` tiene **292 de 645 jugadores con
-`draft_year: null`** — incluidas estrellas consagradas como Jokić, Dončić
-o Embiid (a esos el fallback por edad les da igual, salen con muchos años
-encima) pero también **79-114 jugadores jóvenes** donde el fallback por
-edad los deja mal: Cooper Flagg (19 años, novato real de 2025) computaba
-`(19-20).clamp(0,24) = 0`, o sea que la partida lo trataba como rookie de
-verdad en vez de como su segunda temporada.
+Guion (`i18n/eventos_{es,en,fr,pt,de,it,zh}.dart`): sustituido el sujeto
+genérico ("tu mejor jugador", "un veterano", "uno de tus titulares") por
+un hueco `{jugador}` en el título y, donde el texto lo repetía de forma
+explícita, también en el planteamiento. `TextosDeEventos.conNombre(texto,
+nombre)` hace el reemplazo; `jugadorGenerico` por idioma es el respaldo
+si no hay nadie que nombrar (no debería darse nunca en partida real).
 
-**Por qué está así**: `preparar_datos_nba_v27.py` saca `draft_year` de un
-dataset de Kaggle (`wyattowalsh/basketball`, `draft_history.csv`) que es
-estático y no llega a las clases de draft más recientes (2024, 2025) — de
-ahí que sean justo los jugadores más jóvenes los que salen con
-`draft_year: null`. No es una regresión de este proyecto: es que la fuente
-externa no está al día. Y ese script no se puede volver a correr aquí:
-necesita Python (no instalado en esta máquina) y credenciales de Kaggle.
+`evento_narrativo_dialog.dart`: `plantearEvento`/`contarConsecuencia`
+reciben ahora `nombreProtagonista` opcional y lo aplican a título, texto
+y etiquetas de opción. Aprovechado también para la segunda parte del
+punto 2 ("las consecuencias deben expresarse claras"): `_FilaDeEfecto`
+ahora enseña el **porcentaje real** del efecto (`+1%`/`-2%`, el mismo
+número que mueve `multiplicadorDeEventos`) además de la etiqueta y los
+partidos — antes solo había un icono de flecha y un texto sin ningún
+número. Se optó por esto y NO por convertir el efecto en puntos de
+`media` del jugador (el ejemplo literal de la lista, "+1/+2 media"):
+el sistema de eventos es deliberadamente de equipo, no por jugador (ver
+el bloque de comentarios largo al principio de `eventos_narrativos.dart`
+sobre por qué — 3,7 victorias por cada 1%, y por qué un efecto por
+jugador rompería ese equilibrio ya medido). Si el usuario de verdad
+quiere puntos de `media` por jugador en vez de porcentaje de equipo, eso
+es un rediseño de la mecánica, no un arreglo de UI, y merece hablarlo
+antes de tocarlo.
 
-### Lo que se hizo (parche a mano, no al pipeline)
+Test nuevo: `eventos_narrativos_test.dart`, grupo "protagonista de un
+evento" (sin rol → null; sin rotación completa → null sin reventar; con
+rotación completa, cada rol saca a alguien de los 10, y la estrella/el
+veterano son exactamente los que tocan por media/edad).
 
-Se editó directamente `app/manager_nba/assets/data/jugadores.json`
-(el asset que se compila en la app — el Python solo lo regenera offline,
-no interviene en build/runtime) rellenando `draft_year` para **46
-jugadores** de las clases 2024 y 2025 de los que hay certeza razonable
-(la mayoría lotería/primera ronda, bien cubiertos en su momento):
-Cooper Flagg, Dylan Harper, VJ Edgecombe, Kon Knueppel, Ace Bailey, Tre
-Johnson, Egor Dёmin, Collin Murray-Boyles, Derik Queen, Jeremiah Fears,
-Khaman Maluach, Nolan Traoré, Ben Saraf, Noa Essengue, Hugo González,
-Kasparas Jakučionis, Will Riley, Carter Bryant, Asa Newell, Liam
-McNeeley, Jase Richardson, Rasheer Fleming, Yang Hansen, Joan Beringer,
-Rocco Zikarsky, Mohamed Diawara (todos 2025); Alex Sarr, Stephon Castle,
-Reed Sheppard, Donovan Clingan, Zaccharie Risacher, Matas Buzelis, Kel'el
-Ware, Isaiah Collier, Kyle Filipowski, Bub Carrington, Ja'Kobe Walter,
-Jared McCain, Rob Dillingham, Yves Missi, Ron Holland, Tidjane Salaün,
-Adem Bona, Johnny Furphy, Nikola Topić, Pacôme Dadiet (todos 2024).
+### mercado_test.dart: un efecto colateral inesperado del CSV, ya arreglado
 
-Verificado con Node (no con el analyzer de Dart) que el diff es limpio:
-exactamente 46 líneas `"draft_year": null` cambiadas a `2024`/`2025`, cero
-reformateo de más, mismo número total de líneas del fichero
-(11612 antes y después).
+Al aplicar el CSV, `flutter test` completo sacó 2 fallos nuevos además de
+confirmar que Rising Stars ya volvía a verde:
 
-**Deliberadamente NO se tocaron los otros ~250 con `draft_year: null`**:
-de threshold effort/riesgo. Para veteranos (edad alta) el fallback por
-edad ya da un número lo bastante grande como para que nunca se confunda
-con rookie — no hay síntoma visible que arreglar ahí. Para el resto de
-jóvenes (segunda/tercera ronda, dos vías, G-League) no había confianza
-suficiente en la fecha exacta de draft como para arriesgarse a meter un
-dato inventado; mejor un fallback impreciso que un dato falso a sabiendas.
-Documentado así en el propio test nuevo.
+1. **`jugadores_importer_test.dart`**: el test `'importa el dataset real,
+   descartando jugadores sin atributos...'` asumía que SIEMPRE se
+   descartaban prospectos (`expect(filas.length, lessThan(645))`) — ya no
+   es verdad, los 646 pasan el filtro ahora. Reescrito para documentar el
+   antes/después y comprobar un caso concreto (Cameron Boozer entra,
+   `draftYear=2026`, `temporadasPrevias=0`) en vez de un recuento vago.
+2. **`mercado_test.dart`**, el test de "no hay renovación posible": dejaba
+   a Boston pegado exactamente al tope (12M por cabeza al resto de la
+   plantilla) para que renovar a su estrella no cupiera. Investigado a
+   fondo (con prints temporales en `contratos_repository.dart`, quitados
+   después): NO era un bug de lógica, sino que el margen de 12M por
+   cabeza dependía de CUÁNTOS jugadores tuviera Boston — con más
+   jugadores en plantilla (los 2 nuevos rookies reales de Boston, Chris
+   Cenac Jr. y Dillon Mitchell) el hueco bajo el tope pasó a depender de
+   una carambola: `resolverVencimientosDeLaCpu` reparte un único
+   `Random` entre las 29 CPU antes de llegar a Boston, y con la
+   plantilla de Denver también creciendo (2 rookies reales más), un
+   jugador de Denver (Tim Hardaway Jr.) pasó de caber a no caber bajo SU
+   tope, lo que le quita una tirada de aleatoriedad a él y desplaza en
+   uno el resto de la secuencia compartida — y esa carambola, muchos
+   jugadores después, cambiaba si a Tatum le tocaba una oferta que sí
+   encajaba. Arreglado subiendo el sueldo forzado de "el resto del
+   equipo" de 12M a **20M por cabeza**: con eso el equipo está tan por
+   encima del tope que no cabe NADA, pase lo que pase antes en el reparto
+   de los otros 28 equipos ni cuánto le ofrezcan de más o de menos a la
+   estrella por el azar. Comentario nuevo en el test explicando el porqué
+   (para que el próximo cambio de dataset no vuelva a tropezar con esto).
 
-### El test añadido (`datos_reales_test.dart`)
+### Verificación final: todo en verde
 
-Un test nuevo, `'a quien ya jugó su temporada de rookie real no se le
-vuelve a contar como rookie en el juego'`, que comprueba
-`porNombreReal('Cooper Flagg').temporadasPrevias >= 1`.
+`flutter analyze .` limpio y `flutter test --no-pub` (suite completa):
+**676 tests, 0 fallos.** Confirmado tras aplicar el CSV de rookies 2026 y
+arreglar los dos tests de arriba.
 
-**Aday Mara —el ejemplo de "rookie de verdad" que dio el usuario en la
-lista— NO sirve de contraejemplo y no está en el test.** Se investigó y
-se descartó: en el dataset tiene TODOS los atributos a `null` (`atr_tiro3`,
-`atr_ataque`, `atr_defensa`, `pts_pg`...) porque es un prospecto de 2026
-que aún no ha jugado un partido de la NBA — sin medias que darle, la
-importación lo descarta por no cumplir `_camposObligatorios` en
-`jugadores_importer.dart`. **Ni siquiera se importa: no existe como
-jugador jugable.** Se comprobó además que NINGÚN jugador con
-`draft_year: 2026` pasa el filtro de importación (0 de 0) — la clase de
-draft realmente nueva de cada partida tiene que salir del **draft
-simulado del propio juego** (`draft_repository.dart`), no del dataset
-real, porque el dataset no tiene estadísticas de nadie que no haya jugado
-ya en la NBA de verdad.
+### Qué falta
 
-### Lo que necesito del usuario para cerrar esto de verdad
+1. Commitear en local (sin push) todo lo de hoy:
+   `assets/data/jugadores.json`, `jugadores_importer.dart`,
+   `eventos_narrativos.dart`, `eventos_narrativos_repository.dart`,
+   `simulacion_ui.dart`, `evento_narrativo_dialog.dart`, los 7
+   `i18n/eventos_*.dart`, `textos_eventos.dart`,
+   `test/eventos_narrativos_test.dart`, `test/jugadores_importer_test.dart`,
+   `test/mercado_test.dart`.
+2. Seguir con el punto 3 de la lista 15 (quitar el botón duplicado de
+   "Temporada entera" de la pantalla principal).
 
-El usuario dijo que va a pasar las medias de los rookies de la temporada
-nueva ("no podemos estar sin los verdaderos rookies"). Para que un rookie
-real entre a la partida como tal, sus datos tienen que:
+### Antecedente: la causa del bug de rookies (sesión del 23 de agosto)
 
-1. Traer `draft_year: 2026` (o el año que corresponda) para que
-   `temporadasPrevias` salga en 0.
-2. Traer los 7 campos de `_camposObligatorios` rellenos (`atr_tiro3`,
-   `atr_ataque`, `atr_defensa`, `pts_pg`, `ast_pg`, `trb_pg`,
-   `factor_longevidad`) — sin esto el import los descarta enteros, por
-   muy bien que esté el `draft_year`. Si el usuario trae solo medias de
-   puntos/asistencias/rebotes reales pero no atributos derivados
-   (tiro3/ataque/defensa), hay que derivarlos con el mismo criterio que
-   usa `preparar_datos_nba_v27.py` para el resto del dataset (revisar ese
-   script, aunque no se pueda ejecutar aquí sin Python, para copiar la
-   fórmula a mano o en Node).
-3. Encajar en `jugadores.json` con el mismo formato de entrada que el
-   resto (mismas claves, mismo `nombre_ficticio`/`nombre_real`).
+Resumen rápido, por si hace falta releer el porqué. El código que decide
+quién es rookie (`premios_repository.dart`, `allstar_repository.dart`) ya
+estaba bien — descalifica a quien tiene fila en
+`historialEstadisticasJugador`. El bug real estaba en el DATO de partida:
+`_temporadasPrevias` en `jugadores_importer.dart` estima por edad
+(`edad - 20`) cuando falta `draft_year`, y 292 de 645 jugadores lo tenían
+a `null` porque el Kaggle del que sale (`draft_history.csv`) no llega a
+las clases de draft recientes. Cooper Flagg (19 años) salía en 0
+temporadas previas, colándose como rookie real. Se parcheó `draft_year`
+a mano para 46 nombres de lotería/primera ronda 2024-2025 (ver el test
+`datos_reales_test.dart`), dejando aparte a propósito el resto de
+`null`s por falta de certeza en la fecha exacta. Aday Mara (el ejemplo
+del usuario) no servía de contraejemplo porque ni se importaba — y esa
+investigación fue justo lo que llevó al punto 1 de hoy: sin el CSV de
+rookies reales, el juego se quedaba sin ninguna clase de novato jugable.
 
-Cuando lleguen esos datos: añadirlos a `jugadores.json` (a mano, con
-Node, igual que el parche de `draft_year`), y entonces sí volver a correr
-`allstar_repository_test.dart` — debería volver a verde solo con tener
-10+ rookies reales importables, sin tocar el código de Rising Stars.
-
-### Qué falta para cerrar el punto 1
-
-1. ~~Confirmar `flutter analyze .` limpio y la suite completa~~ hecho,
-   ver arriba: limpio salvo los 4 tests de Rising Stars, y ya se sabe
-   por qué.
-2. Commitear ahora en local el parche de `draft_year` + el test nuevo +
-   este mismo apartado de plan.md, dejando anotado en el mensaje de
-   commit que 4 tests de Rising Stars quedan en rojo a propósito, en
-   espera de las medias reales de rookies que va a mandar el usuario.
-   (Recordar: no hacer push a la rama de trabajo, solo al fusionar a
-   `main` cuando toque publicar.)
-3. Cuando lleguen las medias de rookies: aplicarlas y reconfirmar
-   `allstar_repository_test.dart` en verde.
-4. Seguir con el punto 2 de la lista 15 (eventos aleatorios: decir qué
-   jugador exacto y qué consecuencia exacta).
-
-### Resto de la lista 15: sin empezar
-
-Puntos 2 al 11 siguen exactamente como se dejaron anotados más abajo en
-este fichero (sección "Lista bugs/mejora 15"), sin tocar.
+### Resto de la lista 15: sin empezar (puntos 3 al 11)
 
 ## Lista bugs/mejora 15 (a 2026-08-23, de `lista_bugs_cambios_nba_manager_15.txt`)
 
