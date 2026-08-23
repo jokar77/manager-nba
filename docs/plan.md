@@ -28,6 +28,65 @@ https://jokar77.github.io/manager-nba/
 - PowerShell 5.1 **no admite `&&`**; el Bash de Git sí. Los dos están
   disponibles y se usa el que convenga.
 
+## Lista bugs/mejora 15 (a 2026-08-23, de `lista_bugs_cambios_nba_manager_15.txt`)
+
+Por orden de más a menos importante. **Sin empezar ninguno.**
+
+1. **Bug rookies/clases**: al simular una temporada, siguen saliendo como
+   rookies jugadores de la clase anterior (ej. Cooper Flagg y su
+   generación) aunque ya deberían ser sophomores. Corregir la
+   elegibilidad de los premios de rookie para que solo cuenten los
+   novatos reales de esa temporada (ej. Aday Mara y su clase). Mirar
+   `lib/domain/premios_repository.dart` y `lib/domain/draft_repository.dart`.
+2. **Eventos aleatorios**: cuando el evento se refiera a un jugador, debe
+   decir cuál exactamente (uno de los 10 que están participando), y las
+   consecuencias deben expresarse claras (ej. "+1/+2 media 3 partidos",
+   "-2 media X partidos"). Ver `lib/domain/eventos_narrativos.dart` y
+   `lib/features/temporada/evento_narrativo_dialog.dart`.
+3. **Pantalla principal**: donde pone "Simular 1 partido" no debe salir
+   también el botón de "Temporada entera". Es
+   `lib/features/hub/home_hub_screen.dart` — el botón de temporada
+   entera se añadió ahí mismo cuando "temporada entera" todavía no
+   existía en el Calendario; ahora que vive a la derecha de la barra del
+   Calendario (ver la sesión del 23 de agosto), sobra aquí.
+4. **Calendario, simulación**: mientras se simula, la vista debe
+   desplazarse sola con el avance de fechas para que se siga viendo por
+   dónde va. `lib/features/calendario/calendario_screen.dart`.
+5. **Calendario, UI**: el botón "Temporada" se desborda y no se ve bien.
+   Ajustar tamaño/layout. Mismo fichero que el 4, `_BotonesAvanceRapido`.
+6. **Elegir estrella/roles**: al elegir estrella de ataque, de defensa o
+   sexto hombre, la lista de candidatos debe enseñar la media que toca
+   en cada caso — ataque para la de ataque, defensa para la de defensa,
+   las dos para el sexto hombre. Hoy `_SelectorEstrellas` en
+   `lib/features/roster/roster_config_screen.dart` los ordena por
+   `nombreFicticio`, sin enseñar ninguna media.
+7. **Patrocinadores, texto**: los textos resumen se cortan. Ajustar el
+   layout para que se lean enteros.
+   `lib/features/temporada/patrocinadores_screen.dart`, la historia de
+   `_TarjetaDeOferta` va a `maxLines: 2` con `overflow: ellipsis`.
+8. **Patrocinador "bebida oficial"**: hoy solo una marca de la categoría
+   es de verdad una bebida; las otras son restaurantes o parecido.
+   Cambiarle el nombre a la categoría por algo más amplio.
+   `categoriasPatrocinio` en `lib/domain/patrocinadores.dart`, más las
+   traducciones de `patrocinioBebidaLabel` en los siete idiomas.
+9. **Patrocinadores, repetición**: en el segundo año se repiten
+   demasiado los patrocinadores del pabellón y otros tipos. Más
+   variedad, menos repetición. Es la rotación de `ofertasDe` en
+   `lib/domain/patrocinadores.dart` — algunas canteras son cortas (11-15
+   marcas) y dan la vuelta rápido.
+10. **Patrocinadores, anuncios/vídeos**: aunque el usuario haya firmado
+    un patrocinio de varios años, para disfrutar de sus beneficios debe
+    seguir obligado a ver el vídeo correspondiente cuando toque. Hoy el
+    desbloqueo por vídeo es genérico (`Funcion.patrocinadores`, dura una
+    temporada) y no está atado a los contratos plurianuales que se
+    añadieron el 23 de agosto — hay que revisar cómo interactúan.
+11. **Traspasos, contrato**: cuando a un jugador le queda 1 año de
+    contrato, debe decir "1 año" y no "último año".
+
+Los puntos 3, 4 y 5 tocan pantallas ya tocadas esta misma semana
+(hub/calendario); conviene mirarlos juntos. Los puntos 7, 8, 9 y 10 son
+todos de patrocinadores y también conviene agruparlos.
+
 ## RESUELTO: «temporada entera» se plantaba en el partido 53 de 82 (23 de agosto de 2026)
 
 El lead que quedó abierto en la sesión anterior, encontrado y arreglado.
