@@ -28,6 +28,65 @@ https://jokar77.github.io/manager-nba/
 - PowerShell 5.1 **no admite `&&`**; el Bash de Git sí. Los dos están
   disponibles y se usa el que convenga.
 
+## La banda de roles se pliega en móvil (23 de agosto de 2026)
+
+Punto **1 de la lista 14**, el último que quedaba. Con esto la lista 14 está
+entera.
+
+Los tres selectores de rol —estrella de ataque, estrella de defensa y sexto
+hombre— viven en una banda fija encima del botón de guardar, en la pestaña
+de Alineación. En pantalla estrecha se apilaban en columna y ocupaban
+**270 px de forma permanente**, por tres cosas que se tocan una vez al
+montar el equipo y no se vuelven a mirar.
+
+Ahora en estrecho la banda se pliega: **43 px**, medido en un iPhone
+vertical (390×844). Son **227 px libres, un 27% de la pantalla**, que van a
+la lista de puestos, que es lo que sí se toca.
+
+### Plegada tiene que decir lo mismo
+
+Si al plegar se pierde la información, no es plegar: es esconder. La línea
+de resumen enseña los tres roles con su icono de color y el **apellido** de
+quien lo lleva, o un guion si no hay nadie:
+
+```
+🔥 Jukić      🛡 Gordon      ⚡ Braun            ⌃
+```
+
+El apellido y no el nombre entero porque tres nombres completos no caben en
+una línea de móvil, y si no caben hay que ponerlos en columna — que es justo
+lo que se estaba evitando. Los nombres del dataset son «Nombre Apellido»,
+así que la última palabra sirve.
+
+Los iconos se quedan sin etiqueta escrita por falta de sitio, pero **no sin
+nombre**: cada uno lleva su `Semantics` con el rol entero y a quién lo
+lleva, para quien use lector de pantalla. Desplegada sí caben las etiquetas
+completas.
+
+### Arranca plegada, y se puede
+
+Los tres roles son **opcionales**: guardar solo pide titular y suplente en
+los cinco puestos (`_rotacionCompleta`), y «Alinear automáticamente» los
+rellena solo. Así que empezar plegado no bloquea a nadie, ni siquiera en el
+onboarding.
+
+### En escritorio no se pliega
+
+Ahí los tres caben en fila y no le quitan sitio a nada, así que se quedan
+siempre desplegados, sin banda ni flecha. El corte es el mismo
+`_anchoMinimoParaTresSelectores` (520 px) que ya decidía entre fila y
+columna.
+
+### Estado
+
+`flutter analyze` limpio en los dos paquetes. **661 tests en verde**, seis
+más: `banda_de_roles_test.dart`, que mide el alto plegada contra desplegada
+y exige que ahorre más de la mitad.
+
+**La comprobación visual sigue pendiente**: el panel del navegador no se
+puede mostrar en esta sesión, así que lo medido es el alto real de los
+widgets, no una captura.
+
 ## Patrocinadores: tres ofertas por categoría y contratos de varios años (23 de agosto de 2026)
 
 Puntos **3 y 4 de la lista 14**, hechos juntos porque son el mismo sitio.
@@ -4585,9 +4644,13 @@ NO vive en OneDrive"* arriba.
 
 Por orden de más a menos importante:
 
-1. **UI alineación/roles**: la sección de "elegir estrella" y similares
+1. ~~**UI alineación/roles**: la sección de "elegir estrella" y similares
    ocupa demasiado espacio en pantalla. Rediseñarla para que sea mucho
-   más compacta. **SIN HACER** — es el único de los cuatro que queda.
+   más compacta.~~ **HECHO** el 23 de agosto de 2026: en móvil la banda de
+   roles se pliega, de 270 px a 43. Ver *"La banda de roles se pliega en
+   móvil"* arriba.
+
+**La lista 14 está entera.**
 2. ~~**Patrocinadores, logos**: usar los logos/fotos de patrocinadores que
    ya pasó el usuario, en vez de placeholders o diseño genérico.~~
    **HECHO** el 23 de agosto de 2026: 386 marcas con su logo, ver

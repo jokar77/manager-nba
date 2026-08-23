@@ -87,8 +87,9 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
     final hoyEnLaPartida =
         await fechaActualDeLaLiga(widget.db) ?? DateTime.now();
     _lesionados = await lesionesActivasEn(widget.db, hoyEnLaPartida);
-    final statsDeLaTemporada =
-        await widget.db.select(widget.db.estadisticasTemporadaJugador).get();
+    final statsDeLaTemporada = await widget.db
+        .select(widget.db.estadisticasTemporadaJugador)
+        .get();
     _stats = {
       for (final s in statsDeLaTemporada)
         if (idsDeEstaPlantilla.contains(s.jugadorId)) s.jugadorId: s,
@@ -138,8 +139,9 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
   }
 
   bool get _rotacionCompleta {
-    return _asignaciones.values
-        .every((a) => a.titularId != null && a.suplenteId != null);
+    return _asignaciones.values.every(
+      (a) => a.titularId != null && a.suplenteId != null,
+    );
   }
 
   /// En qué hueco (puesto + titular/suplente) está ya [jugadorId], si está
@@ -178,8 +180,9 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
       context: context,
       builder: (context) => SimpleDialog(
         title: Text(
-            '${esTitular ? t(context).tituloTitular : t(context).tituloSuplente} — '
-            '${_nombrePosicion(context, posicion)}'),
+          '${esTitular ? t(context).tituloTitular : t(context).tituloSuplente} — '
+          '${_nombrePosicion(context, posicion)}',
+        ),
         children: plantilla.map((j) {
           final huecoActual = _huecoDe(j.id);
           final yaEnEsteHueco = j.id == actual;
@@ -187,15 +190,17 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
           final lesion = _lesionados[j.id];
 
           final detalle = lesion != null
-              ? t(context).lesionSimple(
-                  lesion.motivo, _formatearFecha(lesion.fechaFin))
+              ? t(
+                  context,
+                ).lesionSimple(lesion.motivo, _formatearFecha(lesion.fechaFin))
               : (huecoActual != null && !yaEnEsteHueco
-                  // Elegir a alguien que ya está en otro puesto no está
-                  // prohibido: se intercambian los dos, que es lo natural
-                  // cuando quieres mover a un jugador de sitio.
-                  ? t(context).yaAsignadoIntercambio(
-                      _descripcionHueco(context, huecoActual))
-                  : null);
+                    // Elegir a alguien que ya está en otro puesto no está
+                    // prohibido: se intercambian los dos, que es lo natural
+                    // cuando quieres mover a un jugador de sitio.
+                    ? t(context).yaAsignadoIntercambio(
+                        _descripcionHueco(context, huecoActual),
+                      )
+                    : null);
 
           return SimpleDialogOption(
             onPressed: () => Navigator.of(context).pop(j.id),
@@ -207,25 +212,36 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
                     children: [
                       Text(
                         t(context).nombreConPosicionYMedia(
-                            j.nombreFicticio, etiquetaPosicion(j), j.media),
+                          j.nombreFicticio,
+                          etiquetaPosicion(j),
+                          j.media,
+                        ),
                         style: TextStyle(
-                          fontWeight:
-                              yaEnEsteHueco ? FontWeight.bold : FontWeight.normal,
+                          fontWeight: yaEnEsteHueco
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                           color: lesion != null ? Colors.red : null,
                         ),
                       ),
                       if (detalle != null)
-                        Text(detalle,
-                            style: TextStyle(
-                                fontSize: 12,
-                                color: lesion != null
-                                    ? Colors.red
-                                    : Theme.of(context).colorScheme.outline)),
+                        Text(
+                          detalle,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: lesion != null
+                                ? Colors.red
+                                : Theme.of(context).colorScheme.outline,
+                          ),
+                        ),
                     ],
                   ),
                 ),
                 if (!comodo)
-                  const Icon(Icons.warning_amber, color: Colors.orange, size: 18),
+                  const Icon(
+                    Icons.warning_amber,
+                    color: Colors.orange,
+                    size: 18,
+                  ),
               ],
             ),
           );
@@ -254,10 +270,12 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
   /// Calculándolas aparte se podía acabar marcando como estrella a alguien
   /// que ni siquiera había entrado en los diez.
   void _alinearAutomaticamente(List<Jugador> plantilla) {
-    final lesionados =
-        plantilla.where((j) => _lesionados.containsKey(j.id)).toList();
-    var disponibles =
-        plantilla.where((j) => !_lesionados.containsKey(j.id)).toList();
+    final lesionados = plantilla
+        .where((j) => _lesionados.containsKey(j.id))
+        .toList();
+    var disponibles = plantilla
+        .where((j) => !_lesionados.containsKey(j.id))
+        .toList();
     var seIgnoranLesiones = false;
     if (disponibles.length < posicionesEquipo.length * 2) {
       disponibles = plantilla;
@@ -269,10 +287,15 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
     // la alineación sin más explicación, y desde fuera eso parece que el
     // botón no coge a los mejores.
     if (lesionados.isNotEmpty && !seIgnoranLesiones) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(t(context).fueraPorLesion(
-            lesionados.map((j) => j.nombreFicticio).join(", "))),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            t(context).fueraPorLesion(
+              lesionados.map((j) => j.nombreFicticio).join(", "),
+            ),
+          ),
+        ),
+      );
     }
 
     setState(() {
@@ -305,23 +328,27 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
     for (final entry in _asignaciones.entries) {
       final posicion = entry.key;
       final a = entry.value;
-      filas.add(RotacionJugadorCompanion.insert(
-        posicion: posicion,
-        esTitular: true,
-        jugadorId: a.titularId!,
-        minutos: a.minutosTitular,
-        esEstrellaAtaque: Value(_estrellaAtaqueId == a.titularId),
-        esEstrellaDefensa: Value(_estrellaDefensaId == a.titularId),
-      ));
-      filas.add(RotacionJugadorCompanion.insert(
-        posicion: posicion,
-        esTitular: false,
-        jugadorId: a.suplenteId!,
-        minutos: a.minutosSuplente,
-        esEstrellaAtaque: Value(_estrellaAtaqueId == a.suplenteId),
-        esEstrellaDefensa: Value(_estrellaDefensaId == a.suplenteId),
-        esSextoHombre: Value(_sextoHombreId == a.suplenteId),
-      ));
+      filas.add(
+        RotacionJugadorCompanion.insert(
+          posicion: posicion,
+          esTitular: true,
+          jugadorId: a.titularId!,
+          minutos: a.minutosTitular,
+          esEstrellaAtaque: Value(_estrellaAtaqueId == a.titularId),
+          esEstrellaDefensa: Value(_estrellaDefensaId == a.titularId),
+        ),
+      );
+      filas.add(
+        RotacionJugadorCompanion.insert(
+          posicion: posicion,
+          esTitular: false,
+          jugadorId: a.suplenteId!,
+          minutos: a.minutosSuplente,
+          esEstrellaAtaque: Value(_estrellaAtaqueId == a.suplenteId),
+          esEstrellaDefensa: Value(_estrellaDefensaId == a.suplenteId),
+          esSextoHombre: Value(_sextoHombreId == a.suplenteId),
+        ),
+      );
     }
 
     await guardarRotacion(widget.db, filas);
@@ -338,7 +365,6 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     final e = Estilo.de(context);
@@ -351,7 +377,10 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
         body: Column(
           children: [
             _BarraDeEquipo(
-                equipo: widget.equipo, info: info, onPicks: _verPicks),
+              equipo: widget.equipo,
+              info: info,
+              onPicks: _verPicks,
+            ),
             Expanded(
               child: FutureBuilder<List<Jugador>>(
                 future: _plantillaFuture,
@@ -360,9 +389,7 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
                     return const Center(child: CircularProgressIndicator());
                   }
                   final plantilla = snapshot.data!;
-                  final jugadoresPorId = {
-                    for (final j in plantilla) j.id: j
-                  };
+                  final jugadoresPorId = {for (final j in plantilla) j.id: j};
                   return TabBarView(
                     children: [
                       _alineacion(info, plantilla, jugadoresPorId),
@@ -384,8 +411,11 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
   /// En escritorio los cinco puestos se ponen en fila —una columna cada
   /// uno, como una alineación de verdad— porque a 1600 px de ancho la lista
   /// vertical deja tres cuartas partes de la pantalla en blanco.
-  Widget _alineacion(EquipoInfo info, List<Jugador> plantilla,
-      Map<int, Jugador> jugadoresPorId) {
+  Widget _alineacion(
+    EquipoInfo info,
+    List<Jugador> plantilla,
+    Map<int, Jugador> jugadoresPorId,
+  ) {
     final acento = colorLegibleComoTexto(info.colorSecundario, context);
     final titulares = [
       for (final posicion in posicionesEquipo)
@@ -417,7 +447,10 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
     return Column(
       children: [
         _FranjaAtaqueDefensa(
-            titulares: titulares, rotacion: rotacion, acento: acento),
+          titulares: titulares,
+          rotacion: rotacion,
+          acento: acento,
+        ),
         Expanded(
           child: ListView(
             padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
@@ -495,7 +528,6 @@ class _RosterConfigScreenState extends State<RosterConfigScreen> {
 String _nombrePosicion(BuildContext context, String codigo) =>
     t(context).nombresDePosiciones[codigo] ?? codigo;
 
-
 /// Un puesto de la rotación: su titular, su suplente y el reparto de
 /// minutos entre los dos.
 /// Lo que necesita un puesto para que quepan su nombre, la placa de media y
@@ -539,8 +571,7 @@ class _PuestoCard extends StatelessWidget {
       fondo: e.panel,
       corte: 12,
       borde: Border(
-        left: BorderSide(
-            color: titularLesionado ? e.mal : acento, width: 3),
+        left: BorderSide(color: titularLesionado ? e.mal : acento, width: 3),
         top: BorderSide(color: e.linea),
         right: BorderSide(color: e.linea),
         bottom: BorderSide(color: e.linea),
@@ -551,15 +582,18 @@ class _PuestoCard extends StatelessWidget {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(12, 9, 12, 8),
-            decoration:
-                BoxDecoration(border: Border(bottom: BorderSide(color: e.linea))),
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: e.linea)),
+            ),
             child: Row(
               children: [
                 Expanded(
-                  child: Text(mayus(nombrePosicion),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: titular(e, tamano: 16)),
+                  child: Text(
+                    mayus(nombrePosicion),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: titular(e, tamano: 16),
+                  ),
                 ),
                 const SizedBox(width: 8),
                 Text(posicion, style: rotulo(e, tamano: 9)),
@@ -583,10 +617,11 @@ class _PuestoCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      mayus(t(context)
-                          .minutosTitularLabel
-                          .replaceAll(':', '')
-                          .trim()),
+                      mayus(
+                        t(
+                          context,
+                        ).minutosTitularLabel.replaceAll(':', '').trim(),
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: rotulo(e, tamano: 9),
@@ -594,8 +629,9 @@ class _PuestoCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   _PasoMinutos(
-                      icono: Icons.remove,
-                      onTap: () => onCambiarMinutosTitular(-1)),
+                    icono: Icons.remove,
+                    onTap: () => onCambiarMinutosTitular(-1),
+                  ),
                   SizedBox(
                     width: 62,
                     child: Text(
@@ -608,8 +644,9 @@ class _PuestoCard extends StatelessWidget {
                     ),
                   ),
                   _PasoMinutos(
-                      icono: Icons.add,
-                      onTap: () => onCambiarMinutosTitular(1)),
+                    icono: Icons.add,
+                    onTap: () => onCambiarMinutosTitular(1),
+                  ),
                 ],
               ),
             ),
@@ -628,7 +665,6 @@ class _PuestoCard extends StatelessWidget {
     );
   }
 }
-
 
 /// Un hueco de la rotación: quién lo ocupa, lo bueno que es y por qué no
 /// debería estar ahí, si es el caso.
@@ -670,8 +706,11 @@ class _HuecoJugador extends StatelessWidget {
     final lesionado = jugador != null && lesion != null;
 
     final lineaAviso = lesionado
-        ? textos.lesionConDetalle(lesion!.motivo, lesion!.partidosEstimados,
-            _formatearFecha(lesion!.fechaFin))
+        ? textos.lesionConDetalle(
+            lesion!.motivo,
+            lesion!.partidosEstimados,
+            _formatearFecha(lesion!.fechaFin),
+          )
         : (fueraDePosicion ? textos.fueraDeSusDosPosiciones : null);
 
     final ladoPlaca = destacado ? 46.0 : 38.0;
@@ -684,7 +723,9 @@ class _HuecoJugador extends StatelessWidget {
         child: Container(
           decoration: destacado
               ? null
-              : BoxDecoration(border: Border(top: BorderSide(color: e.linea))),
+              : BoxDecoration(
+                  border: Border(top: BorderSide(color: e.linea)),
+                ),
           padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
           child: Row(
             children: [
@@ -693,27 +734,33 @@ class _HuecoJugador extends StatelessWidget {
                   width: ladoPlaca,
                   height: ladoPlaca,
                   alignment: Alignment.center,
-                  decoration:
-                      BoxDecoration(border: Border.all(color: e.lineaFuerte)),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: e.lineaFuerte),
+                  ),
                   child: Icon(Icons.add, size: 20, color: e.textoRotulo),
                 )
               else
                 PlacaMedia(
-                    media: jugador!.media,
-                    tamano: ladoPlaca,
-                    apagada: lesionado),
+                  media: jugador!.media,
+                  tamano: ladoPlaca,
+                  apagada: lesionado,
+                ),
               const SizedBox(width: 11),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(mayus(etiqueta),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: rotulo(e,
-                            tamano: 9,
-                            color: destacado ? acento : e.textoRotulo)),
+                    Text(
+                      mayus(etiqueta),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: rotulo(
+                        e,
+                        tamano: 9,
+                        color: destacado ? acento : e.textoRotulo,
+                      ),
+                    ),
                     const SizedBox(height: 1),
                     Text(
                       // Con clave propia: es lo que señalan los tests para
@@ -725,9 +772,11 @@ class _HuecoJugador extends StatelessWidget {
                           : mayus(jugador!.nombreFicticio),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: titular(e,
-                          tamano: destacado ? 18 : 15,
-                          color: lesionado ? e.textoTenue : e.texto),
+                      style: titular(
+                        e,
+                        tamano: destacado ? 18 : 15,
+                        color: lesionado ? e.textoTenue : e.texto,
+                      ),
                     ),
                     if (jugador != null) ...[
                       const SizedBox(height: 5),
@@ -735,17 +784,20 @@ class _HuecoJugador extends StatelessWidget {
                         jugador!.dorsal == null
                             ? etiquetaPosicion(jugador!)
                             : '${etiquetaPosicion(jugador!)} · '
-                                '#${jugador!.dorsal}',
+                                  '#${jugador!.dorsal}',
                         style: TextStyle(fontSize: 11, color: e.textoTenue),
                       ),
                     ],
                     if (lineaAviso != null) ...[
                       const SizedBox(height: 4),
-                      Text(lineaAviso,
-                          style: TextStyle(
-                              fontSize: 11,
-                              height: 1.25,
-                              color: lesionado ? e.mal : Colors.orange)),
+                      Text(
+                        lineaAviso,
+                        style: TextStyle(
+                          fontSize: 11,
+                          height: 1.25,
+                          color: lesionado ? e.mal : Colors.orange,
+                        ),
+                      ),
                     ],
                   ],
                 ),
@@ -782,7 +834,8 @@ class _EstadisticasTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ordenados = [...plantilla]..sort((a, b) {
+    final ordenados = [...plantilla]
+      ..sort((a, b) {
         final statsA = stats[a.id];
         final statsB = stats[b.id];
         final ppgA = statsA == null || statsA.partidosJugados == 0
@@ -811,22 +864,42 @@ class _EstadisticasTab extends StatelessWidget {
                   '${(s.puntosTotales / s.partidosJugados).toStringAsFixed(1)} pts · '
                   '${(s.asistenciasTotales / s.partidosJugados).toStringAsFixed(1)} ast · '
                   '${(s.rebotesTotales / s.partidosJugados).toStringAsFixed(1)} reb '
-                  '(${s.partidosJugados} PJ)'),
+                  '(${s.partidosJugados} PJ)',
+                ),
         );
       },
     );
   }
 }
 
-
-/// Las dos estrellas de la rotación: a quién se le da la bola y a quién le
-/// toca el mejor del rival.
-/// Por debajo de esto los tres selectores se apilan en vez de ir en fila:
-/// con las tres columnas seguidas el desplegable del sexto hombre se
-/// quedaba sin sitio para su etiqueta en un móvil.
+/// Los tres roles de la rotación: a quién se le da la bola, a quién le toca
+/// el mejor del rival, y quién entra primero desde el banquillo.
+///
+/// Por debajo de este ancho los tres selectores no caben en fila —el
+/// desplegable del sexto hombre se quedaba sin sitio para su etiqueta— así
+/// que se apilan. Y apilados ocupaban un tercio de la pantalla de un móvil,
+/// permanentemente, por tres cosas que se tocan una vez y no se vuelven a
+/// mirar: por eso ahí la banda se pliega (ver [_SelectorEstrellas]).
 const _anchoMinimoParaTresSelectores = 520.0;
 
-class _SelectorEstrellas extends StatelessWidget {
+/// El apellido, que es como se reconoce a un jugador de un vistazo.
+///
+/// En la banda plegada caben tres nombres en una línea de móvil solo si se
+/// recortan; el nombre entero obligaría a ponerlos en columna, que es justo
+/// lo que se está evitando. Los nombres del dataset son «Nombre Apellido»,
+/// así que la última palabra es la buena.
+String _apellido(String nombre) {
+  final partes = nombre.trim().split(' ');
+  return partes.isEmpty ? nombre : partes.last;
+}
+
+/// El icono de cada rol. Es lo que lo identifica en la banda plegada, donde
+/// no cabe la etiqueta entera; el nombre completo va en el `Semantics`.
+const _iconoAtaque = Icons.local_fire_department;
+const _iconoDefensa = Icons.shield;
+const _iconoSextoHombre = Icons.bolt;
+
+class _SelectorEstrellas extends StatefulWidget {
   final Map<int, Jugador> jugadoresPorId;
   final Set<int> idsAsignados;
   final int? estrellaAtaqueId;
@@ -852,21 +925,40 @@ class _SelectorEstrellas extends StatelessWidget {
   });
 
   @override
+  State<_SelectorEstrellas> createState() => _SelectorEstrellasState();
+}
+
+class _SelectorEstrellasState extends State<_SelectorEstrellas> {
+  /// Solo cuenta en pantalla estrecha: en ancho los tres están siempre a la
+  /// vista, porque ahí caben en una fila y no le quitan sitio a nada.
+  ///
+  /// Arranca plegado incluso sin nada elegido, y se puede: los tres roles
+  /// son opcionales —guardar solo pide titular y suplente en los cinco
+  /// puestos, ver `_rotacionCompleta`— y «Alinear automáticamente» los
+  /// rellena solo. El resumen de la banda dice a quién hay puesto, así que
+  /// plegado no esconde nada: lo dobla.
+  bool _abierto = false;
+
+  @override
   Widget build(BuildContext context) {
     final e = Estilo.de(context);
-    final candidatos = idsAsignados.toList()
-      ..sort((a, b) => jugadoresPorId[a]!
-          .nombreFicticio
-          .compareTo(jugadoresPorId[b]!.nombreFicticio));
-    final candidatosSuplentes = idsSuplentes.toList()
-      ..sort((a, b) => jugadoresPorId[a]!
-          .nombreFicticio
-          .compareTo(jugadoresPorId[b]!.nombreFicticio));
+    final candidatos = widget.idsAsignados.toList()
+      ..sort(
+        (a, b) => widget.jugadoresPorId[a]!.nombreFicticio.compareTo(
+          widget.jugadoresPorId[b]!.nombreFicticio,
+        ),
+      );
+    final candidatosSuplentes = widget.idsSuplentes.toList()
+      ..sort(
+        (a, b) => widget.jugadoresPorId[a]!.nombreFicticio.compareTo(
+          widget.jugadoresPorId[b]!.nombreFicticio,
+        ),
+      );
 
     DropdownMenuItem<int?> item(int? id, String etiqueta) => DropdownMenuItem(
-          value: id,
-          child: Text(etiqueta, overflow: TextOverflow.ellipsis),
-        );
+      value: id,
+      child: Text(etiqueta, overflow: TextOverflow.ellipsis),
+    );
 
     Widget selector({
       required String etiqueta,
@@ -879,35 +971,46 @@ class _SelectorEstrellas extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(mayus(etiqueta),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: rotulo(e,
-                  tamano: 9, color: colorLegibleComoTexto(color, context))),
+          Text(
+            mayus(etiqueta),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: rotulo(
+              e,
+              tamano: 9,
+              color: colorLegibleComoTexto(color, context),
+            ),
+          ),
           const SizedBox(height: 4),
           DropdownButtonFormField<int?>(
             isExpanded: true,
             decoration: InputDecoration(
               isDense: true,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 12,
+              ),
               filled: true,
               fillColor: e.panel,
               border: OutlineInputBorder(
-                  borderRadius: BorderRadius.zero,
-                  borderSide: BorderSide(color: e.lineaFuerte)),
+                borderRadius: BorderRadius.zero,
+                borderSide: BorderSide(color: e.lineaFuerte),
+              ),
               enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.zero,
-                  borderSide: BorderSide(color: e.lineaFuerte)),
+                borderRadius: BorderRadius.zero,
+                borderSide: BorderSide(color: e.lineaFuerte),
+              ),
               focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.zero,
-                  borderSide: BorderSide(color: color, width: 2)),
+                borderRadius: BorderRadius.zero,
+                borderSide: BorderSide(color: color, width: 2),
+              ),
             ),
             initialValue: opciones.contains(valor) ? valor : null,
             items: [
               item(null, t(context).ningunaOpcion),
-              ...opciones
-                  .map((id) => item(id, jugadoresPorId[id]!.nombreFicticio)),
+              ...opciones.map(
+                (id) => item(id, widget.jugadoresPorId[id]!.nombreFicticio),
+              ),
             ],
             onChanged: onChanged,
           ),
@@ -915,57 +1018,185 @@ class _SelectorEstrellas extends StatelessWidget {
       );
     }
 
-    final selectorAtaque = selector(
-      etiqueta: t(context).estrellaAtaqueLabel,
-      color: colorAtaque,
-      valor: estrellaAtaqueId,
-      opciones: candidatos,
-      onChanged: onCambiarEstrellaAtaque,
-    );
-    final selectorDefensa = selector(
-      etiqueta: t(context).estrellaDefensaLabel,
-      color: colorDefensa,
-      valor: estrellaDefensaId,
-      opciones: candidatos,
-      onChanged: onCambiarEstrellaDefensa,
-    );
-    final selectorSextoHombre = selector(
-      etiqueta: t(context).sextoHombreLabel,
-      color: colorSextoHombre,
-      valor: sextoHombreId,
-      opciones: candidatosSuplentes,
-      onChanged: onCambiarSextoHombre,
-    );
+    final selectores = [
+      selector(
+        etiqueta: t(context).estrellaAtaqueLabel,
+        color: colorAtaque,
+        valor: widget.estrellaAtaqueId,
+        opciones: candidatos,
+        onChanged: widget.onCambiarEstrellaAtaque,
+      ),
+      selector(
+        etiqueta: t(context).estrellaDefensaLabel,
+        color: colorDefensa,
+        valor: widget.estrellaDefensaId,
+        opciones: candidatos,
+        onChanged: widget.onCambiarEstrellaDefensa,
+      ),
+      selector(
+        etiqueta: t(context).sextoHombreLabel,
+        color: colorSextoHombre,
+        valor: widget.sextoHombreId,
+        opciones: candidatosSuplentes,
+        onChanged: widget.onCambiarSextoHombre,
+      ),
+    ];
 
     return Container(
       decoration: BoxDecoration(
         color: e.marcador,
         border: Border(top: BorderSide(color: e.lineaFuerte)),
       ),
-      padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
-      child: LayoutBuilder(builder: (context, restricciones) {
-        final selectores = [selectorAtaque, selectorDefensa, selectorSextoHombre];
-        if (restricciones.maxWidth < _anchoMinimoParaTresSelectores) {
+      child: LayoutBuilder(
+        builder: (context, restricciones) {
+          if (restricciones.maxWidth >= _anchoMinimoParaTresSelectores) {
+            // En ancho caben los tres en fila y no le quitan sitio a nada:
+            // se quedan siempre desplegados, sin banda ni flecha.
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (var i = 0; i < selectores.length; i++) ...[
+                    if (i > 0) const SizedBox(width: 12),
+                    Expanded(child: selectores[i]),
+                  ],
+                ],
+              ),
+            );
+          }
+
           return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              for (var i = 0; i < selectores.length; i++) ...[
-                if (i > 0) const SizedBox(height: 10),
-                selectores[i],
-              ],
+              InkWell(
+                onTap: () => setState(() => _abierto = !_abierto),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 10, 10, 10),
+                  child: _ResumenDeRoles(
+                    jugadoresPorId: widget.jugadoresPorId,
+                    estrellaAtaqueId: widget.estrellaAtaqueId,
+                    estrellaDefensaId: widget.estrellaDefensaId,
+                    sextoHombreId: widget.sextoHombreId,
+                    abierto: _abierto,
+                  ),
+                ),
+              ),
+              if (_abierto)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (var i = 0; i < selectores.length; i++) ...[
+                        if (i > 0) const SizedBox(height: 10),
+                        selectores[i],
+                      ],
+                    ],
+                  ),
+                ),
             ],
           );
-        }
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (var i = 0; i < selectores.length; i++) ...[
-              if (i > 0) const SizedBox(width: 12),
-              Expanded(child: selectores[i]),
+        },
+      ),
+    );
+  }
+}
+
+/// La línea que se ve con la banda plegada: los tres roles con su icono y
+/// el apellido de quien los lleva, o un guion si no hay nadie.
+///
+/// Tiene que decir de un vistazo lo mismo que dirían los tres desplegables
+/// abiertos. Si no, plegar sería esconder.
+class _ResumenDeRoles extends StatelessWidget {
+  final Map<int, Jugador> jugadoresPorId;
+  final int? estrellaAtaqueId;
+  final int? estrellaDefensaId;
+  final int? sextoHombreId;
+  final bool abierto;
+
+  const _ResumenDeRoles({
+    required this.jugadoresPorId,
+    required this.estrellaAtaqueId,
+    required this.estrellaDefensaId,
+    required this.sextoHombreId,
+    required this.abierto,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final e = Estilo.de(context);
+    final textos = t(context);
+
+    Widget rol(IconData icono, Color color, int? id, String etiqueta) {
+      final jugador = id == null ? null : jugadoresPorId[id];
+      final texto = jugador == null ? '—' : _apellido(jugador.nombreFicticio);
+      // El icono se queda sin etiqueta escrita por falta de sitio, pero no
+      // puede quedarse sin nombre: quien use un lector de pantalla oye el
+      // rol entero y a quién lo lleva.
+      return Expanded(
+        child: Semantics(
+          label:
+              '$etiqueta: '
+              '${jugador?.nombreFicticio ?? textos.ningunaOpcion}',
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icono,
+                size: 15,
+                color: colorLegibleComoTexto(color, context),
+              ),
+              const SizedBox(width: 5),
+              Flexible(
+                child: Text(
+                  texto,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: jugador == null
+                        ? FontWeight.normal
+                        : FontWeight.w600,
+                    color: jugador == null ? e.textoTenue : e.texto,
+                  ),
+                ),
+              ),
             ],
-          ],
-        );
-      }),
+          ),
+        ),
+      );
+    }
+
+    return Row(
+      children: [
+        rol(
+          _iconoAtaque,
+          colorAtaque,
+          estrellaAtaqueId,
+          textos.estrellaAtaqueLabel,
+        ),
+        const SizedBox(width: 8),
+        rol(
+          _iconoDefensa,
+          colorDefensa,
+          estrellaDefensaId,
+          textos.estrellaDefensaLabel,
+        ),
+        const SizedBox(width: 8),
+        rol(
+          _iconoSextoHombre,
+          colorSextoHombre,
+          sextoHombreId,
+          textos.sextoHombreLabel,
+        ),
+        Icon(
+          abierto ? Icons.expand_more : Icons.expand_less,
+          size: 22,
+          color: e.textoTenue,
+        ),
+      ],
     );
   }
 }
@@ -985,8 +1216,10 @@ class _HojaDePicks extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(t(context).tituloTusPicksDeDraft,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(
+              t(context).tituloTusPicksDeDraft,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
             const SizedBox(height: 12),
             if (picks.isEmpty)
               Padding(
@@ -1022,7 +1255,6 @@ class _HojaDePicks extends StatelessWidget {
     );
   }
 }
-
 
 /// El ataque y la defensa de tu quinteto y de la rotación entera.
 ///
@@ -1063,10 +1295,12 @@ class _FranjaAtaqueDefensa extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(mayus(textos.quintetoInicial),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: rotulo(e, tamano: 9)),
+                child: Text(
+                  mayus(textos.quintetoInicial),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: rotulo(e, tamano: 9),
+                ),
               ),
               const SizedBox(width: 10),
               Flexible(
@@ -1085,16 +1319,18 @@ class _FranjaAtaqueDefensa extends StatelessWidget {
             children: [
               Expanded(
                 child: _BarraDeMedia(
-                    etiqueta: textos.ataque,
-                    valor: quinteto.ataque,
-                    color: colorAtaque),
+                  etiqueta: textos.ataque,
+                  valor: quinteto.ataque,
+                  color: colorAtaque,
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
                 child: _BarraDeMedia(
-                    etiqueta: textos.defensa,
-                    valor: quinteto.defensa,
-                    color: colorDefensa),
+                  etiqueta: textos.defensa,
+                  valor: quinteto.defensa,
+                  color: colorDefensa,
+                ),
               ),
             ],
           ),
@@ -1129,10 +1365,12 @@ class _BarraDeMedia extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
-              child: Text(mayus(etiqueta),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: rotulo(e, tamano: 10, color: tinta)),
+              child: Text(
+                mayus(etiqueta),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: rotulo(e, tamano: 10, color: tinta),
+              ),
             ),
             const SizedBox(width: 6),
             Text('$valor', style: cifra(e, tamano: 20, color: tinta)),
@@ -1191,7 +1429,10 @@ class _BarraDeEquipo extends StatelessWidget {
       child: Stack(
         children: [
           Positioned(
-              top: 0, right: 0, child: CunaEsquina(color: acento, tamano: 110)),
+            top: 0,
+            right: 0,
+            child: CunaEsquina(color: acento, tamano: 110),
+          ),
           Positioned(
             top: 0,
             right: -6,
@@ -1216,10 +1457,11 @@ class _BarraDeEquipo extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 2,
-                                  color: acento),
+                                fontSize: 9,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 2,
+                                color: acento,
+                              ),
                             ),
                             const SizedBox(height: 2),
                             Text(
@@ -1231,11 +1473,12 @@ class _BarraDeEquipo extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                  fontFamily: familiaTitular,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w800,
-                                  height: 1,
-                                  color: sobre),
+                                fontFamily: familiaTitular,
+                                fontSize: 24,
+                                fontWeight: FontWeight.w800,
+                                height: 1,
+                                color: sobre,
+                              ),
                             ),
                           ],
                         ),
@@ -1255,15 +1498,17 @@ class _BarraDeEquipo extends StatelessWidget {
                   labelColor: sobre,
                   unselectedLabelColor: textoSecundarioSobre(fondo),
                   labelStyle: const TextStyle(
-                      fontFamily: familiaTitular,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1),
+                    fontFamily: familiaTitular,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1,
+                  ),
                   unselectedLabelStyle: const TextStyle(
-                      fontFamily: familiaTitular,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1),
+                    fontFamily: familiaTitular,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1,
+                  ),
                   tabs: [
                     Tab(text: mayus(textos.pestanaAlineacion)),
                     Tab(text: mayus(textos.pestanaEstadisticas)),
