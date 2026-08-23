@@ -28,10 +28,94 @@ https://jokar77.github.io/manager-nba/
 - PowerShell 5.1 **no admite `&&`**; el Bash de Git sí. Los dos están
   disponibles y se usa el que convenga.
 
-## PENDIENTE / LEAD: «temporada entera» se planta en el partido 53 de 82
+## RESUELTO: «temporada entera» se plantaba en el partido 53 de 82 (23 de agosto de 2026)
 
-**Sin resolver.** Encontrado el 23 de agosto de 2026 y anotado aquí porque
-es lo más gordo que hay abierto ahora mismo.
+El lead que quedó abierto en la sesión anterior, encontrado y arreglado.
+
+### La causa
+
+En `simularHastaConDialogo` (`lib/features/calendario/simulacion_ui.dart`),
+el bucle avanza en etapas de una semana **a propósito** —es lo que deja que
+una oferta de noviembre te pare en noviembre, no al final de todo—. Pero:
+
+```dart
+DateTime? cursor;  // arrancaba en null
+...
+final metaParcial = cursor == null || ...
+    ? diaObjetivo      // <- SIEMPRE esto en la primera vuelta
+    : cursor.add(pasoDeParada);
+```
+
+Con `cursor == null`, la condición del ternario era verdadera **siempre**
+en la primera vuelta, sin importar lo lejos que estuviera `diaObjetivo`.
+"Simular temporada entera" apuntaba a abril, y la primera —y única—
+llamada a `simularTramo` intentaba todo el camino de una tacada. Solo paró
+donde paró (partido 53) porque ahí se topó con la fecha límite de
+traspasos, el primer freno real que encontró en meses.
+
+Consecuencia práctica, que es justo lo que pedía el usuario arreglar: una
+oferta o un evento de una semana intermedia **no paraba la simulación
+ahí**. Se amontonaba dentro de ese único tramo gigante y se resolvía al
+final (o no se resolvía, si el freno real llegaba antes).
+
+### El arreglo
+
+Sembrar `cursor` con la fecha actual de la liga (`fechaActualDeLaLiga(db)`)
+en vez de `null`. Con eso la primera vuelta pacea exactamente igual que
+todas las demás: como mucho una semana, nunca de golpe hasta el final.
+
+Confirmado con un test que llama a `simularHastaConDialogo` directamente y
+cuenta cuántas veces se invoca `onProgreso` en diez días: antes, una vez
+(todo junto); ahora, dos (una por semana).
+
+### Cómo se encontró, para la próxima vez que algo así se atasque
+
+Instrumentar con `print` no basta si el sitio equivocado se instrumenta:
+las primeras rondas de prints en el bucle de `simularHastaConDialogo` no
+mostraban nada, porque el problema no estaba ahí — estaba en que la
+condición del ternario tomaba la rama de "todo de una vez" antes siquiera
+de llegar al cuerpo del bucle. Lo que lo destapó fue un print en la
+entrada misma de la función, seguido de uno en cada vuelta con el
+contenido completo del `ResultadoTramo` (`simulados.length`,
+`eventoBloqueante?.tipo`).
+
+Y una vez arreglado el paceo, apareció un problema de comprobación
+distinto: el diálogo de campeón de la Copa (`campeon_dialog.dart`) pinta
+sus botones ("Cerrar", "Ver estadísticas") **sin pasarlos por `mayus()`**,
+a diferencia de todos los `BotonDialogo*` de `estilo.dart`. Un test que
+busca `find.text('CERRAR')` no lo encuentra; hace falta buscar también
+`'Cerrar'` tal cual. Costó un rato de más.
+
+### Tests nuevos
+
+- `el primer tramo pacea semana a semana, sin tragarse el mes entero de
+  golpe` — llama a `simularHastaConDialogo` directamente con un rango de
+  diez días y exige más de una llamada a `onProgreso`. Es la prueba de
+  regresión de este bug concreto.
+- `«temporada entera» simula la liga regular sin tocar el play-in ni los
+  playoffs` — reescrita a nivel de repositorio (mismo patrón que
+  `temporada_con_mercado_test.dart`: contestar "seguir simulando" es
+  simplemente ignorar el evento bloqueante y seguir), para no depender de
+  toda la maraña de diálogos de la UI.
+- El test existente `con la versión completa, el botón simula el año
+  entero` necesitó un ayudante nuevo, `_avanzarUnDialogoSiHay`, que
+  contesta cualquier diálogo que aparezca en el camino (fecha límite,
+  oferta, All-Star, campeón) con la opción de **seguir**, nunca la que
+  navega a otra pantalla — con el paceo corregido, una simulación larga
+  cruza con más de uno.
+
+### Estado
+
+`flutter analyze` limpio en los dos paquetes. **672 tests en verde** en la
+app y 21 en `sim_engine`. `flutter build web` correcto.
+
+## RESUELTO más abajo: «temporada entera» se planta en el partido 53 de 82
+
+~~**Sin resolver.**~~ Arreglado en la sesión siguiente, el 23 de agosto de
+2026. Ver *"RESUELTO: «temporada entera» se plantaba en el partido 53 de
+82"* más arriba en este mismo fichero, con la causa, el arreglo y los
+tests. Se deja el análisis original tal cual quedó porque documenta bien
+lo que se descartó por el camino.
 
 Al pulsar «Temporada entera» en el calendario, la simulación llega al
 partido **53 de 82** y se para sola. **No hay ningún diálogo esperando**

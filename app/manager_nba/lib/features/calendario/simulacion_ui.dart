@@ -192,7 +192,22 @@ Future<ResultadoLoteSimulado> simularHastaConDialogo(
   // noviembre te pare en noviembre —y no al final de todo, cuando ya no
   // puedes hacer nada con ella— sin dejar de ser un único "simular hasta".
   const pasoDeParada = Duration(days: 7);
-  DateTime? cursor;
+
+  // El cursor arranca en HOY, no en null. Aquí estaba el bug real de
+  // "simular temporada entera se planta a mitad de año sin avisar":
+  // con `cursor == null` la primera vuelta del bucle saltaba de golpe al
+  // `diaObjetivo` completo —meses enteros de partidos, sin pasar por
+  // ninguna semana intermedia— y `simularTramo` no vuelve a ceder el
+  // control hasta toparse con la primera fecha límite sin resolver. Los
+  // eventos de vestuario y las ofertas de esas semanas de en medio no se
+  // perdían, pero se amontonaban y salían todos de golpe al final de ese
+  // salto gigante, en vez de pararte exactamente donde pasó cada uno —que
+  // es justo lo que este "paso de una semana" existe para garantizar.
+  //
+  // Sembrando el cursor en la fecha actual de la liga, la primera vuelta
+  // pacea igual que todas las demás: como mucho una semana, nunca de
+  // golpe hasta el final.
+  DateTime? cursor = await fechaActualDeLaLiga(db);
   var interrumpidoPorOferta = false;
 
   while (true) {
