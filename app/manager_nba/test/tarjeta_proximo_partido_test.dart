@@ -131,6 +131,10 @@ void main() {
             'el rótulo tiene que coincidir con dónde se juega de verdad, '
             'no decir siempre "en casa"');
     expect(find.text('SIMULAR 1 PARTIDO'), findsOneWidget);
+    // Lista 15 punto 3: el botón de "Temporada entera" se quitó de aquí
+    // porque duplicaba el que ya vive a la derecha de la barra de saltos
+    // del Calendario (ver `simular_temporada_entera_test.dart`).
+    expect(find.text('TEMPORADA ENTERA'), findsNothing);
   });
 
   testWidgets(

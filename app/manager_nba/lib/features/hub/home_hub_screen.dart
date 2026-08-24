@@ -13,7 +13,6 @@ import '../../main.dart' show routeObserver;
 import '../../domain/fin_temporada_repository.dart';
 import '../../domain/nueva_temporada_repository.dart';
 import '../../domain/ofertas_repository.dart';
-import '../../domain/permisos.dart';
 import '../../domain/salarios.dart';
 import '../../domain/torneo_repository.dart';
 import '../ajustes/ajustes_screen.dart';
@@ -288,15 +287,11 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
     ));
   }
 
-  /// Abre el Calendario. Con [simularTemporada] a true entra simulando lo
-  /// que queda de temporada regular, que es lo que hace el botón "Simular
-  /// temporada entera" de la tarjeta de próximo partido.
-  void _abrirCalendario({bool simularTemporada = false}) => _abrir(
+  void _abrirCalendario() => _abrir(
         (context) => CalendarioScreen(
           db: widget.db,
           equipoUsuario: widget.equipo,
           random: widget.random,
-          simularTemporadaAlAbrir: simularTemporada,
         ),
         ruta: const RouteSettings(name: RutasPrincipales.calendario),
       );
@@ -515,9 +510,6 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
                 equipoUsuario: widget.equipo,
                 partido: estado.proximoPartido!,
                 random: widget.random,
-                temporada: estado.temporada,
-                onSimularTemporadaEntera: () =>
-                    _abrirCalendario(simularTemporada: true),
                 // El closure que se le PASA a setState tiene que ser de
                 // bloque, no de flecha: `setState(() => x = y)` hace que el
                 // argumento devuelva el valor de la asignación (el propio
@@ -570,9 +562,6 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
                 equipoUsuario: widget.equipo,
                 partido: estado.proximoPartido!,
                 random: widget.random,
-                temporada: estado.temporada,
-                onSimularTemporadaEntera: () =>
-                    _abrirCalendario(simularTemporada: true),
                 // Ver el comentario de la otra copia de este callback,
                 // arriba en _unaColumna.
                 onSimulado: () {
@@ -1169,12 +1158,6 @@ class _TarjetaProximoPartido extends StatefulWidget {
   /// hub recargue el récord y el siguiente partido pendiente.
   final VoidCallback onSimulado;
 
-  /// Abre el Calendario simulando lo que queda de temporada regular.
-  final VoidCallback onSimularTemporadaEntera;
-
-  /// En qué temporada estamos: hace falta para preguntar por el permiso.
-  final int temporada;
-
   /// Solo para los tests. Ver `simularHastaConDialogo`.
   final Random? random;
 
@@ -1183,8 +1166,6 @@ class _TarjetaProximoPartido extends StatefulWidget {
     required this.equipoUsuario,
     required this.partido,
     required this.onSimulado,
-    required this.onSimularTemporadaEntera,
-    required this.temporada,
     this.random,
   });
 
@@ -1225,11 +1206,6 @@ class _TarjetaProximoPartidoState extends State<_TarjetaProximoPartido> {
       widget.onSimulado();
     }
   }
-
-  /// Si esta partida puede simular el año de golpe. En la versión gratuita
-  /// no: es uno de los tres bloqueos (ver `permisos.dart`).
-  bool get _puedeTemporadaEntera => permisos
-      .puede(Funcion.simularTemporadaEntera, temporada: widget.temporada);
 
   @override
   Widget build(BuildContext context) {
@@ -1336,24 +1312,6 @@ class _TarjetaProximoPartidoState extends State<_TarjetaProximoPartido> {
                 color: acento,
                 alto: 44,
                 onTap: _simulando ? null : _simular,
-              ),
-              const SizedBox(height: 8),
-              // Lo que queda de año no se simula desde aquí: este botón
-              // lleva al Calendario y allí se ve avanzar sobre las fechas,
-              // con su barra de progreso. Ochenta partidos a ciegas desde
-              // el menú serían un botón que se queda pensando sin contar
-              // nada — y si algo te para por el camino (una oferta, el
-              // vestuario), te para en la pantalla donde tiene sentido.
-              BotonPerfilado(
-                texto: textos.simularTemporadaEntera,
-                icono: _puedeTemporadaEntera
-                    ? Icons.fast_forward
-                    : Icons.lock_outline,
-                color: e.textoTenue,
-                alto: 40,
-                onTap: _simulando || !_puedeTemporadaEntera
-                    ? null
-                    : widget.onSimularTemporadaEntera,
               ),
             ],
           ),

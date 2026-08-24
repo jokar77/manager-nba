@@ -180,17 +180,43 @@ confirmar que Rising Stars ya volvía a verde:
 **676 tests, 0 fallos.** Confirmado tras aplicar el CSV de rookies 2026 y
 arreglar los dos tests de arriba.
 
+### Lista 15, punto 3: quitado el botón duplicado de "Temporada entera"
+
+`lib/features/hub/home_hub_screen.dart`: la tarjeta de próximo partido ya
+no lleva el botón "Temporada entera" — solo "Simular 1 partido". El botón
+vivía aquí de cuando el Calendario todavía no tenía el suyo propio (a la
+derecha de su barra de saltos, desde la sesión del 23 de agosto); con los
+dos a la vez sobraba uno, y el que se queda es el del Calendario, que es
+donde de verdad se ve avanzar la simulación.
+
+De paso, limpieza de lo que solo usaba ese botón: `_TarjetaProximoPartido`
+perdió `onSimularTemporadaEntera`/`temporada`/`_puedeTemporadaEntera`;
+`_abrirCalendario` volvió a no tener parámetros; y en
+`calendario_screen.dart`, `simularTemporadaAlAbrir` (el "arranca solo al
+abrir" que solo pedía este botón) y todo lo que dependía de él
+(`_yaSimuloLaTemporada`, `_simularTemporadaSiTocaAlAbrir`) — nadie más lo
+usaba, así que se quitó en vez de dejarlo muerto.
+
+Tests: quitados los 4 de `simular_temporada_entera_test.dart` que
+probaban el botón del hub (ya no existe); añadido uno de regresión en
+`tarjeta_proximo_partido_test.dart` que comprueba que "TEMPORADA ENTERA"
+ya NO aparece en la tarjeta. Los tests de la barra del Calendario (grupo
+"la barra de saltos del calendario", mismo fichero) siguen intactos, no
+dependían de esto.
+
+Verificado: `flutter analyze .` limpio, y la suite completa
+(`flutter test --no-pub`) en verde. Probado también arrancando
+`flutter run -d web-server` (vía `.claude/launch.json`) y cargando la
+app en el navegador — sin errores de consola; no se pudo tomar captura
+porque el panel de Browser no estaba visible en esta sesión, así que la
+confirmación de que el botón ya no aparece se apoya en el test de
+regresión de arriba, no en una captura.
+
 ### Qué falta
 
-1. Commitear en local (sin push) todo lo de hoy:
-   `assets/data/jugadores.json`, `jugadores_importer.dart`,
-   `eventos_narrativos.dart`, `eventos_narrativos_repository.dart`,
-   `simulacion_ui.dart`, `evento_narrativo_dialog.dart`, los 7
-   `i18n/eventos_*.dart`, `textos_eventos.dart`,
-   `test/eventos_narrativos_test.dart`, `test/jugadores_importer_test.dart`,
-   `test/mercado_test.dart`.
-2. Seguir con el punto 3 de la lista 15 (quitar el botón duplicado de
-   "Temporada entera" de la pantalla principal).
+1. Commitear en local (sin push) todo lo de hoy.
+2. Seguir con el punto 4 de la lista 15 (el calendario debe desplazarse
+   solo con el avance de fechas mientras se simula).
 
 ### Antecedente: la causa del bug de rookies (sesión del 23 de agosto)
 
@@ -214,25 +240,25 @@ rookies reales, el juego se quedaba sin ninguna clase de novato jugable.
 
 ## Lista bugs/mejora 15 (a 2026-08-23, de `lista_bugs_cambios_nba_manager_15.txt`)
 
-Por orden de más a menos importante. **Sin empezar ninguno.**
+Por orden de más a menos importante. **Puntos 1, 2 y 3 hechos** (ver la
+sección "EN CURSO" al principio del fichero para el detalle); del 4 al
+11, sin empezar.
 
-1. **Bug rookies/clases**: al simular una temporada, siguen saliendo como
-   rookies jugadores de la clase anterior (ej. Cooper Flagg y su
-   generación) aunque ya deberían ser sophomores. Corregir la
-   elegibilidad de los premios de rookie para que solo cuenten los
-   novatos reales de esa temporada (ej. Aday Mara y su clase). Mirar
-   `lib/domain/premios_repository.dart` y `lib/domain/draft_repository.dart`.
-2. **Eventos aleatorios**: cuando el evento se refiera a un jugador, debe
-   decir cuál exactamente (uno de los 10 que están participando), y las
-   consecuencias deben expresarse claras (ej. "+1/+2 media 3 partidos",
-   "-2 media X partidos"). Ver `lib/domain/eventos_narrativos.dart` y
+1. ~~**Bug rookies/clases**~~ HECHO. Corregido `draft_year` a mano para
+   la clase 2024-2025 y completada con datos reales la clase 2026 (ver
+   arriba). `lib/domain/premios_repository.dart` y
+   `lib/domain/draft_repository.dart` ya usaban bien el historial
+   simulado; el bug era el dato de partida en `jugadores_importer.dart`.
+2. ~~**Eventos aleatorios**~~ HECHO. Los eventos que hablan de un jugador
+   concreto dicen su nombre (sacado de tu rotación de 10), y cada efecto
+   enseña su porcentaje real. Ver `lib/domain/eventos_narrativos.dart` y
    `lib/features/temporada/evento_narrativo_dialog.dart`.
-3. **Pantalla principal**: donde pone "Simular 1 partido" no debe salir
-   también el botón de "Temporada entera". Es
-   `lib/features/hub/home_hub_screen.dart` — el botón de temporada
-   entera se añadió ahí mismo cuando "temporada entera" todavía no
-   existía en el Calendario; ahora que vive a la derecha de la barra del
-   Calendario (ver la sesión del 23 de agosto), sobra aquí.
+3. ~~**Pantalla principal**~~ HECHO. Quitado el botón "Temporada entera"
+   de la tarjeta de próximo partido en `lib/features/hub/home_hub_screen.dart`
+   (duplicaba el que ya vive a la derecha de la barra del Calendario, ver
+   la sesión del 23 de agosto) — de paso se limpió el mecanismo de
+   "abrir el Calendario ya simulando" que solo él usaba
+   (`simularTemporadaAlAbrir` en `calendario_screen.dart`, ahora muerto).
 4. **Calendario, simulación**: mientras se simula, la vista debe
    desplazarse sola con el avance de fechas para que se siga viendo por
    dónde va. `lib/features/calendario/calendario_screen.dart`.
