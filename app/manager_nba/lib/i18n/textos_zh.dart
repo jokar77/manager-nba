@@ -1147,6 +1147,8 @@ class TextosZh extends Textos {
   String potencialTooltip(String etiqueta) => '潜力：$etiqueta';
   @override
   String get volverAlMenuPrincipalTooltip => '返回主菜单';
+  @override
+  String get volverAInicioTooltip => '返回开始界面';
 
   @override
   String get margenSalarialEvento => '工资空间';

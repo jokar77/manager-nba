@@ -719,6 +719,12 @@ abstract class Textos {
   String potencialTooltip(String etiqueta);
   String get volverAlMenuPrincipalTooltip;
 
+  /// El botón del hub que sale de la partida actual y vuelve a la
+  /// pantalla de arranque (nueva partida, cargar, ajustes). Distinto de
+  /// [volverAlMenuPrincipalTooltip], que vuelve AL hub desde una pantalla
+  /// colgada de él, no MÁS ALLÁ del hub.
+  String get volverAInicioTooltip;
+
   String get margenSalarialEvento;
 
   /// Rotulo de la primera seccion del menu principal.

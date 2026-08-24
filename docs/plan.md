@@ -496,6 +496,53 @@ original.
 **Verificado**: `flutter analyze` limpio y las 9 combinaciones
 semilla×test en verde (~1m16s), más la suite completa.
 
+## Selector de idioma: la nota de "no tiene" estaba desactualizada (24 de agosto)
+
+Revisando "Cosas que el juego NO tiene" de camino a otra cosa, se
+encontró que "el selector de idioma en Ajustes está deshabilitado (es un
+placeholder)" ya no es verdad — se implementó de verdad en `8ebb988`
+("Lista parte 11: ajustes que aplican de verdad..."). Comprobado a
+fondo antes de tocar la nota: `AjustesScreen._cambiarIdioma` guarda en
+`ajustes_repository.dart` y repinta la app entera vía `idiomaNotifier`
+en `main.dart`, y `ajustes_screen_test.dart` + `idiomas_test.dart` lo
+cubren (8/8 en verde, incluida la persistencia al cerrar y reabrir la
+pantalla). Nota corregida, sin tocar código.
+
+## Botón "volver a inicio" en el hub (24 de agosto, a petición del usuario)
+
+El usuario pidió, en marcha: un botón en la pantalla principal (donde
+ves tu equipo) para volver a la pantalla de arranque (nueva partida,
+cargar, ajustes) — hasta ahora, una vez dentro de una partida, no había
+forma de salir a esa pantalla sin cerrar el juego entero.
+
+**Dónde va: arriba a la izquierda** (decisión del usuario cuando se le
+preguntó, siguiendo la convención de "atrás"), separado del icono de
+Ajustes que ya vive arriba a la derecha de la misma cabecera — así no
+compiten por la misma esquina.
+
+**Cómo vuelve.** No hace falta un `popUntil` con ruta con nombre: el hub
+siempre se llega a él con un único `Navigator.push` (al continuar una
+partida) o un `pushAndRemoveUntil` que deja exactamente `StartMenuScreen`
+debajo (al empezar una nueva, ver `start_menu_screen.dart`) — así que un
+`Navigator.pop()` normal basta, y `_continuar`/`_empezarEn` en
+`start_menu_screen.dart` ya se encargan solos de cerrar la base de datos
+de la ranura y refrescar la lista al notar que el hub se cerró (ese
+código ya existía, no se tocó).
+
+Nuevo texto `volverAInicioTooltip` en los 7 idiomas (junto a
+`volverAlMenuPrincipalTooltip`, que es un botón DISTINTO — ese vuelve AL
+hub desde una pantalla colgada de él, no más allá). Ojo con francés e
+italiano al escribirlo: el propio `plan.md` avisa de que un apóstrofe
+sin escapar (`l'écran`) cierra el literal de Dart antes de tiempo —
+escrito con `\'` a propósito.
+
+Test nuevo en `home_hub_screen_test.dart`: empuja el hub encima de una
+pantalla de arranque de mentira, toca el botón, comprueba que vuelve a
+verse esa pantalla y que no salta ninguna excepción por el camino.
+
+**Verificado**: `flutter analyze` limpio y la suite completa,
+**684 tests, todos verdes**.
+
 ## Lista bugs/mejora 15 (a 2026-08-23, de `lista_bugs_cambios_nba_manager_15.txt`)
 
 Por orden de más a menos importante. **Los 11 puntos están hechos** (ver
@@ -2125,8 +2172,16 @@ al vuelo**. La fuente por defecto (Roboto) no tiene glifos chinos.
 
 Copia de seguridad (exportar/importar), finanzas del club (solo hay tope
 salarial: ni ingresos ni taquilla), staff más allá del entrenador, química de
-vestuario, ojeadores con incertidumbre real, y el selector de **idioma en
-Ajustes está deshabilitado** (es un placeholder).
+vestuario, ojeadores con incertidumbre real.
+
+~~El selector de idioma en Ajustes está deshabilitado (es un
+placeholder)~~ — desactualizado, comprobado el 24 de agosto de 2026:
+funciona de verdad (se implementó en `8ebb988`, "Lista parte 11: ajustes
+que aplican de verdad..."). `AjustesScreen._cambiarIdioma` guarda en
+`ajustes_repository.dart` y repinta la app entera vía `idiomaNotifier`
+en `main.dart` (`MaterialApp.locale`), y `ajustes_screen_test.dart` +
+`idiomas_test.dart` lo cubren (8/8 en verde), incluido que sobrevive a
+cerrar y reabrir la pantalla.
 
 ## Cambiar los DATOS no llega a las partidas ya empezadas
 

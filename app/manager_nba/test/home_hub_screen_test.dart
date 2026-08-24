@@ -52,6 +52,39 @@ void main() {
         reason: 'la navegación tiene que seguir funcionando tras volver');
   });
 
+  /// El botón de "volver a inicio" (flecha, arriba a la izquierda de la
+  /// cabecera) tiene que sacarte del hub y dejarte en lo que hubiera
+  /// debajo en la pila — la pantalla de arranque en el juego de verdad
+  /// (`StartMenuScreen`, ver `start_menu_screen.dart`), aquí un doble
+  /// sencillo. Es un `pop` normal, no un `popUntil` con nombre de ruta:
+  /// esto comprueba justo eso, que basta con lo que hay debajo.
+  testWidgets('el botón de volver a inicio saca del hub y deja lo de debajo',
+      (WidgetTester tester) async {
+    final db = AppDatabase.forTesting(NativeDatabase.memory());
+    addTearDown(db.close);
+
+    await tester.pumpWidget(MaterialApp(
+      navigatorObservers: [routeObserver],
+      home: const Scaffold(body: Text('pantalla de inicio')),
+    ));
+
+    final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+    navigator.push(MaterialPageRoute<void>(
+      builder: (_) => HomeHubScreen(db: db, equipo: 'DEN'),
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.text('pantalla de inicio'), findsNothing);
+    final boton = find.widgetWithIcon(IconButton, Icons.arrow_back);
+    expect(boton, findsOneWidget);
+
+    await tester.tap(boton);
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('pantalla de inicio'), findsOneWidget);
+  });
+
   /// La cabecera pinta logo, nombre, récord y masa salarial en una franja de
   /// alto fijo: en un móvil estrecho es donde se desborda si algo crece.
   testWidgets('el menú principal cabe en una pantalla de móvil estrecha',

@@ -461,6 +461,15 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
 
   void _abrirAjustes() => _abrir((context) => const AjustesScreen());
 
+  /// Sale de la partida actual y vuelve a la pantalla de arranque (nueva
+  /// partida, cargar, ajustes). El hub siempre se llega a él con un único
+  /// `push` (o un `pushAndRemoveUntil` que dejó exactamente esa pantalla
+  /// debajo, ver `start_menu_screen.dart`), así que un `pop` normal basta:
+  /// no hace falta un `popUntil` ni una ruta con nombre. Quien nos metió
+  /// aquí (`_continuar`/`_empezarEn`) ya se encarga de cerrar la base de
+  /// datos y refrescar la lista de ranuras al notar que esto se cerró.
+  void _volverAInicio() => Navigator.of(context).pop();
+
   @override
   Widget build(BuildContext context) {
     final e = Estilo.de(context);
@@ -499,6 +508,7 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
             margen: margen,
             columnasDeMarcador: compacto ? 3 : 4,
             onAjustes: _abrirAjustes,
+            onVolverAInicio: _volverAInicio,
           ),
         ),
         SliverPadding(
@@ -551,6 +561,7 @@ class _HomeHubScreenState extends State<HomeHubScreen> with RouteAware {
             margen: margen,
             columnasDeMarcador: 4,
             onAjustes: _abrirAjustes,
+            onVolverAInicio: _volverAInicio,
           ),
         ),
         SliverPadding(
@@ -667,6 +678,7 @@ class _CabeceraEquipo extends StatelessWidget {
   final double margen;
   final int columnasDeMarcador;
   final VoidCallback onAjustes;
+  final VoidCallback onVolverAInicio;
 
   const _CabeceraEquipo({
     required this.equipo,
@@ -675,6 +687,7 @@ class _CabeceraEquipo extends StatelessWidget {
     required this.margen,
     required this.columnasDeMarcador,
     required this.onAjustes,
+    required this.onVolverAInicio,
   });
 
   @override
@@ -711,6 +724,15 @@ class _CabeceraEquipo extends StatelessWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Arriba a la izquierda, como manda la convención de
+                      // "atrás"; Ajustes se queda a la derecha para que no
+                      // compitan por la misma esquina.
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back),
+                        color: sobre,
+                        tooltip: t(context).volverAInicioTooltip,
+                        onPressed: onVolverAInicio,
+                      ),
                       PlacaEquipo(
                         codigo: equipo,
                         primario: info.colorPrimario,

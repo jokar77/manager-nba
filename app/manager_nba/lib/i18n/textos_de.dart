@@ -1230,6 +1230,8 @@ class TextosDe extends Textos {
   String potencialTooltip(String etiqueta) => 'Potenzial: $etiqueta';
   @override
   String get volverAlMenuPrincipalTooltip => 'Zurück zum Hauptmenü';
+  @override
+  String get volverAInicioTooltip => 'Zum Startbildschirm';
 
   @override
   String get margenSalarialEvento => 'Gehaltsspielraum';
