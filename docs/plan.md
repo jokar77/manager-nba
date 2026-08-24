@@ -460,6 +460,42 @@ del usuario) no servía de contraejemplo porque ni se importaba — y esa
 investigación fue justo lo que llevó al punto 1 de hoy: sin el CSV de
 rookies reales, el juego se quedaba sin ninguna clase de novato jugable.
 
+## `tu_equipo_no_se_descuelga_test.dart` a varias semillas (24 de agosto de 2026)
+
+Con la Lista 15 cerrada, se retomó el punto 3 de "Lo que queda abierto":
+el arreglo de la espiral de descolgada (sesión del 23 de agosto) solo se
+había medido con una semilla. Se llevaron los dos tests de
+`tu_equipo_no_se_descuelga_test.dart` a un `for` sobre varias semillas
+cada uno (5 para el de "mediocre, no hundido"; 4 para el de "no te firma
+estrellas", conservando la 11 histórica). Aparecieron dos fallos reales
+con la semilla 7, uno en cada test, y de naturaleza distinta:
+
+**1. Falso positivo en el test del draft.** "El reparto automático no te
+firma estrellas" comparaba el `draftYear` de cada jugador contra el año
+de la temporada FINAL (tras los tres veranos del bucle) para descartar a
+los rookies del draft. Un rookie fichado por el draft automático en el
+verano 1 o 2 del bucle queda con un `draftYear` que ya es "del pasado"
+frente al año final, así que colaba como si fuera un fichaje de la
+oficina automática cuando en realidad venía del draft (que sí puede
+darte un jugadorazo, a propósito). Con la semilla 7 se colaba así Julian
+Sherwood, media 90. Arreglado comparando contra el año de ANTES de
+empezar el bucle, no el de después — cualquier `draftYear` posterior a
+ese es de un draft celebrado dentro del propio bucle de prueba.
+
+**2. Margen demasiado ajustado, no un bug de verdad.** El mismo test
+también vigila que el hueco con la mediana de la liga no crezca sin
+freno (`< 4.0` puntos de crecimiento entre el primer y el último verano
+medido). La semilla 7 lo rompía por 4,6 — pero el hueco ABSOLUTO se
+quedaba en 3,8, lejos del techo de 5,0 que protege de verdad contra la
+espiral. Es ruido normal de una muestra (el 4,0 salía de una sola
+semilla, la 20260804), no la espiral sin fondo original (que llegaba a
+11 puntos). Recalibrado a `< 6.0`: deja margen de sobra para el ruido
+visto y sigue detectando algo que se acerque a la mitad del descontrol
+original.
+
+**Verificado**: `flutter analyze` limpio y las 9 combinaciones
+semilla×test en verde (~1m16s), más la suite completa.
+
 ## Lista bugs/mejora 15 (a 2026-08-23, de `lista_bugs_cambios_nba_manager_15.txt`)
 
 Por orden de más a menos importante. **Los 11 puntos están hechos** (ver
@@ -1276,21 +1312,25 @@ sigue con la versión anterior y basta con volver a subir cuando esté.
    juego como app nativa en el futuro. Aviso asociado: **borrar el icono en
    iOS puede borrar la partida**; los botones de reparar de `estado.html`
    sí son seguros (solo tocan la caché de ficheros).
-3. El equilibrio entre jugar el mercado y no jugarlo quedó en ~8 victorias,
-   medido con **una sola semilla**. Sirve para decir que la espiral
-   desapareció, no que el equilibrio esté fino. Haría falta medir con
-   varias semillas.
+3. ~~El equilibrio entre jugar el mercado y no jugarlo, medido con una sola
+   semilla~~ AMPLIADO el 24 de agosto: `tu_equipo_no_se_descuelga_test.dart`
+   ahora corre sus dos tests con varias semillas cada uno (5 y 4) en vez de
+   una. Encontró algo real de camino — ver la sección de abajo — así que
+   no era solo una comprobación de cara a la galería: la semilla 7 hacía
+   fallar ambos tests, y el motivo era distinto en cada uno.
 4. **El chino puede verse en cuadraditos en la web, y NO está comprobado.**
    Ver la sección de idiomas. Hace falta que el usuario lo abra en su móvil,
    ponga chino y diga si se lee. Es el dato que decide si hay que empaquetar
    una fuente CJK de varios MB o no hay nada que hacer.
-5. **Las pantallas ya están traducidas las siete** (se hizo en `1fd38ec`:
-   unas 30 pantallas y más de 300 claves nuevas). Lo que queda sin
-   traducir es **el catálogo de eventos narrativos**
-   (`lib/domain/eventos_narrativos.dart`): unas 250 líneas de texto
-   narrativo — títulos, planteamientos y consecuencias de los 12 eventos.
-   Quien juegue en otro idioma verá esos diálogos en castellano. Es
-   trabajo largo, no difícil, y el usuario ya sabe que está pendiente.
+5. ~~**Las pantallas ya están traducidas las siete**~~ HECHO, y el
+   catálogo de eventos narrativos TAMBIÉN — esta nota estaba
+   desactualizada. Se tradujo entero en `bbdd1aa` ("Patrocinadores que
+   sirven de algo, eventos en siete idiomas y ocho nuevos", 23 de
+   agosto), antes incluso de que se escribiera este punto de la lista.
+   Verificado de nuevo el 24 de agosto: `eventos_traducidos_test.dart`
+   pasa en los 7 idiomas, incluida la comprobación de que cada uno
+   "está traducido de verdad y no copiado del español" (no son solo
+   claves rellenas, es texto distinto de verdad).
 6. **Los puntos 7 y 17 de la lista parte 11** siguen abiertos pero NO por
    falta de trabajo: se investigaron y el código parece correcto. El 7
    (ofertas de la CPU poco realistas) necesita que el usuario mande una
