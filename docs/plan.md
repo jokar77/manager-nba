@@ -267,11 +267,49 @@ paso `adaptacion_movil_test.dart` ya trae desde antes una comprobación
 general de que el Calendario no desborda en los tres tamaños (iPhone,
 iPad, escritorio) — sigue en verde con el cambio.
 
+### Lista 15, punto 6: el selector de estrella/roles ya enseña la media
+
+`_SelectorEstrellas` en `lib/features/roster/roster_config_screen.dart`:
+cada desplegable ordenaba a los candidatos por `nombreFicticio` sin
+enseñar ninguna media — elegir estrella de ataque era mirar apellidos y
+adivinar. Cada uno de los tres desplegables ahora añade la media que le
+toca al nombre de cada opción: el de ataque enseña `atrAtaque`, el de
+defensa `atrDefensa`, y el de sexto hombre las dos (no se especializa en
+ninguna). Con `textos.ataque`/`textos.defensa` — palabras que ya existían
+traducidas en los 7 idiomas (se usan en otra pantalla de esta misma
+pantalla, la ficha del quinteto) — así que tampoco hizo falta traducir
+nada nuevo. El orden sigue siendo alfabético: lo que pedía la lista era
+enseñar la media, no reordenar por ella.
+
+**Efecto colateral encontrado y arreglado**: el texto más largo
+("Fulano · Ataque 80" en vez de solo "Fulano") rompió
+`flujo_completo_test.dart`, que elegía un candidato buscando su nombre
+`skipOffstage: false` (para alcanzar los tres desplegables aunque
+estuvieran cerrados) y cogiendo el primero. Con el nombre solo, el texto
+coincidía sin querer entre los tres campos (mismo `candidatos` para
+ataque y defensa) y esa coincidencia hacía que `.last` cayera siempre en
+el desplegable recién abierto, que es justo lo que hacía falta. Al dejar
+de coincidir (cada campo trae su propia media), `.first` empezó a coger
+el candidato de un campo YA CERRADO —que sigue enseñando su elegido
+aunque esté cerrado— en vez del que está de verdad abierto. Arreglado
+buscando solo entre los `DropdownMenuItem` visibles en pantalla
+(`skipOffstage` por defecto) y cogiendo el ÚLTIMO, que es siempre el del
+menú recién abierto. Diagnosticado con prints temporales (quitados
+después) que confirmaron el mecanismo exacto antes de tocar nada.
+
+También se fijó `maxLines: 1` en el texto de cada opción del desplegable
+(antes no estaba explícito): con el texto más largo, sin fijarlo a una
+línea intentaba partirse en dos dentro de la fila de altura fija del
+desplegable.
+
+Verificado: `flutter analyze .` limpio y la suite completa
+(`flutter test --no-pub`, 672 tests) en verde.
+
 ### Qué falta
 
 1. Commitear en local (sin push) todo lo de hoy.
-2. Seguir con el punto 6 de la lista 15 (el selector de estrella/roles
-   debe enseñar la media que toca en cada caso).
+2. Seguir con el punto 7 de la lista 15 (los textos resumen de
+   patrocinadores se cortan).
 
 ### Antecedente: la causa del bug de rookies (sesión del 23 de agosto)
 
@@ -295,8 +333,8 @@ rookies reales, el juego se quedaba sin ninguna clase de novato jugable.
 
 ## Lista bugs/mejora 15 (a 2026-08-23, de `lista_bugs_cambios_nba_manager_15.txt`)
 
-Por orden de más a menos importante. **Puntos 1 al 5 hechos** (ver la
-sección "EN CURSO" al principio del fichero para el detalle); del 6 al
+Por orden de más a menos importante. **Puntos 1 al 6 hechos** (ver la
+sección "EN CURSO" al principio del fichero para el detalle); del 7 al
 11, sin empezar.
 
 1. ~~**Bug rookies/clases**~~ HECHO. Corregido `draft_year` a mano para
@@ -321,12 +359,11 @@ sección "EN CURSO" al principio del fichero para el detalle); del 6 al
 5. ~~**Calendario, UI**~~ HECHO. En compacto usa `textos.temporada`
    ("Temporada") en vez del texto largo — mismo tratamiento que
    "1 semana"/"1 mes". `_BotonesAvanceRapido`, mismo fichero que el 4.
-6. **Elegir estrella/roles**: al elegir estrella de ataque, de defensa o
-   sexto hombre, la lista de candidatos debe enseñar la media que toca
-   en cada caso — ataque para la de ataque, defensa para la de defensa,
-   las dos para el sexto hombre. Hoy `_SelectorEstrellas` en
-   `lib/features/roster/roster_config_screen.dart` los ordena por
-   `nombreFicticio`, sin enseñar ninguna media.
+6. ~~**Elegir estrella/roles**~~ HECHO. Cada opción del desplegable trae
+   ahora la media que toca (ataque/defensa/las dos para el sexto
+   hombre). `_SelectorEstrellas` en
+   `lib/features/roster/roster_config_screen.dart`; el orden sigue
+   alfabético, no se pidió cambiarlo.
 7. **Patrocinadores, texto**: los textos resumen se cortan. Ajustar el
    layout para que se lean enteros.
    `lib/features/temporada/patrocinadores_screen.dart`, la historia de

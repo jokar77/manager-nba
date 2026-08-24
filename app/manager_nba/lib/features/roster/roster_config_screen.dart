@@ -1064,10 +1064,29 @@ class _SelectorEstrellasState extends State<_SelectorEstrellas>
         ),
       );
 
+    // `maxLines: 1` explícito: con la media añadida (Lista 15 punto 6) el
+    // texto es más largo, y sin fijarlo a una línea el `Text` intentaba
+    // partirlo en dos dentro de la fila de altura fija del desplegable —
+    // se recortaba mal y descuadraba el punto donde caía el toque en el
+    // test que elige un jugador por su etiqueta.
     DropdownMenuItem<int?> item(int? id, String etiqueta) => DropdownMenuItem(
       value: id,
-      child: Text(etiqueta, overflow: TextOverflow.ellipsis),
+      child: Text(etiqueta, maxLines: 1, overflow: TextOverflow.ellipsis),
     );
+
+    // Lista 15 punto 6: antes cada opción solo enseñaba el nombre, y elegir
+    // estrella de ataque o de defensa era mirar apellidos y adivinar. La
+    // media que importa depende del rol — ataque para la de ataque,
+    // defensa para la de defensa, y las dos para el sexto hombre, que no
+    // se especializa en ninguna — así que cada selector trae su propia
+    // etiqueta, no una genérica para los tres.
+    String etiquetaConAtaque(Jugador j) =>
+        '${j.nombreFicticio} · ${t(context).ataque} ${j.atrAtaque}';
+    String etiquetaConDefensa(Jugador j) =>
+        '${j.nombreFicticio} · ${t(context).defensa} ${j.atrDefensa}';
+    String etiquetaConAtaqueYDefensa(Jugador j) =>
+        '${j.nombreFicticio} · ${t(context).ataque} ${j.atrAtaque} / '
+        '${t(context).defensa} ${j.atrDefensa}';
 
     Widget selector({
       required Key clave,
@@ -1076,6 +1095,7 @@ class _SelectorEstrellasState extends State<_SelectorEstrellas>
       required int? valor,
       required List<int> opciones,
       required void Function(int?) onChanged,
+      required String Function(Jugador) etiquetaDeOpcion,
     }) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1120,7 +1140,10 @@ class _SelectorEstrellasState extends State<_SelectorEstrellas>
             items: [
               item(null, t(context).ningunaOpcion),
               ...opciones.map(
-                (id) => item(id, widget.jugadoresPorId[id]!.nombreFicticio),
+                (id) => item(
+                  id,
+                  etiquetaDeOpcion(widget.jugadoresPorId[id]!),
+                ),
               ),
             ],
             onChanged: onChanged,
@@ -1137,6 +1160,7 @@ class _SelectorEstrellasState extends State<_SelectorEstrellas>
         valor: widget.estrellaAtaqueId,
         opciones: candidatos,
         onChanged: widget.onCambiarEstrellaAtaque,
+        etiquetaDeOpcion: etiquetaConAtaque,
       ),
       selector(
         clave: claveRolDefensa,
@@ -1145,6 +1169,7 @@ class _SelectorEstrellasState extends State<_SelectorEstrellas>
         valor: widget.estrellaDefensaId,
         opciones: candidatos,
         onChanged: widget.onCambiarEstrellaDefensa,
+        etiquetaDeOpcion: etiquetaConDefensa,
       ),
       selector(
         clave: claveRolSextoHombre,
@@ -1153,6 +1178,7 @@ class _SelectorEstrellasState extends State<_SelectorEstrellas>
         valor: widget.sextoHombreId,
         opciones: candidatosSuplentes,
         onChanged: widget.onCambiarSextoHombre,
+        etiquetaDeOpcion: etiquetaConAtaqueYDefensa,
       ),
     ];
 

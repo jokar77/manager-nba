@@ -121,19 +121,24 @@ void main() {
       await tester.tap(desplegable);
       await tester.pumpAndSettle();
 
-      // El primer item con jugador de verdad: "Ninguna" lleva value null.
+      // Un item con jugador de verdad: "Ninguna" lleva value null.
       //
-      // Se busca el NOMBRE y se toca `.last` en vez de tocar el
-      // `DropdownMenuItem` por índice. Por índice no vale: los tres campos
-      // cerrados también pintan su propio item, así que la lista mezcla
-      // los del menú abierto con los de fuera, y tocar uno de esos no
-      // selecciona nada — el menú se quedaba abierto y la vuelta siguiente
-      // no encontraba ni un desplegable.
+      // ONSTAGE, no `skipOffstage: false`: desde que la lista de opciones
+      // trae la media (Lista 15 punto 6), el texto de cada jugador ya no
+      // es igual en los tres campos ("Fulano · Ataque 80" en el de ataque,
+      // "Fulano · Defensa 77" en el de defensa), así que buscarlo por
+      // fuera de la pantalla dejó de dar con el del menú recién abierto:
+      // `skipOffstage: false` mete también el propio valor ya elegido de
+      // un campo YA CERRADO de una vuelta anterior (que enseña su
+      // elegido aunque esté cerrado), y antes esa coincidencia no se
+      // notaba porque el texto —sin media— era idéntico en los tres
+      // campos. Con solo lo que hay EN PANTALLA (`skipOffstage` por
+      // defecto) y cogiendo el ÚLTIMO, se coge del menú recién abierto de
+      // verdad: ese "ya elegido" de un campo cerrado, si aparece, es
+      // siempre el primero de la lista, nunca el último.
       final item = tester
-          .widgetList<DropdownMenuItem<int?>>(
-            find.byType(DropdownMenuItem<int?>, skipOffstage: false),
-          )
-          .firstWhere((it) => it.value != null);
+          .widgetList<DropdownMenuItem<int?>>(find.byType(DropdownMenuItem<int?>))
+          .lastWhere((it) => it.value != null);
       await tester.tap(find.text((item.child as Text).data!).last);
       await tester.pumpAndSettle();
     }
