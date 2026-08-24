@@ -516,11 +516,15 @@ class _TarjetaDeOferta extends StatelessWidget {
                               style: TextStyle(
                                   fontSize: 11, color: e.textoTenue)),
                           const SizedBox(height: 3),
-                          // Recortada a dos líneas: con tres ofertas
-                          // desplegadas, la historia entera de cada una
-                          // dejaba la comparación fuera de pantalla.
+                          // Lista 15 punto 7: con 2 líneas se cortaba la
+                          // mayoría de las historias (153 de 386 ocupan 3
+                          // en el catálogo). Con 3 se leen enteras casi
+                          // todas; las 4 más largas del catálogo siguen
+                          // recortándose, pero es la excepción, no la
+                          // norma. La pantalla ya scrollea, así que una
+                          // línea más no deja nada fuera de pantalla.
                           Text(p.historia,
-                              maxLines: 2,
+                              maxLines: 3,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                   fontSize: 12, color: e.textoTenue)),

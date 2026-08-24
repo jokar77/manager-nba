@@ -305,11 +305,36 @@ desplegable.
 Verificado: `flutter analyze .` limpio y la suite completa
 (`flutter test --no-pub`, 672 tests) en verde.
 
+### Lista 15, punto 7: las historias de patrocinadores ya no se cortan (casi nunca)
+
+`_TarjetaDeOferta` en `lib/features/temporada/patrocinadores_screen.dart`
+recortaba `p.historia` a `maxLines: 2` a propósito (comentario original:
+"con tres ofertas desplegadas, la historia entera dejaba la comparación
+fuera de pantalla"). Contado con Node sobre `catalogoPatrocinadores` en
+`lib/domain/patrocinadores.dart` (386 patrocinadores): 153 de 386 están
+escritos en 3 líneas de fuente, así que con el tope en 2 la MAYORÍA se
+cortaba, no una minoría.
+
+Subido a `maxLines: 3`: con eso se leen enteras 382 de las 386 (solo 4,
+las historias más largas del catálogo, siguen recortándose — la
+excepción, no la norma). La pantalla ya scrollea con las categorías
+desplegadas, así que una línea más no saca nada de la pantalla; el
+razonamiento original sobre "dejar la comparación fuera de pantalla" no
+aplicaba tal cual.
+
+Sin tests que tocar: nada comprobaba el `maxLines` exacto. Verificado
+con `flutter analyze .` limpio y la suite completa en verde (672 tests),
+incluyendo `adaptacion_movil_test.dart` (que ya vigila que ninguna
+pantalla desborde en los tres tamaños).
+
 ### Qué falta
 
 1. Commitear en local (sin push) todo lo de hoy.
-2. Seguir con el punto 7 de la lista 15 (los textos resumen de
-   patrocinadores se cortan).
+2. Seguir con los puntos 8, 9 y 10 de la lista 15 (todos de
+   patrocinadores: nombre de la categoría "bebida oficial", menos
+   repetición en años sucesivos, y que el vídeo siga haciendo falta con
+   contratos plurianuales) — el propio plan ya sugiere agruparlos por
+   tocar el mismo dominio.
 
 ### Antecedente: la causa del bug de rookies (sesión del 23 de agosto)
 
@@ -333,8 +358,8 @@ rookies reales, el juego se quedaba sin ninguna clase de novato jugable.
 
 ## Lista bugs/mejora 15 (a 2026-08-23, de `lista_bugs_cambios_nba_manager_15.txt`)
 
-Por orden de más a menos importante. **Puntos 1 al 6 hechos** (ver la
-sección "EN CURSO" al principio del fichero para el detalle); del 7 al
+Por orden de más a menos importante. **Puntos 1 al 7 hechos** (ver la
+sección "EN CURSO" al principio del fichero para el detalle); del 8 al
 11, sin empezar.
 
 1. ~~**Bug rookies/clases**~~ HECHO. Corregido `draft_year` a mano para
@@ -364,10 +389,10 @@ sección "EN CURSO" al principio del fichero para el detalle); del 7 al
    hombre). `_SelectorEstrellas` en
    `lib/features/roster/roster_config_screen.dart`; el orden sigue
    alfabético, no se pidió cambiarlo.
-7. **Patrocinadores, texto**: los textos resumen se cortan. Ajustar el
-   layout para que se lean enteros.
-   `lib/features/temporada/patrocinadores_screen.dart`, la historia de
-   `_TarjetaDeOferta` va a `maxLines: 2` con `overflow: ellipsis`.
+7. ~~**Patrocinadores, texto**~~ HECHO. `maxLines` de 2 a 3 en la
+   historia de `_TarjetaDeOferta` — con 2 se cortaba la mayoría (153 de
+   386 en el catálogo necesitan 3), con 3 solo 4 casos extremos siguen
+   recortándose. `lib/features/temporada/patrocinadores_screen.dart`.
 8. **Patrocinador "bebida oficial"**: hoy solo una marca de la categoría
    es de verdad una bebida; las otras son restaurantes o parecido.
    Cambiarle el nombre a la categoría por algo más amplio.
