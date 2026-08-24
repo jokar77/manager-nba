@@ -75,7 +75,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('pantalla de inicio'), findsNothing);
-    final boton = find.widgetWithIcon(IconButton, Icons.arrow_back);
+    final boton = find.widgetWithIcon(IconButton, Icons.home);
     expect(boton, findsOneWidget);
 
     await tester.tap(boton);

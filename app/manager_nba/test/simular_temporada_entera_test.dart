@@ -122,8 +122,8 @@ void main() {
   });
 
   group('la barra de saltos del calendario', () {
-    Future<void> abrirCalendario(WidgetTester tester) async {
-      tester.view.physicalSize = const Size(390, 844);
+    Future<void> abrirCalendario(WidgetTester tester, {double ancho = 390}) async {
+      tester.view.physicalSize = Size(ancho, 844);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
@@ -137,6 +137,10 @@ void main() {
         ),
       );
       await _esperarA(tester, find.text('1 SEMANA'));
+      // Ninguno de los tests de este grupo comprobaba esto: la barra podía
+      // desbordar (RenderFlex) sin que ningún `expect` de texto lo pillara.
+      expect(tester.takeException(), isNull,
+          reason: 'barra de saltos a $ancho de ancho');
     }
 
     testWidgets('ya no lleva "1 partido": eso se hace desde el menú', (
@@ -151,6 +155,12 @@ void main() {
         findsNothing,
         reason: 'el mismo botón dos veces le quitaba sitio al calendario',
       );
+    });
+
+    testWidgets('a 320 de ancho (el móvil más estrecho de verdad) tampoco '
+        'se desborda', (tester) async {
+      permisos = Permisos();
+      await abrirCalendario(tester, ancho: 320);
     });
 
     testWidgets('son tres saltos y «temporada» va a la derecha del todo', (

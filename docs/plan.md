@@ -518,7 +518,9 @@ forma de salir a esa pantalla sin cerrar el juego entero.
 **Dónde va: arriba a la izquierda** (decisión del usuario cuando se le
 preguntó, siguiendo la convención de "atrás"), separado del icono de
 Ajustes que ya vive arriba a la derecha de la misma cabecera — así no
-compiten por la misma esquina.
+compiten por la misma esquina. **El icono es la casa típica**
+(`Icons.home`), no una flecha — pedido explícito del usuario tras verlo
+la primera vez con `Icons.arrow_back`.
 
 **Cómo vuelve.** No hace falta un `popUntil` con ruta con nombre: el hub
 siempre se llega a él con un único `Navigator.push` (al continuar una
@@ -542,6 +544,65 @@ verse esa pantalla y que no salta ninguna excepción por el camino.
 
 **Verificado**: `flutter analyze` limpio y la suite completa,
 **684 tests, todos verdes**.
+
+## El desplegable de estrella/roles, con el estilo del juego (24 de agosto)
+
+El usuario pidió mejorar el diseño: el desplegable de estrella de
+ataque/defensa/sexto hombre enseñaba una lista de `Text` plano —
+funcional pero fuera de estilo, sin nada del resto del rediseño
+(placas de media, tipografía condensada). Es el único sitio del juego
+que lista jugadores así; el resto de "casos similares" que se buscaron
+(selector de equipo en Traspasos, filtro de franquicia en Camisetas
+Retiradas) ya llevan su propio logo/Row y no son listas de jugadores,
+así que se dejaron tal cual.
+
+**Cada opción ahora es una fila** con la misma `PlacaMedia` que usa el
+resto del juego (sin recolorear: el rol ya lo dice el rótulo de al
+lado) + el nombre en la tipografía de titular + una subetiqueta. La
+media que enseña la placa depende del selector — ataque para el de
+ataque, defensa para el de defensa, media general para el sexto hombre
+(no se especializa en ninguna; sus dos números van en la subetiqueta).
+
+**Dos desbordes de RenderFlex encontrados y arreglados por el camino,
+los dos en el propio código nuevo, no heredados:**
+
+1. El campo CERRADO reutiliza el mismo widget de la opción elegida,
+   pero comprimido a la altura de una sola línea (~24px) — la fila de
+   dos líneas cabía de sobra en la lista abierta y se salía 5px ahí.
+   Arreglado con `selectedItemBuilder`: el campo cerrado enseña solo el
+   nombre, sin placa ni subetiqueta.
+2. Le puse un icono de flecha recoloreado a cada campo (`Icons.
+   expand_more`), y esa combinación de icono choca con el que ya usa la
+   banda entera para plegarse/desplegarse — con los tres campos
+   desplegados a la vez, `find.byIcon(Icons.expand_more)` dejaba de ser
+   único. Quitado: no era la parte importante del pedido.
+
+**Colateral en los tests**, ninguno un bug de la app: con filas más
+altas por opción, `test/flujo_completo_test.dart` tocaba un jugador que
+ya no cabía en `menuMaxHeight` sin hacer scroll (arreglado con
+`ensureVisible`, seguro aquí porque el menú desplegado es su propio
+overlay con scroll propio — no comparte árbol con el `TabBarView` de la
+pantalla de debajo). Y el propio `flujo_completo_test.dart` dependía de
+que el hijo del `DropdownMenuItem` fuera un `Text` suelto para leer su
+`.data`; ahora cada opción se toca por su `key` (`opcion-rol-$id`).
+
+**Verificado**: `flutter analyze` limpio y la suite completa,
+**685 tests, todos verdes**.
+
+### El aviso de "botón de temporada desbordado", investigado y no reproducido
+
+De camino, el usuario avisó de que el botón "Temporada" del Calendario
+(arreglado ayer, Lista 15 punto 5) se desbordaba. Se investigó a fondo:
+el test de ese botón (`simular_temporada_entera_test.dart`) nunca había
+comprobado `tester.takeException()` — solo que el texto existiera —,
+así que un desborde ahí podría haber pasado desapercibido. Añadida esa
+comprobación (`abrirCalendario` ahora acepta un `ancho` y siempre
+verifica que no haya excepciones) más un test nuevo a 320px (el móvil
+real más estrecho). **No se reprodujo en ninguno de los dos anchos.**
+Lo más probable es que el usuario probara la versión anterior a la
+publicación de hace un rato (el service worker tarda en refrescar la
+caché); si sigue viéndose mal, hace falta una captura o el dispositivo
+exacto para seguir.
 
 ## Lista bugs/mejora 15 (a 2026-08-23, de `lista_bugs_cambios_nba_manager_15.txt`)
 

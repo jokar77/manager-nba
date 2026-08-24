@@ -726,9 +726,13 @@ class _CabeceraEquipo extends StatelessWidget {
                     children: [
                       // Arriba a la izquierda, como manda la convención de
                       // "atrás"; Ajustes se queda a la derecha para que no
-                      // compitan por la misma esquina.
+                      // compitan por la misma esquina. El icono es la casa
+                      // típica y no una flecha: pedido explícito del
+                      // usuario, y de paso distingue esta acción ("salir a
+                      // la pantalla de arranque") de un `BackButton` normal
+                      // (que aquí no tendría a dónde volver paso a paso).
                       IconButton(
-                        icon: const Icon(Icons.arrow_back),
+                        icon: const Icon(Icons.home),
                         color: sobre,
                         tooltip: t(context).volverAInicioTooltip,
                         onPressed: onVolverAInicio,

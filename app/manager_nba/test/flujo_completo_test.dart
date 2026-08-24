@@ -123,23 +123,29 @@ void main() {
 
       // Un item con jugador de verdad: "Ninguna" lleva value null.
       //
-      // ONSTAGE, no `skipOffstage: false`: desde que la lista de opciones
-      // trae la media (Lista 15 punto 6), el texto de cada jugador ya no
-      // es igual en los tres campos ("Fulano · Ataque 80" en el de ataque,
-      // "Fulano · Defensa 77" en el de defensa), así que buscarlo por
-      // fuera de la pantalla dejó de dar con el del menú recién abierto:
-      // `skipOffstage: false` mete también el propio valor ya elegido de
-      // un campo YA CERRADO de una vuelta anterior (que enseña su
-      // elegido aunque esté cerrado), y antes esa coincidencia no se
-      // notaba porque el texto —sin media— era idéntico en los tres
-      // campos. Con solo lo que hay EN PANTALLA (`skipOffstage` por
-      // defecto) y cogiendo el ÚLTIMO, se coge del menú recién abierto de
-      // verdad: ese "ya elegido" de un campo cerrado, si aparece, es
-      // siempre el primero de la lista, nunca el último.
+      // ONSTAGE, no `skipOffstage: false`: `skipOffstage: false` metería
+      // también el propio valor ya elegido de un campo YA CERRADO de una
+      // vuelta anterior (que enseña su elegido aunque esté cerrado), y con
+      // solo lo que hay EN PANTALLA y cogiendo el ÚLTIMO, se coge del menú
+      // recién abierto de verdad: ese "ya elegido" de un campo cerrado, si
+      // aparece, es siempre el primero de la lista, nunca el último.
+      //
+      // Se toca por su `key` (`opcion-rol-$id`, puesta en `itemJugador` de
+      // roster_config_screen.dart) y no extrayendo el texto de un `Text`:
+      // desde que cada opción es una fila con placa de media + nombre, el
+      // hijo del `DropdownMenuItem` ya no es un `Text` suelto.
       final item = tester
           .widgetList<DropdownMenuItem<int?>>(find.byType(DropdownMenuItem<int?>))
           .lastWhere((it) => it.value != null);
-      await tester.tap(find.text((item.child as Text).data!).last);
+      // `ensureVisible` SÍ hace falta aquí, a diferencia del de arriba: el
+      // menú desplegado es su propio overlay, con su propio scroll interno
+      // — no comparte árbol con el `TabBarView` de la pantalla de debajo,
+      // así que no hay riesgo de que suba y cambie de pestaña. Con la fila
+      // de dos líneas (Lista 15 punto 6 + el rediseño de hoy) ya no caben
+      // todas las opciones a la vez dentro de `menuMaxHeight`.
+      await tester.ensureVisible(find.byKey(item.key!));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(item.key!));
       await tester.pumpAndSettle();
     }
 

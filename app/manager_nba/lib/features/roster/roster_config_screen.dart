@@ -1064,29 +1064,94 @@ class _SelectorEstrellasState extends State<_SelectorEstrellas>
         ),
       );
 
-    // `maxLines: 1` explícito: con la media añadida (Lista 15 punto 6) el
-    // texto es más largo, y sin fijarlo a una línea el `Text` intentaba
-    // partirlo en dos dentro de la fila de altura fija del desplegable —
-    // se recortaba mal y descuadraba el punto donde caía el toque en el
-    // test que elige un jugador por su etiqueta.
-    DropdownMenuItem<int?> item(int? id, String etiqueta) => DropdownMenuItem(
-      value: id,
-      child: Text(etiqueta, maxLines: 1, overflow: TextOverflow.ellipsis),
+    // Antes cada opción era un `Text` plano ("Fulano · Ataque 80"): funcional
+    // pero fuera de estilo — ni la placa de media ni la letra condensada que
+    // usa el resto del rediseño, justo al lado del hueco de plantilla de
+    // arriba, que sí las lleva (ver `_FilaHueco`). Ahora cada opción es una
+    // fila con la MISMA placa de media (`PlacaMedia`, la de siempre — no se
+    // recolorea por rol: el rol ya lo dice el rótulo de la placa de al lado)
+    // y el nombre en la tipografía de titular.
+    //
+    // `key: ValueKey('opcion-rol-$id')` en vez de depender de que el hijo
+    // sea un `Text`: así el test que elige un jugador puede tocar la opción
+    // por su clave sin que le importe cómo esté hecha por dentro.
+    DropdownMenuItem<int?> itemNinguno() => DropdownMenuItem(
+      value: null,
+      child: Text(
+        t(context).ningunaOpcion,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(color: e.textoTenue),
+      ),
     );
+
+    DropdownMenuItem<int?> itemJugador(
+      int id, {
+      required int badge,
+      required String subEtiqueta,
+    }) {
+      final j = widget.jugadoresPorId[id]!;
+      return DropdownMenuItem(
+        key: ValueKey('opcion-rol-$id'),
+        value: id,
+        child: Row(
+          children: [
+            PlacaMedia(media: badge, tamano: 30),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    mayus(j.nombreFicticio),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: titular(e, tamano: 14),
+                  ),
+                  Text(
+                    subEtiqueta,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: rotulo(e, tamano: 9),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     // Lista 15 punto 6: antes cada opción solo enseñaba el nombre, y elegir
     // estrella de ataque o de defensa era mirar apellidos y adivinar. La
     // media que importa depende del rol — ataque para la de ataque,
     // defensa para la de defensa, y las dos para el sexto hombre, que no
     // se especializa en ninguna — así que cada selector trae su propia
-    // etiqueta, no una genérica para los tres.
-    String etiquetaConAtaque(Jugador j) =>
-        '${j.nombreFicticio} · ${t(context).ataque} ${j.atrAtaque}';
-    String etiquetaConDefensa(Jugador j) =>
-        '${j.nombreFicticio} · ${t(context).defensa} ${j.atrDefensa}';
-    String etiquetaConAtaqueYDefensa(Jugador j) =>
-        '${j.nombreFicticio} · ${t(context).ataque} ${j.atrAtaque} / '
-        '${t(context).defensa} ${j.atrDefensa}';
+    // placa (el número que se ve grande) y su propia subetiqueta.
+    DropdownMenuItem<int?> itemConAtaque(int id) => itemJugador(
+      id,
+      badge: widget.jugadoresPorId[id]!.atrAtaque,
+      subEtiqueta: mayus(t(context).ataque),
+    );
+    DropdownMenuItem<int?> itemConDefensa(int id) => itemJugador(
+      id,
+      badge: widget.jugadoresPorId[id]!.atrDefensa,
+      subEtiqueta: mayus(t(context).defensa),
+    );
+    DropdownMenuItem<int?> itemConAtaqueYDefensa(int id) {
+      final j = widget.jugadoresPorId[id]!;
+      return itemJugador(
+        id,
+        // El sexto hombre no se especializa en ninguna: su placa lleva la
+        // media general, como en cualquier otro sitio del juego, y las dos
+        // que sí importan aquí van en la subetiqueta.
+        badge: j.media,
+        subEtiqueta:
+            '${mayus(t(context).ataque)} ${j.atrAtaque} · '
+            '${mayus(t(context).defensa)} ${j.atrDefensa}',
+      );
+    }
 
     Widget selector({
       required Key clave,
@@ -1095,7 +1160,7 @@ class _SelectorEstrellasState extends State<_SelectorEstrellas>
       required int? valor,
       required List<int> opciones,
       required void Function(int?) onChanged,
-      required String Function(Jugador) etiquetaDeOpcion,
+      required DropdownMenuItem<int?> Function(int) itemDeOpcion,
     }) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1114,6 +1179,16 @@ class _SelectorEstrellasState extends State<_SelectorEstrellas>
           const SizedBox(height: 4),
           DropdownButtonFormField<int?>(
             isExpanded: true,
+            itemHeight: 52,
+            menuMaxHeight: 340,
+            dropdownColor: e.panel,
+            borderRadius: BorderRadius.zero,
+            // Sin `icon:` propio a propósito: la banda de roles (más abajo
+            // en este mismo fichero) usa `Icons.expand_more`/`expand_less`
+            // como icono ÚNICO para plegarse/desplegarse, y los tests la
+            // encuentran así. Recolorear la flecha de cada campo repetiría
+            // ese mismo icono tres veces más en pantalla y lo dejaría de
+            // ser identificable sin ambigüedad.
             decoration: InputDecoration(
               isDense: true,
               contentPadding: const EdgeInsets.symmetric(
@@ -1138,11 +1213,27 @@ class _SelectorEstrellasState extends State<_SelectorEstrellas>
             key: clave,
             initialValue: opciones.contains(valor) ? valor : null,
             items: [
-              item(null, t(context).ningunaOpcion),
+              itemNinguno(),
+              ...opciones.map(itemDeOpcion),
+            ],
+            // Sin esto, el campo CERRADO reutiliza el mismo hijo que la
+            // lista desplegada — pero comprimido a la altura de una sola
+            // línea (~24px), no a `itemHeight`. La fila de dos líneas
+            // (placa + nombre + subetiqueta) cabe de sobra en la lista
+            // abierta y se sale por 5px en el campo cerrado: el mismo
+            // `RenderFlex` desde dos sitios con dos alturas distintas.
+            // Aquí, cerrado, basta con el nombre.
+            selectedItemBuilder: (context) => [
+              Text(t(context).ningunaOpcion,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: e.textoTenue)),
               ...opciones.map(
-                (id) => item(
-                  id,
-                  etiquetaDeOpcion(widget.jugadoresPorId[id]!),
+                (id) => Text(
+                  mayus(widget.jugadoresPorId[id]!.nombreFicticio),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: titular(e, tamano: 14),
                 ),
               ),
             ],
@@ -1160,7 +1251,7 @@ class _SelectorEstrellasState extends State<_SelectorEstrellas>
         valor: widget.estrellaAtaqueId,
         opciones: candidatos,
         onChanged: widget.onCambiarEstrellaAtaque,
-        etiquetaDeOpcion: etiquetaConAtaque,
+        itemDeOpcion: itemConAtaque,
       ),
       selector(
         clave: claveRolDefensa,
@@ -1169,7 +1260,7 @@ class _SelectorEstrellasState extends State<_SelectorEstrellas>
         valor: widget.estrellaDefensaId,
         opciones: candidatos,
         onChanged: widget.onCambiarEstrellaDefensa,
-        etiquetaDeOpcion: etiquetaConDefensa,
+        itemDeOpcion: itemConDefensa,
       ),
       selector(
         clave: claveRolSextoHombre,
@@ -1178,7 +1269,7 @@ class _SelectorEstrellasState extends State<_SelectorEstrellas>
         valor: widget.sextoHombreId,
         opciones: candidatosSuplentes,
         onChanged: widget.onCambiarSextoHombre,
-        etiquetaDeOpcion: etiquetaConAtaqueYDefensa,
+        itemDeOpcion: itemConAtaqueYDefensa,
       ),
     ];
 
