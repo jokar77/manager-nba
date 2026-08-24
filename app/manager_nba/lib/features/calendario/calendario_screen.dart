@@ -224,17 +224,24 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
     setState(() => _procesandoPlayoffs = false);
   }
 
-  void _scrollearAlMesActual() {
-    if (_partidos.isEmpty || !mounted) return;
-    final fechaObjetivo =
-        proximaFechaPendiente(_partidos) ?? fechaActualDeLaTemporada(_partidos);
-    final clave = _claveMes(DateTime(fechaObjetivo.year, fechaObjetivo.month));
+  /// Desplaza el calendario para que se vea el mes de [fecha]. Lo usan
+  /// tanto "ir al mes actual" al abrir/terminar como el avance en vivo
+  /// mientras se simula (ver `_simularHasta`).
+  void _scrollearAFecha(DateTime fecha) {
+    if (!mounted) return;
+    final clave = _claveMes(DateTime(fecha.year, fecha.month));
     final key = _clavesPorMes[clave];
     final ctx = key?.currentContext;
     if (ctx != null) {
       Scrollable.ensureVisible(ctx,
           duration: const Duration(milliseconds: 300), alignment: 0.05);
     }
+  }
+
+  void _scrollearAlMesActual() {
+    if (_partidos.isEmpty || !mounted) return;
+    _scrollearAFecha(
+        proximaFechaPendiente(_partidos) ?? fechaActualDeLaTemporada(_partidos));
   }
 
   Future<void> _simularHasta(DateTime diaObjetivo) async {
@@ -246,7 +253,18 @@ class _CalendarioScreenState extends State<CalendarioScreen> with RouteAware {
     final resultado = await simularHastaConDialogo(
         context, widget.db, widget.equipoUsuario, diaObjetivo,
         random: widget.random, onProgreso: (hastaAhora) {
-      if (mounted) setState(() => _progresoSimulacion = hastaAhora);
+      if (!mounted) return;
+      setState(() => _progresoSimulacion = hastaAhora);
+      // Lista 15 punto 4: sin esto, la vista se quedaba clavada en el mes
+      // en el que se tocó "simular" mientras el marcador avanzaba semanas
+      // por delante — no se veía por dónde iba de verdad hasta que
+      // terminaba todo el tramo. Se sigue el último partido resuelto, que
+      // es lo único que avanza en tiempo real durante la simulación (los
+      // `_partidos` de la pantalla no se refrescan hasta el final).
+      if (hastaAhora.isNotEmpty) {
+        WidgetsBinding.instance
+            .addPostFrameCallback((_) => _scrollearAFecha(hastaAhora.last.fecha));
+      }
     });
 
     await _recargarDatos();

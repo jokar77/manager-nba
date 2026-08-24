@@ -212,11 +212,43 @@ porque el panel de Browser no estaba visible en esta sesión, así que la
 confirmación de que el botón ya no aparece se apoya en el test de
 regresión de arriba, no en una captura.
 
+### Lista 15, punto 4: el calendario se desplaza solo mientras se simula
+
+Antes, `_scrollearAlMesActual()` solo se llamaba al abrir la pantalla y
+al TERMINAR de simular (todo el tramo de golpe): mientras la simulación
+estaba en marcha, la vista se quedaba clavada en el mes donde se tocó
+"simular", aunque el marcador ya llevara semanas de ventaja.
+
+`lib/features/calendario/calendario_screen.dart`: nuevo `_scrollearAFecha
+(DateTime fecha)`, que generaliza el `ensureVisible` que ya existía
+(`_scrollearAlMesActual` ahora es un caso particular suyo). Se engancha
+en el propio callback `onProgreso` de `_simularHasta`: cada vez que
+avanza el progreso (una vez por tramo semanal, no por partido —ver el
+paceo arreglado en la sesión del 23 de agosto), se desplaza al mes del
+ÚLTIMO partido ya resuelto (`hastaAhora.last.fecha`) — es el único dato
+que avanza en tiempo real durante la simulación, porque `_partidos` (la
+lista que pinta el calendario) no se refresca hasta que el tramo entero
+termina.
+
+**Sin test de UI para el desplazamiento en vivo**, a propósito: el propio
+fichero de la barra de progreso (`barra_progreso_simulacion_test.dart`)
+ya deja anotado que capturar un fotograma intermedio de una simulación
+real es una carrera que no se puede hacer determinista aquí, y el mismo
+problema aplicaría a comprobar "a media simulación ya se ve un mes más
+allá" por captura de pantalla. Lo que SÍ está cubierto: que `onProgreso`
+llega varias veces con datos reales que avanzan en el tiempo (test "el
+primer tramo pacea semana a semana" en `simular_temporada_entera_test.dart`,
+sin tocar), y que `Scrollable.ensureVisible` con esta misma clave de mes
+ya funciona (los tests de "son tres saltos..." y compañía). Verificado a
+mano con `flutter analyze .` limpio y la suite completa en verde; no se
+pudo probar visualmente en el navegador por la misma razón que el punto
+3 (el panel de Browser no está visible en esta sesión).
+
 ### Qué falta
 
 1. Commitear en local (sin push) todo lo de hoy.
-2. Seguir con el punto 4 de la lista 15 (el calendario debe desplazarse
-   solo con el avance de fechas mientras se simula).
+2. Seguir con el punto 5 de la lista 15 (el botón "Temporada" se
+   desborda en `_BotonesAvanceRapido`, mismo fichero).
 
 ### Antecedente: la causa del bug de rookies (sesión del 23 de agosto)
 
@@ -240,8 +272,8 @@ rookies reales, el juego se quedaba sin ninguna clase de novato jugable.
 
 ## Lista bugs/mejora 15 (a 2026-08-23, de `lista_bugs_cambios_nba_manager_15.txt`)
 
-Por orden de más a menos importante. **Puntos 1, 2 y 3 hechos** (ver la
-sección "EN CURSO" al principio del fichero para el detalle); del 4 al
+Por orden de más a menos importante. **Puntos 1 al 4 hechos** (ver la
+sección "EN CURSO" al principio del fichero para el detalle); del 5 al
 11, sin empezar.
 
 1. ~~**Bug rookies/clases**~~ HECHO. Corregido `draft_year` a mano para
@@ -259,9 +291,10 @@ sección "EN CURSO" al principio del fichero para el detalle); del 4 al
    la sesión del 23 de agosto) — de paso se limpió el mecanismo de
    "abrir el Calendario ya simulando" que solo él usaba
    (`simularTemporadaAlAbrir` en `calendario_screen.dart`, ahora muerto).
-4. **Calendario, simulación**: mientras se simula, la vista debe
-   desplazarse sola con el avance de fechas para que se siga viendo por
-   dónde va. `lib/features/calendario/calendario_screen.dart`.
+4. ~~**Calendario, simulación**~~ HECHO. `_scrollearAFecha` se engancha
+   al `onProgreso` de `_simularHasta` y sigue al último partido resuelto
+   mientras dura la simulación, no solo al terminar.
+   `lib/features/calendario/calendario_screen.dart`.
 5. **Calendario, UI**: el botón "Temporada" se desborda y no se ve bien.
    Ajustar tamaño/layout. Mismo fichero que el 4, `_BotonesAvanceRapido`.
 6. **Elegir estrella/roles**: al elegir estrella de ataque, de defensa o
