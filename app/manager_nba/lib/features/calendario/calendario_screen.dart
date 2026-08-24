@@ -556,7 +556,11 @@ class _BotonesAvanceRapido extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: BotonPerfilado(
-              texto: textos.simularTemporadaEntera,
+              // Lista 15 punto 5: "Temporada entera" en compacto no cabía en
+              // una línea, y las dos que hacían falta desbordaban el alto
+              // fijo del botón. Mismo tratamiento que los otros dos: el
+              // sustantivo solo, sin el verbo ni el adjetivo.
+              texto: compacto ? textos.temporada : textos.simularTemporadaEntera,
               icono: puedeTemporada ? Icons.fast_forward : Icons.lock_outline,
               color: e.texto,
               alto: 44,

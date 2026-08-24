@@ -161,7 +161,7 @@ void main() {
 
       final semana = tester.getCenter(find.text('1 SEMANA')).dx;
       final mes = tester.getCenter(find.text('1 MES')).dx;
-      final temporada = tester.getCenter(find.text('TEMPORADA ENTERA')).dx;
+      final temporada = tester.getCenter(find.text('TEMPORADA')).dx;
 
       // De menos a más, y el salto más gordo el último: es el único que
       // puede acabar el año de un toque.
@@ -176,10 +176,10 @@ void main() {
       await abrirCalendario(tester);
 
       // Se enseña igualmente: esconderlo dejaría sin ver lo que se ofrece.
-      expect(find.text('TEMPORADA ENTERA'), findsOneWidget);
+      expect(find.text('TEMPORADA'), findsOneWidget);
       expect(find.byIcon(Icons.lock_outline), findsOneWidget);
 
-      await tester.tap(find.text('TEMPORADA ENTERA'));
+      await tester.tap(find.text('TEMPORADA'));
       await tester.pumpAndSettle();
 
       final r = await (db.select(
@@ -203,7 +203,7 @@ void main() {
       }
 
       expect(await jugados(), 0);
-      await tester.tap(find.text('TEMPORADA ENTERA'));
+      await tester.tap(find.text('TEMPORADA'));
 
       // Con esperas de VERDAD, no solo adelantando el reloj falso: la
       // simulación es asíncrona y necesita tiempo real para avanzar. Y con

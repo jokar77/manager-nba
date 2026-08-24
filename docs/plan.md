@@ -244,11 +244,34 @@ mano con `flutter analyze .` limpio y la suite completa en verde; no se
 pudo probar visualmente en el navegador por la misma razón que el punto
 3 (el panel de Browser no está visible en esta sesión).
 
+### Lista 15, punto 5: el botón "Temporada" ya no se desborda
+
+`_BotonesAvanceRapido` ya recortaba "Simular 1 semana"/"Simular 1 mes" a
+"1 SEMANA"/"1 MES" en compacto (móvil), pero el tercer botón se quedaba
+siempre con el texto largo, `textos.simularTemporadaEntera`
+("Temporada entera") — mucho más largo que los otros dos, y en un botón
+de solo 1/3 de la fila más el icono de candado/avance, eso le hacía
+falta 2 líneas dentro de una altura fija de 44px: de ahí el desborde.
+
+Arreglado con el mismo tratamiento que los otros dos: en compacto usa
+`textos.temporada` ("Temporada", sin "entera") — una clave que YA
+existía traducida en los 7 idiomas (se usa en otras pantallas para
+"Temporada X") pero no estaba enganchada a ningún texto de UI todavía,
+así que no hizo falta traducir nada nuevo.
+
+Actualizados los 4 usos de `find.text('TEMPORADA ENTERA')` en
+`simular_temporada_entera_test.dart` (grupo "la barra de saltos del
+calendario", que monta a 390px = compacto) a `find.text('TEMPORADA')`.
+Verificado: `flutter analyze .` limpio, la suite completa en verde, y de
+paso `adaptacion_movil_test.dart` ya trae desde antes una comprobación
+general de que el Calendario no desborda en los tres tamaños (iPhone,
+iPad, escritorio) — sigue en verde con el cambio.
+
 ### Qué falta
 
 1. Commitear en local (sin push) todo lo de hoy.
-2. Seguir con el punto 5 de la lista 15 (el botón "Temporada" se
-   desborda en `_BotonesAvanceRapido`, mismo fichero).
+2. Seguir con el punto 6 de la lista 15 (el selector de estrella/roles
+   debe enseñar la media que toca en cada caso).
 
 ### Antecedente: la causa del bug de rookies (sesión del 23 de agosto)
 
@@ -272,8 +295,8 @@ rookies reales, el juego se quedaba sin ninguna clase de novato jugable.
 
 ## Lista bugs/mejora 15 (a 2026-08-23, de `lista_bugs_cambios_nba_manager_15.txt`)
 
-Por orden de más a menos importante. **Puntos 1 al 4 hechos** (ver la
-sección "EN CURSO" al principio del fichero para el detalle); del 5 al
+Por orden de más a menos importante. **Puntos 1 al 5 hechos** (ver la
+sección "EN CURSO" al principio del fichero para el detalle); del 6 al
 11, sin empezar.
 
 1. ~~**Bug rookies/clases**~~ HECHO. Corregido `draft_year` a mano para
@@ -295,8 +318,9 @@ sección "EN CURSO" al principio del fichero para el detalle); del 5 al
    al `onProgreso` de `_simularHasta` y sigue al último partido resuelto
    mientras dura la simulación, no solo al terminar.
    `lib/features/calendario/calendario_screen.dart`.
-5. **Calendario, UI**: el botón "Temporada" se desborda y no se ve bien.
-   Ajustar tamaño/layout. Mismo fichero que el 4, `_BotonesAvanceRapido`.
+5. ~~**Calendario, UI**~~ HECHO. En compacto usa `textos.temporada`
+   ("Temporada") en vez del texto largo — mismo tratamiento que
+   "1 semana"/"1 mes". `_BotonesAvanceRapido`, mismo fichero que el 4.
 6. **Elegir estrella/roles**: al elegir estrella de ataque, de defensa o
    sexto hombre, la lista de candidatos debe enseñar la media que toca
    en cada caso — ataque para la de ataque, defensa para la de defensa,
