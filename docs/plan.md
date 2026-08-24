@@ -327,14 +327,60 @@ con `flutter analyze .` limpio y la suite completa en verde (672 tests),
 incluyendo `adaptacion_movil_test.dart` (que ya vigila que ninguna
 pantalla desborde en los tres tamaños).
 
+### Lista 15, punto 8: "bebida oficial" ya no promete lo que no es
+
+Contado el catálogo (`categoria: 'bebida'`, 100 marcas): panaderías,
+restaurantes, BBQ, tiendas de aperitivos y cadenas de comida son la
+mayoría — cerveceras/cafeterías/refrescos son las menos. "Bebida
+oficial" prometía una categoría que en el 90% de los casos no era eso.
+
+Cambiado `patrocinioBebidaLabel` (7 idiomas) a algo que cubre lo que de
+verdad hay: ES "Patrocinador de comida y bebida", EN "Food & beverage
+sponsor", el resto en el mismo espíritu por idioma. De paso, esta
+categoría era la única con el patrón "X oficial" en vez de "Patrocinador
+de/del X" que usan las otras tres (estadio/camiseta/ocio) — ahora las
+cuatro siguen el mismo patrón. Se dejó el identificador Dart
+(`patrocinioBebidaLabel`) y la clave interna (`'bebida'` en
+`categoriasPatrocinio`) tal cual: lo que pedía la lista era el nombre en
+pantalla, no el identificador interno.
+
+### Lista 15, punto 9: menos repetición año a año en la rotación
+
+`ofertasDe` en `lib/domain/patrocinadores.dart` desplazaba la ventana de
+tres ofertas de una en una cada temporada. La nota de la clase dice que
+la cantera es "de once a quince marcas", pero eso es el total POR
+CIUDAD, repartido entre las cuatro categorías — la cantera que de
+verdad importa aquí (ciudad × categoría) es mucho más pequeña: 4
+candidatas es lo más común (medido con un script de diagnóstico sobre
+las 116 canteras). Con desplazamiento de 1, dos de las tres ofertas de
+este año SIEMPRE volvían a salir el año que viene, sin importar el
+tamaño de la cantera.
+
+Arreglado desplazando la ventana entera (de tres en tres) en vez de una
+en una — pero con un límite real que hay que decir sin adornos: **con
+solo 4 candidatas (el caso más común), dos de tres siguen repitiendo
+igual que antes.** No es que el arreglo se quedara corto: con 4
+candidatas solo hay 4 combinaciones posibles de "3 de 4", y dos
+combinaciones distintas cualesquiera comparten al menos 2 por narices
+(principio del palomar) — ningún desplazamiento lo evita. Donde SÍ hay
+margen, el arreglo lo agota entero: con 5 candidatas el solape baja de 2
+a 1 (el mínimo posible), y con 6 o más baja a 0 (tres marcas
+completamente distintas cada año). Verificado con un script de
+diagnóstico temporal (quitado después) que confirmó el solape exacto por
+tamaño de cantera antes de escribir el test de verdad.
+
+Test nuevo en `patrocinadores_test.dart`: para toda cantera con más de
+tres candidatas, el solape entre un año y el siguiente es EXACTAMENTE
+`max(0, 6 - tamaño_de_la_cantera)` — el mínimo matemático, no una cota
+floja. Si de verdad hace falta menos repetición en las canteras de 4 (la
+mayoría), la palanca ya no está en esta función: hay que ampliar el
+catálogo (`tool/generar_patrocinadores.dart`, fuera del alcance de hoy).
+
 ### Qué falta
 
 1. Commitear en local (sin push) todo lo de hoy.
-2. Seguir con los puntos 8, 9 y 10 de la lista 15 (todos de
-   patrocinadores: nombre de la categoría "bebida oficial", menos
-   repetición en años sucesivos, y que el vídeo siga haciendo falta con
-   contratos plurianuales) — el propio plan ya sugiere agruparlos por
-   tocar el mismo dominio.
+2. Seguir con el punto 10 de la lista 15 (que el vídeo siga haciendo
+   falta con contratos plurianuales de patrocinio).
 
 ### Antecedente: la causa del bug de rookies (sesión del 23 de agosto)
 
@@ -358,9 +404,9 @@ rookies reales, el juego se quedaba sin ninguna clase de novato jugable.
 
 ## Lista bugs/mejora 15 (a 2026-08-23, de `lista_bugs_cambios_nba_manager_15.txt`)
 
-Por orden de más a menos importante. **Puntos 1 al 7 hechos** (ver la
-sección "EN CURSO" al principio del fichero para el detalle); del 8 al
-11, sin empezar.
+Por orden de más a menos importante. **Puntos 1 al 9 hechos** (ver la
+sección "EN CURSO" al principio del fichero para el detalle); 10 y 11,
+sin empezar.
 
 1. ~~**Bug rookies/clases**~~ HECHO. Corregido `draft_year` a mano para
    la clase 2024-2025 y completada con datos reales la clase 2026 (ver
@@ -393,16 +439,19 @@ sección "EN CURSO" al principio del fichero para el detalle); del 8 al
    historia de `_TarjetaDeOferta` — con 2 se cortaba la mayoría (153 de
    386 en el catálogo necesitan 3), con 3 solo 4 casos extremos siguen
    recortándose. `lib/features/temporada/patrocinadores_screen.dart`.
-8. **Patrocinador "bebida oficial"**: hoy solo una marca de la categoría
-   es de verdad una bebida; las otras son restaurantes o parecido.
-   Cambiarle el nombre a la categoría por algo más amplio.
-   `categoriasPatrocinio` en `lib/domain/patrocinadores.dart`, más las
-   traducciones de `patrocinioBebidaLabel` en los siete idiomas.
-9. **Patrocinadores, repetición**: en el segundo año se repiten
-   demasiado los patrocinadores del pabellón y otros tipos. Más
-   variedad, menos repetición. Es la rotación de `ofertasDe` en
-   `lib/domain/patrocinadores.dart` — algunas canteras son cortas (11-15
-   marcas) y dan la vuelta rápido.
+8. ~~**Patrocinador "bebida oficial"**~~ HECHO. `patrocinioBebidaLabel`
+   (7 idiomas) pasa a "Patrocinador de comida y bebida"/"Food & beverage
+   sponsor"/etc., que es lo que de verdad hay en esa categoría (100
+   marcas, mayoría restaurantes/panaderías/BBQ, minoría cerveceras/cafés).
+9. ~~**Patrocinadores, repetición**~~ HECHO (con un límite real, no
+   maquillado). `ofertasDe` ahora desplaza la ventana de tres ofertas de
+   tres en tres, no de una en una — con eso el solape año a año baja al
+   mínimo matemático posible para cada tamaño de cantera (0 con 6+
+   candidatas, 1 con 5). Con exactamente 4 candidatas —el tamaño más
+   común de verdad, no las "11-15" de la nota de la clase, que son por
+   ciudad y no por categoría— dos de tres siguen repitiendo: con solo 4
+   combinaciones posibles de "3 de 4", es matemáticamente inevitable
+   (principio del palomar), no un fallo del arreglo.
 10. **Patrocinadores, anuncios/vídeos**: aunque el usuario haya firmado
     un patrocinio de varios años, para disfrutar de sus beneficios debe
     seguir obligado a ver el vídeo correspondiente cuando toque. Hoy el

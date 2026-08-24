@@ -223,6 +223,38 @@ void main() {
     }
   });
 
+  test('con más de tres candidatas, el año que viene solapa lo mínimo que '
+      'permite el tamaño de la cantera (Lista 15 punto 9)', () {
+    // Antes el hueco de tres se desplazaba de una en una: con "hasta
+    // tres", dos de las tres ofertas de este año SIEMPRE volvían a salir
+    // el año que viene, tuviera la cantera el tamaño que tuviera. Ahora
+    // se desplaza de tres en tres, y el solape baja al mínimo que
+    // permite cada tamaño de cantera (principio del palomar: dos
+    // combinaciones de 3 sobre N no pueden solaparse en menos de
+    // `max(0, 6 - N)`).
+    for (final equipo in equiposReales) {
+      for (final categoria in categoriasPatrocinio) {
+        final cantera = patrocinadoresDe(equipo)
+            .where((p) => p.categoria == categoria)
+            .length;
+        if (cantera <= ofertasPorCategoria) continue;
+        final minimoPosible = (2 * ofertasPorCategoria - cantera)
+            .clamp(0, ofertasPorCategoria);
+        for (var temporada = 0; temporada < 8; temporada++) {
+          final ahora = ofertasDe(equipo, categoria, temporada: temporada)
+              .map((o) => o.patrocinador.clave)
+              .toSet();
+          final luego = ofertasDe(equipo, categoria, temporada: temporada + 1)
+              .map((o) => o.patrocinador.clave)
+              .toSet();
+          expect(ahora.intersection(luego).length, minimoPosible,
+              reason: '$equipo/$categoria (cantera de $cantera) entre '
+                  '$temporada y ${temporada + 1}');
+        }
+      }
+    }
+  });
+
   test('los dos de Los Ángeles comparten cantera pero no las mismas ofertas',
       () {
     expect(patrocinadoresDe('LAC').map((p) => p.clave),

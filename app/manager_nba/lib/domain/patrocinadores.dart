@@ -229,8 +229,37 @@ class OfertaDePatrocinio {
 /// de una.
 ///
 /// Las marcas se sacan de la cantera en orden, empezando por donde toque
-/// esta temporada, así que **cambian de un año al siguiente** igual que
-/// antes cambiaba la única que había.
+/// esta temporada.
+///
+/// **El hueco de tres se mueve entero cada año, no de uno en uno**
+/// (Lista 15 punto 9). La cantera "de once a quince" de la nota de la
+/// clase es POR CIUDAD, repartida entre las cuatro categorías — la que
+/// de verdad importa aquí es la de cada ciudad×categoría, y esa es mucho
+/// más corta (4 candidatas es la más común; medido con un script de
+/// diagnóstico sobre las 116 canteras). Con un desplazamiento de solo 1,
+/// dos de las tres ofertas de este año volvían a salir el año que viene
+/// SIEMPRE, fuera cual fuera el tamaño de la cantera. Saltando de tres en
+/// tres, el solape baja al mínimo que permite cada tamaño:
+///
+/// * Con 4 candidatas, dos de tres SIGUEN repitiendo — no es un fallo de
+///   esta función, es que solo hay 4 combinaciones posibles de 3 sobre 4
+///   y dos combinaciones distintas cualesquiera comparten al menos 2
+///   (principio del palomar). No hay desplazamiento que lo evite.
+/// * Con 5, el mínimo posible es 1 y aquí se alcanza.
+/// * Con 6 o más, el mínimo posible es 0 y aquí se alcanza: el año que
+///   viene trae tres marcas completamente distintas.
+///
+/// (Comprobado a mano con un script de diagnóstico, no hay test que fije
+/// estos números exactos porque dependen del tamaño de cada cantera real,
+/// que puede cambiar si se regenera el catálogo.)
+///
+/// Cuando la cantera NO da para más de tres (`cuantas == candidatas.length`,
+/// las ocho canteras cortas de la nota de arriba), saltar de tres en tres
+/// se queda siempre en el mismo resto y deja de rotar del todo — ahí, y
+/// solo ahí, se sigue usando el salto de uno en uno de siempre: con tan
+/// pocas marcas ya se enseñan todas cada año, y lo único que puede
+/// cambiar es el ORDEN (qué le toca el contrato de un año, cuál el de
+/// cuatro), que sí sigue rotando.
 List<OfertaDePatrocinio> ofertasDe(
   String equipo,
   String categoria, {
@@ -248,12 +277,13 @@ List<OfertaDePatrocinio> ofertasDe(
   final cuantas = candidatas.length < ofertasPorCategoria
       ? candidatas.length
       : ofertasPorCategoria;
+  final paso = candidatas.length > cuantas ? cuantas : 1;
 
   return [
     for (var i = 0; i < cuantas; i++)
       () {
-        final p =
-            candidatas[(desplazamiento + temporada + i) % candidatas.length];
+        final p = candidatas[
+            (desplazamiento + temporada * paso + i) % candidatas.length];
         final anios = aniosDeOferta[i];
         return OfertaDePatrocinio(
           patrocinador: p,
