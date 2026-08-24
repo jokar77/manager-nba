@@ -720,7 +720,13 @@ class _CabeceraEquipo extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: EdgeInsets.fromLTRB(margen, 12, margen, 0),
+                  // Margen izquierdo pequeño y fijo (4, igual que
+                  // `_ContenidoDeBarra` en estilo.dart con su `BackButton`)
+                  // en vez de `margen`: un icono de "volver" pegado al
+                  // borde es la convención, y `margen` (16-28) lo dejaba
+                  // demasiado metido hacia dentro. El resto de la cabecera
+                  // sigue alineado a `margen` por la derecha.
+                  padding: EdgeInsets.fromLTRB(4, 12, margen, 0),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -737,6 +743,7 @@ class _CabeceraEquipo extends StatelessWidget {
                         tooltip: t(context).volverAInicioTooltip,
                         onPressed: onVolverAInicio,
                       ),
+                      const SizedBox(width: 4),
                       PlacaEquipo(
                         codigo: equipo,
                         primario: info.colorPrimario,
