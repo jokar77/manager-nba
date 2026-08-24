@@ -735,6 +735,12 @@ abstract class Textos {
   String get explicacionPatrocinadores;
   String get patrocinioEstadioLabel;
   String get patrocinioCamisetaLabel;
+
+  /// Lista 15 punto 8: el catálogo de esta categoría (clave `bebida` en
+  /// `patrocinadores.dart`) mezcla marcas de bebida de verdad con
+  /// restaurantes, panaderías y tiendas de comida — son muchas más las
+  /// segundas. "Bebida oficial" prometía algo que la mayoría de las
+  /// marcas no eran; el nombre en pantalla ya no se restringe a bebida.
   String get patrocinioBebidaLabel;
   String get patrocinioOcioLabel;
   String fundadoEnAnio(int anio);

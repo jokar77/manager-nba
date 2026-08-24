@@ -1181,7 +1181,7 @@ class TextosZh extends Textos {
   @override
   String get patrocinioCamisetaLabel => '球衣赞助商';
   @override
-  String get patrocinioBebidaLabel => '官方饮品';
+  String get patrocinioBebidaLabel => '餐饮赞助商';
   @override
   String get patrocinioOcioLabel => '社区赞助商';
   @override

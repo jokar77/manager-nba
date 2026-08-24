@@ -1253,7 +1253,7 @@ class TextosEs extends Textos {
   @override
   String get patrocinioCamisetaLabel => 'Patrocinador de la camiseta';
   @override
-  String get patrocinioBebidaLabel => 'Bebida oficial';
+  String get patrocinioBebidaLabel => 'Patrocinador de comida y bebida';
   @override
   String get patrocinioOcioLabel => 'Patrocinador de ocio';
   @override

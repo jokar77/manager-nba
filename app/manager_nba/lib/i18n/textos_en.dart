@@ -1249,7 +1249,7 @@ class TextosEn extends Textos {
   @override
   String get patrocinioCamisetaLabel => 'Jersey sponsor';
   @override
-  String get patrocinioBebidaLabel => 'Official drink';
+  String get patrocinioBebidaLabel => 'Food & beverage sponsor';
   @override
   String get patrocinioOcioLabel => 'Community sponsor';
   @override

@@ -1256,7 +1256,7 @@ class TextosPt extends Textos {
   @override
   String get patrocinioCamisetaLabel => 'Patrocinador da camisa';
   @override
-  String get patrocinioBebidaLabel => 'Bebida oficial';
+  String get patrocinioBebidaLabel => 'Patrocinador de alimentação e bebidas';
   @override
   String get patrocinioOcioLabel => 'Patrocinador de lazer';
   @override

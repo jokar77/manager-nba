@@ -1264,7 +1264,7 @@ class TextosDe extends Textos {
   @override
   String get patrocinioCamisetaLabel => 'Trikotsponsor';
   @override
-  String get patrocinioBebidaLabel => 'Offizielles Getränk';
+  String get patrocinioBebidaLabel => 'Gastronomiesponsor';
   @override
   String get patrocinioOcioLabel => 'Gemeinschaftssponsor';
   @override
