@@ -7,6 +7,7 @@ import '../data/database/app_database.dart';
 import '../i18n/textos_eventos.dart';
 import 'eventos_narrativos.dart' show EfectoDeEvento;
 import 'patrocinadores.dart';
+import 'permisos.dart';
 
 /// Un patrocinio firmado: qué categoría ocupa, qué marca, cuánto paga al
 /// año y cuántas temporadas le quedan.
@@ -118,7 +119,25 @@ Future<void> _borrarCategoria(AppDatabase db, String categoria) =>
 /// Sale de lo que se guardó al firmar, no del catálogo de hoy: un contrato
 /// de cuatro años paga lo que prometió el día que se firmó aunque las
 /// ofertas de este verano sean otras.
+///
+/// **Lista 15 punto 10**: en la versión gratuita, solo cuenta si esta
+/// TEMPORADA está desbloqueada (`Funcion.patrocinadores` en
+/// `permisos.dart` — vídeo visto, compra, o edición completa). Antes de
+/// este arreglo, un contrato de varios años seguía dando su margen todos
+/// los años aunque no se volviera a ver ningún vídeo — bastaba con verlo
+/// UNA vez, al firmar, para cobrar el resto del contrato gratis. El
+/// contrato en sí no se toca (sigue vivo, sigue contando los años que le
+/// quedan): lo que se retiene es el margen de tope salarial de esta
+/// temporada en concreto, y vuelve en cuanto se desbloquee.
 Future<int> bonusSalarialDePatrocinadores(AppDatabase db) async {
+  final fila =
+      await (db.select(db.temporada)..where((t) => t.id.equals(0)))
+          .getSingleOrNull();
+  final temporadaActual = fila?.numero ?? 1;
+  if (!permisos.puede(Funcion.patrocinadores, temporada: temporadaActual)) {
+    return 0;
+  }
+
   final contratos = await leerContratosDePatrocinio(db);
   var total = 0;
   for (final contrato in contratos.values) {

@@ -6,8 +6,9 @@ import 'package:manager_nba/data/database/app_database.dart';
 import 'package:manager_nba/data/importer/jugadores_importer.dart';
 import 'package:manager_nba/domain/anuncios.dart';
 import 'package:manager_nba/domain/franquicia_repository.dart';
+import 'package:manager_nba/domain/patrocinadores.dart' show ofertasDe;
 import 'package:manager_nba/domain/patrocinadores_repository.dart'
-    show leerPatrociniosActivos;
+    show bonusSalarialDePatrocinadores, firmarPatrocinio, leerPatrociniosActivos;
 import 'package:manager_nba/domain/permisos.dart';
 import 'package:manager_nba/domain/slots_repository.dart';
 import 'package:manager_nba/features/temporada/patrocinadores_screen.dart';
@@ -205,6 +206,36 @@ void main() {
       await abrir(tester);
 
       expect(find.byIcon(Icons.lock_outline), findsNothing);
+    });
+
+    test('un contrato de varios años deja de dar su margen si no se ha '
+        'vuelto a ver el vídeo esta temporada', () async {
+      // Lista 15 punto 10: firmar un patrocinio de cuatro años no puede
+      // ser "ver el vídeo una vez y cobrar gratis el resto del contrato".
+      // El contrato sigue vivo (no se rompe, no pierde años) pero su
+      // margen de tope salarial solo cuenta las temporadas en las que
+      // patrocinadores está desbloqueado.
+      permisos = Permisos(edicion: Edicion.gratis);
+      final larga = ofertasDe('DEN', 'bebida', temporada: 1)[2];
+      expect(larga.anios, 4);
+      await firmarPatrocinio(db, larga);
+
+      expect(await bonusSalarialDePatrocinadores(db), 0,
+          reason: 'todavía no se ha visto ningún vídeo esta temporada');
+
+      permisos.desbloquearPorVideo(Funcion.patrocinadores, temporada: 1);
+      expect(await bonusSalarialDePatrocinadores(db), larga.bonusAnual,
+          reason: 'visto el vídeo, el contrato ya vivo sí cuenta');
+
+      // El desbloqueo por vídeo dura solo esa temporada (ver
+      // permisos.dart): con una `Permisos` nueva —como si hubiera
+      // pasado el año y tocara ver el vídeo otra vez— el contrato
+      // sigue en la base de datos, pero deja de dar margen hasta
+      // que se vea el vídeo de la temporada nueva.
+      permisos = Permisos(edicion: Edicion.gratis);
+      expect(await leerPatrociniosActivos(db), {'bebida'},
+          reason: 'el contrato no se ha tocado, solo el margen');
+      expect(await bonusSalarialDePatrocinadores(db), 0);
     });
   });
 }

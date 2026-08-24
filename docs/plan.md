@@ -376,11 +376,45 @@ floja. Si de verdad hace falta menos repetición en las canteras de 4 (la
 mayoría), la palanca ya no está en esta función: hay que ampliar el
 catálogo (`tool/generar_patrocinadores.dart`, fuera del alcance de hoy).
 
+### Lista 15, punto 10: el vídeo sigue haciendo falta con contratos plurianuales
+
+Antes de este arreglo, un patrocinio de varios años (firmado en la
+versión gratuita, tras ver el vídeo una vez) seguía dando su margen de
+tope salarial TODOS los años del contrato sin volver a pedir nada: el
+vídeo desbloqueaba `Funcion.patrocinadores` solo esa temporada
+(`Permisos.desbloquearPorVideo`, ver `permisos.dart`), pero
+`bonusSalarialDePatrocinadores` en `patrocinadores_repository.dart`
+sumaba el bonus de cualquier contrato vivo sin mirar el permiso — el
+contrato en sí no caduca hasta que `aniosRestantes` llega a 0
+(`caducarPatrocinios`), así que una vez visto el vídeo al firmar, el
+resto de temporadas del contrato eran gratis.
+
+Arreglado añadiendo la comprobación de permiso al principio de
+`bonusSalarialDePatrocinadores`: lee la temporada actual directamente de
+`db.temporada` (una consulta mínima inline, no un import de
+`nueva_temporada_repository.dart` — ese fichero ya importa
+`patrocinadores_repository.dart` para `caducarPatrocinios`, así que
+importarlo al revés crearía un ciclo) y, si
+`permisos.puede(Funcion.patrocinadores, temporada: temporadaActual)` es
+falso, devuelve 0 sin tocar los contratos. El contrato sigue vivo en la
+base de datos —`leerPatrociniosActivos`/`aniosRestantes` no cambian—,
+solo se retiene el margen de esa temporada hasta que se desbloquee de
+nuevo (vídeo, compra o edición completa).
+
+Test nuevo en `bloqueos_version_gratuita_test.dart` (`'un contrato de
+varios años deja de dar su margen si no se ha vuelto a ver el vídeo esta
+temporada'`): firma una oferta de 4 años en edición gratuita sin ver el
+vídeo → bonus 0; ve el vídeo → bonus completo; simula el paso de
+temporada con un `Permisos` nuevo (el desbloqueo por vídeo dura una sola
+temporada) → el contrato sigue en `leerPatrociniosActivos` pero el bonus
+vuelve a 0. Verificado con `flutter analyze` limpio y la suite completa:
+**674 tests, todos verdes**.
+
 ### Qué falta
 
 1. Commitear en local (sin push) todo lo de hoy.
-2. Seguir con el punto 10 de la lista 15 (que el vídeo siga haciendo
-   falta con contratos plurianuales de patrocinio).
+2. Seguir con el punto 11 de la lista 15 (contrato con 1 año restante
+   debe decir "1 año", no "último año").
 
 ### Antecedente: la causa del bug de rookies (sesión del 23 de agosto)
 
@@ -404,9 +438,9 @@ rookies reales, el juego se quedaba sin ninguna clase de novato jugable.
 
 ## Lista bugs/mejora 15 (a 2026-08-23, de `lista_bugs_cambios_nba_manager_15.txt`)
 
-Por orden de más a menos importante. **Puntos 1 al 9 hechos** (ver la
-sección "EN CURSO" al principio del fichero para el detalle); 10 y 11,
-sin empezar.
+Por orden de más a menos importante. **Puntos 1 al 10 hechos** (ver la
+sección "EN CURSO" al principio del fichero para el detalle); 11, sin
+empezar.
 
 1. ~~**Bug rookies/clases**~~ HECHO. Corregido `draft_year` a mano para
    la clase 2024-2025 y completada con datos reales la clase 2026 (ver
@@ -452,12 +486,12 @@ sin empezar.
    ciudad y no por categoría— dos de tres siguen repitiendo: con solo 4
    combinaciones posibles de "3 de 4", es matemáticamente inevitable
    (principio del palomar), no un fallo del arreglo.
-10. **Patrocinadores, anuncios/vídeos**: aunque el usuario haya firmado
-    un patrocinio de varios años, para disfrutar de sus beneficios debe
-    seguir obligado a ver el vídeo correspondiente cuando toque. Hoy el
-    desbloqueo por vídeo es genérico (`Funcion.patrocinadores`, dura una
-    temporada) y no está atado a los contratos plurianuales que se
-    añadieron el 23 de agosto — hay que revisar cómo interactúan.
+10. ~~**Patrocinadores, anuncios/vídeos**~~ HECHO.
+    `bonusSalarialDePatrocinadores` ahora exige
+    `permisos.puede(Funcion.patrocinadores, temporada: actual)` antes de
+    sumar el bonus: un contrato plurianual sigue vivo pero deja de dar
+    margen en cuanto pasa una temporada sin volver a ver el vídeo (o
+    comprar/completa). `lib/domain/patrocinadores_repository.dart`.
 11. **Traspasos, contrato**: cuando a un jugador le queda 1 año de
     contrato, debe decir "1 año" y no "último año".
 
