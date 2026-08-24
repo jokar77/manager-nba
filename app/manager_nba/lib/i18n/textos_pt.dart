@@ -680,9 +680,7 @@ class TextosPt extends Textos {
     String contrato,
   ) => '$nombre · $posicion · $media · $contrato';
   @override
-  String get ultimoAnioContrato => 'Último ano';
-  @override
-  String aniosDeContrato(int n) => '$n anos';
+  String aniosDeContrato(int n) => n == 1 ? '1 ano' : '$n anos';
   @override
   String contratoAnioMillones(String anios, String millones) =>
       '$anios · $millones por ano';
@@ -755,9 +753,6 @@ class TextosPt extends Textos {
   @override
   String get mercadoCerradoNoSeBuscan =>
       'O mercado está fechado: o prazo de trocas já passou. Não é possível buscar negócios até o ano que vem.';
-  @override
-  String get ultimoAnioMinuscula => 'último ano';
-
   @override
   String get tituloLegado => 'Legado';
   @override

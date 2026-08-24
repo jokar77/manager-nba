@@ -410,11 +410,37 @@ temporada) → el contrato sigue en `leerPatrociniosActivos` pero el bonus
 vuelve a 0. Verificado con `flutter analyze` limpio y la suite completa:
 **674 tests, todos verdes**.
 
+### Lista 15, punto 11: "1 año" en vez de "último año"
+
+`_aniosDeContrato` en `traspasos_screen.dart` y `contratoEnUnaLinea` en
+`hoja_de_propuestas.dart` sustituían el número por un texto especial
+(`ultimoAnioMinuscula`/`ultimoAnioContrato`) en cuanto a un jugador le
+quedaba 1 año o menos de contrato — "último año" en vez de "1 año", sin
+decir cuántos quedaban de verdad. `aniosDeContrato(int n)` (en
+`textos.dart` y sus 7 idiomas) ya existía para el caso general pero
+nunca se llamaba con `n == 1`.
+
+Arreglado quitando la rama especial en los dos sitios (ambos llaman
+ahora a `t(context).aniosDeContrato(j.aniosContrato)` sin condición) y
+dándole a `aniosDeContrato` singular de verdad en los idiomas donde
+importa gramaticalmente: ES "1 año"/"$n años", EN "1 year"/"$n years",
+FR "1 an"/"$n ans", IT "1 anno"/"$n anni", PT "1 ano"/"$n anos", DE "1
+Jahr"/"$n Jahre"; ZH no distingue singular/plural así que
+`'$n年'` se deja igual. Los getters `ultimoAnioContrato` y
+`ultimoAnioMinuscula` (abstractos en `textos.dart` y sus 7
+implementaciones) se borraron enteros por quedarse sin ningún uso.
+
+Test nuevo `test/textos_test.dart` (no había ningún test de i18n suelto
+hasta ahora): comprueba `aniosDeContrato(1)` y `aniosDeContrato(3)` en
+español e inglés. Verificado con `flutter analyze` limpio y la suite
+completa: **676 tests, todos verdes** — con esto se cierran los 11
+puntos de la lista 15.
+
 ### Qué falta
 
 1. Commitear en local (sin push) todo lo de hoy.
-2. Seguir con el punto 11 de la lista 15 (contrato con 1 año restante
-   debe decir "1 año", no "último año").
+2. La lista 15 está completa. Pendiente de que el usuario pida la
+   siguiente lista o decida publicar (`git push origin main`).
 
 ### Antecedente: la causa del bug de rookies (sesión del 23 de agosto)
 
@@ -434,13 +460,10 @@ del usuario) no servía de contraejemplo porque ni se importaba — y esa
 investigación fue justo lo que llevó al punto 1 de hoy: sin el CSV de
 rookies reales, el juego se quedaba sin ninguna clase de novato jugable.
 
-### Resto de la lista 15: sin empezar (puntos 3 al 11)
-
 ## Lista bugs/mejora 15 (a 2026-08-23, de `lista_bugs_cambios_nba_manager_15.txt`)
 
-Por orden de más a menos importante. **Puntos 1 al 10 hechos** (ver la
-sección "EN CURSO" al principio del fichero para el detalle); 11, sin
-empezar.
+Por orden de más a menos importante. **Los 11 puntos están hechos** (ver
+la sección "EN CURSO" al principio del fichero para el detalle).
 
 1. ~~**Bug rookies/clases**~~ HECHO. Corregido `draft_year` a mano para
    la clase 2024-2025 y completada con datos reales la clase 2026 (ver
@@ -492,8 +515,12 @@ empezar.
     sumar el bonus: un contrato plurianual sigue vivo pero deja de dar
     margen en cuanto pasa una temporada sin volver a ver el vídeo (o
     comprar/completa). `lib/domain/patrocinadores_repository.dart`.
-11. **Traspasos, contrato**: cuando a un jugador le queda 1 año de
-    contrato, debe decir "1 año" y no "último año".
+11. ~~**Traspasos, contrato**~~ HECHO. `_aniosDeContrato`/
+    `contratoEnUnaLinea` ya no sustituyen el número por "último año":
+    llaman a `aniosDeContrato(n)` sin excepción, y esa función tiene
+    singular de verdad ("1 año") en vez de solo pluralizar.
+    `lib/features/mercado/traspasos_screen.dart` y
+    `lib/shared/hoja_de_propuestas.dart`.
 
 Los puntos 3, 4 y 5 tocan pantallas ya tocadas esta misma semana
 (hub/calendario); conviene mirarlos juntos. Los puntos 7, 8, 9 y 10 son

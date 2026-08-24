@@ -14,9 +14,7 @@ import 'equipo_logo.dart';
 /// (una el contrato, la otra la edad), así que juzgabas una propuesta con
 /// menos datos que la otra según por dónde hubiera llegado.
 String contratoEnUnaLinea(BuildContext context, Jugador j) {
-  final anios = j.aniosContrato <= 1
-      ? t(context).ultimoAnioContrato
-      : t(context).aniosDeContrato(j.aniosContrato);
+  final anios = t(context).aniosDeContrato(j.aniosContrato);
   return t(context).contratoAnioMillones(anios, formatearMillones(j.salario));
 }
 

@@ -459,7 +459,9 @@ abstract class Textos {
     int media,
     String contrato,
   );
-  String get ultimoAnioContrato;
+  /// "1 año" / "3 años" — el año que le queda de contrato a un jugador,
+  /// singular incluido: un contrato a punto de acabar dice "1 año", no
+  /// "último año" (Lista 15 punto 11).
   String aniosDeContrato(int n);
   String contratoAnioMillones(String anios, String millones);
   String get tePiden;
@@ -493,8 +495,6 @@ abstract class Textos {
   String get tocaParaElegirJugadoresOPicks;
 
   String get mercadoCerradoNoSeBuscan;
-  String get ultimoAnioMinuscula;
-
   String get tituloLegado;
   String get explicacionPuntuacionCarreraTooltip;
   String get hallOfFame;

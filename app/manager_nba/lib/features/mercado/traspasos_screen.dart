@@ -1170,6 +1170,4 @@ class _Fila extends StatelessWidget {
 /// El sueldo solo no basta para juzgar un traspaso: 40M con un año por
 /// delante y 40M con cinco son operaciones completamente distintas.
 String _aniosDeContrato(BuildContext context, Jugador j) =>
-    j.aniosContrato <= 1
-        ? t(context).ultimoAnioMinuscula
-        : t(context).aniosDeContrato(j.aniosContrato);
+    t(context).aniosDeContrato(j.aniosContrato);

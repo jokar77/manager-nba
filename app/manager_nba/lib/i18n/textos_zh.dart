@@ -642,8 +642,6 @@ class TextosZh extends Textos {
     String contrato,
   ) => '$nombre·$posicion·$media·$contrato';
   @override
-  String get ultimoAnioContrato => '最后一年';
-  @override
   String aniosDeContrato(int n) => '$n年';
   @override
   String contratoAnioMillones(String anios, String millones) =>
@@ -710,9 +708,6 @@ class TextosZh extends Textos {
 
   @override
   String get mercadoCerradoNoSeBuscan => '市场已关闭：交易截止日期已过。要到明年才能查找交易方案。';
-  @override
-  String get ultimoAnioMinuscula => '最后一年';
-
   @override
   String get tituloLegado => '传承';
   @override
