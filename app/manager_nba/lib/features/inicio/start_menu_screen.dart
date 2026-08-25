@@ -160,6 +160,13 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
       if (mounted) _recargar();
       return;
     }
+    // Igual que al continuar una franquicia: los jugadores que el dataset
+    // haya ganado desde que empezó esta carrera se añaden ahora.
+    await anadirJugadoresQueFaltenDelDataset(db);
+    if (!mounted) {
+      await cerrarSlot(db);
+      return;
+    }
     await marcarRanuraComoUsada(slot);
     if (!mounted) {
       await cerrarSlot(db);
@@ -241,6 +248,11 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
     setState(() => _procesando = true);
 
     final db = abrirSlot(slot);
+    // El Modo Carrera necesita los 646 jugadores reales de la liga: son
+    // los rivales para el draft (qué equipo te ficha) y, más adelante,
+    // contrato y traspasos. Forzado igual que al estrenar una franquicia:
+    // una ranura reutilizada tiene que arrancar con el dataset original.
+    await importarJugadoresSiHaceFalta(db, forzar: true);
     await marcarRanuraComoUsada(slot);
     if (!mounted) {
       await cerrarSlot(db);
