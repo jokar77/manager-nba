@@ -6,6 +6,7 @@ import '../../data/database/app_database.dart';
 import '../../domain/carrera_repository.dart';
 import '../../domain/equipos_info.dart';
 import '../../domain/modo_carrera_repository.dart';
+import '../../domain/salarios.dart';
 import '../../i18n/textos.dart';
 import '../../shared/estilo.dart';
 
@@ -314,7 +315,18 @@ class _FichaDeJugador extends StatelessWidget {
                   textos.ofertaJuvenilTitulo,
               style: TextStyle(fontSize: 14, color: e.textoTenue),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                _Estadistica(label: textos.edadLabel, valor: '${estado.edad}'),
+                _Estadistica(
+                  label: textos.valorLabel,
+                  valor:
+                      '\$${formatearSalario(salarioEstimado(media: estado.media, edad: estado.edad))}',
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             FutureBuilder<List<FilaLineaDeTiempo>>(
               future: lineaDeTiempo,
               builder: (context, snapshot) {
@@ -324,8 +336,6 @@ class _FichaDeJugador extends StatelessWidget {
                 final ultima = conPartidos.isEmpty ? null : conPartidos.first;
                 return Row(
                   children: [
-                    _Estadistica(
-                        label: textos.edadLabel, valor: '${estado.edad}'),
                     _Estadistica(label: 'PJ', valor: '${ultima?.partidos ?? 0}'),
                     _Estadistica(
                         label: 'PTS',

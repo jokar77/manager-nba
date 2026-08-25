@@ -795,6 +795,7 @@ abstract class Textos {
   String get edadLabel;
   String get mediaLabel;
   String get potencialLabel;
+  String get valorLabel;
   String get equipoActualLabel;
   String get organizacionActualLabel;
 

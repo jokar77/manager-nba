@@ -1233,6 +1233,8 @@ class TextosZh extends Textos {
   @override
   String get potencialLabel => '潜力';
   @override
+  String get valorLabel => '身价';
+  @override
   String get equipoActualLabel => '球队';
   @override
   String get organizacionActualLabel => '所属机构';

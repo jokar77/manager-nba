@@ -1326,6 +1326,8 @@ class TextosFr extends Textos {
   @override
   String get potencialLabel => 'Potentiel';
   @override
+  String get valorLabel => 'Valeur';
+  @override
   String get equipoActualLabel => 'Équipe';
   @override
   String get organizacionActualLabel => 'Organisation';
