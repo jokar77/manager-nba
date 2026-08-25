@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -133,6 +134,43 @@ void main() {
       () async {
     await crearPartidaCarrera(db, identidad, random: Random(1));
     expect(() => entrarAlDraft(db), throwsStateError);
+  });
+
+  test('si el dorsal elegido choca con alguien del equipo que te draftea, '
+      'se resuelve sin dejar duplicados', () async {
+    // El dorsal no se puede comprobar contra ningún equipo al crear el
+    // personaje (todavía no se sabe cuál te va a draftear), así que
+    // entrarAlDraft tiene que resolver el choque si lo hay — 23 es un
+    // número común entre los 646 reales, buena apuesta para toparse con
+    // alguien.
+    final rng = Random(11);
+    await crearPartidaCarrera(
+      db,
+      const IdentidadCarrera(
+        apellido: 'Testigo',
+        dorsal: 23,
+        posicion: 'PG',
+        nacionalidad: 'ESP',
+      ),
+      random: rng,
+    );
+    await elegirOrganizacionJuvenil(db, ofertasJuvenilesIniciales('ESP').first);
+    for (var i = 0; i < edadDeDraft - edadInicialCarrera; i++) {
+      await avanzarTemporadaJuvenil(db, random: rng);
+    }
+
+    final resultado = await entrarAlDraft(db, random: rng);
+
+    final plantilla = await (db.select(db.jugadores)
+          ..where((t) =>
+              t.equipo.equals(resultado.equipo) & t.retirado.equals(false)))
+        .get();
+    final dorsales = plantilla.map((j) => j.dorsal).whereType<int>().toList();
+    expect(dorsales.length, dorsales.toSet().length,
+        reason: 'ningún equipo puede tener dos jugadores con el mismo dorsal');
+
+    final miJugador = plantilla.firstWhere((j) => j.id == resultado.jugadorId);
+    expect(miJugador.dorsal, isNotNull);
   });
 
   Future<int> llevarHastaLaNba(Random rng) async {

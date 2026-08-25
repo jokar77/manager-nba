@@ -7,6 +7,7 @@ import '../data/database/app_database.dart';
 import 'camisetas_repository.dart';
 import 'carrera_repository.dart';
 import 'curva_estadisticas.dart';
+import 'dorsales_repository.dart';
 import 'equipos_info.dart';
 import 'hall_fama_repository.dart';
 import 'jugador_mapping.dart';
@@ -389,6 +390,13 @@ Future<ResultadoDraft> entrarAlDraft(AppDatabase db, {Random? random}) async {
               Value(aniosContratoEstimados(edad: fila.edad)),
         ),
       );
+  // El dorsal elegido en la creación del personaje puede coincidir con el
+  // de alguien que ya esté en ese equipo (no se comprobó contra ningún
+  // equipo en concreto porque en ese momento todavía no se sabía cuál te
+  // draftearía). Mismo mecanismo que ya usa el draft real para sus
+  // rookies: si hay choque, se queda con el número quien tenga mejor
+  // media y al otro se le asigna uno libre.
+  await asignarDorsalesQueFalten(db, random: rng);
 
   await (db.update(db.partidaCarrera)..where((t) => t.id.equals(0))).write(
     PartidaCarreraCompanion(
