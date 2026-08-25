@@ -9,6 +9,7 @@ import 'package:manager_nba/data/importer/jugadores_importer.dart';
 import 'package:manager_nba/domain/equipos_especiales.dart';
 import 'package:manager_nba/domain/equipos_info.dart';
 import 'package:manager_nba/domain/modo_carrera_repository.dart';
+import 'package:manager_nba/domain/salarios.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -206,6 +207,32 @@ void main() {
   test('avanzarTemporadaNba falla si todavía no hay draft', () async {
     await crearPartidaCarrera(db, identidad, random: Random(1));
     expect(() => avanzarTemporadaNba(db), throwsStateError);
+  });
+
+  test('a lo largo de varias temporadas el contrato se renueva o cambia de '
+      'equipo, siempre con salario y años de contrato válidos', () async {
+    final rng = Random(3);
+    final jugadorId = await llevarHastaLaNba(rng);
+
+    var huboCambioDeEquipo = false;
+    for (var i = 0; i < 10; i++) {
+      final resumen = await avanzarTemporadaNba(db, random: rng);
+      if (resumen.seRetira) break;
+      if (resumen.cambioDeEquipo) huboCambioDeEquipo = true;
+
+      final jugador = await (db.select(db.jugadores)
+            ..where((t) => t.id.equals(jugadorId)))
+          .getSingle();
+      expect(jugador.salario, greaterThanOrEqualTo(salarioMinimo));
+      expect(jugador.aniosContrato, greaterThan(0));
+      // El equipo que enseña el resumen tiene que ser el mismo que ha
+      // quedado grabado en su fila de Jugadores.
+      expect(jugador.equipo, resumen.equipo);
+    }
+
+    expect(huboCambioDeEquipo, isTrue,
+        reason: 'en 10 temporadas debería tocar al menos una renovación '
+            'fallida o un traspaso a mitad de contrato');
   });
 
   test('una carrera jugada hasta el final de la edad máxima se retira, entra '
