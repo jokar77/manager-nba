@@ -117,3 +117,50 @@ el usuario.
   `respaldo/trabajo-en-curso`, adelantados a `main` sin merge (fast-forward
   limpio) para que se publique solo en
   [jokar77.github.io/manager-nba](https://jokar77.github.io/manager-nba/).
+
+## Misma sesión, tramo final (04:00-05:00 del 25 de agosto) — tres arreglos
+## más, todos subidos a `main`
+
+1. **Choques de dorsal al draftear.** El dorsal se elige al crear el
+   personaje, antes de saber qué equipo te va a fichar, así que podía
+   coincidir con el de alguien ya en esa plantilla. Se reusa
+   `asignarDorsalesQueFalten` (`dorsales_repository.dart`) justo después de
+   insertar al jugador en `entrarAlDraft` — el mismo mecanismo que ya
+   resuelve esto para los rookies del draft real: se queda con el número
+   quien tenga mejor media, al otro se le asigna uno libre. Test de
+   regresión en `modo_carrera_repository_test.dart`.
+2. **Cobertura de renovación/traspaso de contrato.** Hasta ahora ningún
+   test comprobaba directamente que, al agotarse el contrato o saltar la
+   probabilidad de traspaso a mitad de temporada, salario y años de
+   contrato quedaran en un estado válido. Nuevo test con semilla 3: en 10
+   temporadas se ve al menos una renovación fallida o un traspaso.
+3. **Bug de verdad, no de test: el Modo Carrera nunca importaba a los 646
+   jugadores reales.** `_empezarCarreraEn` (en `start_menu_screen.dart`)
+   no llamaba a `importarJugadoresSiHaceFalta`, a diferencia de `_empezarEn`
+   (su equivalente en franquicia) — así que toda partida de Modo Carrera
+   empezada desde el menú arrancaba con la tabla `Jugadores` vacía. Sin
+   jugadores reales, `entrarAlDraft` evaluaba 30 plantillas vacías y el
+   draft caía casi al azar en vez de mirar necesidades de plantilla de
+   verdad. Corregido con la misma llamada que usa franquicia, más el
+   backfill (`anadirJugadoresQueFaltenDelDataset`) al continuar una
+   carrera ya empezada. **Esto no lo detectó ningún test de esta sesión**
+   porque `modo_carrera_repository_test.dart` importa los jugadores en su
+   propio `setUp` — probaba el motor con datos reales, pero nunca probó
+   que el CAMINO DESDE EL MENÚ también los pusiera ahí. Lección para la
+   próxima vez que se añada un modo nuevo: un test de integración que
+   arranque desde `StartMenuScreen` de verdad, no solo tests del
+   repositorio con el `setUp` ya preparado.
+
+**Por qué el punto 3 no tiene test de interfaz**: al tocar "EMPEZAR", el
+menú de detrás sigue visible tapado por la pantalla nueva y enseña una
+`LinearProgressIndicator` indeterminada mientras `_procesando` es true
+(hasta que termina TODA la cadena de pantallas, no solo la importación) —
+eso anima sin parar y ni `pumpAndSettle()` ni `pump()` repetido con
+duración fija consiguen que el árbol se "asiente" para poder comprobar
+que `CrearJugadorScreen` ya está en pantalla. Se verificó a mano leyendo
+el código (llamada simétrica a la de `_empezarEn`, que sí está probada) y
+con `modo_carrera_repository_test.dart`, que ya prueba el draft con
+jugadores reales importados.
+
+Verificado antes de subir: `dart analyze` limpio, **706 tests en verde**
+(`flutter test` completo, no solo los ficheros tocados).
