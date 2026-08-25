@@ -93,3 +93,27 @@ el usuario.
   antes). No se ha podido probar visualmente en navegador dentro de la
   sesión de Claude Code (el panel de la herramienta no componía frames);
   queda pendiente un pase manual de verdad jugando una carrera completa.
+
+## Misma sesión — "Modo Franquicia"/"Modo Jugador" directos, tests de las
+## pantallas nuevas, y subida a `main`
+
+- El diálogo "¿Qué quieres jugar?" se quitó: a petición del usuario, los
+  dos modos van directos como botones en la primera pantalla del menú
+  ("Modo Franquicia" / "Modo Jugador" — así se llama en la interfaz, el
+  código y esta bitácora lo siguen llamando "carrera" por dentro).
+- Tests de widgets para las tres pantallas nuevas
+  (`crear_jugador_screen_test.dart`, `oferta_juvenil_screen_test.dart`,
+  `modo_carrera_hub_screen_test.dart`) — **704 tests en total**.
+- **Bug de CI encontrado y corregido**: el test de la fase retirado del
+  hub simulaba ~40 temporadas NBA de verdad dentro de un test de widgets
+  y tardaba varios minutos (el mismo camino en un test de dominio puro es
+  instantáneo) — con eso el job de tests de `publicar.yml` se habría
+  quedado colgado y la publicación automática nunca habría terminado.
+  Corregido: una sola temporada real y el resto del estado retirado se
+  fuerza directamente en la base — lo que prueba ese test es que el hub
+  pinta bien esa fase, no el camino de 40 años hasta llegar a ella (eso ya
+  lo cubre `modo_carrera_repository_test.dart`).
+- A petición del usuario, esta sesión sí subió a git: dos commits en
+  `respaldo/trabajo-en-curso`, adelantados a `main` sin merge (fast-forward
+  limpio) para que se publique solo en
+  [jokar77.github.io/manager-nba](https://jokar77.github.io/manager-nba/).
