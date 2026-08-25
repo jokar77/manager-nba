@@ -19,7 +19,16 @@ ver abajo). Es la misma prioridad que ya estaba escrita en
 - **Jugable ahora mismo**: [jokar77.github.io/manager-nba](https://jokar77.github.io/manager-nba/)
   (web/PWA, instalable desde el móvil). Se publica sola en cada `git push`
   a `main`.
-- **685 tests**, todos verdes. `flutter analyze` limpio.
+- **Dos modos, no uno.** Desde el 25 de agosto de 2026 el juego tiene
+  también **Modo Carrera** (controlas a un único jugador, de los 16 años
+  al retiro, en vez de una franquicia entera) — mismo enlace, botón
+  "Modo Jugador" en el menú de inicio. Su propio estado y detalle técnico
+  vive en `plan_modo_carrera.md`; aquí solo cuenta para el roadmap de
+  lanzamiento porque comparte plataforma, tiendas y el mismo aviso legal
+  de nombres/equipos parecidos a los reales (ver más abajo).
+- **708 tests**, todos verdes. `dart analyze` limpio (o `flutter analyze`
+  si no está teniendo un problema de sesión propio del analizador, ajeno
+  al código).
 - **7 idiomas** completos (interfaz y guion de eventos narrativos).
 - **Monetización**: la capa de permisos, los puertos de anuncios/compra y
   los tres bloqueos de la versión gratuita ya están hechos y probados
@@ -99,6 +108,11 @@ conviene que un abogado (o al menos una búsqueda seria de casos
 parecidos: apps de manager de fantasía, "name and likeness") lo revise.
 No es algo que yo pueda garantizar por escrito de código; es una
 decisión de riesgo que solo puedes tomar tú con esa información.
+
+Esto afecta a **los dos modos por igual**: Modo Carrera te draftea a un
+equipo de los mismos 30 con apodos ligeramente cambiados, así que
+cualquier revisión legal antes de publicar en tienda tiene que cubrir
+ambos, no solo el modo Franquicia original.
 
 ---
 

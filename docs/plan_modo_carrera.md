@@ -7,7 +7,67 @@ historias en un solo fichero los hacía más difíciles de seguir a los dos.
 Lo que es común a los dos modos (cómo publicar, credenciales de git, reglas
 de la casa) sigue solo en `plan.md`; no se duplica aquí.
 
-## EN CURSO — motor de dominio hecho (fases juvenil + NBA), construyendo la UI
+## ESTADO ACTUAL (leer esto primero)
+
+**Jugable, publicado, y con más profundidad que un slice mínimo** —
+inspirado en el simulador de carrera de fútbol de Copero, controlas a UN
+jugador de baloncesto de los 16 años al retiro. Mismo sitio que el modo
+Franquicia: [jokar77.github.io/manager-nba](https://jokar77.github.io/manager-nba/),
+"Modo Jugador" en el menú de inicio (botón azul oscuro, distinto del
+naranja de Franquicia).
+
+**El camino completo, tal y como está hoy:**
+1. Crear jugador — apellido y dorsal en vivo sobre una camiseta dibujada a
+   mano, posición, nacionalidad (12, con bandera, hoja inferior a ancho
+   completo).
+2. Fase juvenil (16 → 19 años) — eliges organización de tu país
+   (`rutas_juveniles.dart`), y cada temporada un evento de decisión
+   (`eventos_de_carrera.dart`) te empuja la media un poco.
+3. Draft — lotería de un solo jugador con la misma fórmula de valoración
+   que usa la CPU en el draft real, no las 60 elecciones completas.
+4. Temporadas NBA — se simulan tus partidos con el motor real
+   (`simularPartido`) contra un rival sintético; evento de decisión cada
+   año; contrato/traspaso por probabilidad de mercado; MVP/Mejor
+   Defensor/Rookie del Año/selección al All-Star por umbral de tu nivel
+   con algo de azar (sin liga completa que simular, no hay 450 candidatos
+   reales con los que comparar). La ficha enseña tu vitrina de trofeos en
+   vivo, temporada a temporada.
+5. Retiro — Salón de la Fama y camiseta retirada evaluados con las mismas
+   funciones que usa cualquier jugador de franquicia; resumen final con
+   PTS/AST/REB de carrera, camisetas retiradas y medallero completo.
+
+**Piezas clave** (todas en `app/manager_nba/`):
+`lib/domain/modo_carrera_repository.dart` (el motor entero),
+`rutas_juveniles.dart`, `eventos_de_carrera.dart`,
+`lib/features/modo_carrera/` (las tres pantallas),
+`test/modo_carrera_repository_test.dart` + `crear_jugador_screen_test.dart`
++ `oferta_juvenil_screen_test.dart` + `modo_carrera_hub_screen_test.dart`.
+
+**Reusa sin tocar, del modo Franquicia**: `CarreraJugador`/`leerCarrera()`,
+`evaluarIngresosHallDeLaFama`, `retirarCamiseta`,
+`salarioEstimado`/`aniosContratoEstimados`, las curvas de estadísticas, y
+`HistorialPremios`/`TipoPremio` (con un valor nuevo, `allStar`, que
+Franquicia nunca concede).
+
+**Fuera de alcance, a propósito** (se puede añadir después sin rediseñar
+lo que ya hay): el draft completo de 60 elecciones, premios calculados
+contra una liga real de 450 jugadores en vez de por umbral, simular las
+30 franquicias de fondo, más de 12 nacionalidades, las dificultades
+Intensa/Normal/Exprés de Copero (hoy: un evento por temporada, siempre).
+
+**Verificación de siempre antes de subir**: `dart analyze` limpio (o
+`dart analyze` si `flutter analyze` falla por un problema de sesión del
+propio analizador, no del código — ver nota más abajo) y `flutter test`
+completo en verde — 708 tests a fecha de la última sesión.
+
+**Lección de testing que costó cara dos veces**: una pantalla más
+alta/rica puede dejar widgets fuera del viewport por defecto de un test
+(800×600) sin ningún error real — sube `tester.view.physicalSize` antes
+de dudar del widget. Y `pumpAndSettle()` nunca se asienta si hay una
+`LinearProgressIndicator` indeterminada en pantalla (el `_procesando` del
+menú de inicio, por ejemplo) — usa `pump()` con duración fija ahí.
+
+---
 
 Sesión del 25 de agosto de 2026. El usuario pidió un modo nuevo, inspirado
 en el simulador de carrera de fútbol de Copero
