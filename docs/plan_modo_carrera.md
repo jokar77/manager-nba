@@ -164,3 +164,41 @@ jugadores reales importados.
 
 Verificado antes de subir: `dart analyze` limpio, **706 tests en verde**
 (`flutter test` completo, no solo los ficheros tocados).
+
+## Sesión del 25 de agosto (tarde) — se parece a Copero de verdad
+
+El usuario mandó una captura de la ficha de jugador de Copero y pidió que
+el Modo Carrera se le pareciera más:
+
+- **Identidad propia**: botón "Modo Jugador" y acento de las tres
+  pantallas en azul oscuro (`colorModoCarrera`,
+  `lib/shared/estilo.dart`), en vez del naranja de franquicia.
+- **Camiseta grande en "Crea tu jugador"**: silueta de camiseta de
+  básquet dibujada a mano con `CustomPainter` (sin imagen ni asset), con
+  el dorsal y el apellido cambiando en vivo mientras escribes —
+  `CamisetaJugador`, `lib/features/modo_carrera/crear_jugador_screen.dart`.
+- **Selector de nacionalidad con bandera**: hoja inferior con las 12
+  banderas a ancho completo en vez del desplegable nativo; cada
+  `RutaJuvenil` lleva ahora su `bandera` (emoji, `rutas_juveniles.dart`).
+- **Hub con línea de tiempo**: la ficha enseña bandera + dorsal/puesto +
+  PJ/PTS/AST de la última temporada, y debajo una fila por cada
+  temporada jugada (edad, club/organización, media, PJ/PTS/AST) — nueva
+  `leerLineaDeTiempo()` en `modo_carrera_repository.dart`, que junta las
+  dos tablas de historial que ya existían sin tocarlas.
+
+**Lección de testing que se repitió dos veces esta sesión**: una pantalla
+más alta/rica (camiseta grande, línea de tiempo) puede dejar widgets
+fuera del viewport por defecto de un test (800×600) sin que haya ningún
+error real — `find.byType`/`find.text` simplemente no encuentran nada
+porque Flutter no construye lo que está fuera de la vista dentro de un
+`ListView`/sliver. Antes de dar un test por roto, subir el tamaño de
+vista del test (`tester.view.physicalSize`) como ya hacía
+`start_menu_screen_test.dart`.
+
+Verificado: `dart analyze` limpio, 706 tests en verde. **No se ha podido
+verificar visualmente en navegador** en ninguna sesión de hoy — el panel
+de Claude Code no compone frames en este entorno y la extensión de
+Chrome no está conectada; toda la verificación de esta entrega es por
+tests automatizados + lectura del código, no por haberlo visto
+renderizado. Pendiente de que el usuario lo confirme jugando en
+[jokar77.github.io/manager-nba](https://jokar77.github.io/manager-nba/).
