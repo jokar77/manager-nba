@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../../data/database/app_database.dart';
@@ -38,8 +40,13 @@ class _ModoCarreraHubScreenState extends State<ModoCarreraHubScreen> {
 
   Future<void> _avanzarJuvenil() async {
     if (_avanzando) return;
+    final evento = eventoDeCarreraAleatorio(Random());
+    final opcion = await _elegirEvento(evento);
+    if (!mounted) return;
+
     setState(() => _avanzando = true);
-    final resumen = await avanzarTemporadaJuvenil(widget.db);
+    final resumen = await avanzarTemporadaJuvenil(widget.db,
+        efectoMedia: opcion.efectoMedia);
     final nuevoEstado = await leerPartidaCarrera(widget.db);
     if (!mounted || nuevoEstado == null) return;
     setState(() {
@@ -48,7 +55,7 @@ class _ModoCarreraHubScreenState extends State<ModoCarreraHubScreen> {
       _refrescarLineaDeTiempo();
     });
     if (!mounted) return;
-    await _mostrarResumenJuvenil(resumen);
+    await _mostrarResumenJuvenil(resumen, opcion);
   }
 
   Future<void> _entrarAlDraft() async {
@@ -72,9 +79,14 @@ class _ModoCarreraHubScreenState extends State<ModoCarreraHubScreen> {
 
   Future<void> _avanzarNba() async {
     if (_avanzando) return;
+    final evento = eventoDeCarreraAleatorio(Random());
+    final opcion = await _elegirEvento(evento);
+    if (!mounted) return;
+
     setState(() => _avanzando = true);
     final jugadorIdAntes = _estado.jugadorId!;
-    final resumen = await avanzarTemporadaNba(widget.db);
+    final resumen = await avanzarTemporadaNba(widget.db,
+        efectoMedia: opcion.efectoMedia);
     final nuevoEstado = await leerPartidaCarrera(widget.db);
     if (!mounted || nuevoEstado == null) return;
     setState(() {
@@ -92,23 +104,65 @@ class _ModoCarreraHubScreenState extends State<ModoCarreraHubScreen> {
       await _mostrarResumenRetiro(resumen, enHallDeLaFama != null);
       return;
     }
-    await _mostrarResumenNba(resumen);
+    await _mostrarResumenNba(resumen, opcion);
   }
 
-  Future<void> _mostrarResumenJuvenil(ResumenTemporadaJuvenil r) async {
+  /// El evento de decisión de esta temporada: 2-3 opciones, cada una con un
+  /// pequeño efecto en tu media (ver `eventos_de_carrera.dart`). No se puede
+  /// cerrar sin elegir — es una decisión de la temporada, no un aviso.
+  Future<OpcionDeEventoDeCarrera> _elegirEvento(EventoDeCarrera evento) async {
+    final elegida = await showDialog<OpcionDeEventoDeCarrera>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Text(evento.titulo),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(evento.descripcion),
+            const SizedBox(height: 16),
+            for (final opcion in evento.opciones)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: colorModoCarrera,
+                      side: BorderSide(color: colorModoCarrera),
+                    ),
+                    onPressed: () => Navigator.of(context).pop(opcion),
+                    child: Text(opcion.texto, textAlign: TextAlign.center),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+    return elegida!;
+  }
+
+  Future<void> _mostrarResumenJuvenil(
+      ResumenTemporadaJuvenil r, OpcionDeEventoDeCarrera opcion) async {
     final textos = t(context);
     await _dialogoSimple(
       titulo: '${textos.edadLabel} ${r.edad}',
-      mensaje: '${textos.mediaLabel}: ${r.mediaAntes} → ${r.mediaDespues}\n'
+      mensaje: '${opcion.mensaje}\n\n'
+          '${textos.mediaLabel}: ${r.mediaAntes} → ${r.mediaDespues}\n'
           'PTS ${r.ptsPg.toStringAsFixed(1)} · '
           'AST ${r.astPg.toStringAsFixed(1)} · '
           'REB ${r.trbPg.toStringAsFixed(1)}',
     );
   }
 
-  Future<void> _mostrarResumenNba(ResumenTemporadaNba r) async {
+  Future<void> _mostrarResumenNba(
+      ResumenTemporadaNba r, OpcionDeEventoDeCarrera opcion) async {
     final textos = t(context);
     final lineas = <String>[
+      opcion.mensaje,
+      '',
       '${textos.mediaLabel}: ${r.mediaAntes} → ${r.mediaDespues}',
       'PTS ${r.ptsPg.toStringAsFixed(1)} · '
           'AST ${r.astPg.toStringAsFixed(1)} · '

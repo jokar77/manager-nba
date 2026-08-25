@@ -202,3 +202,35 @@ Chrome no está conectada; toda la verificación de esta entrega es por
 tests automatizados + lectura del código, no por haberlo visto
 renderizado. Pendiente de que el usuario lo confirme jugando en
 [jokar77.github.io/manager-nba](https://jokar77.github.io/manager-nba/).
+
+## Misma tarde — primer catálogo de eventos de decisión
+
+El usuario pidió eventos que, por ejemplo, sumen media — el "Fuera de
+alcance" que el plan original dejaba para más adelante (ver el aviso de
+alcance al principio de este documento: los eventos con protagonista
+propio del jugador de carrera). Primera versión, deliberadamente simple:
+
+- `lib/domain/eventos_de_carrera.dart`: catálogo de 6 eventos (plan de
+  pretemporada, horas de tiro, estudiar vídeo, molestia en la rodilla,
+  preparador físico, vida fuera de la cancha), cada uno con 2-3 opciones
+  y un efecto directo en la media (de -1 a +2). Sin condiciones de
+  contexto todavía — un evento al azar del catálogo, cada temporada.
+- `avanzarTemporadaJuvenil`/`avanzarTemporadaNba` (`modo_carrera_
+  repository.dart`) aceptan ahora un `efectoMedia` opcional (por defecto
+  0, así que los tests y llamadas antiguas no cambian de comportamiento)
+  que se suma DESPUÉS de la progresión normal — nunca sustituye el
+  crecimiento natural, solo lo empuja un poco.
+- Hub: antes de simular la temporada (juvenil o NBA — la entrada al
+  draft no lleva evento), un diálogo no descartable presenta el evento y
+  sus opciones; la elegida se aplica a esa misma temporada y su mensaje
+  sale en el resumen.
+
+Fuera de esta entrega todavía: eventos con condición de contexto (edad,
+fase, forma...) y otros efectos además de la media (lesiones, dinero,
+moral...) — el mismo patrón de `efectoMedia` se puede ampliar sin tocar
+cómo se dispara ni se elige el evento.
+
+Verificado: `dart analyze` limpio, **708 tests en verde**, incluidos dos
+nuevos que comprueban que el efecto se nota de verdad en la media
+(juvenil y NBA). Los tests de widgets del hub se actualizaron para
+elegir una opción del evento antes de esperar el resumen de temporada.

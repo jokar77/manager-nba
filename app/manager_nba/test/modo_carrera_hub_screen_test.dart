@@ -54,6 +54,12 @@ void main() {
     await tester.tap(find.text('AVANZAR TEMPORADA'));
     await tester.pumpAndSettle();
 
+    // Antes del resumen, el evento de la temporada: hay que elegir una de
+    // sus opciones para que la temporada siga.
+    expect(find.byType(OutlinedButton), findsWidgets);
+    await tester.tap(find.byType(OutlinedButton).first);
+    await tester.pumpAndSettle();
+
     // El resumen se cierra con el botón "Continuar" del diálogo.
     expect(find.text('CONTINUAR'), findsOneWidget);
     await tester.tap(find.text('CONTINUAR'));
@@ -106,6 +112,9 @@ void main() {
     expect(find.text('AVANZAR TEMPORADA'), findsOneWidget);
 
     await tester.tap(find.text('AVANZAR TEMPORADA'));
+    await tester.pumpAndSettle();
+    // El evento de la temporada, antes de simular los partidos.
+    await tester.tap(find.byType(OutlinedButton).first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('CONTINUAR'));
     await tester.pumpAndSettle();

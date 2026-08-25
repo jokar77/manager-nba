@@ -16,6 +16,11 @@ import 'progresion_repository.dart';
 import 'rutas_juveniles.dart';
 import 'salarios.dart';
 
+export 'eventos_de_carrera.dart'
+    show
+        EventoDeCarrera,
+        OpcionDeEventoDeCarrera,
+        eventoDeCarreraAleatorio;
 export 'rutas_juveniles.dart'
     show rutasJuveniles, ofertasJuvenilesIniciales, TipoOrganizacionJuvenil;
 
@@ -305,9 +310,15 @@ class ResumenTemporadaJuvenil {
 /// la liga, ver `progresionAnualDeMedia`) y una temporada de referencia
 /// archivada en `HistorialTemporadaJuvenil`. Al llegar a [edadDeDraft] pasa
 /// a fase `predraft`.
+///
+/// [efectoMedia] es el bonus (o penalización) de la decisión de un evento
+/// de carrera que el jugador haya elegido para esta temporada — ver
+/// `eventos_de_carrera.dart`. Se suma DESPUÉS de la progresión normal, así
+/// que nunca sustituye el crecimiento natural, solo lo empuja un poco.
 Future<ResumenTemporadaJuvenil> avanzarTemporadaJuvenil(
   AppDatabase db, {
   Random? random,
+  int efectoMedia = 0,
 }) async {
   final fila = await (db.select(db.partidaCarrera)
         ..where((t) => t.id.equals(0)))
@@ -321,13 +332,15 @@ Future<ResumenTemporadaJuvenil> avanzarTemporadaJuvenil(
   final rng = random ?? Random();
 
   final nuevaEdad = fila.edad + 1;
-  final nuevaMedia = progresionAnualDeMedia(
-    media: fila.media,
-    potencial: fila.potencial,
-    nuevaEdad: nuevaEdad,
-    factorLongevidad: 1.0,
-    rng: rng,
-  );
+  final nuevaMedia = (progresionAnualDeMedia(
+            media: fila.media,
+            potencial: fila.potencial,
+            nuevaEdad: nuevaEdad,
+            factorLongevidad: 1.0,
+            rng: rng,
+          ) +
+          efectoMedia)
+      .clamp(1, 99);
   final factor = fila.media == 0 ? 1.0 : nuevaMedia / fila.media;
 
   final ptsPg = puntosTipicos(nuevaMedia);
@@ -614,9 +627,13 @@ const _probabilidadDeRenovar = 0.65;
 /// que el resto de la liga, resuelve contrato/traspaso con las fórmulas
 /// reales de mercado de forma probabilística, y comprueba el retiro. Si te
 /// retiras, evalúa Hall of Fama y camiseta retirada en el mismo paso.
+///
+/// [efectoMedia] es el bonus (o penalización) del evento de carrera que el
+/// jugador haya elegido para esta temporada — ver `eventos_de_carrera.dart`.
 Future<ResumenTemporadaNba> avanzarTemporadaNba(
   AppDatabase db, {
   Random? random,
+  int efectoMedia = 0,
 }) async {
   final fila = await (db.select(db.partidaCarrera)
         ..where((t) => t.id.equals(0)))
@@ -670,15 +687,18 @@ Future<ResumenTemporadaNba> avanzarTemporadaNba(
         ),
       );
 
-  // 2) Progresión de fin de temporada — misma cuenta que toda la liga.
+  // 2) Progresión de fin de temporada — misma cuenta que toda la liga, más
+  // el efecto del evento de esta temporada (si lo hay).
   final nuevaEdad = jugador.edad + 1;
-  final nuevaMedia = progresionAnualDeMedia(
-    media: jugador.media,
-    potencial: jugador.potencial,
-    nuevaEdad: nuevaEdad,
-    factorLongevidad: jugador.factorLongevidad,
-    rng: rng,
-  );
+  final nuevaMedia = (progresionAnualDeMedia(
+            media: jugador.media,
+            potencial: jugador.potencial,
+            nuevaEdad: nuevaEdad,
+            factorLongevidad: jugador.factorLongevidad,
+            rng: rng,
+          ) +
+          efectoMedia)
+      .clamp(1, 99);
 
   // 3) ¿Toca retiro? Mismo umbral que `envejecerLiga`: por edad, salvo que
   // sigas siendo de los mejores, con un tope duro.

@@ -174,6 +174,19 @@ void main() {
     expect(miJugador.dorsal, isNotNull);
   });
 
+  test('el efecto de un evento de carrera se nota en la media de la '
+      'temporada juvenil', () async {
+    await crearPartidaCarrera(db, identidad, random: Random(1));
+    await elegirOrganizacionJuvenil(db, ofertasJuvenilesIniciales('ESP').first);
+
+    final resumen = await avanzarTemporadaJuvenil(db,
+        random: Random(1), efectoMedia: 20);
+    // Sin el bonus, esta semilla no llega ni de lejos a +20: si el efecto
+    // no se estuviera aplicando, mediaDespues rondaría lo que ya se mide en
+    // otros tests (unos pocos puntos). Con él, tiene que notarse claramente.
+    expect(resumen.mediaDespues - resumen.mediaAntes, greaterThan(5));
+  });
+
   Future<int> llevarHastaLaNba(Random rng) async {
     await crearPartidaCarrera(db, identidad, random: rng);
     await elegirOrganizacionJuvenil(db, ofertasJuvenilesIniciales('ESP').first);
@@ -183,6 +196,16 @@ void main() {
     final resultado = await entrarAlDraft(db, random: rng);
     return resultado.jugadorId;
   }
+
+  test('el efecto de un evento de carrera se nota en la media de la '
+      'temporada NBA', () async {
+    final rng = Random(7);
+    await llevarHastaLaNba(rng);
+
+    final resumen =
+        await avanzarTemporadaNba(db, random: rng, efectoMedia: 20);
+    expect(resumen.mediaDespues - resumen.mediaAntes, greaterThan(5));
+  });
 
   test('avanzarTemporadaNba juega los 82 partidos y archiva la temporada en '
       'HistorialEstadisticasJugador', () async {
