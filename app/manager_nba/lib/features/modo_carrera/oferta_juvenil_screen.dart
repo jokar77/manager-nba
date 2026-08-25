@@ -76,7 +76,7 @@ class _OfertaJuvenilScreenState extends State<OfertaJuvenilScreen> {
                           const SizedBox(height: 12),
                           BotonPrincipal(
                             texto: textos.ficharPorBtn(organizacion),
-                            color: e.marca,
+                            color: colorModoCarrera,
                             alto: 44,
                             onTap:
                                 _eligiendo ? null : () => _elegir(organizacion),

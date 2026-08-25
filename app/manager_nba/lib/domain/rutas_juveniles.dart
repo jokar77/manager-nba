@@ -14,11 +14,16 @@ enum TipoOrganizacionJuvenil { clubDeCantera, universidad, academiaDeportiva }
 
 class RutaJuvenil {
   final String nombrePais;
+
+  /// El emoji de bandera del país (dato público, no hace falta disimularlo
+  /// como los nombres de jugadores/equipos reales).
+  final String bandera;
   final TipoOrganizacionJuvenil tipo;
   final List<String> organizaciones;
 
   const RutaJuvenil({
     required this.nombrePais,
+    required this.bandera,
     required this.tipo,
     required this.organizaciones,
   });
@@ -28,61 +33,73 @@ class RutaJuvenil {
 const rutasJuveniles = <String, RutaJuvenil>{
   'ESP': RutaJuvenil(
     nombrePais: 'España',
+    bandera: '🇪🇸',
     tipo: TipoOrganizacionJuvenil.clubDeCantera,
     organizaciones: ['Real Madird', 'Barza', 'Baskonya'],
   ),
   'USA': RutaJuvenil(
     nombrePais: 'Estados Unidos',
+    bandera: '🇺🇸',
     tipo: TipoOrganizacionJuvenil.universidad,
     organizaciones: ['Duqe', 'Kentucki', 'Kanzas'],
   ),
   'ARG': RutaJuvenil(
     nombrePais: 'Argentina',
+    bandera: '🇦🇷',
     tipo: TipoOrganizacionJuvenil.clubDeCantera,
     organizaciones: ['Peñarrol', 'San Lorenzzo', 'Kimsa'],
   ),
   'FRA': RutaJuvenil(
     nombrePais: 'Francia',
+    bandera: '🇫🇷',
     tipo: TipoOrganizacionJuvenil.clubDeCantera,
     organizaciones: ['Asvel', 'Le Manz', 'Nantere'],
   ),
   'SRB': RutaJuvenil(
     nombrePais: 'Serbia',
+    bandera: '🇷🇸',
     tipo: TipoOrganizacionJuvenil.clubDeCantera,
     organizaciones: ['Partizzan', 'Crvena Zvedza', 'Mega Baskett'],
   ),
   'LTU': RutaJuvenil(
     nombrePais: 'Lituania',
+    bandera: '🇱🇹',
     tipo: TipoOrganizacionJuvenil.clubDeCantera,
     organizaciones: ['Zalgyris', 'Rytass', 'Lietkabellis'],
   ),
   'AUS': RutaJuvenil(
     nombrePais: 'Australia',
+    bandera: '🇦🇺',
     tipo: TipoOrganizacionJuvenil.academiaDeportiva,
     organizaciones: ['Academia Global de Básquet', 'Centro de Alto Rendimiento', 'Instituto del Deporte'],
   ),
   'CAN': RutaJuvenil(
     nombrePais: 'Canadá',
+    bandera: '🇨🇦',
     tipo: TipoOrganizacionJuvenil.academiaDeportiva,
     organizaciones: ['Academia CanBall', 'Instituto Toronto Prep', 'Academia Ontario Elite'],
   ),
   'DEU': RutaJuvenil(
     nombrePais: 'Alemania',
+    bandera: '🇩🇪',
     tipo: TipoOrganizacionJuvenil.clubDeCantera,
     organizaciones: ['Bayern Múnich', 'Alba Berlín', 'Ratiopharm Ulmm'],
   ),
   'GRC': RutaJuvenil(
     nombrePais: 'Grecia',
+    bandera: '🇬🇷',
     tipo: TipoOrganizacionJuvenil.clubDeCantera,
     organizaciones: ['Panathinaikoss', 'Olimpiacos', 'AEK Atenas'],
   ),
   'HRV': RutaJuvenil(
     nombrePais: 'Croacia',
+    bandera: '🇭🇷',
     tipo: TipoOrganizacionJuvenil.clubDeCantera,
     organizaciones: ['Cybona', 'Cedevita Junior', 'Split Basket'],
   ),
   'BRA': RutaJuvenil(
     nombrePais: 'Brasil',
+    bandera: '🇧🇷',
     tipo: TipoOrganizacionJuvenil.clubDeCantera,
     organizaciones: ['Flamengu', 'Franka Basquete', 'Pinheiros'],
   ),

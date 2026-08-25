@@ -563,7 +563,7 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
         BotonPerfilado(
           texto: textos.modoCarreraOpcion,
           icono: Icons.person,
-          color: e.texto,
+          color: colorModoCarrera,
           onTap: _procesando
               ? null
               : () => _elegirModoNuevaPartida(_ModoPartida.carrera),
@@ -581,7 +581,7 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
         BotonPerfilado(
           texto: textos.modoCarreraOpcion,
           icono: Icons.person,
-          color: e.texto,
+          color: colorModoCarrera,
           onTap: _procesando
               ? null
               : () => _elegirModoNuevaPartida(_ModoPartida.carrera),
@@ -881,7 +881,7 @@ class _FichaDeSlot extends StatelessWidget {
             else
               BotonPrincipal(
                 texto: textos.continuar,
-                color: e.marca,
+                color: colorModoCarrera,
                 alto: 42,
                 onTap: deshabilitado ? null : onContinuar,
               ),

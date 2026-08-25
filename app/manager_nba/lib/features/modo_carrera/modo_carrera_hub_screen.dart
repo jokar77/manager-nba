@@ -29,6 +29,12 @@ class ModoCarreraHubScreen extends StatefulWidget {
 class _ModoCarreraHubScreenState extends State<ModoCarreraHubScreen> {
   late EstadoCarrera _estado = widget.estadoInicial;
   bool _avanzando = false;
+  late Future<List<FilaLineaDeTiempo>> _lineaDeTiempo =
+      leerLineaDeTiempo(widget.db);
+
+  void _refrescarLineaDeTiempo() {
+    _lineaDeTiempo = leerLineaDeTiempo(widget.db);
+  }
 
   Future<void> _avanzarJuvenil() async {
     if (_avanzando) return;
@@ -39,6 +45,7 @@ class _ModoCarreraHubScreenState extends State<ModoCarreraHubScreen> {
     setState(() {
       _estado = nuevoEstado;
       _avanzando = false;
+      _refrescarLineaDeTiempo();
     });
     if (!mounted) return;
     await _mostrarResumenJuvenil(resumen);
@@ -53,6 +60,7 @@ class _ModoCarreraHubScreenState extends State<ModoCarreraHubScreen> {
     setState(() {
       _estado = nuevoEstado;
       _avanzando = false;
+      _refrescarLineaDeTiempo();
     });
     if (!mounted) return;
     await _dialogoSimple(
@@ -72,6 +80,7 @@ class _ModoCarreraHubScreenState extends State<ModoCarreraHubScreen> {
     setState(() {
       _estado = nuevoEstado;
       _avanzando = false;
+      _refrescarLineaDeTiempo();
     });
     if (!mounted) return;
 
@@ -159,16 +168,18 @@ class _ModoCarreraHubScreenState extends State<ModoCarreraHubScreen> {
             child: ListView(
               padding: const EdgeInsets.all(20),
               children: [
-                _FichaDeJugador(estado: _estado),
+                _FichaDeJugador(estado: _estado, lineaDeTiempo: _lineaDeTiempo),
                 const SizedBox(height: 24),
                 if (_estado.fase == FaseCarrera.retirado)
                   _ResumenDeRetiro(db: widget.db, jugadorId: _estado.jugadorId!)
                 else
                   BotonPrincipal(
                     texto: _textoBoton(textos),
-                    color: e.marca,
+                    color: colorModoCarrera,
                     onTap: _avanzando ? null : _accion(),
                   ),
+                const SizedBox(height: 24),
+                _LineaDeTiempo(lineaDeTiempo: _lineaDeTiempo),
               ],
             ),
           ),
@@ -192,13 +203,15 @@ class _ModoCarreraHubScreenState extends State<ModoCarreraHubScreen> {
       };
 }
 
-/// La ficha del jugador: identidad y sus números de ahora mismo. Los mismos
-/// cuatro datos que Copero enseña en su tarjeta (edad, media, equipo,
-/// puntos por partido), adaptados a lo que este juego ya calcula.
+/// La ficha del jugador: identidad y sus números de ahora mismo. Mismo
+/// contenido que la tarjeta de Copero — bandera, dorsal y puesto, edad y
+/// valor (aquí media/potencial, que es lo que este juego calcula), y las
+/// tres estadísticas por partido de la última temporada.
 class _FichaDeJugador extends StatelessWidget {
   final EstadoCarrera estado;
+  final Future<List<FilaLineaDeTiempo>> lineaDeTiempo;
 
-  const _FichaDeJugador({required this.estado});
+  const _FichaDeJugador({required this.estado, required this.lineaDeTiempo});
 
   @override
   Widget build(BuildContext context) {
@@ -206,6 +219,7 @@ class _FichaDeJugador extends StatelessWidget {
     final textos = t(context);
     final equipo = estado.equipoNba;
     final info = equipo == null ? null : infoDe(equipo);
+    final bandera = rutasJuveniles[estado.nacionalidad]?.bandera ?? '';
 
     return PanelCortado(
       fondo: e.panel,
@@ -218,14 +232,28 @@ class _FichaDeJugador extends StatelessWidget {
           children: [
             Row(
               children: [
-                Expanded(
-                  child: Text('${estado.apellido} · ${estado.posicion}',
-                      style: titular(e, tamano: 20)),
+                Text(bandera, style: const TextStyle(fontSize: 20)),
+                const SizedBox(width: 6),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: colorModoCarrera.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text('#${estado.dorsal} ${estado.posicion}',
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: colorModoCarrera)),
                 ),
+                const Spacer(),
                 PlacaMedia(media: estado.media),
               ],
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 10),
+            Text(mayus(estado.apellido), style: titular(e, tamano: 24)),
+            const SizedBox(height: 2),
             Text(
               info?.nombreCompleto ??
                   estado.organizacionActual ??
@@ -233,15 +261,123 @@ class _FichaDeJugador extends StatelessWidget {
               style: TextStyle(fontSize: 14, color: e.textoTenue),
             ),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                _Estadistica(label: textos.edadLabel, valor: '${estado.edad}'),
-                _Estadistica(
-                    label: textos.potencialLabel, valor: '${estado.potencial}'),
-              ],
+            FutureBuilder<List<FilaLineaDeTiempo>>(
+              future: lineaDeTiempo,
+              builder: (context, snapshot) {
+                final conPartidos = (snapshot.data ?? const [])
+                    .where((f) => f.partidos > 0)
+                    .toList();
+                final ultima = conPartidos.isEmpty ? null : conPartidos.first;
+                return Row(
+                  children: [
+                    _Estadistica(
+                        label: textos.edadLabel, valor: '${estado.edad}'),
+                    _Estadistica(label: 'PJ', valor: '${ultima?.partidos ?? 0}'),
+                    _Estadistica(
+                        label: 'PTS',
+                        valor: (ultima?.ptsPg ?? 0).toStringAsFixed(1)),
+                    _Estadistica(
+                        label: 'AST',
+                        valor: (ultima?.astPg ?? 0).toStringAsFixed(1)),
+                  ],
+                );
+              },
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// La línea de tiempo: una fila por temporada jugada, de la más reciente a
+/// la más vieja — el mismo vistazo de "cómo ha ido tu carrera" que enseña
+/// Copero a la derecha de la ficha.
+class _LineaDeTiempo extends StatelessWidget {
+  final Future<List<FilaLineaDeTiempo>> lineaDeTiempo;
+
+  const _LineaDeTiempo({required this.lineaDeTiempo});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<FilaLineaDeTiempo>>(
+      future: lineaDeTiempo,
+      builder: (context, snapshot) {
+        final filas = snapshot.data ?? const [];
+        if (filas.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final fila in filas) ...[
+              _FilaTemporada(fila: fila),
+              const SizedBox(height: 8),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _FilaTemporada extends StatelessWidget {
+  final FilaLineaDeTiempo fila;
+
+  const _FilaTemporada({required this.fila});
+
+  @override
+  Widget build(BuildContext context) {
+    final e = Estilo.de(context);
+    return PanelCortado(
+      fondo: e.panelSuave,
+      corte: 10,
+      borde: Border.all(color: e.linea),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 34,
+              child: Text('${fila.edad}',
+                  style: cifra(e, tamano: 17, color: e.textoTenue)),
+            ),
+            Expanded(
+              child: Text(fila.lugar,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: titular(e, tamano: 15)),
+            ),
+            PlacaMedia(media: fila.media, tamano: 28),
+            const SizedBox(width: 10),
+            if (fila.partidos > 0) ...[
+              _CifraCorta(label: 'PJ', valor: '${fila.partidos}'),
+              _CifraCorta(label: 'PTS', valor: fila.ptsPg.toStringAsFixed(1)),
+              _CifraCorta(label: 'AST', valor: fila.astPg.toStringAsFixed(1)),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CifraCorta extends StatelessWidget {
+  final String label;
+  final String valor;
+
+  const _CifraCorta({required this.label, required this.valor});
+
+  @override
+  Widget build(BuildContext context) {
+    final e = Estilo.de(context);
+    return Padding(
+      padding: const EdgeInsets.only(left: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(valor, style: titular(e, tamano: 14)),
+          Text(label, style: rotulo(e, tamano: 8)),
+        ],
       ),
     );
   }

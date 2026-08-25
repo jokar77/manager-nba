@@ -144,8 +144,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(FilledButton), findsNothing);
-    expect(find.text('PTS'), findsOneWidget);
-    expect(find.text('AST'), findsOneWidget);
-    expect(find.text('REB'), findsOneWidget);
+    // Más de un "PTS" a la vista ahora: la ficha, la línea de tiempo y el
+    // resumen final los enseñan cada uno por su lado.
+    expect(find.text('PTS'), findsWidgets);
+    expect(find.text('AST'), findsWidgets);
+    expect(find.text('REB'), findsWidgets);
   });
 }

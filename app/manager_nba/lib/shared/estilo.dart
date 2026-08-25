@@ -127,6 +127,11 @@ class Estilo {
 /// rediseño.
 const String familiaTitular = 'Saira Condensed';
 
+/// El acento del Modo Carrera: un azul oscuro que lo distingue del naranja
+/// (`Estilo.marca`) del modo Franquicia — dos juegos, dos identidades,
+/// desde el primer botón del menú.
+const Color colorModoCarrera = Color(0xFF1D4E89);
+
 /// Mayúsculas para rótulos y titulares.
 ///
 /// En Flutter no existe el `text-transform` de CSS, así que la conversión es

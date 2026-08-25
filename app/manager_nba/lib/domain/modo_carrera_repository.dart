@@ -144,6 +144,75 @@ Future<EstadoCarrera?> leerPartidaCarrera(AppDatabase db) async {
   );
 }
 
+/// Una fila de la línea de tiempo de la carrera: una temporada, la edad que
+/// tenías y dónde jugaste. Junta las dos fuentes de datos que ya existen
+/// (`HistorialTemporadaJuvenil` para la fase juvenil,
+/// `HistorialEstadisticasJugador` para la NBA) en una sola lista ordenada,
+/// para pintar el resumen temporada a temporada que ya enseña Copero.
+class FilaLineaDeTiempo {
+  final int edad;
+  final String lugar;
+  final int media;
+  final double ptsPg;
+  final double astPg;
+  final double trbPg;
+  final int partidos;
+
+  const FilaLineaDeTiempo({
+    required this.edad,
+    required this.lugar,
+    required this.media,
+    required this.ptsPg,
+    required this.astPg,
+    required this.trbPg,
+    required this.partidos,
+  });
+}
+
+/// La línea de tiempo completa de la partida en curso, de más reciente a
+/// más antigua.
+Future<List<FilaLineaDeTiempo>> leerLineaDeTiempo(AppDatabase db) async {
+  final filas = <FilaLineaDeTiempo>[];
+
+  final juveniles = await db.select(db.historialTemporadaJuvenil).get();
+  for (final t in juveniles) {
+    filas.add(FilaLineaDeTiempo(
+      edad: t.edad,
+      lugar: t.organizacion,
+      media: t.media,
+      ptsPg: t.ptsPg,
+      astPg: t.astPg,
+      trbPg: t.trbPg,
+      partidos: 0,
+    ));
+  }
+
+  final estado = await leerPartidaCarrera(db);
+  if (estado?.jugadorId != null) {
+    final temporadas = await (db.select(db.historialEstadisticasJugador)
+          ..where((t) => t.jugadorId.equals(estado!.jugadorId!)))
+        .get();
+    for (final t in temporadas) {
+      filas.add(FilaLineaDeTiempo(
+        edad: edadDeDraft + t.temporada,
+        lugar: t.equipo,
+        media: t.media,
+        ptsPg: t.partidosJugados == 0 ? 0 : t.puntosTotales / t.partidosJugados,
+        astPg: t.partidosJugados == 0
+            ? 0
+            : t.asistenciasTotales / t.partidosJugados,
+        trbPg: t.partidosJugados == 0
+            ? 0
+            : t.rebotesTotales / t.partidosJugados,
+        partidos: t.partidosJugados,
+      ));
+    }
+  }
+
+  filas.sort((a, b) => b.edad.compareTo(a.edad));
+  return filas;
+}
+
 int _atributoInicial(int media, Random rng) =>
     (media + rng.nextInt(9) - 4).clamp(20, 60);
 

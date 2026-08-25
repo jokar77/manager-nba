@@ -20,6 +20,14 @@ void main() {
   });
 
   Future<EstadoCarrera?> pump(WidgetTester tester) async {
+    // Con la camiseta grande, el formulario entero no cabe en el tamaño de
+    // pantalla por defecto de los tests (800x600) sin desplazarse — mismo
+    // motivo que start_menu_screen_test.dart usa un tamaño más alto.
+    tester.view.physicalSize = const Size(1024, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     EstadoCarrera? creado;
     await tester.pumpWidget(MaterialApp(
       home: CrearJugadorScreen(
