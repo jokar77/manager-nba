@@ -274,3 +274,17 @@ desplazan la secuencia de números aleatorios que consume esa semilla
 — no es un bug, es lo esperable al añadir tiradas de azar nuevas antes
 en la misma función. Se cambió la semilla (de 3 a 2) hasta encontrar una
 que sí cumple la condición dentro de las mismas 10 temporadas.
+
+## Misma tarde — vitrina de trofeos también DURANTE la carrera
+
+La ficha de la fase NBA solo enseñaba los premios en el resumen final de
+retiro; ahora también los enseña en vivo, temporada a temporada, con la
+misma "vitrina vacía" de Copero cuando todavía no has ganado nada
+(`vitrinaVaciaLabel`, nuevo en los 7 idiomas). Nuevo `Future<CarreraJugador?>`
+en el estado del hub, refrescado junto a la línea de tiempo cada vez que
+avanzas — la ficha activa y el resumen de retiro comparten ahora el mismo
+patrón de medallas (`_EtiquetaDePremio`).
+
+Verificado: `dart analyze` limpio, 708 tests en verde (incluidos los del
+modo Franquicia que tocan `TipoPremio`/`premios_repository.dart`, sin
+cambios de comportamiento ahí).

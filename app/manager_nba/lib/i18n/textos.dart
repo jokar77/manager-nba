@@ -796,6 +796,7 @@ abstract class Textos {
   String get mediaLabel;
   String get potencialLabel;
   String get valorLabel;
+  String get vitrinaVaciaLabel;
   String get equipoActualLabel;
   String get organizacionActualLabel;
 

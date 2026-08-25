@@ -1235,6 +1235,8 @@ class TextosZh extends Textos {
   @override
   String get valorLabel => '身价';
   @override
+  String get vitrinaVaciaLabel => '荣誉柜空空如也';
+  @override
   String get equipoActualLabel => '球队';
   @override
   String get organizacionActualLabel => '所属机构';

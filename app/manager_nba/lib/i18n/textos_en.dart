@@ -1307,6 +1307,8 @@ class TextosEn extends Textos {
   @override
   String get valorLabel => 'Value';
   @override
+  String get vitrinaVaciaLabel => 'Empty trophy case';
+  @override
   String get equipoActualLabel => 'Team';
   @override
   String get organizacionActualLabel => 'Organization';

@@ -1311,6 +1311,8 @@ class TextosEs extends Textos {
   @override
   String get valorLabel => 'Valor';
   @override
+  String get vitrinaVaciaLabel => 'Vitrina vacía';
+  @override
   String get equipoActualLabel => 'Equipo';
   @override
   String get organizacionActualLabel => 'Organización';

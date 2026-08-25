@@ -1324,6 +1324,8 @@ class TextosDe extends Textos {
   @override
   String get valorLabel => 'Marktwert';
   @override
+  String get vitrinaVaciaLabel => 'Leere Vitrine';
+  @override
   String get equipoActualLabel => 'Team';
   @override
   String get organizacionActualLabel => 'Organisation';

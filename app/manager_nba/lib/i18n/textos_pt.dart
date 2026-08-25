@@ -1314,6 +1314,8 @@ class TextosPt extends Textos {
   @override
   String get valorLabel => 'Valor';
   @override
+  String get vitrinaVaciaLabel => 'Vitrine vazia';
+  @override
   String get equipoActualLabel => 'Time';
   @override
   String get organizacionActualLabel => 'Organização';

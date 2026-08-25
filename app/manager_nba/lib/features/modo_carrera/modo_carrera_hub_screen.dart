@@ -34,9 +34,17 @@ class _ModoCarreraHubScreenState extends State<ModoCarreraHubScreen> {
   bool _avanzando = false;
   late Future<List<FilaLineaDeTiempo>> _lineaDeTiempo =
       leerLineaDeTiempo(widget.db);
+  late Future<CarreraJugador?> _carrera = _cargarCarrera();
+
+  Future<CarreraJugador?> _cargarCarrera() {
+    final jugadorId = _estado.jugadorId;
+    if (jugadorId == null) return Future.value(null);
+    return leerCarreraParaFicha(widget.db, jugadorId);
+  }
 
   void _refrescarLineaDeTiempo() {
     _lineaDeTiempo = leerLineaDeTiempo(widget.db);
+    _carrera = _cargarCarrera();
   }
 
   Future<void> _avanzarJuvenil() async {
@@ -225,7 +233,10 @@ class _ModoCarreraHubScreenState extends State<ModoCarreraHubScreen> {
             child: ListView(
               padding: const EdgeInsets.all(20),
               children: [
-                _FichaDeJugador(estado: _estado, lineaDeTiempo: _lineaDeTiempo),
+                _FichaDeJugador(
+                    estado: _estado,
+                    lineaDeTiempo: _lineaDeTiempo,
+                    carrera: _carrera),
                 const SizedBox(height: 24),
                 if (_estado.fase == FaseCarrera.retirado)
                   _ResumenDeRetiro(db: widget.db, jugadorId: _estado.jugadorId!)
@@ -279,8 +290,13 @@ String _nombreDePremio(Textos textos, TipoPremio premio) => switch (premio) {
 class _FichaDeJugador extends StatelessWidget {
   final EstadoCarrera estado;
   final Future<List<FilaLineaDeTiempo>> lineaDeTiempo;
+  final Future<CarreraJugador?> carrera;
 
-  const _FichaDeJugador({required this.estado, required this.lineaDeTiempo});
+  const _FichaDeJugador({
+    required this.estado,
+    required this.lineaDeTiempo,
+    required this.carrera,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -357,6 +373,46 @@ class _FichaDeJugador extends StatelessWidget {
                     _Estadistica(
                         label: 'AST',
                         valor: (ultima?.astPg ?? 0).toStringAsFixed(1)),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 14),
+            const Divider(height: 1),
+            const SizedBox(height: 12),
+            FutureBuilder<CarreraJugador?>(
+              future: carrera,
+              builder: (context, snapshot) {
+                final ganados = <TipoPremio, int>{};
+                for (final premio in [
+                  TipoPremio.mvp,
+                  TipoPremio.mejorDefensor,
+                  TipoPremio.rookieDelAno,
+                  TipoPremio.allStar,
+                ]) {
+                  final veces = snapshot.data?.vecesGano(premio) ?? 0;
+                  if (veces > 0) ganados[premio] = veces;
+                }
+                if (ganados.isEmpty) {
+                  return Row(
+                    children: [
+                      Icon(Icons.emoji_events_outlined,
+                          size: 18, color: e.textoRotulo),
+                      const SizedBox(width: 8),
+                      Text(mayus(textos.vitrinaVaciaLabel),
+                          style: rotulo(e)),
+                    ],
+                  );
+                }
+                return Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final entrada in ganados.entries)
+                      _EtiquetaDePremio(
+                        texto: _nombreDePremio(textos, entrada.key),
+                        veces: entrada.value,
+                      ),
                   ],
                 );
               },

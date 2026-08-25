@@ -1328,6 +1328,8 @@ class TextosFr extends Textos {
   @override
   String get valorLabel => 'Valeur';
   @override
+  String get vitrinaVaciaLabel => 'Vitrine vide';
+  @override
   String get equipoActualLabel => 'Équipe';
   @override
   String get organizacionActualLabel => 'Organisation';
