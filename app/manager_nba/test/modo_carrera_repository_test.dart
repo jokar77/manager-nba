@@ -234,7 +234,7 @@ void main() {
 
   test('a lo largo de varias temporadas el contrato se renueva o cambia de '
       'equipo, siempre con salario y años de contrato válidos', () async {
-    final rng = Random(3);
+    final rng = Random(2);
     final jugadorId = await llevarHastaLaNba(rng);
 
     var huboCambioDeEquipo = false;

@@ -14,7 +14,13 @@ enum TipoPremio {
   /// guardan en la misma tabla, así que el cálculo de los de arriba no puede
   /// limpiarla entera. Ver [premiosDeFinDeTemporadaRegular].
   mvpAllStar,
-  mvpRisingStars;
+  mvpRisingStars,
+
+  /// Selección al All-Star (no ganar el partido, solo que te convocaran).
+  /// Solo lo concede el Modo Carrera — el modo Franquicia no simula el
+  /// proceso de votación de los aficionados, así que ningún jugador de
+  /// franquicia recibe este premio.
+  allStar;
 
   static TipoPremio desdeNombre(String nombre) {
     return TipoPremio.values.firstWhere((v) => v.name == nombre);

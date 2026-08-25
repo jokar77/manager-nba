@@ -234,3 +234,43 @@ Verificado: `dart analyze` limpio, **708 tests en verde**, incluidos dos
 nuevos que comprueban que el efecto se nota de verdad en la media
 (juvenil y NBA). Los tests de widgets del hub se actualizaron para
 elegir una opción del evento antes de esperar el resumen de temporada.
+
+## Misma tarde — premios individuales y resumen final más completo
+
+El usuario pidió que entrar al All-Star o ganar premios individuales
+contara para algo, y que al retirarte salga un resumen de verdad.
+
+- **`TipoPremio.allStar`**: valor nuevo en el enum COMPARTIDO con el modo
+  Franquicia (`tipo_premio.dart`) — selección al All-Star, distinto de
+  `mvpAllStar` (que ya existía y es ganar el partido). Franquicia nunca
+  lo concede (no simula votación de aficionados), así que no cambia nada
+  del juego de siempre; hizo falta añadir un caso a
+  `premios_screen.dart` (switch exhaustivo) y un peso en
+  `hall_fama_repository.dart` (4 puntos, cuenta para el Salón de la
+  Fama) — ningún jugador de franquicia real puede ganarlo, así que
+  tampoco cambia su puntuación.
+- **Sin liga completa que simular, no hay con qué comparar candidatos de
+  verdad** (mismo motivo de alcance de siempre) — así que MVP, Mejor
+  Defensor, Rookie del Año y la propia selección al All-Star son un
+  umbral de tu nivel (`jugador.media`/`atrDefensa`) con una probabilidad,
+  no el cálculo real de `premios_repository.dart`. Se calculan en
+  `avanzarTemporadaNba` y se guardan en `HistorialPremios` — LA MISMA
+  tabla que usa el resto del juego — así que cuentan solos para el Salón
+  de la Fama y para `leerCarrera()`/`CarreraJugador`, sin tocar ese
+  código.
+- **Resumen de temporada**: el diálogo de cada temporada NBA anuncia los
+  premios ganados ese año.
+- **Resumen final de verdad**: `_ResumenDeRetiro` (la tarjeta que se
+  queda en pantalla al terminar la carrera, no un diálogo que
+  desaparece) ahora enseña, además de PTS/AST/REB: si entraste en el
+  Salón de la Fama, qué camisetas se retiraron y en qué equipos, y una
+  fila de medallas con cada premio individual y cuántas veces lo
+  ganaste.
+
+Verificado: `dart analyze` limpio, 708 tests en verde. Un test de
+dominio (`el contrato se renueva o cambia de equipo...`) dejó de
+cumplirse con su semilla de siempre porque los nuevos sorteos de premios
+desplazan la secuencia de números aleatorios que consume esa semilla
+— no es un bug, es lo esperable al añadir tiradas de azar nuevas antes
+en la misma función. Se cambió la semilla (de 3 a 2) hasta encontrar una
+que sí cumple la condición dentro de las mismas 10 temporadas.

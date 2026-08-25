@@ -171,6 +171,8 @@ class _ModoCarreraHubScreenState extends State<ModoCarreraHubScreen> {
       '${r.victorias}-${r.derrotas}',
       if (r.cambioDeEquipo)
         textos.cambioDeEquipoMensaje(infoDe(r.equipo).nombreCompleto),
+      for (final premio in r.premiosGanados)
+        '🏆 ${_nombreDePremio(textos, premio)}',
     ];
     await _dialogoSimple(
       titulo: '${t(context).temporada} ${r.temporada}',
@@ -257,6 +259,18 @@ class _ModoCarreraHubScreenState extends State<ModoCarreraHubScreen> {
         FaseCarrera.retirado => null,
       };
 }
+
+/// Cómo se llama un premio en el idioma del usuario. Reusa las mismas
+/// claves que `premios/premios_screen.dart` (el modo Franquicia), salvo
+/// para los tipos que Modo Carrera nunca concede (Más Mejorado, quintetos,
+/// MVP del All-Star/Rising Stars), que no hace falta nombrar aquí.
+String _nombreDePremio(Textos textos, TipoPremio premio) => switch (premio) {
+      TipoPremio.allStar => textos.allStar,
+      TipoPremio.mvp => textos.premioMvp,
+      TipoPremio.mejorDefensor => textos.premioMejorDefensor,
+      TipoPremio.rookieDelAno => textos.premioRookieDelAno,
+      _ => premio.name,
+    };
 
 /// La ficha del jugador: identidad y sus números de ahora mismo. Mismo
 /// contenido que la tarjeta de Copero — bandera, dorsal y puesto, edad y
@@ -471,25 +485,62 @@ class _Estadistica extends StatelessWidget {
 /// El resumen final de una carrera retirada: totales de toda la etapa NBA y
 /// si entró en el Salón de la Fama. No hay botón de acción — la carrera ya
 /// terminó — así que esta es la última pantalla del modo.
+/// Todo lo que hace falta para el resumen final, leído de una sola vez: la
+/// carrera, si entró en el Salón de la Fama y si tiene alguna camiseta
+/// retirada.
+class _DatosDeRetiro {
+  final CarreraJugador carrera;
+  final bool enHallDeLaFama;
+  final List<String> camisetasRetiradas;
+
+  const _DatosDeRetiro({
+    required this.carrera,
+    required this.enHallDeLaFama,
+    required this.camisetasRetiradas,
+  });
+}
+
 class _ResumenDeRetiro extends StatelessWidget {
   final AppDatabase db;
   final int jugadorId;
 
   const _ResumenDeRetiro({required this.db, required this.jugadorId});
 
+  Future<_DatosDeRetiro?> _cargar() async {
+    final carrera = await leerCarreraParaFicha(db, jugadorId);
+    if (carrera == null) return null;
+    final hof = await (db.select(db.hallDeLaFama)
+          ..where((t) => t.jugadorId.equals(jugadorId)))
+        .getSingleOrNull();
+    final camisetas = await (db.select(db.camisetasRetiradas)
+          ..where((t) => t.jugadorId.equals(jugadorId)))
+        .get();
+    return _DatosDeRetiro(
+      carrera: carrera,
+      enHallDeLaFama: hof != null,
+      camisetasRetiradas: camisetas.map((c) => c.equipo).toList(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<CarreraJugador?>(
-      future: leerCarreraParaFicha(db, jugadorId),
+    return FutureBuilder<_DatosDeRetiro?>(
+      future: _cargar(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
-        final carrera = snapshot.data;
-        if (carrera == null) return const SizedBox.shrink();
+        final datos = snapshot.data;
+        if (datos == null) return const SizedBox.shrink();
+        final carrera = datos.carrera;
 
         final e = Estilo.de(context);
         final textos = t(context);
+        final premiosIndividuales = [
+          TipoPremio.mvp,
+          TipoPremio.mejorDefensor,
+          TipoPremio.rookieDelAno,
+        ];
         return PanelCortado(
           fondo: e.panel,
           corte: 14,
@@ -518,11 +569,84 @@ class _ResumenDeRetiro extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text('${carrera.temporadas} temporadas · '
                     '${carrera.partidos} partidos'),
+                if (datos.enHallDeLaFama) ...[
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      const Icon(Icons.emoji_events,
+                          color: Color(0xFFFFC94D), size: 20),
+                      const SizedBox(width: 8),
+                      Text(textos.entraEnHallDeLaFamaMensaje,
+                          style: titular(e, tamano: 15)),
+                    ],
+                  ),
+                ],
+                if (datos.camisetasRetiradas.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.checkroom, color: colorModoCarrera, size: 18),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          datos.camisetasRetiradas
+                              .map((c) => infoDe(c).nombreCompleto)
+                              .join(', '),
+                          style: TextStyle(fontSize: 13, color: e.textoTenue),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                if (premiosIndividuales.any((p) => carrera.vecesGano(p) > 0) ||
+                    carrera.vecesGano(TipoPremio.allStar) > 0) ...[
+                  const SizedBox(height: 14),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final premio in [
+                        ...premiosIndividuales,
+                        TipoPremio.allStar,
+                      ])
+                        if (carrera.vecesGano(premio) > 0)
+                          _EtiquetaDePremio(
+                            texto: _nombreDePremio(textos, premio),
+                            veces: carrera.vecesGano(premio),
+                          ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
         );
       },
+    );
+  }
+}
+
+class _EtiquetaDePremio extends StatelessWidget {
+  final String texto;
+  final int veces;
+
+  const _EtiquetaDePremio({required this.texto, required this.veces});
+
+  @override
+  Widget build(BuildContext context) {
+    final e = Estilo.de(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: colorModoCarrera.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: colorModoCarrera.withValues(alpha: 0.4)),
+      ),
+      child: Text(
+        veces > 1 ? '$texto ×$veces' : texto,
+        style: TextStyle(
+            fontSize: 12, fontWeight: FontWeight.w700, color: e.texto),
+      ),
     );
   }
 }

@@ -15,6 +15,7 @@ import 'posiciones.dart';
 import 'progresion_repository.dart';
 import 'rutas_juveniles.dart';
 import 'salarios.dart';
+import 'tipo_premio.dart';
 
 export 'eventos_de_carrera.dart'
     show
@@ -23,6 +24,7 @@ export 'eventos_de_carrera.dart'
         eventoDeCarreraAleatorio;
 export 'rutas_juveniles.dart'
     show rutasJuveniles, ofertasJuvenilesIniciales, TipoOrganizacionJuvenil;
+export 'tipo_premio.dart' show TipoPremio;
 
 /// El Modo Carrera: controlas a un único jugador desde los 16 años hasta el
 /// retiro, en vez de una franquicia entera. Ver `docs/plan.md` (sesión de
@@ -591,6 +593,10 @@ class ResumenTemporadaNba {
   final bool cambioDeEquipo;
   final bool seRetira;
 
+  /// Los premios de esta temporada (puede ir vacía). Ver la nota de alcance
+  /// sobre cómo se deciden en [avanzarTemporadaNba].
+  final List<TipoPremio> premiosGanados;
+
   const ResumenTemporadaNba({
     required this.temporada,
     required this.edad,
@@ -605,6 +611,7 @@ class ResumenTemporadaNba {
     required this.equipo,
     required this.cambioDeEquipo,
     required this.seRetira,
+    this.premiosGanados = const [],
   });
 
   double get ptsPg => partidosJugados == 0 ? 0 : puntosTotales / partidosJugados;
@@ -700,6 +707,44 @@ Future<ResumenTemporadaNba> avanzarTemporadaNba(
           efectoMedia)
       .clamp(1, 99);
 
+  // 2.5) Premios de la temporada. Sin una liga completa que simular no hay
+  // con qué comparar a los otros 450 candidatos de verdad (ver la nota de
+  // alcance al principio del fichero) — así que en vez del cálculo real de
+  // `premios_repository.dart`, cada premio es un umbral de tu propio nivel
+  // con algo de azar, calibrado para que sean algo que se persigue, no un
+  // regalo automático por llegar a cierta media. Se basan en `jugador.media`
+  // (con la que jugaste ESTA temporada), no en `nuevaMedia` (la del año que
+  // viene). Se guardan en `HistorialPremios`, la misma tabla que usa el
+  // resto del juego, así que cuentan solos para el Salón de la Fama
+  // (`hall_fama_repository.dart`) y para el resumen de retiro
+  // (`carrera_repository.dart` ya los lee de ahí).
+  final premiosGanados = <TipoPremio>[];
+  final probabilidadAllStar = ((jugador.media - 78) / 14).clamp(0.0, 0.92);
+  final esAllStar = rng.nextDouble() < probabilidadAllStar;
+  if (esAllStar) premiosGanados.add(TipoPremio.allStar);
+
+  if (esAllStar && jugador.media >= 90 && rng.nextDouble() < 0.22) {
+    premiosGanados.add(TipoPremio.mvp);
+  }
+  if (jugador.atrDefensa >= 88 && rng.nextDouble() < 0.15) {
+    premiosGanados.add(TipoPremio.mejorDefensor);
+  }
+  if (temporada == 1 && jugador.media >= 66 && rng.nextDouble() < 0.3) {
+    premiosGanados.add(TipoPremio.rookieDelAno);
+  }
+
+  for (final premio in premiosGanados) {
+    await db.into(db.historialPremios).insert(
+          HistorialPremiosCompanion.insert(
+            temporada: temporada,
+            tipo: premio.name,
+            jugadorId: jugador.id,
+            nombreJugador: jugador.nombreFicticio,
+            equipo: jugador.equipo,
+          ),
+        );
+  }
+
   // 3) ¿Toca retiro? Mismo umbral que `envejecerLiga`: por edad, salvo que
   // sigas siendo de los mejores, con un tope duro.
   final leTocaPorEdad = nuevaEdad > jugador.edadRetiro;
@@ -738,6 +783,7 @@ Future<ResumenTemporadaNba> avanzarTemporadaNba(
       equipo: jugador.equipo,
       cambioDeEquipo: false,
       seRetira: true,
+      premiosGanados: premiosGanados,
     );
   }
 
@@ -806,6 +852,7 @@ Future<ResumenTemporadaNba> avanzarTemporadaNba(
     equipo: equipoNuevo,
     cambioDeEquipo: cambioDeEquipo,
     seRetira: false,
+    premiosGanados: premiosGanados,
   );
 }
 

@@ -22,6 +22,7 @@ const _puntosPorPremio = {
   TipoPremio.segundoQuinteto: 5.0,
   TipoPremio.rookieDelAno: 3.0,
   TipoPremio.masMejorado: 2.0,
+  TipoPremio.allStar: 4.0,
 };
 const _puntosPorAnillo = 8.0;
 const _puntosPorCopa = 2.0;

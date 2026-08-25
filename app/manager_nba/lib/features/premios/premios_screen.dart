@@ -22,6 +22,7 @@ String _tituloPremio(BuildContext context, TipoPremio tipo) {
     TipoPremio.mvpAllStar => t(context).premioMvpAllStar(t(context).allStar),
     TipoPremio.mvpRisingStars =>
       t(context).premioMvpRisingStars(t(context).risingStars),
+    TipoPremio.allStar => t(context).allStar,
   };
 }
 
