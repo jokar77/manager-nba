@@ -27,11 +27,14 @@ naranja de Franquicia).
    que usa la CPU en el draft real, no las 60 elecciones completas.
 4. Temporadas NBA — se simulan tus partidos con el motor real
    (`simularPartido`) contra un rival sintético; evento de decisión cada
-   año; contrato/traspaso por probabilidad de mercado; MVP/Mejor
-   Defensor/Rookie del Año/selección al All-Star por umbral de tu nivel
-   con algo de azar (sin liga completa que simular, no hay 450 candidatos
-   reales con los que comparar). La ficha enseña tu vitrina de trofeos en
-   vivo, temporada a temporada.
+   año; MVP/Mejor Defensor/Rookie del Año/selección al All-Star por umbral
+   de tu nivel con algo de azar (sin liga completa que simular, no hay 450
+   candidatos reales con los que comparar). Al cerrar cada temporada, un
+   aviso estilo Copero (no una tirada de dados): te quedas donde estás o
+   fichas por una de dos ofertas de traspaso, cada una con su salario y
+   años de contrato calculados con las fórmulas reales de mercado
+   (`OfertaDeEquipo`, `elegirEquipoTemporada`). La ficha enseña tu vitrina
+   de trofeos en vivo, temporada a temporada.
 5. Retiro — Salón de la Fama y camiseta retirada evaluados con las mismas
    funciones que usa cualquier jugador de franquicia; resumen final con
    PTS/AST/REB de carrera, camisetas retiradas y medallero completo.
@@ -348,3 +351,63 @@ patrón de medallas (`_EtiquetaDePremio`).
 Verificado: `dart analyze` limpio, 708 tests en verde (incluidos los del
 modo Franquicia que tocan `TipoPremio`/`premios_repository.dart`, sin
 cambios de comportamiento ahí).
+
+## Sesión del 25 de agosto de 2026 (tarde) — el traspaso de fin de
+temporada pasa a ser una decisión tuya, como en Copero
+
+El usuario lo pidió explícito: "tiene que haber una simulacion de
+traspasos despues de cada temporada... debe aparecer un aviso de
+quedarme en el equipo o ser traspasado a 2 opciones de equipos". Antes,
+`avanzarTemporadaNba` decidía equipo/contrato en solitario (probabilidad
+de renovar o de traspaso a mitad de contrato) y solo informaba del
+resultado a toro pasado — nada que elegir.
+
+Rediseño en `lib/domain/modo_carrera_repository.dart`:
+- Nueva clase `OfertaDeEquipo` (equipo, salario, años de contrato).
+- `ResumenTemporadaNba` cambia `cambioDeEquipo: bool` por
+  `ofertaQuedarse: OfertaDeEquipo` + `ofertasDeTraspaso: List<OfertaDeEquipo>`
+  (siempre 2, calculadas con `_mejorEquipoPara` — que ahora excluye un
+  `Set<String>` en vez de un único equipo, para poder pedir "el mejor
+  EXCLUYENDO estos dos"). Las tres ofertas usan las mismas fórmulas reales
+  de mercado que ya existían (`salarioEstimado`/`aniosContratoEstimados`).
+- `avanzarTemporadaNba` ya NO escribe equipo/salario/años de contrato en
+  `Jugadores` — solo edad/media/potencial (que no dependen de la
+  decisión) y las tres ofertas del resumen. Se quitaron las constantes de
+  probabilidad (`_probabilidadDeTraspaso`, `_probabilidadDeRenovar`), ya
+  no tienen sentido con una decisión explícita.
+- Nueva función `elegirEquipoTemporada(db, ofertaElegida)`: aplica la
+  oferta que haya tomado el jugador a la fila real. Hay que llamarla
+  siempre tras `avanzarTemporadaNba` en fase NBA activa (si no se llama,
+  el contrato se queda congelado — lo hace la propia UI del hub, que no
+  deja seguir sin elegir).
+
+UI (`modo_carrera_hub_screen.dart`): tras el resumen de la temporada, un
+diálogo no descartable con hasta 3 botones — "Quedarme en X" primero,
+luego las dos ofertas de traspaso, cada uno con el contrato en una línea
+(`contratoAnioMillones`/`formatearMillones`, reusados de
+`hoja_de_propuestas.dart`). Si eliges un equipo distinto del actual, se
+enseña el mismo aviso de "nuevo equipo" que ya existía.
+
+i18n: 2 claves nuevas en los 7 idiomas (`decisionDeEquipoTitulo`,
+`quedarmeEnMiEquipoBtn`); `ficharPorBtn` se reusó tal cual (ya existía
+para las ofertas juveniles, mismo patrón "Fichar por X").
+
+El test de dominio que antes dependía de una semilla concreta para forzar
+un cambio de equipo por azar (`Random(2)`, comentado arriba) se rehízo
+sin depender de azar: ahora alterna a propósito quedarse/traspasarse
+cada temporada durante 10 temporadas y comprueba que las tres ofertas son
+de equipos distintos y que la fila de `Jugadores` queda exactamente como
+la oferta elegida — más determinista y ya no es rehén de futuros cambios
+de secuencia de `Random`. El test de widget de la fase NBA se amplió para
+tapear también el nuevo diálogo (3 `OutlinedButton`, se toca el primero
+= quedarse).
+
+Verificado: `dart analyze` limpio (fichero por fichero y luego el
+paquete entero), `flutter test` completo — 708 tests en verde (mismo
+número: se sustituyó un test, no se añadió). Intento de verificación
+visual en navegador (`flutter run -d web-server`): la app carga y arranca
+sin errores en consola, pero este entorno concreto no tiene el panel de
+navegador visible para hacer capturas, y Flutter Web (CanvasKit) no
+expone árbol de accesibilidad por defecto — así que la verificación aquí
+se apoyó en los tests de widget (que sí tapean el diálogo real) en vez de
+una inspección visual pixel a pixel.

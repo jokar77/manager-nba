@@ -118,6 +118,12 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('CONTINUAR'));
     await tester.pumpAndSettle();
+    // El aviso de fin de temporada: quedarte o traspasarte — se elige la
+    // primera opción ("quedarme"), que no dispara el aviso de cambio de
+    // equipo.
+    expect(find.byType(OutlinedButton), findsNWidgets(3));
+    await tester.tap(find.byType(OutlinedButton).first);
+    await tester.pumpAndSettle();
 
     final actualizado = await leerPartidaCarrera(db);
     expect(actualizado!.temporadaNba, 1);

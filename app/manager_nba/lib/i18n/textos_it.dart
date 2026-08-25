@@ -1335,4 +1335,8 @@ class TextosIt extends Textos {
   String seRetiraMensaje(int edad) => 'Si ritira a $edad anni.';
   @override
   String cambioDeEquipoMensaje(String equipo) => 'Nuova squadra: $equipo.';
+  @override
+  String get decisionDeEquipoTitulo => 'Cosa fai questa stagione?';
+  @override
+  String quedarmeEnMiEquipoBtn(String equipo) => 'Resta a $equipo';
 }

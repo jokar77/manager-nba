@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/database/app_database.dart';
 import '../../domain/carrera_repository.dart';
+import '../../domain/entrenadores_repository.dart' show formatearMillones;
 import '../../domain/equipos_info.dart';
 import '../../domain/modo_carrera_repository.dart';
 import '../../domain/salarios.dart';
@@ -114,6 +115,75 @@ class _ModoCarreraHubScreenState extends State<ModoCarreraHubScreen> {
       return;
     }
     await _mostrarResumenNba(resumen, opcion);
+    if (!mounted) return;
+
+    final elegida = await _elegirEquipoTemporada(resumen);
+    await elegirEquipoTemporada(widget.db, elegida);
+    if (!mounted) return;
+    setState(_refrescarLineaDeTiempo);
+    if (elegida.equipo != resumen.equipo) {
+      if (!mounted) return;
+      await _dialogoSimple(
+        titulo: t(context).decisionDeEquipoTitulo,
+        mensaje: t(context).cambioDeEquipoMensaje(
+            infoDe(elegida.equipo).nombreCompleto),
+      );
+    }
+  }
+
+  /// El aviso de fin de temporada, estilo Copero: quedarte donde estás o
+  /// fichar por una de las dos ofertas de traspaso. No se puede cerrar sin
+  /// elegir — la carrera no sigue sin que decidas.
+  Future<OfertaDeEquipo> _elegirEquipoTemporada(ResumenTemporadaNba r) async {
+    final textos = t(context);
+    final ofertas = [r.ofertaQuedarse, ...r.ofertasDeTraspaso];
+    final elegida = await showDialog<OfertaDeEquipo>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Text(textos.decisionDeEquipoTitulo),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (var i = 0; i < ofertas.length; i++)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: colorModoCarrera,
+                      side: BorderSide(color: colorModoCarrera),
+                    ),
+                    onPressed: () => Navigator.of(context).pop(ofertas[i]),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          i == 0
+                              ? textos.quedarmeEnMiEquipoBtn(
+                                  infoDe(ofertas[i].equipo).nombreCompleto)
+                              : textos.ficharPorBtn(
+                                  infoDe(ofertas[i].equipo).nombreCompleto),
+                          textAlign: TextAlign.center,
+                        ),
+                        Text(
+                          textos.contratoAnioMillones(
+                              textos.aniosDeContrato(ofertas[i].aniosContrato),
+                              formatearMillones(ofertas[i].salario)),
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+    return elegida!;
   }
 
   /// El evento de decisión de esta temporada: 2-3 opciones, cada una con un
@@ -177,8 +247,6 @@ class _ModoCarreraHubScreenState extends State<ModoCarreraHubScreen> {
           'AST ${r.astPg.toStringAsFixed(1)} · '
           'REB ${r.trbPg.toStringAsFixed(1)}',
       '${r.victorias}-${r.derrotas}',
-      if (r.cambioDeEquipo)
-        textos.cambioDeEquipoMensaje(infoDe(r.equipo).nombreCompleto),
       for (final premio in r.premiosGanados)
         '🏆 ${_nombreDePremio(textos, premio)}',
     ];

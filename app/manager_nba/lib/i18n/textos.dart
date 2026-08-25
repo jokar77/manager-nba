@@ -806,4 +806,6 @@ abstract class Textos {
   String get noEntraEnHallDeLaFamaMensaje;
   String seRetiraMensaje(int edad);
   String cambioDeEquipoMensaje(String equipo);
+  String get decisionDeEquipoTitulo;
+  String quedarmeEnMiEquipoBtn(String equipo);
 }

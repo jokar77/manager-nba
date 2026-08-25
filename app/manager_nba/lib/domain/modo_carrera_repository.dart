@@ -34,11 +34,13 @@ export 'tipo_premio.dart' show TipoPremio;
 /// franquicias completas —eso exigiría llevar también tu equipo en piloto
 /// automático, algo que hoy solo hace un humano—, así que solo se simulan
 /// los partidos de TU jugador (con el motor real, `simularPartido`) contra
-/// un rival sintético de nivel medio, y contrato/traspaso salen de una
-/// probabilidad basada en las fórmulas reales de mercado en vez de una
-/// negociación CPU a CPU. Premios de liga (MVP/DPOY/ROY) y el draft
-/// completo de 30 equipos quedan fuera de esta entrega: los dos necesitan
-/// que TODA la liga haya jugado una temporada.
+/// un rival sintético de nivel medio. Al acabar cada temporada eliges tú
+/// —como en Copero— si te quedas o fichas por una de dos ofertas de
+/// traspaso, calculadas con las fórmulas reales de mercado en vez de una
+/// negociación CPU a CPU (ver [OfertaDeEquipo] y [elegirEquipoTemporada]).
+/// Premios de liga (MVP/DPOY/ROY) y el draft completo de 30 equipos quedan
+/// fuera de esta entrega: los dos necesitan que TODA la liga haya jugado
+/// una temporada.
 
 /// Edad a la que se crea una carrera nueva.
 const edadInicialCarrera = 16;
@@ -394,14 +396,14 @@ Future<String> _mejorEquipoPara(
   required String posicion,
   required int media,
   required int potencial,
-  String? excluirEquipo,
+  Set<String> excluir = const {},
   required Random rng,
 }) async {
   var mejorEquipo = equiposInfo.keys.first;
   var mejorValor = double.negativeInfinity;
 
   for (final equipo in equiposInfo.keys) {
-    if (equipo == excluirEquipo) continue;
+    if (excluir.contains(equipo)) continue;
     final plantilla = await (db.select(db.jugadores)
           ..where((t) => t.equipo.equals(equipo) & t.retirado.equals(false)))
         .get();
@@ -577,6 +579,20 @@ sim.EquipoPartido _equipoRival(Random rng) {
   return sim.EquipoPartido(nombre: 'Rival', jugadores: jugadores);
 }
 
+/// Una oferta de equipo de fin de temporada: quedarte donde estás o fichar
+/// por uno de los dos que se te ofrecen (ver [avanzarTemporadaNba]).
+class OfertaDeEquipo {
+  final String equipo;
+  final int salario;
+  final int aniosContrato;
+
+  const OfertaDeEquipo({
+    required this.equipo,
+    required this.salario,
+    required this.aniosContrato,
+  });
+}
+
 /// Lo que ha pasado en una temporada NBA.
 class ResumenTemporadaNba {
   final int temporada;
@@ -590,8 +606,14 @@ class ResumenTemporadaNba {
   final int mediaAntes;
   final int mediaDespues;
   final String equipo;
-  final bool cambioDeEquipo;
   final bool seRetira;
+
+  /// La decisión de fin de temporada: quedarte (misma plaza, con el salario
+  /// que toque) o fichar por una de las dos ofertas de [ofertasDeTraspaso].
+  /// [ofertasDeTraspaso] va vacía si [seRetira] es verdad — ya no hay
+  /// equipo que elegir.
+  final OfertaDeEquipo ofertaQuedarse;
+  final List<OfertaDeEquipo> ofertasDeTraspaso;
 
   /// Los premios de esta temporada (puede ir vacía). Ver la nota de alcance
   /// sobre cómo se deciden en [avanzarTemporadaNba].
@@ -609,8 +631,9 @@ class ResumenTemporadaNba {
     required this.mediaAntes,
     required this.mediaDespues,
     required this.equipo,
-    required this.cambioDeEquipo,
     required this.seRetira,
+    required this.ofertaQuedarse,
+    this.ofertasDeTraspaso = const [],
     this.premiosGanados = const [],
   });
 
@@ -620,20 +643,18 @@ class ResumenTemporadaNba {
   double get trbPg => partidosJugados == 0 ? 0 : rebotesTotales / partidosJugados;
 }
 
-/// Probabilidad, cada temporada con contrato en marcha (no el año en que
-/// toca renovar), de que te traspasen a otro equipo.
-const _probabilidadDeTraspaso = 0.06;
-
-/// Probabilidad de renovar con tu equipo actual al acabar contrato, en vez
-/// de salir de agente libre a que te fiche otro.
-const _probabilidadDeRenovar = 0.65;
-
 /// Avanza una temporada NBA completa: simula [partidosPorTemporadaNba]
 /// partidos con el motor real (ver [_miEquipo]/[_equipoRival] para el porqué
 /// de no simular las 30 franquicias), progresa/declina con la misma cuenta
-/// que el resto de la liga, resuelve contrato/traspaso con las fórmulas
-/// reales de mercado de forma probabilística, y comprueba el retiro. Si te
-/// retiras, evalúa Hall of Fama y camiseta retirada en el mismo paso.
+/// que el resto de la liga, y comprueba el retiro. Si te retiras, evalúa
+/// Hall of Fama y camiseta retirada en el mismo paso.
+///
+/// Si sigues activo, NO decide equipo/contrato por su cuenta: calcula la
+/// oferta de quedarte y dos ofertas de traspaso (mismas fórmulas reales de
+/// mercado que el resto del juego) y las deja en el resumen para que la
+/// pantalla se las enseñe al jugador — como en Copero, la decisión de fin
+/// de temporada es del jugador, no de una tirada de dados. Hay que llamar a
+/// [elegirEquipoTemporada] con la oferta elegida para que se aplique.
 ///
 /// [efectoMedia] es el bonus (o penalización) del evento de carrera que el
 /// jugador haya elegido para esta temporada — ver `eventos_de_carrera.dart`.
@@ -781,54 +802,25 @@ Future<ResumenTemporadaNba> avanzarTemporadaNba(
       mediaAntes: jugador.media,
       mediaDespues: nuevaMedia,
       equipo: jugador.equipo,
-      cambioDeEquipo: false,
       seRetira: true,
+      ofertaQuedarse: OfertaDeEquipo(
+        equipo: jugador.equipo,
+        salario: jugador.salario,
+        aniosContrato: 0,
+      ),
       premiosGanados: premiosGanados,
     );
   }
 
-  // 4) Contrato: cada año que se agota, probabilidad de renovar con el
-  // equipo actual o salir de agente libre; mientras dura, una probabilidad
-  // pequeña de traspaso a mitad de contrato.
-  var equipoNuevo = jugador.equipo;
-  var cambioDeEquipo = false;
-  var nuevoSalario = jugador.salario;
-  var nuevosAniosContrato = jugador.aniosContrato - 1;
-
-  if (nuevosAniosContrato <= 0) {
-    nuevoSalario = salarioEstimado(media: nuevaMedia, edad: nuevaEdad);
-    nuevosAniosContrato = aniosContratoEstimados(edad: nuevaEdad);
-    if (rng.nextDouble() >= _probabilidadDeRenovar) {
-      equipoNuevo = await _mejorEquipoPara(
-        db,
-        posicion: jugador.posicion,
-        media: nuevaMedia,
-        potencial: jugador.potencial,
-        excluirEquipo: jugador.equipo,
-        rng: rng,
-      );
-      cambioDeEquipo = true;
-    }
-  } else if (rng.nextDouble() < _probabilidadDeTraspaso) {
-    equipoNuevo = await _mejorEquipoPara(
-      db,
-      posicion: jugador.posicion,
-      media: nuevaMedia,
-      potencial: jugador.potencial,
-      excluirEquipo: jugador.equipo,
-      rng: rng,
-    );
-    cambioDeEquipo = true;
-  }
-
+  // 4) Edad/media/potencial se escriben ya — no dependen de qué equipo se
+  // elija. El equipo/salario/años de contrato se quedan como están hasta
+  // que la pantalla llame a [elegirEquipoTemporada] con la oferta que haya
+  // tomado el jugador.
   await (db.update(db.jugadores)..where((t) => t.id.equals(jugador.id))).write(
     JugadoresCompanion(
       edad: Value(nuevaEdad),
       media: Value(nuevaMedia),
       potencial: Value(max(jugador.potencial, nuevaMedia)),
-      equipo: Value(equipoNuevo),
-      salario: Value(nuevoSalario),
-      aniosContrato: Value(nuevosAniosContrato),
     ),
   );
   await (db.update(db.partidaCarrera)..where((t) => t.id.equals(0))).write(
@@ -837,6 +829,40 @@ Future<ResumenTemporadaNba> avanzarTemporadaNba(
       temporadaNba: Value(temporada),
     ),
   );
+
+  // 5) Las tres ofertas de fin de temporada: quedarte (mismo contrato si le
+  // quedan años, o uno nuevo estimado si toca renovar) y dos equipos
+  // distintos con un contrato nuevo — mismas fórmulas reales de mercado que
+  // el resto del juego (`salarios.dart`), en vez de decidir la CPU por ti.
+  final aniosRestantes = jugador.aniosContrato - 1;
+  final int salarioSiQuedo;
+  final int aniosSiQuedo;
+  if (aniosRestantes <= 0) {
+    salarioSiQuedo = salarioEstimado(media: nuevaMedia, edad: nuevaEdad);
+    aniosSiQuedo = aniosContratoEstimados(edad: nuevaEdad);
+  } else {
+    salarioSiQuedo = jugador.salario;
+    aniosSiQuedo = aniosRestantes;
+  }
+
+  final equipoOferta1 = await _mejorEquipoPara(
+    db,
+    posicion: jugador.posicion,
+    media: nuevaMedia,
+    potencial: jugador.potencial,
+    excluir: {jugador.equipo},
+    rng: rng,
+  );
+  final equipoOferta2 = await _mejorEquipoPara(
+    db,
+    posicion: jugador.posicion,
+    media: nuevaMedia,
+    potencial: jugador.potencial,
+    excluir: {jugador.equipo, equipoOferta1},
+    rng: rng,
+  );
+  final salarioTraspaso = salarioEstimado(media: nuevaMedia, edad: nuevaEdad);
+  final aniosTraspaso = aniosContratoEstimados(edad: nuevaEdad);
 
   return ResumenTemporadaNba(
     temporada: temporada,
@@ -849,11 +875,46 @@ Future<ResumenTemporadaNba> avanzarTemporadaNba(
     derrotas: partidosJugados - victorias,
     mediaAntes: jugador.media,
     mediaDespues: nuevaMedia,
-    equipo: equipoNuevo,
-    cambioDeEquipo: cambioDeEquipo,
+    equipo: jugador.equipo,
     seRetira: false,
+    ofertaQuedarse: OfertaDeEquipo(
+      equipo: jugador.equipo,
+      salario: salarioSiQuedo,
+      aniosContrato: aniosSiQuedo,
+    ),
+    ofertasDeTraspaso: [
+      OfertaDeEquipo(
+        equipo: equipoOferta1,
+        salario: salarioTraspaso,
+        aniosContrato: aniosTraspaso,
+      ),
+      OfertaDeEquipo(
+        equipo: equipoOferta2,
+        salario: salarioTraspaso,
+        aniosContrato: aniosTraspaso,
+      ),
+    ],
     premiosGanados: premiosGanados,
   );
+}
+
+/// Aplica la oferta de fin de temporada que ha elegido el jugador (quedarse
+/// o una de las dos de traspaso de [avanzarTemporadaNba]): equipo, salario
+/// y años de contrato pasan a la fila real en `Jugadores`.
+Future<void> elegirEquipoTemporada(
+    AppDatabase db, OfertaDeEquipo elegida) async {
+  final fila = await (db.select(db.partidaCarrera)
+        ..where((t) => t.id.equals(0)))
+      .getSingle();
+  if (fila.jugadorId == null) {
+    throw StateError('La carrera todavía no tiene jugador en la NBA');
+  }
+  await (db.update(db.jugadores)..where((t) => t.id.equals(fila.jugadorId!)))
+      .write(JugadoresCompanion(
+    equipo: Value(elegida.equipo),
+    salario: Value(elegida.salario),
+    aniosContrato: Value(elegida.aniosContrato),
+  ));
 }
 
 /// Al retirarte: Salón de la Fama (misma evaluación que cualquier otro

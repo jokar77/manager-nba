@@ -1253,4 +1253,8 @@ class TextosZh extends Textos {
   String seRetiraMensaje(int edad) => '$edad岁退役。';
   @override
   String cambioDeEquipoMensaje(String equipo) => '新球队：$equipo。';
+  @override
+  String get decisionDeEquipoTitulo => '这赛季你要怎么做？';
+  @override
+  String quedarmeEnMiEquipoBtn(String equipo) => '留在$equipo';
 }

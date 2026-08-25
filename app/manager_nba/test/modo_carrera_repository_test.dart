@@ -232,30 +232,46 @@ void main() {
     expect(() => avanzarTemporadaNba(db), throwsStateError);
   });
 
-  test('a lo largo de varias temporadas el contrato se renueva o cambia de '
-      'equipo, siempre con salario y años de contrato válidos', () async {
+  test('avanzarTemporadaNba ofrece quedarte o traspasarte a uno de dos '
+      'equipos distintos, y elegirEquipoTemporada aplica la elegida con '
+      'salario y años de contrato válidos', () async {
     final rng = Random(2);
     final jugadorId = await llevarHastaLaNba(rng);
 
-    var huboCambioDeEquipo = false;
+    var huboTraspaso = false;
     for (var i = 0; i < 10; i++) {
       final resumen = await avanzarTemporadaNba(db, random: rng);
       if (resumen.seRetira) break;
-      if (resumen.cambioDeEquipo) huboCambioDeEquipo = true;
+
+      expect(resumen.ofertasDeTraspaso, hasLength(2));
+      final equiposOfrecidos = {
+        resumen.ofertaQuedarse.equipo,
+        for (final o in resumen.ofertasDeTraspaso) o.equipo,
+      };
+      expect(equiposOfrecidos, hasLength(3),
+          reason: 'las 3 ofertas de la temporada deben ser de equipos '
+              'distintos entre sí');
+
+      // Se alterna la elección para probar los dos caminos: quedarse y
+      // pedir el traspaso.
+      final elegida =
+          i.isEven ? resumen.ofertasDeTraspaso.first : resumen.ofertaQuedarse;
+      if (elegida.equipo != resumen.equipo) huboTraspaso = true;
+      await elegirEquipoTemporada(db, elegida);
 
       final jugador = await (db.select(db.jugadores)
             ..where((t) => t.id.equals(jugadorId)))
           .getSingle();
       expect(jugador.salario, greaterThanOrEqualTo(salarioMinimo));
       expect(jugador.aniosContrato, greaterThan(0));
-      // El equipo que enseña el resumen tiene que ser el mismo que ha
-      // quedado grabado en su fila de Jugadores.
-      expect(jugador.equipo, resumen.equipo);
+      // El equipo que ha quedado grabado en su fila de Jugadores tiene que
+      // ser el de la oferta que se eligió.
+      expect(jugador.equipo, elegida.equipo);
     }
 
-    expect(huboCambioDeEquipo, isTrue,
-        reason: 'en 10 temporadas debería tocar al menos una renovación '
-            'fallida o un traspaso a mitad de contrato');
+    expect(huboTraspaso, isTrue,
+        reason: 'con la elección alternada, la primera temporada ya pide '
+            'el traspaso');
   });
 
   test('una carrera jugada hasta el final de la edad máxima se retira, entra '

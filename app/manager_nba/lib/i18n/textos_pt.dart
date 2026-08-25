@@ -1334,4 +1334,8 @@ class TextosPt extends Textos {
   String seRetiraMensaje(int edad) => 'Se aposenta aos $edad anos.';
   @override
   String cambioDeEquipoMensaje(String equipo) => 'Novo time: $equipo.';
+  @override
+  String get decisionDeEquipoTitulo => 'O que você faz nesta temporada?';
+  @override
+  String quedarmeEnMiEquipoBtn(String equipo) => 'Ficar no $equipo';
 }
