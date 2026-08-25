@@ -771,4 +771,37 @@ abstract class Textos {
   /// Cuando el vídeo se cierra antes de tiempo. No es un error del juego,
   /// así que se cuenta sin dramatismo y se deja volver a intentarlo.
   String get videoSinTerminar;
+
+  // --- Modo Carrera ---------------------------------------------------------
+  /// Controlas a un único jugador, de los 16 años al retiro, en vez de una
+  /// franquicia entera.
+  String get modoFranquiciaOpcion;
+  String get modoCarreraOpcion;
+
+  String get crearJugadorTitulo;
+  String get apellidoLabel;
+  String get dorsalLabel;
+  String get posicionLabel;
+  String get nacionalidadLabel;
+  String get confirmarIdentidadBtn;
+
+  String get ofertaJuvenilTitulo;
+  String get ofertaJuvenilDescripcion;
+  String ficharPorBtn(String organizacion);
+
+  String get avanzarTemporadaBtn;
+  String get entrarAlDraftBtn;
+
+  String get edadLabel;
+  String get mediaLabel;
+  String get potencialLabel;
+  String get equipoActualLabel;
+  String get organizacionActualLabel;
+
+  String get carreraRetiradaTitulo;
+  String draftResultadoMensaje(String equipo);
+  String get entraEnHallDeLaFamaMensaje;
+  String get noEntraEnHallDeLaFamaMensaje;
+  String seRetiraMensaje(int edad);
+  String cambioDeEquipoMensaje(String equipo);
 }

@@ -1,6 +1,7 @@
 import '../data/database/almacenamiento.dart';
 import '../data/database/app_database.dart';
 import 'franquicia_repository.dart';
+import 'modo_carrera_repository.dart';
 import 'nueva_temporada_repository.dart';
 import 'permisos.dart';
 
@@ -215,14 +216,19 @@ Future<void> borrarSlot(int slot) => almacenDeSlots.borrar(slot);
 class ResumenSlot {
   final int numero;
 
-  /// null si la ranura está vacía. El resto de campos solo tienen sentido
-  /// cuando hay partida.
+  /// null si la ranura está vacía O es de Modo Carrera. El resto de campos
+  /// de franquicia solo tienen sentido cuando [equipo] no es null.
   final String? equipo;
   final int temporada;
   final int anioInicio;
   final int victorias;
   final int derrotas;
   final int titulos;
+
+  /// La carrera de esta ranura, si es de Modo Carrera y no de franquicia.
+  /// [equipo] y [carrera] nunca son distintos de null a la vez: una ranura
+  /// es de un modo o del otro.
+  final EstadoCarrera? carrera;
 
   /// Si esta ranura es de las que solo trae la versión completa. Se enseña
   /// igualmente, con su candado: esconderla dejaría al jugador sin saber
@@ -237,10 +243,11 @@ class ResumenSlot {
     this.victorias = 0,
     this.derrotas = 0,
     this.titulos = 0,
+    this.carrera,
     this.bloqueada = false,
   });
 
-  bool get ocupada => equipo != null;
+  bool get ocupada => equipo != null || carrera != null;
 
   /// "2027-28 · temporada 3", para la ficha de la ranura.
   String get etiquetaTemporada =>
@@ -281,7 +288,10 @@ Future<ResumenSlot> leerResumenDeSlot(int slot) async {
   final db = abrirSlot(slot);
   try {
     final equipo = await leerEquipoFranquicia(db);
-    if (equipo == null) return ResumenSlot(numero: slot);
+    if (equipo == null) {
+      final carrera = await leerPartidaCarrera(db);
+      return ResumenSlot(numero: slot, carrera: carrera);
+    }
 
     final temporada = await leerTemporada(db);
     final record = await (db.select(db.resultadoTemporada)

@@ -12617,6 +12617,1312 @@ class PatrociniosActivosCompanion extends UpdateCompanion<PatrociniosActivo> {
   }
 }
 
+class $PartidaCarreraTable extends PartidaCarrera
+    with TableInfo<$PartidaCarreraTable, PartidaCarreraData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PartidaCarreraTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _apellidoMeta = const VerificationMeta(
+    'apellido',
+  );
+  @override
+  late final GeneratedColumn<String> apellido = GeneratedColumn<String>(
+    'apellido',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dorsalMeta = const VerificationMeta('dorsal');
+  @override
+  late final GeneratedColumn<int> dorsal = GeneratedColumn<int>(
+    'dorsal',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _posicionMeta = const VerificationMeta(
+    'posicion',
+  );
+  @override
+  late final GeneratedColumn<String> posicion = GeneratedColumn<String>(
+    'posicion',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nacionalidadMeta = const VerificationMeta(
+    'nacionalidad',
+  );
+  @override
+  late final GeneratedColumn<String> nacionalidad = GeneratedColumn<String>(
+    'nacionalidad',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _edadMeta = const VerificationMeta('edad');
+  @override
+  late final GeneratedColumn<int> edad = GeneratedColumn<int>(
+    'edad',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(16),
+  );
+  static const VerificationMeta _faseMeta = const VerificationMeta('fase');
+  @override
+  late final GeneratedColumn<String> fase = GeneratedColumn<String>(
+    'fase',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('juvenil'),
+  );
+  static const VerificationMeta _organizacionJuvenilActualMeta =
+      const VerificationMeta('organizacionJuvenilActual');
+  @override
+  late final GeneratedColumn<String> organizacionJuvenilActual =
+      GeneratedColumn<String>(
+        'organizacion_juvenil_actual',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _mediaMeta = const VerificationMeta('media');
+  @override
+  late final GeneratedColumn<int> media = GeneratedColumn<int>(
+    'media',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(50),
+  );
+  static const VerificationMeta _potencialMeta = const VerificationMeta(
+    'potencial',
+  );
+  @override
+  late final GeneratedColumn<int> potencial = GeneratedColumn<int>(
+    'potencial',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(50),
+  );
+  static const VerificationMeta _atrTiro3Meta = const VerificationMeta(
+    'atrTiro3',
+  );
+  @override
+  late final GeneratedColumn<int> atrTiro3 = GeneratedColumn<int>(
+    'atr_tiro3',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(50),
+  );
+  static const VerificationMeta _atrAtaqueMeta = const VerificationMeta(
+    'atrAtaque',
+  );
+  @override
+  late final GeneratedColumn<int> atrAtaque = GeneratedColumn<int>(
+    'atr_ataque',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(50),
+  );
+  static const VerificationMeta _atrDefensaMeta = const VerificationMeta(
+    'atrDefensa',
+  );
+  @override
+  late final GeneratedColumn<int> atrDefensa = GeneratedColumn<int>(
+    'atr_defensa',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(50),
+  );
+  static const VerificationMeta _jugadorIdMeta = const VerificationMeta(
+    'jugadorId',
+  );
+  @override
+  late final GeneratedColumn<int> jugadorId = GeneratedColumn<int>(
+    'jugador_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _temporadaNbaMeta = const VerificationMeta(
+    'temporadaNba',
+  );
+  @override
+  late final GeneratedColumn<int> temporadaNba = GeneratedColumn<int>(
+    'temporada_nba',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    apellido,
+    dorsal,
+    posicion,
+    nacionalidad,
+    edad,
+    fase,
+    organizacionJuvenilActual,
+    media,
+    potencial,
+    atrTiro3,
+    atrAtaque,
+    atrDefensa,
+    jugadorId,
+    temporadaNba,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'partida_carrera';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PartidaCarreraData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('apellido')) {
+      context.handle(
+        _apellidoMeta,
+        apellido.isAcceptableOrUnknown(data['apellido']!, _apellidoMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_apellidoMeta);
+    }
+    if (data.containsKey('dorsal')) {
+      context.handle(
+        _dorsalMeta,
+        dorsal.isAcceptableOrUnknown(data['dorsal']!, _dorsalMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dorsalMeta);
+    }
+    if (data.containsKey('posicion')) {
+      context.handle(
+        _posicionMeta,
+        posicion.isAcceptableOrUnknown(data['posicion']!, _posicionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_posicionMeta);
+    }
+    if (data.containsKey('nacionalidad')) {
+      context.handle(
+        _nacionalidadMeta,
+        nacionalidad.isAcceptableOrUnknown(
+          data['nacionalidad']!,
+          _nacionalidadMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_nacionalidadMeta);
+    }
+    if (data.containsKey('edad')) {
+      context.handle(
+        _edadMeta,
+        edad.isAcceptableOrUnknown(data['edad']!, _edadMeta),
+      );
+    }
+    if (data.containsKey('fase')) {
+      context.handle(
+        _faseMeta,
+        fase.isAcceptableOrUnknown(data['fase']!, _faseMeta),
+      );
+    }
+    if (data.containsKey('organizacion_juvenil_actual')) {
+      context.handle(
+        _organizacionJuvenilActualMeta,
+        organizacionJuvenilActual.isAcceptableOrUnknown(
+          data['organizacion_juvenil_actual']!,
+          _organizacionJuvenilActualMeta,
+        ),
+      );
+    }
+    if (data.containsKey('media')) {
+      context.handle(
+        _mediaMeta,
+        media.isAcceptableOrUnknown(data['media']!, _mediaMeta),
+      );
+    }
+    if (data.containsKey('potencial')) {
+      context.handle(
+        _potencialMeta,
+        potencial.isAcceptableOrUnknown(data['potencial']!, _potencialMeta),
+      );
+    }
+    if (data.containsKey('atr_tiro3')) {
+      context.handle(
+        _atrTiro3Meta,
+        atrTiro3.isAcceptableOrUnknown(data['atr_tiro3']!, _atrTiro3Meta),
+      );
+    }
+    if (data.containsKey('atr_ataque')) {
+      context.handle(
+        _atrAtaqueMeta,
+        atrAtaque.isAcceptableOrUnknown(data['atr_ataque']!, _atrAtaqueMeta),
+      );
+    }
+    if (data.containsKey('atr_defensa')) {
+      context.handle(
+        _atrDefensaMeta,
+        atrDefensa.isAcceptableOrUnknown(data['atr_defensa']!, _atrDefensaMeta),
+      );
+    }
+    if (data.containsKey('jugador_id')) {
+      context.handle(
+        _jugadorIdMeta,
+        jugadorId.isAcceptableOrUnknown(data['jugador_id']!, _jugadorIdMeta),
+      );
+    }
+    if (data.containsKey('temporada_nba')) {
+      context.handle(
+        _temporadaNbaMeta,
+        temporadaNba.isAcceptableOrUnknown(
+          data['temporada_nba']!,
+          _temporadaNbaMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PartidaCarreraData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PartidaCarreraData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      apellido: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}apellido'],
+      )!,
+      dorsal: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}dorsal'],
+      )!,
+      posicion: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}posicion'],
+      )!,
+      nacionalidad: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}nacionalidad'],
+      )!,
+      edad: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}edad'],
+      )!,
+      fase: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}fase'],
+      )!,
+      organizacionJuvenilActual: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}organizacion_juvenil_actual'],
+      ),
+      media: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}media'],
+      )!,
+      potencial: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}potencial'],
+      )!,
+      atrTiro3: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}atr_tiro3'],
+      )!,
+      atrAtaque: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}atr_ataque'],
+      )!,
+      atrDefensa: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}atr_defensa'],
+      )!,
+      jugadorId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}jugador_id'],
+      ),
+      temporadaNba: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}temporada_nba'],
+      )!,
+    );
+  }
+
+  @override
+  $PartidaCarreraTable createAlias(String alias) {
+    return $PartidaCarreraTable(attachedDatabase, alias);
+  }
+}
+
+class PartidaCarreraData extends DataClass
+    implements Insertable<PartidaCarreraData> {
+  final int id;
+  final String apellido;
+  final int dorsal;
+  final String posicion;
+
+  /// Código ISO 3166-1 alfa-3 ('ESP', 'USA'...), clave de
+  /// `rutas_juveniles.dart`.
+  final String nacionalidad;
+  final int edad;
+
+  /// 'juvenil', 'predraft', 'nba' o 'retirado' — ver `ModoCarreraFase`.
+  final String fase;
+
+  /// La organización juvenil actual (una de `rutasJuveniles[nacionalidad]`).
+  /// Null solo antes de elegir la primera oferta.
+  final String? organizacionJuvenilActual;
+
+  /// Atributos mientras todavía no hay fila en `Jugadores` (fase juvenil).
+  /// Se copian tal cual al draftear, ver la nota de la clase.
+  final int media;
+  final int potencial;
+  final int atrTiro3;
+  final int atrAtaque;
+  final int atrDefensa;
+
+  /// Su fila en `Jugadores` una vez drafteado. Null durante la fase
+  /// juvenil/predraft.
+  final int? jugadorId;
+
+  /// Temporadas NBA ya jugadas. No hay tabla `Temporada` en una ranura de
+  /// carrera (no hay franquicia), así que este contador hace de número de
+  /// temporada al escribir en `HistorialEstadisticasJugador`.
+  final int temporadaNba;
+  const PartidaCarreraData({
+    required this.id,
+    required this.apellido,
+    required this.dorsal,
+    required this.posicion,
+    required this.nacionalidad,
+    required this.edad,
+    required this.fase,
+    this.organizacionJuvenilActual,
+    required this.media,
+    required this.potencial,
+    required this.atrTiro3,
+    required this.atrAtaque,
+    required this.atrDefensa,
+    this.jugadorId,
+    required this.temporadaNba,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['apellido'] = Variable<String>(apellido);
+    map['dorsal'] = Variable<int>(dorsal);
+    map['posicion'] = Variable<String>(posicion);
+    map['nacionalidad'] = Variable<String>(nacionalidad);
+    map['edad'] = Variable<int>(edad);
+    map['fase'] = Variable<String>(fase);
+    if (!nullToAbsent || organizacionJuvenilActual != null) {
+      map['organizacion_juvenil_actual'] = Variable<String>(
+        organizacionJuvenilActual,
+      );
+    }
+    map['media'] = Variable<int>(media);
+    map['potencial'] = Variable<int>(potencial);
+    map['atr_tiro3'] = Variable<int>(atrTiro3);
+    map['atr_ataque'] = Variable<int>(atrAtaque);
+    map['atr_defensa'] = Variable<int>(atrDefensa);
+    if (!nullToAbsent || jugadorId != null) {
+      map['jugador_id'] = Variable<int>(jugadorId);
+    }
+    map['temporada_nba'] = Variable<int>(temporadaNba);
+    return map;
+  }
+
+  PartidaCarreraCompanion toCompanion(bool nullToAbsent) {
+    return PartidaCarreraCompanion(
+      id: Value(id),
+      apellido: Value(apellido),
+      dorsal: Value(dorsal),
+      posicion: Value(posicion),
+      nacionalidad: Value(nacionalidad),
+      edad: Value(edad),
+      fase: Value(fase),
+      organizacionJuvenilActual:
+          organizacionJuvenilActual == null && nullToAbsent
+          ? const Value.absent()
+          : Value(organizacionJuvenilActual),
+      media: Value(media),
+      potencial: Value(potencial),
+      atrTiro3: Value(atrTiro3),
+      atrAtaque: Value(atrAtaque),
+      atrDefensa: Value(atrDefensa),
+      jugadorId: jugadorId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(jugadorId),
+      temporadaNba: Value(temporadaNba),
+    );
+  }
+
+  factory PartidaCarreraData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PartidaCarreraData(
+      id: serializer.fromJson<int>(json['id']),
+      apellido: serializer.fromJson<String>(json['apellido']),
+      dorsal: serializer.fromJson<int>(json['dorsal']),
+      posicion: serializer.fromJson<String>(json['posicion']),
+      nacionalidad: serializer.fromJson<String>(json['nacionalidad']),
+      edad: serializer.fromJson<int>(json['edad']),
+      fase: serializer.fromJson<String>(json['fase']),
+      organizacionJuvenilActual: serializer.fromJson<String?>(
+        json['organizacionJuvenilActual'],
+      ),
+      media: serializer.fromJson<int>(json['media']),
+      potencial: serializer.fromJson<int>(json['potencial']),
+      atrTiro3: serializer.fromJson<int>(json['atrTiro3']),
+      atrAtaque: serializer.fromJson<int>(json['atrAtaque']),
+      atrDefensa: serializer.fromJson<int>(json['atrDefensa']),
+      jugadorId: serializer.fromJson<int?>(json['jugadorId']),
+      temporadaNba: serializer.fromJson<int>(json['temporadaNba']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'apellido': serializer.toJson<String>(apellido),
+      'dorsal': serializer.toJson<int>(dorsal),
+      'posicion': serializer.toJson<String>(posicion),
+      'nacionalidad': serializer.toJson<String>(nacionalidad),
+      'edad': serializer.toJson<int>(edad),
+      'fase': serializer.toJson<String>(fase),
+      'organizacionJuvenilActual': serializer.toJson<String?>(
+        organizacionJuvenilActual,
+      ),
+      'media': serializer.toJson<int>(media),
+      'potencial': serializer.toJson<int>(potencial),
+      'atrTiro3': serializer.toJson<int>(atrTiro3),
+      'atrAtaque': serializer.toJson<int>(atrAtaque),
+      'atrDefensa': serializer.toJson<int>(atrDefensa),
+      'jugadorId': serializer.toJson<int?>(jugadorId),
+      'temporadaNba': serializer.toJson<int>(temporadaNba),
+    };
+  }
+
+  PartidaCarreraData copyWith({
+    int? id,
+    String? apellido,
+    int? dorsal,
+    String? posicion,
+    String? nacionalidad,
+    int? edad,
+    String? fase,
+    Value<String?> organizacionJuvenilActual = const Value.absent(),
+    int? media,
+    int? potencial,
+    int? atrTiro3,
+    int? atrAtaque,
+    int? atrDefensa,
+    Value<int?> jugadorId = const Value.absent(),
+    int? temporadaNba,
+  }) => PartidaCarreraData(
+    id: id ?? this.id,
+    apellido: apellido ?? this.apellido,
+    dorsal: dorsal ?? this.dorsal,
+    posicion: posicion ?? this.posicion,
+    nacionalidad: nacionalidad ?? this.nacionalidad,
+    edad: edad ?? this.edad,
+    fase: fase ?? this.fase,
+    organizacionJuvenilActual: organizacionJuvenilActual.present
+        ? organizacionJuvenilActual.value
+        : this.organizacionJuvenilActual,
+    media: media ?? this.media,
+    potencial: potencial ?? this.potencial,
+    atrTiro3: atrTiro3 ?? this.atrTiro3,
+    atrAtaque: atrAtaque ?? this.atrAtaque,
+    atrDefensa: atrDefensa ?? this.atrDefensa,
+    jugadorId: jugadorId.present ? jugadorId.value : this.jugadorId,
+    temporadaNba: temporadaNba ?? this.temporadaNba,
+  );
+  PartidaCarreraData copyWithCompanion(PartidaCarreraCompanion data) {
+    return PartidaCarreraData(
+      id: data.id.present ? data.id.value : this.id,
+      apellido: data.apellido.present ? data.apellido.value : this.apellido,
+      dorsal: data.dorsal.present ? data.dorsal.value : this.dorsal,
+      posicion: data.posicion.present ? data.posicion.value : this.posicion,
+      nacionalidad: data.nacionalidad.present
+          ? data.nacionalidad.value
+          : this.nacionalidad,
+      edad: data.edad.present ? data.edad.value : this.edad,
+      fase: data.fase.present ? data.fase.value : this.fase,
+      organizacionJuvenilActual: data.organizacionJuvenilActual.present
+          ? data.organizacionJuvenilActual.value
+          : this.organizacionJuvenilActual,
+      media: data.media.present ? data.media.value : this.media,
+      potencial: data.potencial.present ? data.potencial.value : this.potencial,
+      atrTiro3: data.atrTiro3.present ? data.atrTiro3.value : this.atrTiro3,
+      atrAtaque: data.atrAtaque.present ? data.atrAtaque.value : this.atrAtaque,
+      atrDefensa: data.atrDefensa.present
+          ? data.atrDefensa.value
+          : this.atrDefensa,
+      jugadorId: data.jugadorId.present ? data.jugadorId.value : this.jugadorId,
+      temporadaNba: data.temporadaNba.present
+          ? data.temporadaNba.value
+          : this.temporadaNba,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PartidaCarreraData(')
+          ..write('id: $id, ')
+          ..write('apellido: $apellido, ')
+          ..write('dorsal: $dorsal, ')
+          ..write('posicion: $posicion, ')
+          ..write('nacionalidad: $nacionalidad, ')
+          ..write('edad: $edad, ')
+          ..write('fase: $fase, ')
+          ..write('organizacionJuvenilActual: $organizacionJuvenilActual, ')
+          ..write('media: $media, ')
+          ..write('potencial: $potencial, ')
+          ..write('atrTiro3: $atrTiro3, ')
+          ..write('atrAtaque: $atrAtaque, ')
+          ..write('atrDefensa: $atrDefensa, ')
+          ..write('jugadorId: $jugadorId, ')
+          ..write('temporadaNba: $temporadaNba')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    apellido,
+    dorsal,
+    posicion,
+    nacionalidad,
+    edad,
+    fase,
+    organizacionJuvenilActual,
+    media,
+    potencial,
+    atrTiro3,
+    atrAtaque,
+    atrDefensa,
+    jugadorId,
+    temporadaNba,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PartidaCarreraData &&
+          other.id == this.id &&
+          other.apellido == this.apellido &&
+          other.dorsal == this.dorsal &&
+          other.posicion == this.posicion &&
+          other.nacionalidad == this.nacionalidad &&
+          other.edad == this.edad &&
+          other.fase == this.fase &&
+          other.organizacionJuvenilActual == this.organizacionJuvenilActual &&
+          other.media == this.media &&
+          other.potencial == this.potencial &&
+          other.atrTiro3 == this.atrTiro3 &&
+          other.atrAtaque == this.atrAtaque &&
+          other.atrDefensa == this.atrDefensa &&
+          other.jugadorId == this.jugadorId &&
+          other.temporadaNba == this.temporadaNba);
+}
+
+class PartidaCarreraCompanion extends UpdateCompanion<PartidaCarreraData> {
+  final Value<int> id;
+  final Value<String> apellido;
+  final Value<int> dorsal;
+  final Value<String> posicion;
+  final Value<String> nacionalidad;
+  final Value<int> edad;
+  final Value<String> fase;
+  final Value<String?> organizacionJuvenilActual;
+  final Value<int> media;
+  final Value<int> potencial;
+  final Value<int> atrTiro3;
+  final Value<int> atrAtaque;
+  final Value<int> atrDefensa;
+  final Value<int?> jugadorId;
+  final Value<int> temporadaNba;
+  const PartidaCarreraCompanion({
+    this.id = const Value.absent(),
+    this.apellido = const Value.absent(),
+    this.dorsal = const Value.absent(),
+    this.posicion = const Value.absent(),
+    this.nacionalidad = const Value.absent(),
+    this.edad = const Value.absent(),
+    this.fase = const Value.absent(),
+    this.organizacionJuvenilActual = const Value.absent(),
+    this.media = const Value.absent(),
+    this.potencial = const Value.absent(),
+    this.atrTiro3 = const Value.absent(),
+    this.atrAtaque = const Value.absent(),
+    this.atrDefensa = const Value.absent(),
+    this.jugadorId = const Value.absent(),
+    this.temporadaNba = const Value.absent(),
+  });
+  PartidaCarreraCompanion.insert({
+    this.id = const Value.absent(),
+    required String apellido,
+    required int dorsal,
+    required String posicion,
+    required String nacionalidad,
+    this.edad = const Value.absent(),
+    this.fase = const Value.absent(),
+    this.organizacionJuvenilActual = const Value.absent(),
+    this.media = const Value.absent(),
+    this.potencial = const Value.absent(),
+    this.atrTiro3 = const Value.absent(),
+    this.atrAtaque = const Value.absent(),
+    this.atrDefensa = const Value.absent(),
+    this.jugadorId = const Value.absent(),
+    this.temporadaNba = const Value.absent(),
+  }) : apellido = Value(apellido),
+       dorsal = Value(dorsal),
+       posicion = Value(posicion),
+       nacionalidad = Value(nacionalidad);
+  static Insertable<PartidaCarreraData> custom({
+    Expression<int>? id,
+    Expression<String>? apellido,
+    Expression<int>? dorsal,
+    Expression<String>? posicion,
+    Expression<String>? nacionalidad,
+    Expression<int>? edad,
+    Expression<String>? fase,
+    Expression<String>? organizacionJuvenilActual,
+    Expression<int>? media,
+    Expression<int>? potencial,
+    Expression<int>? atrTiro3,
+    Expression<int>? atrAtaque,
+    Expression<int>? atrDefensa,
+    Expression<int>? jugadorId,
+    Expression<int>? temporadaNba,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (apellido != null) 'apellido': apellido,
+      if (dorsal != null) 'dorsal': dorsal,
+      if (posicion != null) 'posicion': posicion,
+      if (nacionalidad != null) 'nacionalidad': nacionalidad,
+      if (edad != null) 'edad': edad,
+      if (fase != null) 'fase': fase,
+      if (organizacionJuvenilActual != null)
+        'organizacion_juvenil_actual': organizacionJuvenilActual,
+      if (media != null) 'media': media,
+      if (potencial != null) 'potencial': potencial,
+      if (atrTiro3 != null) 'atr_tiro3': atrTiro3,
+      if (atrAtaque != null) 'atr_ataque': atrAtaque,
+      if (atrDefensa != null) 'atr_defensa': atrDefensa,
+      if (jugadorId != null) 'jugador_id': jugadorId,
+      if (temporadaNba != null) 'temporada_nba': temporadaNba,
+    });
+  }
+
+  PartidaCarreraCompanion copyWith({
+    Value<int>? id,
+    Value<String>? apellido,
+    Value<int>? dorsal,
+    Value<String>? posicion,
+    Value<String>? nacionalidad,
+    Value<int>? edad,
+    Value<String>? fase,
+    Value<String?>? organizacionJuvenilActual,
+    Value<int>? media,
+    Value<int>? potencial,
+    Value<int>? atrTiro3,
+    Value<int>? atrAtaque,
+    Value<int>? atrDefensa,
+    Value<int?>? jugadorId,
+    Value<int>? temporadaNba,
+  }) {
+    return PartidaCarreraCompanion(
+      id: id ?? this.id,
+      apellido: apellido ?? this.apellido,
+      dorsal: dorsal ?? this.dorsal,
+      posicion: posicion ?? this.posicion,
+      nacionalidad: nacionalidad ?? this.nacionalidad,
+      edad: edad ?? this.edad,
+      fase: fase ?? this.fase,
+      organizacionJuvenilActual:
+          organizacionJuvenilActual ?? this.organizacionJuvenilActual,
+      media: media ?? this.media,
+      potencial: potencial ?? this.potencial,
+      atrTiro3: atrTiro3 ?? this.atrTiro3,
+      atrAtaque: atrAtaque ?? this.atrAtaque,
+      atrDefensa: atrDefensa ?? this.atrDefensa,
+      jugadorId: jugadorId ?? this.jugadorId,
+      temporadaNba: temporadaNba ?? this.temporadaNba,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (apellido.present) {
+      map['apellido'] = Variable<String>(apellido.value);
+    }
+    if (dorsal.present) {
+      map['dorsal'] = Variable<int>(dorsal.value);
+    }
+    if (posicion.present) {
+      map['posicion'] = Variable<String>(posicion.value);
+    }
+    if (nacionalidad.present) {
+      map['nacionalidad'] = Variable<String>(nacionalidad.value);
+    }
+    if (edad.present) {
+      map['edad'] = Variable<int>(edad.value);
+    }
+    if (fase.present) {
+      map['fase'] = Variable<String>(fase.value);
+    }
+    if (organizacionJuvenilActual.present) {
+      map['organizacion_juvenil_actual'] = Variable<String>(
+        organizacionJuvenilActual.value,
+      );
+    }
+    if (media.present) {
+      map['media'] = Variable<int>(media.value);
+    }
+    if (potencial.present) {
+      map['potencial'] = Variable<int>(potencial.value);
+    }
+    if (atrTiro3.present) {
+      map['atr_tiro3'] = Variable<int>(atrTiro3.value);
+    }
+    if (atrAtaque.present) {
+      map['atr_ataque'] = Variable<int>(atrAtaque.value);
+    }
+    if (atrDefensa.present) {
+      map['atr_defensa'] = Variable<int>(atrDefensa.value);
+    }
+    if (jugadorId.present) {
+      map['jugador_id'] = Variable<int>(jugadorId.value);
+    }
+    if (temporadaNba.present) {
+      map['temporada_nba'] = Variable<int>(temporadaNba.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PartidaCarreraCompanion(')
+          ..write('id: $id, ')
+          ..write('apellido: $apellido, ')
+          ..write('dorsal: $dorsal, ')
+          ..write('posicion: $posicion, ')
+          ..write('nacionalidad: $nacionalidad, ')
+          ..write('edad: $edad, ')
+          ..write('fase: $fase, ')
+          ..write('organizacionJuvenilActual: $organizacionJuvenilActual, ')
+          ..write('media: $media, ')
+          ..write('potencial: $potencial, ')
+          ..write('atrTiro3: $atrTiro3, ')
+          ..write('atrAtaque: $atrAtaque, ')
+          ..write('atrDefensa: $atrDefensa, ')
+          ..write('jugadorId: $jugadorId, ')
+          ..write('temporadaNba: $temporadaNba')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $HistorialTemporadaJuvenilTable extends HistorialTemporadaJuvenil
+    with TableInfo<$HistorialTemporadaJuvenilTable, TemporadaJuvenil> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HistorialTemporadaJuvenilTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _edadMeta = const VerificationMeta('edad');
+  @override
+  late final GeneratedColumn<int> edad = GeneratedColumn<int>(
+    'edad',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _organizacionMeta = const VerificationMeta(
+    'organizacion',
+  );
+  @override
+  late final GeneratedColumn<String> organizacion = GeneratedColumn<String>(
+    'organizacion',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _mediaMeta = const VerificationMeta('media');
+  @override
+  late final GeneratedColumn<int> media = GeneratedColumn<int>(
+    'media',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ptsPgMeta = const VerificationMeta('ptsPg');
+  @override
+  late final GeneratedColumn<double> ptsPg = GeneratedColumn<double>(
+    'pts_pg',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _astPgMeta = const VerificationMeta('astPg');
+  @override
+  late final GeneratedColumn<double> astPg = GeneratedColumn<double>(
+    'ast_pg',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _trbPgMeta = const VerificationMeta('trbPg');
+  @override
+  late final GeneratedColumn<double> trbPg = GeneratedColumn<double>(
+    'trb_pg',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    edad,
+    organizacion,
+    media,
+    ptsPg,
+    astPg,
+    trbPg,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'historial_temporada_juvenil';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TemporadaJuvenil> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('edad')) {
+      context.handle(
+        _edadMeta,
+        edad.isAcceptableOrUnknown(data['edad']!, _edadMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_edadMeta);
+    }
+    if (data.containsKey('organizacion')) {
+      context.handle(
+        _organizacionMeta,
+        organizacion.isAcceptableOrUnknown(
+          data['organizacion']!,
+          _organizacionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_organizacionMeta);
+    }
+    if (data.containsKey('media')) {
+      context.handle(
+        _mediaMeta,
+        media.isAcceptableOrUnknown(data['media']!, _mediaMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_mediaMeta);
+    }
+    if (data.containsKey('pts_pg')) {
+      context.handle(
+        _ptsPgMeta,
+        ptsPg.isAcceptableOrUnknown(data['pts_pg']!, _ptsPgMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ptsPgMeta);
+    }
+    if (data.containsKey('ast_pg')) {
+      context.handle(
+        _astPgMeta,
+        astPg.isAcceptableOrUnknown(data['ast_pg']!, _astPgMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_astPgMeta);
+    }
+    if (data.containsKey('trb_pg')) {
+      context.handle(
+        _trbPgMeta,
+        trbPg.isAcceptableOrUnknown(data['trb_pg']!, _trbPgMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_trbPgMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TemporadaJuvenil map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TemporadaJuvenil(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      edad: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}edad'],
+      )!,
+      organizacion: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}organizacion'],
+      )!,
+      media: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}media'],
+      )!,
+      ptsPg: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}pts_pg'],
+      )!,
+      astPg: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}ast_pg'],
+      )!,
+      trbPg: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}trb_pg'],
+      )!,
+    );
+  }
+
+  @override
+  $HistorialTemporadaJuvenilTable createAlias(String alias) {
+    return $HistorialTemporadaJuvenilTable(attachedDatabase, alias);
+  }
+}
+
+class TemporadaJuvenil extends DataClass
+    implements Insertable<TemporadaJuvenil> {
+  final int id;
+  final int edad;
+  final String organizacion;
+  final int media;
+  final double ptsPg;
+  final double astPg;
+  final double trbPg;
+  const TemporadaJuvenil({
+    required this.id,
+    required this.edad,
+    required this.organizacion,
+    required this.media,
+    required this.ptsPg,
+    required this.astPg,
+    required this.trbPg,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['edad'] = Variable<int>(edad);
+    map['organizacion'] = Variable<String>(organizacion);
+    map['media'] = Variable<int>(media);
+    map['pts_pg'] = Variable<double>(ptsPg);
+    map['ast_pg'] = Variable<double>(astPg);
+    map['trb_pg'] = Variable<double>(trbPg);
+    return map;
+  }
+
+  HistorialTemporadaJuvenilCompanion toCompanion(bool nullToAbsent) {
+    return HistorialTemporadaJuvenilCompanion(
+      id: Value(id),
+      edad: Value(edad),
+      organizacion: Value(organizacion),
+      media: Value(media),
+      ptsPg: Value(ptsPg),
+      astPg: Value(astPg),
+      trbPg: Value(trbPg),
+    );
+  }
+
+  factory TemporadaJuvenil.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TemporadaJuvenil(
+      id: serializer.fromJson<int>(json['id']),
+      edad: serializer.fromJson<int>(json['edad']),
+      organizacion: serializer.fromJson<String>(json['organizacion']),
+      media: serializer.fromJson<int>(json['media']),
+      ptsPg: serializer.fromJson<double>(json['ptsPg']),
+      astPg: serializer.fromJson<double>(json['astPg']),
+      trbPg: serializer.fromJson<double>(json['trbPg']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'edad': serializer.toJson<int>(edad),
+      'organizacion': serializer.toJson<String>(organizacion),
+      'media': serializer.toJson<int>(media),
+      'ptsPg': serializer.toJson<double>(ptsPg),
+      'astPg': serializer.toJson<double>(astPg),
+      'trbPg': serializer.toJson<double>(trbPg),
+    };
+  }
+
+  TemporadaJuvenil copyWith({
+    int? id,
+    int? edad,
+    String? organizacion,
+    int? media,
+    double? ptsPg,
+    double? astPg,
+    double? trbPg,
+  }) => TemporadaJuvenil(
+    id: id ?? this.id,
+    edad: edad ?? this.edad,
+    organizacion: organizacion ?? this.organizacion,
+    media: media ?? this.media,
+    ptsPg: ptsPg ?? this.ptsPg,
+    astPg: astPg ?? this.astPg,
+    trbPg: trbPg ?? this.trbPg,
+  );
+  TemporadaJuvenil copyWithCompanion(HistorialTemporadaJuvenilCompanion data) {
+    return TemporadaJuvenil(
+      id: data.id.present ? data.id.value : this.id,
+      edad: data.edad.present ? data.edad.value : this.edad,
+      organizacion: data.organizacion.present
+          ? data.organizacion.value
+          : this.organizacion,
+      media: data.media.present ? data.media.value : this.media,
+      ptsPg: data.ptsPg.present ? data.ptsPg.value : this.ptsPg,
+      astPg: data.astPg.present ? data.astPg.value : this.astPg,
+      trbPg: data.trbPg.present ? data.trbPg.value : this.trbPg,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TemporadaJuvenil(')
+          ..write('id: $id, ')
+          ..write('edad: $edad, ')
+          ..write('organizacion: $organizacion, ')
+          ..write('media: $media, ')
+          ..write('ptsPg: $ptsPg, ')
+          ..write('astPg: $astPg, ')
+          ..write('trbPg: $trbPg')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, edad, organizacion, media, ptsPg, astPg, trbPg);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TemporadaJuvenil &&
+          other.id == this.id &&
+          other.edad == this.edad &&
+          other.organizacion == this.organizacion &&
+          other.media == this.media &&
+          other.ptsPg == this.ptsPg &&
+          other.astPg == this.astPg &&
+          other.trbPg == this.trbPg);
+}
+
+class HistorialTemporadaJuvenilCompanion
+    extends UpdateCompanion<TemporadaJuvenil> {
+  final Value<int> id;
+  final Value<int> edad;
+  final Value<String> organizacion;
+  final Value<int> media;
+  final Value<double> ptsPg;
+  final Value<double> astPg;
+  final Value<double> trbPg;
+  const HistorialTemporadaJuvenilCompanion({
+    this.id = const Value.absent(),
+    this.edad = const Value.absent(),
+    this.organizacion = const Value.absent(),
+    this.media = const Value.absent(),
+    this.ptsPg = const Value.absent(),
+    this.astPg = const Value.absent(),
+    this.trbPg = const Value.absent(),
+  });
+  HistorialTemporadaJuvenilCompanion.insert({
+    this.id = const Value.absent(),
+    required int edad,
+    required String organizacion,
+    required int media,
+    required double ptsPg,
+    required double astPg,
+    required double trbPg,
+  }) : edad = Value(edad),
+       organizacion = Value(organizacion),
+       media = Value(media),
+       ptsPg = Value(ptsPg),
+       astPg = Value(astPg),
+       trbPg = Value(trbPg);
+  static Insertable<TemporadaJuvenil> custom({
+    Expression<int>? id,
+    Expression<int>? edad,
+    Expression<String>? organizacion,
+    Expression<int>? media,
+    Expression<double>? ptsPg,
+    Expression<double>? astPg,
+    Expression<double>? trbPg,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (edad != null) 'edad': edad,
+      if (organizacion != null) 'organizacion': organizacion,
+      if (media != null) 'media': media,
+      if (ptsPg != null) 'pts_pg': ptsPg,
+      if (astPg != null) 'ast_pg': astPg,
+      if (trbPg != null) 'trb_pg': trbPg,
+    });
+  }
+
+  HistorialTemporadaJuvenilCompanion copyWith({
+    Value<int>? id,
+    Value<int>? edad,
+    Value<String>? organizacion,
+    Value<int>? media,
+    Value<double>? ptsPg,
+    Value<double>? astPg,
+    Value<double>? trbPg,
+  }) {
+    return HistorialTemporadaJuvenilCompanion(
+      id: id ?? this.id,
+      edad: edad ?? this.edad,
+      organizacion: organizacion ?? this.organizacion,
+      media: media ?? this.media,
+      ptsPg: ptsPg ?? this.ptsPg,
+      astPg: astPg ?? this.astPg,
+      trbPg: trbPg ?? this.trbPg,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (edad.present) {
+      map['edad'] = Variable<int>(edad.value);
+    }
+    if (organizacion.present) {
+      map['organizacion'] = Variable<String>(organizacion.value);
+    }
+    if (media.present) {
+      map['media'] = Variable<int>(media.value);
+    }
+    if (ptsPg.present) {
+      map['pts_pg'] = Variable<double>(ptsPg.value);
+    }
+    if (astPg.present) {
+      map['ast_pg'] = Variable<double>(astPg.value);
+    }
+    if (trbPg.present) {
+      map['trb_pg'] = Variable<double>(trbPg.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HistorialTemporadaJuvenilCompanion(')
+          ..write('id: $id, ')
+          ..write('edad: $edad, ')
+          ..write('organizacion: $organizacion, ')
+          ..write('media: $media, ')
+          ..write('ptsPg: $ptsPg, ')
+          ..write('astPg: $astPg, ')
+          ..write('trbPg: $trbPg')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -12669,6 +13975,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   );
   late final $PatrociniosActivosTable patrociniosActivos =
       $PatrociniosActivosTable(this);
+  late final $PartidaCarreraTable partidaCarrera = $PartidaCarreraTable(this);
+  late final $HistorialTemporadaJuvenilTable historialTemporadaJuvenil =
+      $HistorialTemporadaJuvenilTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -12702,6 +14011,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     entrenadores,
     efectosDeEvento,
     patrociniosActivos,
+    partidaCarrera,
+    historialTemporadaJuvenil,
   ];
 }
 
@@ -19360,6 +20671,657 @@ typedef $$PatrociniosActivosTableProcessedTableManager =
       PatrociniosActivo,
       PrefetchHooks Function()
     >;
+typedef $$PartidaCarreraTableCreateCompanionBuilder =
+    PartidaCarreraCompanion Function({
+      Value<int> id,
+      required String apellido,
+      required int dorsal,
+      required String posicion,
+      required String nacionalidad,
+      Value<int> edad,
+      Value<String> fase,
+      Value<String?> organizacionJuvenilActual,
+      Value<int> media,
+      Value<int> potencial,
+      Value<int> atrTiro3,
+      Value<int> atrAtaque,
+      Value<int> atrDefensa,
+      Value<int?> jugadorId,
+      Value<int> temporadaNba,
+    });
+typedef $$PartidaCarreraTableUpdateCompanionBuilder =
+    PartidaCarreraCompanion Function({
+      Value<int> id,
+      Value<String> apellido,
+      Value<int> dorsal,
+      Value<String> posicion,
+      Value<String> nacionalidad,
+      Value<int> edad,
+      Value<String> fase,
+      Value<String?> organizacionJuvenilActual,
+      Value<int> media,
+      Value<int> potencial,
+      Value<int> atrTiro3,
+      Value<int> atrAtaque,
+      Value<int> atrDefensa,
+      Value<int?> jugadorId,
+      Value<int> temporadaNba,
+    });
+
+class $$PartidaCarreraTableFilterComposer
+    extends Composer<_$AppDatabase, $PartidaCarreraTable> {
+  $$PartidaCarreraTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get apellido => $composableBuilder(
+    column: $table.apellido,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get dorsal => $composableBuilder(
+    column: $table.dorsal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get posicion => $composableBuilder(
+    column: $table.posicion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nacionalidad => $composableBuilder(
+    column: $table.nacionalidad,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get edad => $composableBuilder(
+    column: $table.edad,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get fase => $composableBuilder(
+    column: $table.fase,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get organizacionJuvenilActual => $composableBuilder(
+    column: $table.organizacionJuvenilActual,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get media => $composableBuilder(
+    column: $table.media,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get potencial => $composableBuilder(
+    column: $table.potencial,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get atrTiro3 => $composableBuilder(
+    column: $table.atrTiro3,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get atrAtaque => $composableBuilder(
+    column: $table.atrAtaque,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get atrDefensa => $composableBuilder(
+    column: $table.atrDefensa,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get jugadorId => $composableBuilder(
+    column: $table.jugadorId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get temporadaNba => $composableBuilder(
+    column: $table.temporadaNba,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PartidaCarreraTableOrderingComposer
+    extends Composer<_$AppDatabase, $PartidaCarreraTable> {
+  $$PartidaCarreraTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get apellido => $composableBuilder(
+    column: $table.apellido,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get dorsal => $composableBuilder(
+    column: $table.dorsal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get posicion => $composableBuilder(
+    column: $table.posicion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nacionalidad => $composableBuilder(
+    column: $table.nacionalidad,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get edad => $composableBuilder(
+    column: $table.edad,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get fase => $composableBuilder(
+    column: $table.fase,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get organizacionJuvenilActual => $composableBuilder(
+    column: $table.organizacionJuvenilActual,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get media => $composableBuilder(
+    column: $table.media,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get potencial => $composableBuilder(
+    column: $table.potencial,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get atrTiro3 => $composableBuilder(
+    column: $table.atrTiro3,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get atrAtaque => $composableBuilder(
+    column: $table.atrAtaque,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get atrDefensa => $composableBuilder(
+    column: $table.atrDefensa,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get jugadorId => $composableBuilder(
+    column: $table.jugadorId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get temporadaNba => $composableBuilder(
+    column: $table.temporadaNba,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PartidaCarreraTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PartidaCarreraTable> {
+  $$PartidaCarreraTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get apellido =>
+      $composableBuilder(column: $table.apellido, builder: (column) => column);
+
+  GeneratedColumn<int> get dorsal =>
+      $composableBuilder(column: $table.dorsal, builder: (column) => column);
+
+  GeneratedColumn<String> get posicion =>
+      $composableBuilder(column: $table.posicion, builder: (column) => column);
+
+  GeneratedColumn<String> get nacionalidad => $composableBuilder(
+    column: $table.nacionalidad,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get edad =>
+      $composableBuilder(column: $table.edad, builder: (column) => column);
+
+  GeneratedColumn<String> get fase =>
+      $composableBuilder(column: $table.fase, builder: (column) => column);
+
+  GeneratedColumn<String> get organizacionJuvenilActual => $composableBuilder(
+    column: $table.organizacionJuvenilActual,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get media =>
+      $composableBuilder(column: $table.media, builder: (column) => column);
+
+  GeneratedColumn<int> get potencial =>
+      $composableBuilder(column: $table.potencial, builder: (column) => column);
+
+  GeneratedColumn<int> get atrTiro3 =>
+      $composableBuilder(column: $table.atrTiro3, builder: (column) => column);
+
+  GeneratedColumn<int> get atrAtaque =>
+      $composableBuilder(column: $table.atrAtaque, builder: (column) => column);
+
+  GeneratedColumn<int> get atrDefensa => $composableBuilder(
+    column: $table.atrDefensa,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get jugadorId =>
+      $composableBuilder(column: $table.jugadorId, builder: (column) => column);
+
+  GeneratedColumn<int> get temporadaNba => $composableBuilder(
+    column: $table.temporadaNba,
+    builder: (column) => column,
+  );
+}
+
+class $$PartidaCarreraTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PartidaCarreraTable,
+          PartidaCarreraData,
+          $$PartidaCarreraTableFilterComposer,
+          $$PartidaCarreraTableOrderingComposer,
+          $$PartidaCarreraTableAnnotationComposer,
+          $$PartidaCarreraTableCreateCompanionBuilder,
+          $$PartidaCarreraTableUpdateCompanionBuilder,
+          (
+            PartidaCarreraData,
+            BaseReferences<
+              _$AppDatabase,
+              $PartidaCarreraTable,
+              PartidaCarreraData
+            >,
+          ),
+          PartidaCarreraData,
+          PrefetchHooks Function()
+        > {
+  $$PartidaCarreraTableTableManager(
+    _$AppDatabase db,
+    $PartidaCarreraTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PartidaCarreraTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PartidaCarreraTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PartidaCarreraTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> apellido = const Value.absent(),
+                Value<int> dorsal = const Value.absent(),
+                Value<String> posicion = const Value.absent(),
+                Value<String> nacionalidad = const Value.absent(),
+                Value<int> edad = const Value.absent(),
+                Value<String> fase = const Value.absent(),
+                Value<String?> organizacionJuvenilActual = const Value.absent(),
+                Value<int> media = const Value.absent(),
+                Value<int> potencial = const Value.absent(),
+                Value<int> atrTiro3 = const Value.absent(),
+                Value<int> atrAtaque = const Value.absent(),
+                Value<int> atrDefensa = const Value.absent(),
+                Value<int?> jugadorId = const Value.absent(),
+                Value<int> temporadaNba = const Value.absent(),
+              }) => PartidaCarreraCompanion(
+                id: id,
+                apellido: apellido,
+                dorsal: dorsal,
+                posicion: posicion,
+                nacionalidad: nacionalidad,
+                edad: edad,
+                fase: fase,
+                organizacionJuvenilActual: organizacionJuvenilActual,
+                media: media,
+                potencial: potencial,
+                atrTiro3: atrTiro3,
+                atrAtaque: atrAtaque,
+                atrDefensa: atrDefensa,
+                jugadorId: jugadorId,
+                temporadaNba: temporadaNba,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String apellido,
+                required int dorsal,
+                required String posicion,
+                required String nacionalidad,
+                Value<int> edad = const Value.absent(),
+                Value<String> fase = const Value.absent(),
+                Value<String?> organizacionJuvenilActual = const Value.absent(),
+                Value<int> media = const Value.absent(),
+                Value<int> potencial = const Value.absent(),
+                Value<int> atrTiro3 = const Value.absent(),
+                Value<int> atrAtaque = const Value.absent(),
+                Value<int> atrDefensa = const Value.absent(),
+                Value<int?> jugadorId = const Value.absent(),
+                Value<int> temporadaNba = const Value.absent(),
+              }) => PartidaCarreraCompanion.insert(
+                id: id,
+                apellido: apellido,
+                dorsal: dorsal,
+                posicion: posicion,
+                nacionalidad: nacionalidad,
+                edad: edad,
+                fase: fase,
+                organizacionJuvenilActual: organizacionJuvenilActual,
+                media: media,
+                potencial: potencial,
+                atrTiro3: atrTiro3,
+                atrAtaque: atrAtaque,
+                atrDefensa: atrDefensa,
+                jugadorId: jugadorId,
+                temporadaNba: temporadaNba,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PartidaCarreraTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PartidaCarreraTable,
+      PartidaCarreraData,
+      $$PartidaCarreraTableFilterComposer,
+      $$PartidaCarreraTableOrderingComposer,
+      $$PartidaCarreraTableAnnotationComposer,
+      $$PartidaCarreraTableCreateCompanionBuilder,
+      $$PartidaCarreraTableUpdateCompanionBuilder,
+      (
+        PartidaCarreraData,
+        BaseReferences<_$AppDatabase, $PartidaCarreraTable, PartidaCarreraData>,
+      ),
+      PartidaCarreraData,
+      PrefetchHooks Function()
+    >;
+typedef $$HistorialTemporadaJuvenilTableCreateCompanionBuilder =
+    HistorialTemporadaJuvenilCompanion Function({
+      Value<int> id,
+      required int edad,
+      required String organizacion,
+      required int media,
+      required double ptsPg,
+      required double astPg,
+      required double trbPg,
+    });
+typedef $$HistorialTemporadaJuvenilTableUpdateCompanionBuilder =
+    HistorialTemporadaJuvenilCompanion Function({
+      Value<int> id,
+      Value<int> edad,
+      Value<String> organizacion,
+      Value<int> media,
+      Value<double> ptsPg,
+      Value<double> astPg,
+      Value<double> trbPg,
+    });
+
+class $$HistorialTemporadaJuvenilTableFilterComposer
+    extends Composer<_$AppDatabase, $HistorialTemporadaJuvenilTable> {
+  $$HistorialTemporadaJuvenilTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get edad => $composableBuilder(
+    column: $table.edad,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get organizacion => $composableBuilder(
+    column: $table.organizacion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get media => $composableBuilder(
+    column: $table.media,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get ptsPg => $composableBuilder(
+    column: $table.ptsPg,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get astPg => $composableBuilder(
+    column: $table.astPg,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get trbPg => $composableBuilder(
+    column: $table.trbPg,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$HistorialTemporadaJuvenilTableOrderingComposer
+    extends Composer<_$AppDatabase, $HistorialTemporadaJuvenilTable> {
+  $$HistorialTemporadaJuvenilTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get edad => $composableBuilder(
+    column: $table.edad,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get organizacion => $composableBuilder(
+    column: $table.organizacion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get media => $composableBuilder(
+    column: $table.media,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get ptsPg => $composableBuilder(
+    column: $table.ptsPg,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get astPg => $composableBuilder(
+    column: $table.astPg,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get trbPg => $composableBuilder(
+    column: $table.trbPg,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$HistorialTemporadaJuvenilTableAnnotationComposer
+    extends Composer<_$AppDatabase, $HistorialTemporadaJuvenilTable> {
+  $$HistorialTemporadaJuvenilTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get edad =>
+      $composableBuilder(column: $table.edad, builder: (column) => column);
+
+  GeneratedColumn<String> get organizacion => $composableBuilder(
+    column: $table.organizacion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get media =>
+      $composableBuilder(column: $table.media, builder: (column) => column);
+
+  GeneratedColumn<double> get ptsPg =>
+      $composableBuilder(column: $table.ptsPg, builder: (column) => column);
+
+  GeneratedColumn<double> get astPg =>
+      $composableBuilder(column: $table.astPg, builder: (column) => column);
+
+  GeneratedColumn<double> get trbPg =>
+      $composableBuilder(column: $table.trbPg, builder: (column) => column);
+}
+
+class $$HistorialTemporadaJuvenilTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $HistorialTemporadaJuvenilTable,
+          TemporadaJuvenil,
+          $$HistorialTemporadaJuvenilTableFilterComposer,
+          $$HistorialTemporadaJuvenilTableOrderingComposer,
+          $$HistorialTemporadaJuvenilTableAnnotationComposer,
+          $$HistorialTemporadaJuvenilTableCreateCompanionBuilder,
+          $$HistorialTemporadaJuvenilTableUpdateCompanionBuilder,
+          (
+            TemporadaJuvenil,
+            BaseReferences<
+              _$AppDatabase,
+              $HistorialTemporadaJuvenilTable,
+              TemporadaJuvenil
+            >,
+          ),
+          TemporadaJuvenil,
+          PrefetchHooks Function()
+        > {
+  $$HistorialTemporadaJuvenilTableTableManager(
+    _$AppDatabase db,
+    $HistorialTemporadaJuvenilTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HistorialTemporadaJuvenilTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer: () =>
+              $$HistorialTemporadaJuvenilTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$HistorialTemporadaJuvenilTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> edad = const Value.absent(),
+                Value<String> organizacion = const Value.absent(),
+                Value<int> media = const Value.absent(),
+                Value<double> ptsPg = const Value.absent(),
+                Value<double> astPg = const Value.absent(),
+                Value<double> trbPg = const Value.absent(),
+              }) => HistorialTemporadaJuvenilCompanion(
+                id: id,
+                edad: edad,
+                organizacion: organizacion,
+                media: media,
+                ptsPg: ptsPg,
+                astPg: astPg,
+                trbPg: trbPg,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int edad,
+                required String organizacion,
+                required int media,
+                required double ptsPg,
+                required double astPg,
+                required double trbPg,
+              }) => HistorialTemporadaJuvenilCompanion.insert(
+                id: id,
+                edad: edad,
+                organizacion: organizacion,
+                media: media,
+                ptsPg: ptsPg,
+                astPg: astPg,
+                trbPg: trbPg,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$HistorialTemporadaJuvenilTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $HistorialTemporadaJuvenilTable,
+      TemporadaJuvenil,
+      $$HistorialTemporadaJuvenilTableFilterComposer,
+      $$HistorialTemporadaJuvenilTableOrderingComposer,
+      $$HistorialTemporadaJuvenilTableAnnotationComposer,
+      $$HistorialTemporadaJuvenilTableCreateCompanionBuilder,
+      $$HistorialTemporadaJuvenilTableUpdateCompanionBuilder,
+      (
+        TemporadaJuvenil,
+        BaseReferences<
+          _$AppDatabase,
+          $HistorialTemporadaJuvenilTable,
+          TemporadaJuvenil
+        >,
+      ),
+      TemporadaJuvenil,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -19431,4 +21393,11 @@ class $AppDatabaseManager {
       $$EfectosDeEventoTableTableManager(_db, _db.efectosDeEvento);
   $$PatrociniosActivosTableTableManager get patrociniosActivos =>
       $$PatrociniosActivosTableTableManager(_db, _db.patrociniosActivos);
+  $$PartidaCarreraTableTableManager get partidaCarrera =>
+      $$PartidaCarreraTableTableManager(_db, _db.partidaCarrera);
+  $$HistorialTemporadaJuvenilTableTableManager get historialTemporadaJuvenil =>
+      $$HistorialTemporadaJuvenilTableTableManager(
+        _db,
+        _db.historialTemporadaJuvenil,
+      );
 }

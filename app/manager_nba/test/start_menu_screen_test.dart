@@ -54,8 +54,7 @@ void main() {
   /// shared/estilo.dart); por dentro siguen siendo los de Material, así que
   /// el tipo de widget sigue valiendo para señalarlos.
   Future<void> abrirRanuras(WidgetTester tester, String desde) async {
-    await tester.tap(find.widgetWithText(
-        desde == 'NUEVA PARTIDA' ? FilledButton : OutlinedButton, desde));
+    await tester.tap(find.widgetWithText(OutlinedButton, desde));
     await tester.pump();
   }
 
@@ -68,9 +67,11 @@ void main() {
     expect(find.text('Ranura vacía'), findsNothing);
     expect(find.widgetWithText(FilledButton, 'CONTINUAR'), findsNothing);
     expect(find.widgetWithText(OutlinedButton, 'CARGAR PARTIDA'), findsNothing);
-    expect(find.widgetWithText(FilledButton, 'NUEVA PARTIDA'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'MODO FRANQUICIA'), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, 'MODO JUGADOR'), findsOneWidget);
 
-    await abrirRanuras(tester, 'NUEVA PARTIDA');
+    await tester.tap(find.widgetWithText(FilledButton, 'MODO FRANQUICIA'));
+    await tester.pump();
     expect(find.text('Ranura vacía'), findsNWidgets(numeroDeSlots));
     expect(find.widgetWithText(OutlinedButton, 'EMPEZAR'),
         findsNWidgets(numeroDeSlots));

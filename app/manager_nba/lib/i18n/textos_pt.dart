@@ -1273,4 +1273,61 @@ class TextosPt extends Textos {
   @override
   String get videoSinTerminar =>
       'O vídeo não foi visto até ao fim, por isso continuam bloqueados. Podes tentar outra vez.';
+
+  @override
+  String get modoFranquiciaOpcion => 'Modo Franquia';
+  @override
+  String get modoCarreraOpcion => 'Modo Jogador';
+
+  @override
+  String get crearJugadorTitulo => 'Crie seu jogador';
+  @override
+  String get apellidoLabel => 'Sobrenome';
+  @override
+  String get dorsalLabel => 'Número';
+  @override
+  String get posicionLabel => 'Posição';
+  @override
+  String get nacionalidadLabel => 'Nacionalidade';
+  @override
+  String get confirmarIdentidadBtn => 'Confirmar identidade';
+
+  @override
+  String get ofertaJuvenilTitulo => 'Oferta de base';
+  @override
+  String get ofertaJuvenilDescripcion =>
+      'Organizações de base do seu país querem te levar para o projeto delas. Escolha onde sua carreira começa.';
+  @override
+  String ficharPorBtn(String organizacion) => 'Assinar com $organizacion';
+
+  @override
+  String get avanzarTemporadaBtn => 'Avançar temporada';
+  @override
+  String get entrarAlDraftBtn => 'Entrar no draft';
+
+  @override
+  String get edadLabel => 'Idade';
+  @override
+  String get mediaLabel => 'Média';
+  @override
+  String get potencialLabel => 'Potencial';
+  @override
+  String get equipoActualLabel => 'Time';
+  @override
+  String get organizacionActualLabel => 'Organização';
+
+  @override
+  String get carreraRetiradaTitulo => 'Carreira encerrada';
+  @override
+  String draftResultadoMensaje(String equipo) =>
+      'Você foi escolhido pelo $equipo.';
+  @override
+  String get entraEnHallDeLaFamaMensaje => 'Você entra no Hall da Fama!';
+  @override
+  String get noEntraEnHallDeLaFamaMensaje =>
+      'Você não entra no Hall da Fama.';
+  @override
+  String seRetiraMensaje(int edad) => 'Se aposenta aos $edad anos.';
+  @override
+  String cambioDeEquipoMensaje(String equipo) => 'Novo time: $equipo.';
 }

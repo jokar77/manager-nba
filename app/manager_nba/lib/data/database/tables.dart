@@ -534,6 +534,75 @@ class BoxscoresSerie extends Table {
   TextColumn get boxscoreJson => text()();
 }
 
+/// El Modo Carrera: una sola fila (id fijo 0), la identidad y el progreso
+/// del jugador que controla el usuario, de los 16 años hasta el retiro. Su
+/// ausencia decide si hay una carrera en marcha en esta ranura, igual que
+/// [Franquicia] decide si hay una franquicia — una ranura es de un modo o
+/// del otro, nunca de los dos.
+///
+/// Antes del draft (`fase` 'juvenil'/'predraft') el jugador no tiene fila en
+/// `Jugadores` todavía: sus atributos se llevan aquí, con las mismas
+/// columnas que esa tabla, para que copiarlos a `Jugadores` en el momento
+/// del draft sea una asignación directa y no una conversión. Después del
+/// draft (`fase` 'nba'/'retirado') [jugadorId] apunta a su fila real y todo
+/// lo demás (progresión, contrato, Hall of Fama...) lo maneja el resto del
+/// juego exactamente igual que con cualquier otro jugador.
+class PartidaCarrera extends Table {
+  IntColumn get id => integer().withDefault(const Constant(0))();
+
+  TextColumn get apellido => text()();
+  IntColumn get dorsal => integer()();
+  TextColumn get posicion => text()();
+
+  /// Código ISO 3166-1 alfa-3 ('ESP', 'USA'...), clave de
+  /// `rutas_juveniles.dart`.
+  TextColumn get nacionalidad => text()();
+
+  IntColumn get edad => integer().withDefault(const Constant(16))();
+
+  /// 'juvenil', 'predraft', 'nba' o 'retirado' — ver `ModoCarreraFase`.
+  TextColumn get fase => text().withDefault(const Constant('juvenil'))();
+
+  /// La organización juvenil actual (una de `rutasJuveniles[nacionalidad]`).
+  /// Null solo antes de elegir la primera oferta.
+  TextColumn get organizacionJuvenilActual => text().nullable()();
+
+  /// Atributos mientras todavía no hay fila en `Jugadores` (fase juvenil).
+  /// Se copian tal cual al draftear, ver la nota de la clase.
+  IntColumn get media => integer().withDefault(const Constant(50))();
+  IntColumn get potencial => integer().withDefault(const Constant(50))();
+  IntColumn get atrTiro3 => integer().withDefault(const Constant(50))();
+  IntColumn get atrAtaque => integer().withDefault(const Constant(50))();
+  IntColumn get atrDefensa => integer().withDefault(const Constant(50))();
+
+  /// Su fila en `Jugadores` una vez drafteado. Null durante la fase
+  /// juvenil/predraft.
+  IntColumn get jugadorId => integer().nullable()();
+
+  /// Temporadas NBA ya jugadas. No hay tabla `Temporada` en una ranura de
+  /// carrera (no hay franquicia), así que este contador hace de número de
+  /// temporada al escribir en `HistorialEstadisticasJugador`.
+  IntColumn get temporadaNba => integer().withDefault(const Constant(0))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Una temporada juvenil ya jugada (fase 'juvenil' de [PartidaCarrera]),
+/// antes de llegar a la NBA. Estadísticas simplificadas de referencia, no un
+/// boxscore completo — no hace falta tanto detalle para unos pocos años de
+/// desarrollo que ni siquiera se enseñan partido a partido.
+@DataClassName('TemporadaJuvenil')
+class HistorialTemporadaJuvenil extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get edad => integer()();
+  TextColumn get organizacion => text()();
+  IntColumn get media => integer()();
+  RealColumn get ptsPg => real()();
+  RealColumn get astPg => real()();
+  RealColumn get trbPg => real()();
+}
+
 /// Los entrenadores de la liga: uno por franquicia, más los que están sin
 /// equipo esperando una oferta.
 ///

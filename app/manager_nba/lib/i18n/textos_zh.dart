@@ -1195,4 +1195,58 @@ class TextosZh extends Textos {
   String get verVideoPatrocinadores => '观看视频解锁';
   @override
   String get videoSinTerminar => '视频没有看完，赞助商仍处于锁定状态。可以再试一次。';
+
+  @override
+  String get modoFranquiciaOpcion => '球队经理模式';
+  @override
+  String get modoCarreraOpcion => '球员模式';
+
+  @override
+  String get crearJugadorTitulo => '创建你的球员';
+  @override
+  String get apellidoLabel => '姓氏';
+  @override
+  String get dorsalLabel => '球衣号码';
+  @override
+  String get posicionLabel => '位置';
+  @override
+  String get nacionalidadLabel => '国籍';
+  @override
+  String get confirmarIdentidadBtn => '确认身份';
+
+  @override
+  String get ofertaJuvenilTitulo => '青训报价';
+  @override
+  String get ofertaJuvenilDescripcion => '你所在国家的青训机构想邀请你加入。选择你生涯开始的地方。';
+  @override
+  String ficharPorBtn(String organizacion) => '加盟$organizacion';
+
+  @override
+  String get avanzarTemporadaBtn => '进入下一赛季';
+  @override
+  String get entrarAlDraftBtn => '参加选秀';
+
+  @override
+  String get edadLabel => '年龄';
+  @override
+  String get mediaLabel => '综合评分';
+  @override
+  String get potencialLabel => '潜力';
+  @override
+  String get equipoActualLabel => '球队';
+  @override
+  String get organizacionActualLabel => '所属机构';
+
+  @override
+  String get carreraRetiradaTitulo => '生涯结束';
+  @override
+  String draftResultadoMensaje(String equipo) => '$equipo选中了你。';
+  @override
+  String get entraEnHallDeLaFamaMensaje => '你入选名人堂！';
+  @override
+  String get noEntraEnHallDeLaFamaMensaje => '你未能入选名人堂。';
+  @override
+  String seRetiraMensaje(int edad) => '$edad岁退役。';
+  @override
+  String cambioDeEquipoMensaje(String equipo) => '新球队：$equipo。';
 }

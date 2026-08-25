@@ -28,7 +28,14 @@ https://jokar77.github.io/manager-nba/
 - PowerShell 5.1 **no admite `&&`**; el Bash de Git sí. Los dos están
   disponibles y se usa el que convenga.
 
-## EN CURSO — Lista 15, punto 1 CERRADO con datos reales; punto 2 hecho; verificando
+## Modo Carrera: bitácora aparte
+
+Desde el 25 de agosto de 2026 hay un segundo modo de juego en este mismo
+repo (controlar a un jugador en vez de a una franquicia). Su diario de
+sesiones vive en **`docs/plan_modo_carrera.md`**, no aquí — este fichero
+sigue siendo solo el del modo Franquicia.
+
+## Lista 15, punto 1 CERRADO con datos reales; punto 2 hecho; verificando
 
 Sesión del 24 de agosto de 2026, continuación directa de la de ayer.
 

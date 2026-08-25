@@ -2,16 +2,21 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../data/database/app_database.dart';
 import '../../data/importer/entrenadores_importer.dart';
 import '../../data/importer/jugadores_importer.dart';
 import '../../domain/entrenadores_repository.dart';
 import '../../domain/equipos_info.dart';
 import '../../domain/franquicia_repository.dart';
 import '../../domain/legado_historico_repository.dart';
+import '../../domain/modo_carrera_repository.dart';
 import '../../domain/slots_repository.dart';
 import '../../main.dart' show routeObserver;
 import '../ajustes/ajustes_screen.dart';
 import '../hub/home_hub_screen.dart';
+import '../modo_carrera/crear_jugador_screen.dart';
+import '../modo_carrera/modo_carrera_hub_screen.dart';
+import '../modo_carrera/oferta_juvenil_screen.dart';
 import '../roster/roster_config_screen.dart';
 import '../roster/team_selector_screen.dart';
 import '../temporada/patrocinadores_screen.dart';
@@ -19,6 +24,9 @@ import '../../i18n/textos.dart';
 import '../../shared/contraste.dart';
 import '../../shared/estilo.dart';
 import '../../shared/navegacion.dart';
+
+/// Qué tipo de partida se está empezando en una ranura vacía.
+enum _ModoPartida { franquicia, carrera }
 
 /// Pantalla de arranque: las tres ranuras de guardado. Cada una es una
 /// carrera independiente —su liga, su calendario, su palmarés—, así que
@@ -41,6 +49,11 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
   late Future<List<ResumenSlot>> _slotsFuture;
   bool _procesando = false;
   _Vista _vista = _Vista.menu;
+
+  /// Qué modo se está empezando cuando `_vista == _Vista.empezar`. Solo se
+  /// usa para nueva partida — al continuar o borrar, el modo de la ranura
+  /// ya está decidido por lo que haya dentro.
+  _ModoPartida _modoParaEmpezar = _ModoPartida.franquicia;
 
   @override
   void initState() {
@@ -97,9 +110,12 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
     setState(() => _procesando = true);
     final db = abrirSlot(slot);
     final equipo = await leerEquipoFranquicia(db);
-    if (!mounted || equipo == null) {
+    if (!mounted) {
       await cerrarSlot(db);
-      if (mounted) _recargar();
+      return;
+    }
+    if (equipo == null) {
+      await _continuarCarrera(db, slot);
       return;
     }
     // Backfill silencioso: si esta partida se creó antes de que existiera
@@ -129,6 +145,142 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
       settings: const RouteSettings(name: RutasPrincipales.hub),
       builder: (context) => HomeHubScreen(db: db, equipo: equipo),
     ));
+    await cerrarSlot(db);
+    if (mounted) _recargar();
+  }
+
+  /// La otra mitad de [_continuar]: la ranura no tiene franquicia, así que
+  /// se comprueba si tiene una carrera en marcha. Si la identidad ya está
+  /// creada pero todavía no se eligió organización juvenil (se salió a
+  /// medias la vez anterior), retoma justo ahí en vez de perder lo hecho.
+  Future<void> _continuarCarrera(AppDatabase db, int slot) async {
+    final estado = await leerPartidaCarrera(db);
+    if (!mounted || estado == null) {
+      await cerrarSlot(db);
+      if (mounted) _recargar();
+      return;
+    }
+    await marcarRanuraComoUsada(slot);
+    if (!mounted) {
+      await cerrarSlot(db);
+      return;
+    }
+
+    if (estado.fase == FaseCarrera.juvenil && estado.organizacionActual == null) {
+      await Navigator.of(context).push(MaterialPageRoute<void>(
+        builder: (context) => OfertaJuvenilScreen(
+          db: db,
+          estado: estado,
+          onElegida: (estado2) => Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              settings: const RouteSettings(name: RutasPrincipales.hub),
+              builder: (context) =>
+                  ModoCarreraHubScreen(db: db, estadoInicial: estado2),
+            ),
+          ),
+        ),
+      ));
+    } else {
+      await Navigator.of(context).push(MaterialPageRoute<void>(
+        settings: const RouteSettings(name: RutasPrincipales.hub),
+        builder: (context) => ModoCarreraHubScreen(db: db, estadoInicial: estado),
+      ));
+    }
+    await cerrarSlot(db);
+    if (mounted) _recargar();
+  }
+
+  /// A qué ranura se pide empezar, según el modo elegido en
+  /// [_elegirModoNuevaPartida].
+  Future<void> _empezarSegunModo(int slot) => _modoParaEmpezar == _ModoPartida.carrera
+      ? _empezarCarreraEn(slot)
+      : _empezarEn(slot);
+
+  /// El primer paso de empezar: qué se quiere jugar, directamente en el
+  /// menú principal (no detrás de un "Nueva partida" genérico) — franquicia
+  /// y carrera son dos juegos distintos desde la primera pantalla.
+  void _elegirModoNuevaPartida(_ModoPartida modo) {
+    setState(() {
+      _modoParaEmpezar = modo;
+      _vista = _Vista.empezar;
+    });
+  }
+
+  /// El estreno del Modo Carrera: crear identidad, elegir organización
+  /// juvenil y entrar al hub — mismo patrón de `Completer` que [_empezarEn]
+  /// para no cerrar la base de datos mientras el usuario sigue dentro de la
+  /// cadena de pantallas.
+  Future<void> _empezarCarreraEn(int slot) async {
+    if (_procesando) return;
+
+    final resumenes = await _slotsFuture;
+    if (!mounted) return;
+    final ocupada = resumenes.firstWhere((r) => r.numero == slot).ocupada;
+    if (ocupada) {
+      final confirmar = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(t(context).sobrescribirLaPartidaN(slot)),
+          content: Text(t(context).sePerderaEnteraAviso),
+          actions: [
+            BotonDialogoSecundario(
+              texto: t(context).cancelar,
+              onPressed: () => Navigator.of(context).pop(false),
+            ),
+            BotonDialogoPrincipal(
+              texto: t(context).sobrescribirBtn,
+              color: Estilo.de(context).mal,
+              onPressed: () => Navigator.of(context).pop(true),
+            ),
+          ],
+        ),
+      );
+      if (confirmar != true || !mounted) return;
+    }
+
+    setState(() => _procesando = true);
+
+    final db = abrirSlot(slot);
+    await marcarRanuraComoUsada(slot);
+    if (!mounted) {
+      await cerrarSlot(db);
+      return;
+    }
+
+    final sesionTerminada = Completer<void>();
+    var jugadorCreado = false;
+
+    Navigator.of(context).push(MaterialPageRoute<void>(
+      builder: (context) => CrearJugadorScreen(
+        db: db,
+        onCreado: (estado) {
+          jugadorCreado = true;
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (context) => OfertaJuvenilScreen(
+              db: db,
+              estado: estado,
+              onElegida: (estado2) {
+                Navigator.of(context)
+                    .pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        settings:
+                            const RouteSettings(name: RutasPrincipales.hub),
+                        builder: (context) => ModoCarreraHubScreen(
+                            db: db, estadoInicial: estado2),
+                      ),
+                      (route) => route.isFirst,
+                    )
+                    .then((_) => sesionTerminada.complete());
+              },
+            ),
+          ));
+        },
+      ),
+    )).then((_) {
+      if (!jugadorCreado) sesionTerminada.complete();
+    });
+
+    await sesionTerminada.future;
     await cerrarSlot(db);
     if (mounted) _recargar();
   }
@@ -254,7 +406,9 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
 
   Future<void> _borrar(ResumenSlot resumen) async {
     if (_procesando) return;
-    final nombre = infoDe(resumen.equipo ?? '').nombreCompleto;
+    final nombre = resumen.carrera != null
+        ? resumen.carrera!.apellido
+        : infoDe(resumen.equipo ?? '').nombreCompleto;
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -381,25 +535,46 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
         const SizedBox(height: 12),
       ],
       // Sin partidas, empezar una es LA acción de la pantalla; con partidas,
-      // la principal es seguir donde lo dejaste.
-      if (hayPartidas)
+      // la principal es seguir donde lo dejaste. Los dos modos van directos
+      // aquí, como dos juegos distintos, no detrás de un "Nueva partida"
+      // genérico con un diálogo escondido.
+      if (hayPartidas) ...[
         BotonPerfilado(
-          texto: textos.nuevaPartidaBtn,
+          texto: textos.modoFranquiciaOpcion,
           icono: Icons.add,
           color: e.texto,
           onTap: _procesando
               ? null
-              : () => setState(() => _vista = _Vista.empezar),
-        )
-      else
+              : () => _elegirModoNuevaPartida(_ModoPartida.franquicia),
+        ),
+        const SizedBox(height: 12),
+        BotonPerfilado(
+          texto: textos.modoCarreraOpcion,
+          icono: Icons.person,
+          color: e.texto,
+          onTap: _procesando
+              ? null
+              : () => _elegirModoNuevaPartida(_ModoPartida.carrera),
+        ),
+      ] else ...[
         BotonPrincipal(
-          texto: textos.nuevaPartidaBtn,
+          texto: textos.modoFranquiciaOpcion,
           icono: Icons.add,
           color: e.marca,
           onTap: _procesando
               ? null
-              : () => setState(() => _vista = _Vista.empezar),
+              : () => _elegirModoNuevaPartida(_ModoPartida.franquicia),
         ),
+        const SizedBox(height: 12),
+        BotonPerfilado(
+          texto: textos.modoCarreraOpcion,
+          icono: Icons.person,
+          color: e.texto,
+          onTap: _procesando
+              ? null
+              : () => _elegirModoNuevaPartida(_ModoPartida.carrera),
+        ),
+      ],
       if (hayPartidas) ...[
         const SizedBox(height: 12),
         BotonPerfilado(
@@ -444,7 +619,7 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
           deshabilitado: _procesando,
           modoEmpezar: empezando,
           onContinuar: () => _continuar(slot.numero),
-          onEmpezar: () => _empezarEn(slot.numero),
+          onEmpezar: () => _empezarSegunModo(slot.numero),
           onBorrar: () => _borrar(slot),
         ),
         const SizedBox(height: 12),
@@ -489,6 +664,7 @@ class _FichaDeSlot extends StatelessWidget {
   Widget build(BuildContext context) {
     if (resumen.bloqueada) return _bloqueada(context);
     if (!resumen.ocupada) return _vacia(context);
+    if (resumen.carrera != null) return _deCarrera(context, resumen.carrera!);
 
     final e = Estilo.de(context);
     final equipo = resumen.equipo!;
@@ -630,6 +806,75 @@ class _FichaDeSlot extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Una ranura de Modo Carrera: mismo hueco que la de franquicia, pero sin
+  /// colores de equipo (todavía puede que no tenga ni equipo, en fase
+  /// juvenil) — panel neutro con la identidad del jugador y en qué fase va.
+  Widget _deCarrera(BuildContext context, EstadoCarrera carrera) {
+    final e = Estilo.de(context);
+    final textos = t(context);
+    final dondeVa = carrera.equipoNba != null
+        ? infoDe(carrera.equipoNba!).nombreCompleto
+        : carrera.organizacionActual ?? textos.crearJugadorTitulo;
+
+    return PanelCortado(
+      fondo: e.panel,
+      corte: 14,
+      borde: Border.all(color: e.linea),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(mayus(textos.partidaNumero(resumen.numero)),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: rotulo(e, tamano: 9)),
+                  const SizedBox(height: 2),
+                  Text('${carrera.apellido} #${carrera.dorsal}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: titular(e, tamano: 18)),
+                  const SizedBox(height: 2),
+                  Text(dondeVa,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 12, color: e.textoTenue)),
+                ],
+              ),
+            ),
+            PlacaMedia(media: carrera.media, tamano: 40),
+            const SizedBox(width: 8),
+            IconButton(
+              tooltip: textos.borrarEstaPartidaTooltip,
+              onPressed: deshabilitado ? null : onBorrar,
+              icon: const Icon(Icons.delete_outline, size: 20),
+              color: e.textoRotulo,
+            ),
+            const SizedBox(width: 4),
+            if (modoEmpezar)
+              BotonPerfilado(
+                texto: textos.sobrescribirBtn,
+                color: e.mal,
+                alto: 42,
+                onTap: deshabilitado ? null : onEmpezar,
+              )
+            else
+              BotonPrincipal(
+                texto: textos.continuar,
+                color: e.marca,
+                alto: 42,
+                onTap: deshabilitado ? null : onContinuar,
+              ),
+          ],
+        ),
       ),
     );
   }

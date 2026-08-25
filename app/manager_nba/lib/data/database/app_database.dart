@@ -34,6 +34,8 @@ part 'app_database.g.dart';
   Entrenadores,
   EfectosDeEvento,
   PatrociniosActivos,
+  PartidaCarrera,
+  HistorialTemporadaJuvenil,
 ])
 class AppDatabase extends _$AppDatabase {
   /// Abre la partida guardada con el nombre [nombre]. Cada partida vive por
@@ -46,7 +48,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 29;
+  int get schemaVersion => 30;
 
   /// CUIDADO AL TOCAR ESTO: aquí se decide si una actualización del juego
   /// conserva las partidas guardadas o se las lleva por delante.
@@ -155,6 +157,13 @@ class AppDatabase extends _$AppDatabase {
                 patrociniosActivos, patrociniosActivos.bonusAnual);
             await m.addColumn(
                 patrociniosActivos, patrociniosActivos.aniosRestantes);
+          }
+
+          // 30: el Modo Carrera. Dos tablas nuevas y nada más — una partida
+          // de franquicia en curso no se entera de que existen.
+          if (from < 30) {
+            await m.createTable(partidaCarrera);
+            await m.createTable(historialTemporadaJuvenil);
           }
         },
       );

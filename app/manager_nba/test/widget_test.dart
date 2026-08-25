@@ -41,9 +41,10 @@ void main() {
     });
     expect(find.text('MANAGER NBA'), findsOneWidget);
 
-    // Las ranuras viven detrás de "Nueva partida": el menú son tres
-    // opciones, no la lista de guardados.
-    await tester.tap(find.widgetWithText(FilledButton, 'NUEVA PARTIDA'));
+    // Las ranuras viven detrás de "Modo Franquicia": el menú son opciones
+    // directas (Modo Jugador, del 25 de agosto de 2026, es la otra), no la
+    // lista de guardados.
+    await tester.tap(find.widgetWithText(FilledButton, 'MODO FRANQUICIA'));
     await tester.pump();
     expect(find.text('Ranura vacía'), findsNWidgets(numeroDeSlots));
 

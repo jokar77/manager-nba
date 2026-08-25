@@ -50,10 +50,11 @@ void main() {
       });
     }
 
-    // 1) Menú de inicio: se pide partida nueva y ahí salen las ranuras; se
-    // estrena la primera.
+    // 1) Menú de inicio: se elige Modo Franquicia (Modo Jugador, del 25 de
+    // agosto de 2026, es la otra opción directa del menú) y ahí salen las
+    // ranuras; se estrena la primera.
     await esperarTexto('Nueva partida');
-    await tester.tap(find.widgetWithText(FilledButton, 'NUEVA PARTIDA'));
+    await tester.tap(find.widgetWithText(FilledButton, 'MODO FRANQUICIA'));
     await tester.pump();
     await esperarTexto('Ranura vacía');
     await tester.tap(find.widgetWithText(OutlinedButton, 'EMPEZAR').first);

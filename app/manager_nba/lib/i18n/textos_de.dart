@@ -1282,4 +1282,62 @@ class TextosDe extends Textos {
   @override
   String get videoSinTerminar =>
       'Das Video wurde nicht zu Ende gesehen, sie bleiben also gesperrt. Du kannst es noch einmal versuchen.';
+
+  @override
+  String get modoFranquiciaOpcion => 'Franchise-Modus';
+  @override
+  String get modoCarreraOpcion => 'Spielermodus';
+
+  @override
+  String get crearJugadorTitulo => 'Erstelle deinen Spieler';
+  @override
+  String get apellidoLabel => 'Nachname';
+  @override
+  String get dorsalLabel => 'Rückennummer';
+  @override
+  String get posicionLabel => 'Position';
+  @override
+  String get nacionalidadLabel => 'Nationalität';
+  @override
+  String get confirmarIdentidadBtn => 'Identität bestätigen';
+
+  @override
+  String get ofertaJuvenilTitulo => 'Nachwuchsangebot';
+  @override
+  String get ofertaJuvenilDescripcion =>
+      'Nachwuchsorganisationen deines Landes wollen dich für ihr Projekt. Wähle, wo deine Karriere beginnt.';
+  @override
+  String ficharPorBtn(String organizacion) =>
+      'Bei $organizacion unterschreiben';
+
+  @override
+  String get avanzarTemporadaBtn => 'Saison fortsetzen';
+  @override
+  String get entrarAlDraftBtn => 'Am Draft teilnehmen';
+
+  @override
+  String get edadLabel => 'Alter';
+  @override
+  String get mediaLabel => 'Bewertung';
+  @override
+  String get potencialLabel => 'Potenzial';
+  @override
+  String get equipoActualLabel => 'Team';
+  @override
+  String get organizacionActualLabel => 'Organisation';
+
+  @override
+  String get carreraRetiradaTitulo => 'Karriere beendet';
+  @override
+  String draftResultadoMensaje(String equipo) =>
+      'Du wurdest von $equipo gedraftet.';
+  @override
+  String get entraEnHallDeLaFamaMensaje => 'Du kommst in die Hall of Fame!';
+  @override
+  String get noEntraEnHallDeLaFamaMensaje =>
+      'Du schaffst es nicht in die Hall of Fame.';
+  @override
+  String seRetiraMensaje(int edad) => 'Beendet die Karriere mit $edad Jahren.';
+  @override
+  String cambioDeEquipoMensaje(String equipo) => 'Neues Team: $equipo.';
 }

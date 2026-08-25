@@ -1266,4 +1266,61 @@ class TextosEn extends Textos {
   @override
   String get videoSinTerminar =>
       "The video wasn't watched all the way through, so they stay locked. You can try again.";
+
+  @override
+  String get modoFranquiciaOpcion => 'Franchise Mode';
+  @override
+  String get modoCarreraOpcion => 'Player Mode';
+
+  @override
+  String get crearJugadorTitulo => 'Create your player';
+  @override
+  String get apellidoLabel => 'Last name';
+  @override
+  String get dorsalLabel => 'Number';
+  @override
+  String get posicionLabel => 'Position';
+  @override
+  String get nacionalidadLabel => 'Nationality';
+  @override
+  String get confirmarIdentidadBtn => 'Confirm identity';
+
+  @override
+  String get ofertaJuvenilTitulo => 'Youth offer';
+  @override
+  String get ofertaJuvenilDescripcion =>
+      'Youth organizations from your country want you in their project. Choose where your career begins.';
+  @override
+  String ficharPorBtn(String organizacion) => 'Sign with $organizacion';
+
+  @override
+  String get avanzarTemporadaBtn => 'Advance season';
+  @override
+  String get entrarAlDraftBtn => 'Enter the draft';
+
+  @override
+  String get edadLabel => 'Age';
+  @override
+  String get mediaLabel => 'Rating';
+  @override
+  String get potencialLabel => 'Potential';
+  @override
+  String get equipoActualLabel => 'Team';
+  @override
+  String get organizacionActualLabel => 'Organization';
+
+  @override
+  String get carreraRetiradaTitulo => 'Career over';
+  @override
+  String draftResultadoMensaje(String equipo) =>
+      'You were drafted by $equipo.';
+  @override
+  String get entraEnHallDeLaFamaMensaje => 'You made the Hall of Fame!';
+  @override
+  String get noEntraEnHallDeLaFamaMensaje =>
+      "You didn't make the Hall of Fame.";
+  @override
+  String seRetiraMensaje(int edad) => 'Retires at age $edad.';
+  @override
+  String cambioDeEquipoMensaje(String equipo) => 'New team: $equipo.';
 }

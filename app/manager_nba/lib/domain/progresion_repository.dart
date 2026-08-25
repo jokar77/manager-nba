@@ -102,8 +102,14 @@ Future<List<CambioDeJugador>> envejecerLiga(
 
   for (final j in jugadores) {
     final nuevaEdad = j.edad + 1;
-    final nuevaMedia = _mediaTrasUnAno(j, nuevaEdad, rng,
-        factorDeDesarrollo(desarrolloPorEquipo[j.equipo]));
+    final nuevaMedia = progresionAnualDeMedia(
+      media: j.media,
+      potencial: j.potencial,
+      nuevaEdad: nuevaEdad,
+      factorLongevidad: j.factorLongevidad,
+      rng: rng,
+      factorEntrenador: factorDeDesarrollo(desarrolloPorEquipo[j.equipo]),
+    );
 
     // El nivel que decide es el del verano que viene, no el del año pasado:
     // si el declive de este verano ya te baja del listón, te retiras ahora y
@@ -197,8 +203,20 @@ Future<List<CambioDeJugador>> envejecerLiga(
   return cambios;
 }
 
-int _mediaTrasUnAno(
-    Jugador j, int nuevaEdad, Random rng, double factorEntrenador) {
+/// La media de un jugador tras un año de progresión/declive, en función de
+/// sus números sueltos y no de una fila de `Jugadores` — así la puede llamar
+/// tanto [envejecerLiga] (para los 646 de la liga) como el modo carrera
+/// (para un único jugador que durante la fase juvenil todavía no tiene fila
+/// en esa tabla). Antes era privada y tomaba un `Jugador`; se expone en
+/// primitivos por eso, sin cambiar ni un número de la cuenta original.
+int progresionAnualDeMedia({
+  required int media,
+  required int potencial,
+  required int nuevaEdad,
+  required double factorLongevidad,
+  required Random rng,
+  double factorEntrenador = 1.0,
+}) {
   // El techo de crecimiento: su potencial, pero NUNCA por debajo de lo que
   // ya es. En el dataset el potencial de 396 de los 641 jugadores viene por
   // debajo de su media (se generó como "cuánto le queda por crecer", no
@@ -207,7 +225,7 @@ int _mediaTrasUnAno(
   // Isaac Jones —media 65, potencial 45, 25 años— perdía 20 puntos en un
   // solo verano, y con él más de la mitad de la liga. Un jugador hecho no
   // se desploma a su potencial: como mucho deja de mejorar.
-  final techo = max(j.potencial, j.media);
+  final techo = max(potencial, media);
 
   if (nuevaEdad < _edadFinDeCrecimiento) {
     // Los jóvenes se acercan a su potencial: cuanto más lejos están, más
@@ -225,16 +243,16 @@ int _mediaTrasUnAno(
     // en la vida real: hay prospectos que se estancan un año, o varios.
     // Con [probabilidadDeEstancarse] algunos veranos no traen ni un punto,
     // sin tocar el resto de la curva.
-    if (rng.nextDouble() < probabilidadDeEstancarse) return j.media;
-    final margen = (techo - j.media).clamp(0, 40);
+    if (rng.nextDouble() < probabilidadDeEstancarse) return media;
+    final margen = (techo - media).clamp(0, 40);
     final salto =
         (margen * (0.22 + rng.nextDouble() * 0.26) * factorEntrenador).round();
-    return min(techo, j.media + salto);
+    return min(techo, media + salto);
   }
 
   if (nuevaEdad < _edadDeclive) {
     // Años de plenitud: se mueve poco, en cualquier dirección.
-    return (j.media + rng.nextInt(3) - 1).clamp(_mediaMinima, techo);
+    return (media + rng.nextInt(3) - 1).clamp(_mediaMinima, techo);
   }
 
   // Declive: se agrava con la edad y lo amortigua el factor de longevidad,
@@ -248,8 +266,8 @@ int _mediaTrasUnAno(
   final anosDeDeclive = min(nuevaEdad - _edadDeclive + 1, 6);
   final intensidad = 1.0 + anosDeDeclive * 0.35;
   final caida =
-      (intensidad * (0.7 + rng.nextDouble() * 0.6)) / max(j.factorLongevidad, 0.5);
-  return max(_mediaMinima, j.media - caida.round());
+      (intensidad * (0.7 + rng.nextDouble() * 0.6)) / max(factorLongevidad, 0.5);
+  return max(_mediaMinima, media - caida.round());
 }
 
 int _escalarAtributo(int valor, double factor) =>
