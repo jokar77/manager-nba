@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -116,7 +117,7 @@ void main() {
   testWidgets(
       'en fase retirado no hay botón de acción y se enseña el resumen de '
       'carrera', (WidgetTester tester) async {
-    final rng = Random(2024);
+    final rng = Random(5);
     await crearPartidaCarrera(db, identidad, random: rng);
     await elegirOrganizacionJuvenil(
         db, ofertasJuvenilesIniciales('ESP').first);
@@ -124,14 +125,17 @@ void main() {
       await avanzarTemporadaJuvenil(db, random: rng);
     }
     await entrarAlDraft(db, random: rng);
-
-    var resumen = await avanzarTemporadaNba(db, random: rng);
-    var temporadas = 0;
-    while (!resumen.seRetira && temporadas < 40) {
-      resumen = await avanzarTemporadaNba(db, random: rng);
-      temporadas++;
-    }
-    expect(resumen.seRetira, isTrue);
+    // Una sola temporada real (rápida) para tener algo que enseñar en el
+    // resumen. Llegar al retiro de verdad puede llevar unas 40 temporadas
+    // más — ya probado en modo_carrera_repository_test.dart — así que aquí
+    // se fuerza el estado retirado directamente: lo que se prueba es que el
+    // hub PINTA bien esa fase, no el camino hasta llegar a ella.
+    await avanzarTemporadaNba(db, random: rng);
+    final jugadorId = (await leerPartidaCarrera(db))!.jugadorId!;
+    await (db.update(db.jugadores)..where((t) => t.id.equals(jugadorId)))
+        .write(const JugadoresCompanion(retirado: Value(true)));
+    await (db.update(db.partidaCarrera)..where((t) => t.id.equals(0)))
+        .write(const PartidaCarreraCompanion(fase: Value('retirado')));
 
     final estado = (await leerPartidaCarrera(db))!;
     expect(estado.fase, FaseCarrera.retirado);
