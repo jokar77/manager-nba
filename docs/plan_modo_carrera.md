@@ -34,7 +34,9 @@ naranja de Franquicia).
    fichas por una de dos ofertas de traspaso, cada una con su salario y
    años de contrato calculados con las fórmulas reales de mercado
    (`OfertaDeEquipo`, `elegirEquipoTemporada`). La ficha enseña tu vitrina
-   de trofeos en vivo, temporada a temporada.
+   de trofeos en vivo, temporada a temporada, y el escudo de tu equipo
+   (`EquipoLogo`, el mismo de Franquicia) aparece en la ficha, la línea de
+   tiempo, el diálogo de fin de temporada y los avisos de draft/traspaso.
 5. Retiro — Salón de la Fama y camiseta retirada evaluados con las mismas
    funciones que usa cualquier jugador de franquicia; resumen final con
    PTS/AST/REB de carrera, camisetas retiradas y medallero completo.
@@ -411,3 +413,32 @@ navegador visible para hacer capturas, y Flutter Web (CanvasKit) no
 expone árbol de accesibilidad por defecto — así que la verificación aquí
 se apoyó en los tests de widget (que sí tapean el diálogo real) en vez de
 una inspección visual pixel a pixel.
+
+## Misma tarde — el escudo del equipo, en todos los sitios donde antes
+solo había texto (o el código en crudo)
+
+El usuario lo pidió mirando a Copero otra vez: "que salga el logo del
+equipo". Modo Carrera nunca usaba `EquipoLogo` (el escudo de dos colores
+que ya usan las treinta pantallas del modo Franquicia — sin imágenes
+reales, ver la nota legal de `roadmap.md`) — llevaba el nombre del
+equipo siempre en texto plano. Se añadió en los cinco sitios de
+`modo_carrera_hub_screen.dart` donde aparece un equipo real de los 30:
+
+- La ficha del jugador (equipo actual, junto al nombre completo).
+- Cada fila de la línea de tiempo con partidos jugados — de paso se
+  arregló que enseñaba el CÓDIGO en crudo del equipo ("ATL") en vez del
+  nombre completo, algo que ya hacían bien las filas de la fase juvenil.
+- El diálogo de fin de temporada (quedarme / las dos ofertas de
+  traspaso): escudo junto al nombre en cada uno de los 3 botones.
+- El resultado del draft y el aviso de "nuevo equipo": diálogo nuevo,
+  `_dialogoConEquipo`, con el escudo grande (56) por delante del mensaje
+  — mismo patrón que el diálogo simple de siempre, pero con protagonismo
+  para el escudo, como en Copero.
+- Las camisetas retiradas del resumen final: antes una lista de nombres
+  separada por comas, ahora un escudo + nombre por cada una.
+
+Verificado: `dart analyze` limpio, `flutter test` completo — 708 tests
+en verde (ningún test dependía del texto exacto que se tocó). No se
+pudo repetir la verificación visual en navegador por la misma limitación
+de entorno de la entrada anterior (sin panel visible, sin árbol de
+accesibilidad en CanvasKit).

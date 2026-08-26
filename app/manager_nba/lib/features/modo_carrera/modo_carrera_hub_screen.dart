@@ -9,6 +9,7 @@ import '../../domain/equipos_info.dart';
 import '../../domain/modo_carrera_repository.dart';
 import '../../domain/salarios.dart';
 import '../../i18n/textos.dart';
+import '../../shared/equipo_logo.dart';
 import '../../shared/estilo.dart';
 
 /// El hub del Modo Carrera: una única pantalla que cambia de contenido y de
@@ -80,8 +81,9 @@ class _ModoCarreraHubScreenState extends State<ModoCarreraHubScreen> {
       _refrescarLineaDeTiempo();
     });
     if (!mounted) return;
-    await _dialogoSimple(
+    await _dialogoConEquipo(
       titulo: t(context).entrarAlDraftBtn,
+      equipo: resultado.equipo,
       mensaje: t(context).draftResultadoMensaje(
           infoDe(resultado.equipo).nombreCompleto),
     );
@@ -123,8 +125,9 @@ class _ModoCarreraHubScreenState extends State<ModoCarreraHubScreen> {
     setState(_refrescarLineaDeTiempo);
     if (elegida.equipo != resumen.equipo) {
       if (!mounted) return;
-      await _dialogoSimple(
+      await _dialogoConEquipo(
         titulo: t(context).decisionDeEquipoTitulo,
+        equipo: elegida.equipo,
         mensaje: t(context).cambioDeEquipoMensaje(
             infoDe(elegida.equipo).nombreCompleto),
       );
@@ -157,22 +160,34 @@ class _ModoCarreraHubScreenState extends State<ModoCarreraHubScreen> {
                       side: BorderSide(color: colorModoCarrera),
                     ),
                     onPressed: () => Navigator.of(context).pop(ofertas[i]),
-                    child: Column(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          i == 0
-                              ? textos.quedarmeEnMiEquipoBtn(
-                                  infoDe(ofertas[i].equipo).nombreCompleto)
-                              : textos.ficharPorBtn(
-                                  infoDe(ofertas[i].equipo).nombreCompleto),
-                          textAlign: TextAlign.center,
-                        ),
-                        Text(
-                          textos.contratoAnioMillones(
-                              textos.aniosDeContrato(ofertas[i].aniosContrato),
-                              formatearMillones(ofertas[i].salario)),
-                          style: const TextStyle(fontSize: 12),
+                        EquipoLogo(codigoEquipo: ofertas[i].equipo, tamano: 28),
+                        const SizedBox(width: 10),
+                        Flexible(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                i == 0
+                                    ? textos.quedarmeEnMiEquipoBtn(infoDe(
+                                            ofertas[i].equipo)
+                                        .nombreCompleto)
+                                    : textos.ficharPorBtn(
+                                        infoDe(ofertas[i].equipo)
+                                            .nombreCompleto),
+                                textAlign: TextAlign.center,
+                              ),
+                              Text(
+                                textos.contratoAnioMillones(
+                                    textos.aniosDeContrato(
+                                        ofertas[i].aniosContrato),
+                                    formatearMillones(ofertas[i].salario)),
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -273,6 +288,33 @@ class _ModoCarreraHubScreenState extends State<ModoCarreraHubScreen> {
       builder: (context) => AlertDialog(
         title: Text(titulo),
         content: Text(mensaje),
+        actions: [
+          BotonDialogoPrincipal(
+            texto: t(context).continuar,
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Como [_dialogoSimple], pero con el escudo del equipo por delante del
+  /// mensaje — para el resultado del draft y el aviso de cambio de equipo,
+  /// donde el escudo es el protagonista (igual que en Copero).
+  Future<void> _dialogoConEquipo(
+      {required String titulo, required String equipo, required String mensaje}) {
+    return showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(titulo),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            EquipoLogo(codigoEquipo: equipo, tamano: 56),
+            const SizedBox(height: 12),
+            Text(mensaje, textAlign: TextAlign.center),
+          ],
+        ),
         actions: [
           BotonDialogoPrincipal(
             texto: t(context).continuar,
@@ -406,12 +448,24 @@ class _FichaDeJugador extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(mayus(estado.apellido), style: titular(e, tamano: 24)),
-            const SizedBox(height: 2),
-            Text(
-              info?.nombreCompleto ??
-                  estado.organizacionActual ??
-                  textos.ofertaJuvenilTitulo,
-              style: TextStyle(fontSize: 14, color: e.textoTenue),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                if (equipo != null) ...[
+                  EquipoLogo(codigoEquipo: equipo, tamano: 20),
+                  const SizedBox(width: 6),
+                ],
+                Expanded(
+                  child: Text(
+                    info?.nombreCompleto ??
+                        estado.organizacionActual ??
+                        textos.ofertaJuvenilTitulo,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 14, color: e.textoTenue),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 14),
             Row(
@@ -543,8 +597,15 @@ class _FilaTemporada extends StatelessWidget {
               child: Text('${fila.edad}',
                   style: cifra(e, tamano: 17, color: e.textoTenue)),
             ),
+            if (fila.partidos > 0) ...[
+              EquipoLogo(codigoEquipo: fila.lugar, tamano: 20),
+              const SizedBox(width: 8),
+            ],
             Expanded(
-              child: Text(fila.lugar,
+              child: Text(
+                  fila.partidos > 0
+                      ? infoDe(fila.lugar).nombreCompleto
+                      : fila.lugar,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: titular(e, tamano: 15)),
@@ -707,18 +768,23 @@ class _ResumenDeRetiro extends StatelessWidget {
                 ],
                 if (datos.camisetasRetiradas.isNotEmpty) ...[
                   const SizedBox(height: 8),
-                  Row(
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 6,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       Icon(Icons.checkroom, color: colorModoCarrera, size: 18),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          datos.camisetasRetiradas
-                              .map((c) => infoDe(c).nombreCompleto)
-                              .join(', '),
-                          style: TextStyle(fontSize: 13, color: e.textoTenue),
+                      for (final equipo in datos.camisetasRetiradas)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            EquipoLogo(codigoEquipo: equipo, tamano: 18),
+                            const SizedBox(width: 4),
+                            Text(infoDe(equipo).nombreCompleto,
+                                style: TextStyle(
+                                    fontSize: 13, color: e.textoTenue)),
+                          ],
                         ),
-                      ),
                     ],
                   ),
                 ],
