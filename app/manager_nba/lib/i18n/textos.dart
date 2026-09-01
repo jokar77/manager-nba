@@ -785,6 +785,10 @@ abstract class Textos {
   String get nacionalidadLabel;
   String get confirmarIdentidadBtn;
 
+  String get cadenciaLabel;
+  String get cadenciaDescripcion;
+  String cadenciaOpcion(int n);
+
   String get ofertaJuvenilTitulo;
   String get ofertaJuvenilDescripcion;
   String ficharPorBtn(String organizacion);
@@ -808,4 +812,40 @@ abstract class Textos {
   String cambioDeEquipoMensaje(String equipo);
   String get decisionDeEquipoTitulo;
   String quedarmeEnMiEquipoBtn(String equipo);
+
+  // --- Tienda: comprar la versión completa ----------------------------------
+  String get comprarCompletaTitulo;
+  String get comprarCompletaExplicacion;
+  String get comprarCompletaColumnaGratis;
+  String get comprarCompletaColumnaCompleta;
+  String get comprarCompletaFilaRanuras;
+  String get comprarCompletaFilaRanurasGratis;
+  String get comprarCompletaFilaRanurasCompleta;
+  String get comprarCompletaFilaSimular;
+  String get comprarCompletaFilaSimularGratis;
+  String get comprarCompletaFilaSimularCompleta;
+  String get comprarCompletaFilaPatrocinadores;
+  String get comprarCompletaFilaPatrocinadoresGratis;
+  String get comprarCompletaFilaPatrocinadoresCompleta;
+  String get comprarCompletaFilaAnuncios;
+  String get comprarCompletaFilaAnunciosGratis;
+  String get comprarCompletaFilaAnunciosCompleta;
+  String get comprarBtn;
+  String get restaurarCompraBtn;
+
+  /// Cuando se pide restaurar y esta cuenta no había pagado nunca. No es un
+  /// error: es la respuesta más probable la primera vez que alguien lo
+  /// prueba.
+  String get restaurarSinCompraPreviaMensaje;
+
+  // --- Aviso de función bloqueada (versión gratuita) ------------------------
+  /// Título del diálogo genérico que abre cualquier función bloqueada por
+  /// compra. Ver `mostrarAvisoVersionCompleta` en
+  /// `features/tienda/aviso_version_completa.dart`.
+  String get avisoVersionCompletaTitulo;
+  String get verVersionCompletaBtn;
+
+  /// El mensaje concreto del diálogo cuando lo que se ha tocado es una
+  /// ranura de guardado bloqueada.
+  String get avisoRanuraBloqueadaMensaje;
 }

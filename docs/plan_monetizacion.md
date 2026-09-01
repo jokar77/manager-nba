@@ -1,10 +1,11 @@
 # Plan de monetización
 
 **Estado**: diseño acordado. Escrito el 2026-08-21. El 2026-08-22 se
-hicieron los pasos 1 y 2 —la capa de permisos (`lib/domain/permisos.dart`)
-y los puertos `Anuncios` y `Tienda` (`lib/domain/anuncios.dart`,
-`lib/domain/tienda.dart`)— y el 3 a medias: los bloqueos de patrocinadores
-y ranuras ya están enchufados.
+hicieron los pasos 1, 2 y 3 —la capa de permisos (`lib/domain/permisos.dart`),
+los puertos `Anuncios` y `Tienda` (`lib/domain/anuncios.dart`,
+`lib/domain/tienda.dart`) y los tres bloqueos enchufados (patrocinadores,
+ranuras, simular la temporada entera)—, y el 2026-08-26 el 4: la pantalla
+de compra y el aviso de "esto es de la versión completa".
 
 **Cuidado con probarlo**: `EDICION` vale `completa` por defecto, así que
 con `flutter run` no se ve ningún bloqueo. Para verlos hace falta
@@ -202,8 +203,38 @@ Esto suele pillar a la gente por sorpresa:
    `Row` por un `OverflowBar` en `shared/campeon_dialog.dart`, con
    `dialogo_campeon_test.dart` vigilándolo a los tres tamaños. El detalle
    está en `plan.md`.
-4. **La pantalla de compra** y el aviso de "esto es de la versión
-   completa".
+4. ~~**La pantalla de compra** y el aviso de "esto es de la versión
+   completa".~~ **Hecho** (2026-08-26): `ComprarScreen`
+   (`lib/features/tienda/comprar_screen.dart`) explica la tabla de arriba
+   y ofrece Comprar y Restaurar compra, los dos hablando con el puerto
+   `Tienda` y anotando en `permisos.registrarCompra()` cuando devuelven
+   `true`. El aviso genérico "esto es de la versión completa"
+   (`lib/features/tienda/aviso_version_completa.dart`,
+   `mostrarAvisoVersionCompleta`) es un diálogo reutilizable que recibe el
+   mensaje concreto de cada sitio y desde ahí se llega a `ComprarScreen`;
+   hoy lo usa `_bloqueada()` en `start_menu_screen.dart` para las ranuras
+   de guardado.
+
+   Dos decisiones de diseño no cerradas por el plan:
+   - **Comprar cancelado o fallido no avisa nada** (tal cual pedía el
+     encargo: "sin drama"), pero **restaurar sin compra previa sí enseña
+     un SnackBar**. Restaurar es una acción que se pide a propósito para
+     comprobar si esta cuenta ya había pagado, y dejar el botón callado
+     sin decir nada se lee como que no ha funcionado; cancelar una compra
+     es, en cambio, el camino esperado la mayoría de las veces.
+   - `mostrarAvisoVersionCompleta` vive en `features/tienda/` y no en
+     `shared/`, aunque es un diálogo genérico: `shared/` no importa nada
+     de `features/` en el resto del código, y `ComprarScreen` (a la que
+     el diálogo tiene que llegar) sí es una pantalla de esa carpeta. El
+     precedente de cruzar features entre sí ya existe (`inicio` importa
+     pantallas de `modo_carrera` y `temporada`).
+
+   Tests nuevos: `test/comprar_screen_test.dart` (comprar con éxito,
+   cancelado/fallido y restaurar, con y sin compra previa — sustituyendo
+   `tienda` por `TiendaDeMentira`, sentando el patrón que faltaba) y un
+   caso más en `test/start_menu_screen_test.dart` que verifica que tocar
+   una ranura bloqueada abre el aviso y de ahí se llega a la pantalla de
+   compra.
 5. **AdMob y Play Billing de verdad**, cuando existan las cuentas.
 6. **Publicar** con lo de la lista de arriba resuelto.
 

@@ -30,6 +30,7 @@ class _CrearJugadorScreenState extends State<CrearJugadorScreen> {
   final _dorsalController = TextEditingController(text: '23');
   String _posicion = posicionesEquipo.first;
   late String _nacionalidad = rutasJuveniles.keys.first;
+  int _cadenciaAnios = 1;
   bool _guardando = false;
 
   @override
@@ -57,6 +58,7 @@ class _CrearJugadorScreenState extends State<CrearJugadorScreen> {
         dorsal: int.parse(_dorsalController.text),
         posicion: _posicion,
         nacionalidad: _nacionalidad,
+        cadenciaAnios: _cadenciaAnios,
       ),
     );
     if (!mounted) return;
@@ -175,6 +177,33 @@ class _CrearJugadorScreenState extends State<CrearJugadorScreen> {
                       ),
                     ),
                   ),
+                ),
+                const SizedBox(height: 18),
+                _Etiqueta(texto: textos.cadenciaLabel),
+                const SizedBox(height: 4),
+                Text(
+                  textos.cadenciaDescripcion,
+                  style: TextStyle(fontSize: 12, color: e.textoTenue),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final n in [1, 2, 3])
+                      ChoiceChip(
+                        label: Text(textos.cadenciaOpcion(n)),
+                        selected: _cadenciaAnios == n,
+                        selectedColor: colorModoCarrera,
+                        labelStyle: TextStyle(
+                          color:
+                              _cadenciaAnios == n ? Colors.white : e.texto,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        onSelected: (_) =>
+                            setState(() => _cadenciaAnios = n),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 28),
                 BotonPrincipal(

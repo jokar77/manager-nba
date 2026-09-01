@@ -5609,3 +5609,56 @@ categoría y contratos de varios años"* arriba.
 
 ~~**Pendiente de que lo dé el usuario**: los logos del punto 2.~~ Ya
 están, en `app/manager_nba/assets/logos/`.
+
+## Dos agentes en paralelo: pantalla de compra + modernizar 4 pantallas (a 2026-08-26)
+
+El usuario pidió configurar subagentes propios (`.claude/agents/diseno.md`,
+`codigo.md`, `verificar.md`) y ponerlos a trabajar solos, tomando las
+tareas del backlog de `roadmap.md`. Cada uno corrió en su propio git
+worktree aislado (`isolation: "worktree"`) para no pisarse el trabajo, y
+sus cambios se copiaron a mano a la rama de trabajo tras verificarlos
+juntos — ver el porqué de "a mano" en la nota de proceso, al final.
+
+**Agente "codigo" — paso 4 de `plan_monetizacion.md`: la pantalla de
+compra.** `lib/features/tienda/comprar_screen.dart` (explica qué trae la
+versión completa y ofrece Comprar/Restaurar compra, hablando con los
+puertos `tienda`/`permisos` ya existentes) y
+`lib/features/tienda/aviso_version_completa.dart` (diálogo reusable desde
+cualquier función bloqueada, hoy enlazado desde la ranura de guardado
+bloqueada en `start_menu_screen.dart`). Decisión propia del agente que se
+mantiene: comprar cancelado/fallido no dice nada (según el encargo), pero
+restaurar sin compra previa sí enseña un aviso — un botón de "restaurar"
+mudo se lee como roto, a diferencia de cancelar una compra, que es el
+camino normal. Detalle completo y las claves i18n en
+`docs/plan_monetizacion.md`, sección del paso 4.
+
+**Agente "diseno" — modernizar pantallas con estilo antiguo.** De la
+lista de candidatas de `roadmap.md` (grep de ficheros sin
+`PlacaMedia`/`titular`/`rotulo`/`cifra`), modernizó 4:
+`clasificacion/equipo_detalle_screen.dart`, `premios/premios_screen.dart`,
+`temporada/pretemporada_screen.dart` y `torneo/torneo_screen.dart` — cambia
+`ListTile`s y `TextStyle`s sueltos por `FilaDeJugador`/`SeparadorSeccion`
+(`shared/ficha_jugador.dart`) y los tokens de `Estilo.de(context)`, sin
+tocar comportamiento. Las 13 candidatas restantes quedan listadas en
+`roadmap.md` para un próximo pase — el agente no llegó a explicar por qué
+eligió esas 4 y no otras (ver nota de proceso).
+
+**Nota de proceso, para la próxima vez que se lance un agente con
+`isolation: "worktree"` y un paso de `flutter test` en el encargo:** los
+dos agentes lanzaron su propio `flutter test` en segundo plano al final y
+se quedaron esperando su resultado sin poder recibirlo — un subagente no
+tiene el mecanismo de notificación de background que sí tiene la sesión
+que lo lanza, así que se quedaron colgados repitiendo "espero a que
+termine el test" en vez de cerrar con su resumen real. Uno de los dos
+(codigo) acabó entregando su resumen completo tras varios reintentos;
+el otro (diseno) nunca lo hizo — su trabajo se rescató inspeccionando el
+`git diff` del worktree a mano. Además, correr `flutter test` a la vez en
+dos worktrees (o en un worktree mientras la sesión principal corre otro)
+compite por los mismos recursos de la máquina y produce tandas de tests
+"did not complete" que no son fallos reales — hay que matar
+`flutter_tester.exe`/`dart.exe` y verificar de uno en uno. La verificación
+que de verdad cuenta se hizo al final, con los dos cambios ya copiados a
+la rama de trabajo normal (no en los worktrees, donde además el propio
+`flutter test` iba mucho más lento de lo normal): `dart analyze` limpio y
+**713 tests** en verde (708 + 4 de `comprar_screen_test.dart` + 1 de
+`start_menu_screen_test.dart`).

@@ -61,6 +61,11 @@ void main() {
     await tester.tap(find.widgetWithText(ChoiceChip, 'SF'));
     await tester.pump();
 
+    // La cadencia por defecto es "cada año"; se elige "cada 2 años" para
+    // comprobar que también viaja hasta la partida guardada.
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Cada 2 años'));
+    await tester.pump();
+
     final boton = tester.widget<FilledButton>(find.byType(FilledButton));
     expect(boton.onPressed, isNotNull);
 
@@ -74,5 +79,6 @@ void main() {
     expect(estado.edad, 16);
     expect(estado.fase, FaseCarrera.juvenil);
     expect(estado.organizacionActual, isNull);
+    expect(estado.cadenciaAnios, 2);
   });
 }

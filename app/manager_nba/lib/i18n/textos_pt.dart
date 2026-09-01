@@ -1291,6 +1291,18 @@ class TextosPt extends Textos {
   String get nacionalidadLabel => 'Nacionalidade';
   @override
   String get confirmarIdentidadBtn => 'Confirmar identidade';
+  @override
+  String get cadenciaLabel => 'A cada quanto tempo você decide?';
+  @override
+  String get cadenciaDescripcion =>
+      'A carreira para com essa frequência para perguntar sobre eventos, '
+      'ofertas de time, etc. Os anos no meio se resolvem sozinhos.';
+  @override
+  String cadenciaOpcion(int n) => switch (n) {
+        1 => 'A cada ano',
+        2 => 'A cada 2 anos',
+        _ => 'A cada 3 anos',
+      };
 
   @override
   String get ofertaJuvenilTitulo => 'Oferta de base';
@@ -1338,4 +1350,55 @@ class TextosPt extends Textos {
   String get decisionDeEquipoTitulo => 'O que você faz nesta temporada?';
   @override
   String quedarmeEnMiEquipoBtn(String equipo) => 'Ficar no $equipo';
+
+  @override
+  String get comprarCompletaTitulo => 'Versão completa';
+  @override
+  String get comprarCompletaExplicacion =>
+      'Um pagamento único desbloqueia o jogo inteiro para sempre nesta conta: suas três carreiras em paralelo, simular a temporada inteira de uma vez, patrocinadores sempre liberados e nenhum anúncio.';
+  @override
+  String get comprarCompletaColumnaGratis => 'Grátis';
+  @override
+  String get comprarCompletaColumnaCompleta => 'Completa';
+  @override
+  String get comprarCompletaFilaRanuras => 'Espaços de save';
+  @override
+  String get comprarCompletaFilaRanurasGratis => '1';
+  @override
+  String get comprarCompletaFilaRanurasCompleta => '3';
+  @override
+  String get comprarCompletaFilaSimular => 'Simular a temporada inteira';
+  @override
+  String get comprarCompletaFilaSimularGratis => 'Não';
+  @override
+  String get comprarCompletaFilaSimularCompleta => 'Sim';
+  @override
+  String get comprarCompletaFilaPatrocinadores => 'Patrocinadores';
+  @override
+  String get comprarCompletaFilaPatrocinadoresGratis =>
+      'Um vídeo por temporada';
+  @override
+  String get comprarCompletaFilaPatrocinadoresCompleta =>
+      'Sempre liberados';
+  @override
+  String get comprarCompletaFilaAnuncios => 'Anúncios';
+  @override
+  String get comprarCompletaFilaAnunciosGratis =>
+      'A cada troca de temporada';
+  @override
+  String get comprarCompletaFilaAnunciosCompleta => 'Nenhum';
+  @override
+  String get comprarBtn => 'Comprar';
+  @override
+  String get restaurarCompraBtn => 'Restaurar compra';
+  @override
+  String get restaurarSinCompraPreviaMensaje =>
+      'Nenhuma compra encontrada nesta conta.';
+  @override
+  String get avisoVersionCompletaTitulo => 'Isto é da versão completa';
+  @override
+  String get verVersionCompletaBtn => 'Ver a versão completa';
+  @override
+  String get avisoRanuraBloqueadaMensaje =>
+      'Este espaço é da versão completa: compre para levar suas três carreiras em paralelo.';
 }

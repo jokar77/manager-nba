@@ -9,6 +9,7 @@ import '../../domain/torneo_repository.dart';
 import '../../shared/campeon_dialog.dart';
 import '../../shared/contraste.dart';
 import '../../shared/equipo_logo.dart';
+import '../../shared/estilo.dart';
 import '../partido/serie_boxscores_screen.dart';
 
 /// NBA Cup: cuartos de final -> semifinal -> final, conferencias separadas
@@ -137,7 +138,7 @@ class _BracketCopa extends StatelessWidget {
     const finalX = 2 * _colWidth;
     const anchoTotal = 4 * _colWidth + _boxWidth;
     const centro = altura / 2;
-    final lineColor = Theme.of(context).colorScheme.outlineVariant;
+    final lineColor = Estilo.de(context).lineaFuerte;
 
     final cuartosOeste = [
       _buscar('Oeste', 'cuartos_a'),
@@ -351,8 +352,7 @@ class _RondaCopa extends StatelessWidget {
       texto,
       textAlign: TextAlign.center,
       overflow: TextOverflow.ellipsis,
-      style:
-          TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.outline),
+      style: rotulo(Estilo.de(context), tamano: 10),
     );
   }
 }
@@ -373,18 +373,17 @@ class _CajaCopa extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = Theme.of(context).colorScheme.outlineVariant;
+    final e = Estilo.de(context);
     final serie = this.serie;
     if (serie == null) {
       return Container(
         decoration: BoxDecoration(
-          border: Border.all(color: borderColor),
+          border: Border.all(color: e.linea),
           borderRadius: BorderRadius.circular(6),
         ),
         alignment: Alignment.center,
         child: Text(etiquetaVacia,
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 11, color: borderColor)),
+            textAlign: TextAlign.center, style: rotulo(e, tamano: 11)),
       );
     }
 
@@ -398,9 +397,7 @@ class _CajaCopa extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(
-              color: esTuSerie
-                  ? Theme.of(context).colorScheme.primary
-                  : borderColor,
+              color: esTuSerie ? e.marca : e.linea,
               width: esTuSerie ? 2 : 1),
           borderRadius: BorderRadius.circular(6),
         ),
@@ -408,18 +405,17 @@ class _CajaCopa extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _fila(context, serie.equipoA),
-            _fila(context, serie.equipoB),
+            _fila(context, e, serie.equipoA),
+            _fila(context, e, serie.equipoB),
             if (serie.ganador == null)
-              Text(t(context).pendienteLabel,
-                  style: TextStyle(fontSize: 9, color: borderColor)),
+              Text(t(context).pendienteLabel, style: rotulo(e, tamano: 9)),
           ],
         ),
       ),
     );
   }
 
-  Widget _fila(BuildContext context, String equipo) {
+  Widget _fila(BuildContext context, Estilo e, String equipo) {
     final gana = serie!.ganador == equipo;
     final perdio = serie!.ganador != null && !gana;
     return Row(
@@ -428,17 +424,19 @@ class _CajaCopa extends StatelessWidget {
         const SizedBox(width: 5),
         Expanded(
           child: Text(
-            infoDe(equipo).apodo,
+            mayus(infoDe(equipo).apodo),
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 11,
-              fontWeight: gana ? FontWeight.bold : FontWeight.normal,
+              fontFamily: familiaTitular,
+              fontSize: 12,
+              fontWeight: gana ? FontWeight.w800 : FontWeight.w700,
               decoration: perdio ? TextDecoration.lineThrough : null,
-              color: perdio ? Theme.of(context).colorScheme.outline : null,
+              decorationColor: e.textoRotulo,
+              color: perdio ? e.textoRotulo : e.texto,
             ),
           ),
         ),
-        if (gana) const Icon(Icons.check, size: 13, color: Colors.green),
+        if (gana) Icon(Icons.check, size: 13, color: e.bien),
       ],
     );
   }

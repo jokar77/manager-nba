@@ -49,24 +49,45 @@ class _ModoCarreraHubScreenState extends State<ModoCarreraHubScreen> {
     _carrera = _cargarCarrera();
   }
 
+  /// Avanza [EstadoCarrera.cadenciaAnios] temporadas de una tacada: en las
+  /// primeras (si la cadencia es de 2 o 3 años) el evento de la temporada
+  /// se resuelve solo, con su primera opción, y no se enseña ningún
+  /// diálogo — solo la última temporada de la tanda para a preguntar y
+  /// enseña su resumen, igual que con cadencia de un año.
   Future<void> _avanzarJuvenil() async {
     if (_avanzando) return;
-    final evento = eventoDeCarreraAleatorio(Random());
-    final opcion = await _elegirEvento(evento);
-    if (!mounted) return;
-
     setState(() => _avanzando = true);
-    final resumen = await avanzarTemporadaJuvenil(widget.db,
-        efectoMedia: opcion.efectoMedia);
-    final nuevoEstado = await leerPartidaCarrera(widget.db);
-    if (!mounted || nuevoEstado == null) return;
-    setState(() {
-      _estado = nuevoEstado;
-      _avanzando = false;
-      _refrescarLineaDeTiempo();
-    });
-    if (!mounted) return;
-    await _mostrarResumenJuvenil(resumen, opcion);
+
+    final cadencia = _estado.cadenciaAnios;
+
+    for (var i = 0; i < cadencia; i++) {
+      final esUltima = i == cadencia - 1;
+      final evento = eventoDeCarreraAleatorio(Random());
+      final opcion =
+          esUltima ? await _elegirEvento(evento) : evento.opciones.first;
+      if (!mounted) return;
+
+      final resumen = await avanzarTemporadaJuvenil(widget.db,
+          efectoMedia: opcion.efectoMedia);
+      final nuevoEstado = await leerPartidaCarrera(widget.db);
+      if (!mounted || nuevoEstado == null) return;
+      // Si esta temporada ya llegó a la edad de draft, la tanda se corta
+      // aquí — no tiene sentido seguir simulando años juveniles de un
+      // jugador que ya está en fase predraft.
+      final pasoAPredraft = nuevoEstado.fase != FaseCarrera.juvenil;
+      final finDeLaTanda = esUltima || pasoAPredraft;
+      setState(() {
+        _estado = nuevoEstado;
+        if (finDeLaTanda) _avanzando = false;
+        _refrescarLineaDeTiempo();
+      });
+      if (!mounted) return;
+
+      if (finDeLaTanda) {
+        await _mostrarResumenJuvenil(resumen, opcion);
+        return;
+      }
+    }
   }
 
   Future<void> _entrarAlDraft() async {
@@ -89,48 +110,70 @@ class _ModoCarreraHubScreenState extends State<ModoCarreraHubScreen> {
     );
   }
 
+  /// Igual que [_avanzarJuvenil] pero en fase NBA: en las temporadas que no
+  /// son la última de la tanda, el evento se resuelve con su primera
+  /// opción y la decisión de equipo es "quedarme donde estoy" — sin
+  /// diálogos —, salvo que esa temporada de en medio termine en retiro,
+  /// que corta la tanda ahí mismo (el retiro siempre se enseña, nunca se
+  /// salta). Solo la última temporada simulada pregunta de verdad y enseña
+  /// su resumen.
   Future<void> _avanzarNba() async {
     if (_avanzando) return;
-    final evento = eventoDeCarreraAleatorio(Random());
-    final opcion = await _elegirEvento(evento);
-    if (!mounted) return;
-
     setState(() => _avanzando = true);
     final jugadorIdAntes = _estado.jugadorId!;
-    final resumen = await avanzarTemporadaNba(widget.db,
-        efectoMedia: opcion.efectoMedia);
-    final nuevoEstado = await leerPartidaCarrera(widget.db);
-    if (!mounted || nuevoEstado == null) return;
-    setState(() {
-      _estado = nuevoEstado;
-      _avanzando = false;
-      _refrescarLineaDeTiempo();
-    });
-    if (!mounted) return;
+    final cadencia = _estado.cadenciaAnios;
 
-    if (resumen.seRetira) {
-      final enHallDeLaFama = await (widget.db.select(widget.db.hallDeLaFama)
-            ..where((t) => t.jugadorId.equals(jugadorIdAntes)))
-          .getSingleOrNull();
+    for (var i = 0; i < cadencia; i++) {
+      final esUltima = i == cadencia - 1;
+      final evento = eventoDeCarreraAleatorio(Random());
+      final opcion =
+          esUltima ? await _elegirEvento(evento) : evento.opciones.first;
       if (!mounted) return;
-      await _mostrarResumenRetiro(resumen, enHallDeLaFama != null);
-      return;
-    }
-    await _mostrarResumenNba(resumen, opcion);
-    if (!mounted) return;
 
-    final elegida = await _elegirEquipoTemporada(resumen);
-    await elegirEquipoTemporada(widget.db, elegida);
-    if (!mounted) return;
-    setState(_refrescarLineaDeTiempo);
-    if (elegida.equipo != resumen.equipo) {
+      final resumen = await avanzarTemporadaNba(widget.db,
+          efectoMedia: opcion.efectoMedia);
+      final nuevoEstado = await leerPartidaCarrera(widget.db);
+      if (!mounted || nuevoEstado == null) return;
+      final finDeLaTanda = esUltima || resumen.seRetira;
+      setState(() {
+        _estado = nuevoEstado;
+        if (finDeLaTanda) _avanzando = false;
+        _refrescarLineaDeTiempo();
+      });
       if (!mounted) return;
-      await _dialogoConEquipo(
-        titulo: t(context).decisionDeEquipoTitulo,
-        equipo: elegida.equipo,
-        mensaje: t(context).cambioDeEquipoMensaje(
-            infoDe(elegida.equipo).nombreCompleto),
-      );
+
+      if (resumen.seRetira) {
+        final enHallDeLaFama = await (widget.db.select(widget.db.hallDeLaFama)
+              ..where((t) => t.jugadorId.equals(jugadorIdAntes)))
+            .getSingleOrNull();
+        if (!mounted) return;
+        await _mostrarResumenRetiro(resumen, enHallDeLaFama != null);
+        return;
+      }
+
+      if (!esUltima) {
+        // Temporada de en medio de la tanda: te quedas donde estás, sin
+        // preguntar ni enseñar ningún diálogo.
+        await elegirEquipoTemporada(widget.db, resumen.ofertaQuedarse);
+        continue;
+      }
+
+      await _mostrarResumenNba(resumen, opcion);
+      if (!mounted) return;
+
+      final elegida = await _elegirEquipoTemporada(resumen);
+      await elegirEquipoTemporada(widget.db, elegida);
+      if (!mounted) return;
+      setState(_refrescarLineaDeTiempo);
+      if (elegida.equipo != resumen.equipo) {
+        if (!mounted) return;
+        await _dialogoConEquipo(
+          titulo: t(context).decisionDeEquipoTitulo,
+          equipo: elegida.equipo,
+          mensaje: t(context).cambioDeEquipoMensaje(
+              infoDe(elegida.equipo).nombreCompleto),
+        );
+      }
     }
   }
 
@@ -334,7 +377,6 @@ class _ModoCarreraHubScreenState extends State<ModoCarreraHubScreen> {
       backgroundColor: e.fondo,
       appBar: BarraNeutraAppBar(
         titulo: '${_estado.apellido} #${_estado.dorsal}',
-        conVolver: false,
       ),
       body: SafeArea(
         child: Center(
@@ -471,21 +513,36 @@ class _FichaDeJugador extends StatelessWidget {
             Row(
               children: [
                 _Estadistica(label: textos.edadLabel, valor: '${estado.edad}'),
-                _Estadistica(
-                  label: textos.valorLabel,
-                  valor:
-                      '\$${formatearSalario(salarioEstimado(media: estado.media, edad: estado.edad))}',
-                ),
+                // Con contrato real (fase NBA) se enseña el sueldo de
+                // verdad, con años — como en cualquier otra ficha del
+                // juego. Sin contrato (fase juvenil/predraft) se enseña el
+                // valor de mercado estimado, la única cifra que existe
+                // todavía.
+                if (estado.salario != null && estado.aniosContrato != null)
+                  _Estadistica(
+                    label: textos.sueldo,
+                    valor: textos.contratoAnioMillones(
+                        textos.aniosDeContrato(estado.aniosContrato!),
+                        formatearMillones(estado.salario!)),
+                  )
+                else
+                  _Estadistica(
+                    label: textos.valorLabel,
+                    valor:
+                        '\$${formatearSalario(salarioEstimado(media: estado.media, edad: estado.edad))}',
+                  ),
               ],
             ),
             const SizedBox(height: 12),
             FutureBuilder<List<FilaLineaDeTiempo>>(
               future: lineaDeTiempo,
               builder: (context, snapshot) {
-                final conPartidos = (snapshot.data ?? const [])
-                    .where((f) => f.partidos > 0)
-                    .toList();
-                final ultima = conPartidos.isEmpty ? null : conPartidos.first;
+                final filas = snapshot.data ?? const [];
+                // La más reciente, sea de la fase juvenil o de la NBA — las
+                // temporadas juveniles no llevan partidos jugados (no se
+                // sigue el boxscore ahí), pero sus PTS/AST por partido sí
+                // existen y también hay que enseñarlos antes del draft.
+                final ultima = filas.isEmpty ? null : filas.first;
                 return Row(
                   children: [
                     _Estadistica(label: 'PJ', valor: '${ultima?.partidos ?? 0}'),

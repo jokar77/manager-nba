@@ -584,6 +584,13 @@ class PartidaCarrera extends Table {
   /// temporada al escribir en `HistorialEstadisticasJugador`.
   IntColumn get temporadaNba => integer().withDefault(const Constant(0))();
 
+  /// Cada cuántas temporadas se para a decidir (evento, resumen, oferta de
+  /// equipo): 1, 2 o 3. Se elige una vez al crear la carrera
+  /// (`crear_jugador_screen.dart`) y no cambia después — las temporadas de
+  /// en medio de una tanda se resuelven con opciones por defecto en vez de
+  /// preguntar cada año.
+  IntColumn get cadenciaAnios => integer().withDefault(const Constant(1))();
+
   @override
   Set<Column> get primaryKey => {id};
 }

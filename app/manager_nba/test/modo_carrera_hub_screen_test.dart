@@ -130,6 +130,45 @@ void main() {
   });
 
   testWidgets(
+      'con cadencia de 2 años, un toque en el botón simula dos temporadas '
+      'de golpe y solo pregunta una vez', (WidgetTester tester) async {
+    const identidadCadencia2 = IdentidadCarrera(
+      apellido: 'Testigo',
+      dorsal: 7,
+      posicion: 'PG',
+      nacionalidad: 'ESP',
+      cadenciaAnios: 2,
+    );
+    final rng = Random(5);
+    await crearPartidaCarrera(db, identidadCadencia2, random: rng);
+    await elegirOrganizacionJuvenil(
+        db, ofertasJuvenilesIniciales('ESP').first);
+    for (var i = 0; i < edadDeDraft - edadInicialCarrera; i++) {
+      await avanzarTemporadaJuvenil(db, random: rng);
+    }
+    await entrarAlDraft(db, random: rng);
+    final estado = (await leerPartidaCarrera(db))!;
+    expect(estado.fase, FaseCarrera.nba);
+
+    await pump(tester, estado);
+    await tester.tap(find.text('AVANZAR TEMPORADA'));
+    await tester.pumpAndSettle();
+    // Una sola tanda de diálogos, no dos: el evento de la temporada...
+    await tester.tap(find.byType(OutlinedButton).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('CONTINUAR'));
+    await tester.pumpAndSettle();
+    // ...y la decisión de equipo, también una sola vez.
+    expect(find.byType(OutlinedButton), findsNWidgets(3));
+    await tester.tap(find.byType(OutlinedButton).first);
+    await tester.pumpAndSettle();
+
+    // Pero se han jugado las DOS temporadas de la tanda, no una.
+    final actualizado = await leerPartidaCarrera(db);
+    expect(actualizado!.temporadaNba, 2);
+  });
+
+  testWidgets(
       'en fase retirado no hay botón de acción y se enseña el resumen de '
       'carrera', (WidgetTester tester) async {
     final rng = Random(5);

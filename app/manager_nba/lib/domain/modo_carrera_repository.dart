@@ -8,6 +8,7 @@ import 'camisetas_repository.dart';
 import 'carrera_repository.dart';
 import 'curva_estadisticas.dart';
 import 'dorsales_repository.dart';
+import 'equipos_especiales.dart';
 import 'equipos_info.dart';
 import 'hall_fama_repository.dart';
 import 'jugador_mapping.dart';
@@ -65,11 +66,17 @@ class IdentidadCarrera {
   final String posicion;
   final String nacionalidad;
 
+  /// Cada cuántas temporadas se para a decidir — 1, 2 o 3. Por defecto 1
+  /// (una decisión cada temporada, como hasta ahora) para no romper nada
+  /// que ya construyera un `IdentidadCarrera` sin pensar en esto.
+  final int cadenciaAnios;
+
   const IdentidadCarrera({
     required this.apellido,
     required this.dorsal,
     required this.posicion,
     required this.nacionalidad,
+    this.cadenciaAnios = 1,
   });
 }
 
@@ -91,6 +98,16 @@ class EstadoCarrera {
   final int? jugadorId;
   final int temporadaNba;
 
+  /// Salario y años de contrato REALES, no la estimación de mercado — solo
+  /// una vez que hay fila de `Jugadores` (fase NBA). `null` en fase
+  /// juvenil/predraft, donde todavía no hay ningún contrato que enseñar.
+  final int? salario;
+  final int? aniosContrato;
+
+  /// Cada cuántas temporadas se para a decidir — 1, 2 o 3. Ver
+  /// `IdentidadCarrera.cadenciaAnios`.
+  final int cadenciaAnios;
+
   const EstadoCarrera({
     required this.apellido,
     required this.dorsal,
@@ -104,6 +121,9 @@ class EstadoCarrera {
     required this.equipoNba,
     required this.jugadorId,
     required this.temporadaNba,
+    required this.cadenciaAnios,
+    this.salario,
+    this.aniosContrato,
   });
 }
 
@@ -133,6 +153,9 @@ Future<EstadoCarrera?> leerPartidaCarrera(AppDatabase db) async {
         equipoNba: jugador.retirado ? null : jugador.equipo,
         jugadorId: jugador.id,
         temporadaNba: fila.temporadaNba,
+        cadenciaAnios: fila.cadenciaAnios,
+        salario: jugador.salario,
+        aniosContrato: jugador.aniosContrato,
       );
     }
   }
@@ -150,6 +173,7 @@ Future<EstadoCarrera?> leerPartidaCarrera(AppDatabase db) async {
     equipoNba: null,
     jugadorId: null,
     temporadaNba: fila.temporadaNba,
+    cadenciaAnios: fila.cadenciaAnios,
   );
 }
 
@@ -241,6 +265,10 @@ Future<void> crearPartidaCarrera(
   if (!posicionesEquipo.contains(identidad.posicion)) {
     throw ArgumentError('Posición desconocida: ${identidad.posicion}');
   }
+  if (identidad.cadenciaAnios < 1 || identidad.cadenciaAnios > 3) {
+    throw ArgumentError(
+        'Cadencia fuera de rango (1-3): ${identidad.cadenciaAnios}');
+  }
   final rng = random ?? Random();
 
   // Un chaval de 16 años recién empezando: muy por debajo de nivel NBA, con
@@ -263,6 +291,7 @@ Future<void> crearPartidaCarrera(
           atrTiro3: Value(_atributoInicial(media, rng)),
           atrAtaque: Value(_atributoInicial(media, rng)),
           atrDefensa: Value(_atributoInicial(media, rng)),
+          cadenciaAnios: Value(identidad.cadenciaAnios),
         ),
       );
 }
@@ -399,11 +428,14 @@ Future<String> _mejorEquipoPara(
   Set<String> excluir = const {},
   required Random rng,
 }) async {
-  var mejorEquipo = equiposInfo.keys.first;
+  var mejorEquipo = equiposInfo.keys.firstWhere(esFranquicia);
   var mejorValor = double.negativeInfinity;
 
   for (final equipo in equiposInfo.keys) {
-    if (excluir.contains(equipo)) continue;
+    // `equiposInfo` también tiene las selecciones del All-Star (Este,
+    // Oeste, Novatos, Sophomores) para poder reusar sus mismos widgets —
+    // no son franquicias de verdad, nadie puede caer ahí.
+    if (!esFranquicia(equipo) || excluir.contains(equipo)) continue;
     final plantilla = await (db.select(db.jugadores)
           ..where((t) => t.equipo.equals(equipo) & t.retirado.equals(false)))
         .get();

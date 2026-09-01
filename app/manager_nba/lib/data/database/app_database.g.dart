@@ -12787,6 +12787,18 @@ class $PartidaCarreraTable extends PartidaCarrera
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _cadenciaAniosMeta = const VerificationMeta(
+    'cadenciaAnios',
+  );
+  @override
+  late final GeneratedColumn<int> cadenciaAnios = GeneratedColumn<int>(
+    'cadencia_anios',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -12804,6 +12816,7 @@ class $PartidaCarreraTable extends PartidaCarrera
     atrDefensa,
     jugadorId,
     temporadaNba,
+    cadenciaAnios,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -12921,6 +12934,15 @@ class $PartidaCarreraTable extends PartidaCarrera
         ),
       );
     }
+    if (data.containsKey('cadencia_anios')) {
+      context.handle(
+        _cadenciaAniosMeta,
+        cadenciaAnios.isAcceptableOrUnknown(
+          data['cadencia_anios']!,
+          _cadenciaAniosMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -12990,6 +13012,10 @@ class $PartidaCarreraTable extends PartidaCarrera
         DriftSqlType.int,
         data['${effectivePrefix}temporada_nba'],
       )!,
+      cadenciaAnios: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}cadencia_anios'],
+      )!,
     );
   }
 
@@ -13034,6 +13060,13 @@ class PartidaCarreraData extends DataClass
   /// carrera (no hay franquicia), así que este contador hace de número de
   /// temporada al escribir en `HistorialEstadisticasJugador`.
   final int temporadaNba;
+
+  /// Cada cuántas temporadas se para a decidir (evento, resumen, oferta de
+  /// equipo): 1, 2 o 3. Se elige una vez al crear la carrera
+  /// (`crear_jugador_screen.dart`) y no cambia después — las temporadas de
+  /// en medio de una tanda se resuelven con opciones por defecto en vez de
+  /// preguntar cada año.
+  final int cadenciaAnios;
   const PartidaCarreraData({
     required this.id,
     required this.apellido,
@@ -13050,6 +13083,7 @@ class PartidaCarreraData extends DataClass
     required this.atrDefensa,
     this.jugadorId,
     required this.temporadaNba,
+    required this.cadenciaAnios,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -13075,6 +13109,7 @@ class PartidaCarreraData extends DataClass
       map['jugador_id'] = Variable<int>(jugadorId);
     }
     map['temporada_nba'] = Variable<int>(temporadaNba);
+    map['cadencia_anios'] = Variable<int>(cadenciaAnios);
     return map;
   }
 
@@ -13100,6 +13135,7 @@ class PartidaCarreraData extends DataClass
           ? const Value.absent()
           : Value(jugadorId),
       temporadaNba: Value(temporadaNba),
+      cadenciaAnios: Value(cadenciaAnios),
     );
   }
 
@@ -13126,6 +13162,7 @@ class PartidaCarreraData extends DataClass
       atrDefensa: serializer.fromJson<int>(json['atrDefensa']),
       jugadorId: serializer.fromJson<int?>(json['jugadorId']),
       temporadaNba: serializer.fromJson<int>(json['temporadaNba']),
+      cadenciaAnios: serializer.fromJson<int>(json['cadenciaAnios']),
     );
   }
   @override
@@ -13149,6 +13186,7 @@ class PartidaCarreraData extends DataClass
       'atrDefensa': serializer.toJson<int>(atrDefensa),
       'jugadorId': serializer.toJson<int?>(jugadorId),
       'temporadaNba': serializer.toJson<int>(temporadaNba),
+      'cadenciaAnios': serializer.toJson<int>(cadenciaAnios),
     };
   }
 
@@ -13168,6 +13206,7 @@ class PartidaCarreraData extends DataClass
     int? atrDefensa,
     Value<int?> jugadorId = const Value.absent(),
     int? temporadaNba,
+    int? cadenciaAnios,
   }) => PartidaCarreraData(
     id: id ?? this.id,
     apellido: apellido ?? this.apellido,
@@ -13186,6 +13225,7 @@ class PartidaCarreraData extends DataClass
     atrDefensa: atrDefensa ?? this.atrDefensa,
     jugadorId: jugadorId.present ? jugadorId.value : this.jugadorId,
     temporadaNba: temporadaNba ?? this.temporadaNba,
+    cadenciaAnios: cadenciaAnios ?? this.cadenciaAnios,
   );
   PartidaCarreraData copyWithCompanion(PartidaCarreraCompanion data) {
     return PartidaCarreraData(
@@ -13212,6 +13252,9 @@ class PartidaCarreraData extends DataClass
       temporadaNba: data.temporadaNba.present
           ? data.temporadaNba.value
           : this.temporadaNba,
+      cadenciaAnios: data.cadenciaAnios.present
+          ? data.cadenciaAnios.value
+          : this.cadenciaAnios,
     );
   }
 
@@ -13232,7 +13275,8 @@ class PartidaCarreraData extends DataClass
           ..write('atrAtaque: $atrAtaque, ')
           ..write('atrDefensa: $atrDefensa, ')
           ..write('jugadorId: $jugadorId, ')
-          ..write('temporadaNba: $temporadaNba')
+          ..write('temporadaNba: $temporadaNba, ')
+          ..write('cadenciaAnios: $cadenciaAnios')
           ..write(')'))
         .toString();
   }
@@ -13254,6 +13298,7 @@ class PartidaCarreraData extends DataClass
     atrDefensa,
     jugadorId,
     temporadaNba,
+    cadenciaAnios,
   );
   @override
   bool operator ==(Object other) =>
@@ -13273,7 +13318,8 @@ class PartidaCarreraData extends DataClass
           other.atrAtaque == this.atrAtaque &&
           other.atrDefensa == this.atrDefensa &&
           other.jugadorId == this.jugadorId &&
-          other.temporadaNba == this.temporadaNba);
+          other.temporadaNba == this.temporadaNba &&
+          other.cadenciaAnios == this.cadenciaAnios);
 }
 
 class PartidaCarreraCompanion extends UpdateCompanion<PartidaCarreraData> {
@@ -13292,6 +13338,7 @@ class PartidaCarreraCompanion extends UpdateCompanion<PartidaCarreraData> {
   final Value<int> atrDefensa;
   final Value<int?> jugadorId;
   final Value<int> temporadaNba;
+  final Value<int> cadenciaAnios;
   const PartidaCarreraCompanion({
     this.id = const Value.absent(),
     this.apellido = const Value.absent(),
@@ -13308,6 +13355,7 @@ class PartidaCarreraCompanion extends UpdateCompanion<PartidaCarreraData> {
     this.atrDefensa = const Value.absent(),
     this.jugadorId = const Value.absent(),
     this.temporadaNba = const Value.absent(),
+    this.cadenciaAnios = const Value.absent(),
   });
   PartidaCarreraCompanion.insert({
     this.id = const Value.absent(),
@@ -13325,6 +13373,7 @@ class PartidaCarreraCompanion extends UpdateCompanion<PartidaCarreraData> {
     this.atrDefensa = const Value.absent(),
     this.jugadorId = const Value.absent(),
     this.temporadaNba = const Value.absent(),
+    this.cadenciaAnios = const Value.absent(),
   }) : apellido = Value(apellido),
        dorsal = Value(dorsal),
        posicion = Value(posicion),
@@ -13345,6 +13394,7 @@ class PartidaCarreraCompanion extends UpdateCompanion<PartidaCarreraData> {
     Expression<int>? atrDefensa,
     Expression<int>? jugadorId,
     Expression<int>? temporadaNba,
+    Expression<int>? cadenciaAnios,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -13363,6 +13413,7 @@ class PartidaCarreraCompanion extends UpdateCompanion<PartidaCarreraData> {
       if (atrDefensa != null) 'atr_defensa': atrDefensa,
       if (jugadorId != null) 'jugador_id': jugadorId,
       if (temporadaNba != null) 'temporada_nba': temporadaNba,
+      if (cadenciaAnios != null) 'cadencia_anios': cadenciaAnios,
     });
   }
 
@@ -13382,6 +13433,7 @@ class PartidaCarreraCompanion extends UpdateCompanion<PartidaCarreraData> {
     Value<int>? atrDefensa,
     Value<int?>? jugadorId,
     Value<int>? temporadaNba,
+    Value<int>? cadenciaAnios,
   }) {
     return PartidaCarreraCompanion(
       id: id ?? this.id,
@@ -13400,6 +13452,7 @@ class PartidaCarreraCompanion extends UpdateCompanion<PartidaCarreraData> {
       atrDefensa: atrDefensa ?? this.atrDefensa,
       jugadorId: jugadorId ?? this.jugadorId,
       temporadaNba: temporadaNba ?? this.temporadaNba,
+      cadenciaAnios: cadenciaAnios ?? this.cadenciaAnios,
     );
   }
 
@@ -13453,6 +13506,9 @@ class PartidaCarreraCompanion extends UpdateCompanion<PartidaCarreraData> {
     if (temporadaNba.present) {
       map['temporada_nba'] = Variable<int>(temporadaNba.value);
     }
+    if (cadenciaAnios.present) {
+      map['cadencia_anios'] = Variable<int>(cadenciaAnios.value);
+    }
     return map;
   }
 
@@ -13473,7 +13529,8 @@ class PartidaCarreraCompanion extends UpdateCompanion<PartidaCarreraData> {
           ..write('atrAtaque: $atrAtaque, ')
           ..write('atrDefensa: $atrDefensa, ')
           ..write('jugadorId: $jugadorId, ')
-          ..write('temporadaNba: $temporadaNba')
+          ..write('temporadaNba: $temporadaNba, ')
+          ..write('cadenciaAnios: $cadenciaAnios')
           ..write(')'))
         .toString();
   }
@@ -20688,6 +20745,7 @@ typedef $$PartidaCarreraTableCreateCompanionBuilder =
       Value<int> atrDefensa,
       Value<int?> jugadorId,
       Value<int> temporadaNba,
+      Value<int> cadenciaAnios,
     });
 typedef $$PartidaCarreraTableUpdateCompanionBuilder =
     PartidaCarreraCompanion Function({
@@ -20706,6 +20764,7 @@ typedef $$PartidaCarreraTableUpdateCompanionBuilder =
       Value<int> atrDefensa,
       Value<int?> jugadorId,
       Value<int> temporadaNba,
+      Value<int> cadenciaAnios,
     });
 
 class $$PartidaCarreraTableFilterComposer
@@ -20789,6 +20848,11 @@ class $$PartidaCarreraTableFilterComposer
 
   ColumnFilters<int> get temporadaNba => $composableBuilder(
     column: $table.temporadaNba,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get cadenciaAnios => $composableBuilder(
+    column: $table.cadenciaAnios,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -20876,6 +20940,11 @@ class $$PartidaCarreraTableOrderingComposer
     column: $table.temporadaNba,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get cadenciaAnios => $composableBuilder(
+    column: $table.cadenciaAnios,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$PartidaCarreraTableAnnotationComposer
@@ -20939,6 +21008,11 @@ class $$PartidaCarreraTableAnnotationComposer
     column: $table.temporadaNba,
     builder: (column) => column,
   );
+
+  GeneratedColumn<int> get cadenciaAnios => $composableBuilder(
+    column: $table.cadenciaAnios,
+    builder: (column) => column,
+  );
 }
 
 class $$PartidaCarreraTableTableManager
@@ -20993,6 +21067,7 @@ class $$PartidaCarreraTableTableManager
                 Value<int> atrDefensa = const Value.absent(),
                 Value<int?> jugadorId = const Value.absent(),
                 Value<int> temporadaNba = const Value.absent(),
+                Value<int> cadenciaAnios = const Value.absent(),
               }) => PartidaCarreraCompanion(
                 id: id,
                 apellido: apellido,
@@ -21009,6 +21084,7 @@ class $$PartidaCarreraTableTableManager
                 atrDefensa: atrDefensa,
                 jugadorId: jugadorId,
                 temporadaNba: temporadaNba,
+                cadenciaAnios: cadenciaAnios,
               ),
           createCompanionCallback:
               ({
@@ -21027,6 +21103,7 @@ class $$PartidaCarreraTableTableManager
                 Value<int> atrDefensa = const Value.absent(),
                 Value<int?> jugadorId = const Value.absent(),
                 Value<int> temporadaNba = const Value.absent(),
+                Value<int> cadenciaAnios = const Value.absent(),
               }) => PartidaCarreraCompanion.insert(
                 id: id,
                 apellido: apellido,
@@ -21043,6 +21120,7 @@ class $$PartidaCarreraTableTableManager
                 atrDefensa: atrDefensa,
                 jugadorId: jugadorId,
                 temporadaNba: temporadaNba,
+                cadenciaAnios: cadenciaAnios,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

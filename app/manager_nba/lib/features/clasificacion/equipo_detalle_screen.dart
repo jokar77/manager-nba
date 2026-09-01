@@ -9,6 +9,8 @@ import '../../domain/traspasos_repository.dart';
 import '../../shared/equipo_logo.dart';
 import '../../i18n/textos.dart';
 import '../../shared/barra_de_club.dart';
+import '../../shared/estilo.dart';
+import '../../shared/ficha_jugador.dart';
 import '../../shared/hoja_de_propuestas.dart';
 
 /// Plantilla completa de un equipo, para consultarla desde Clasificación.
@@ -46,19 +48,21 @@ class EquipoDetalleScreen extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
           final plantilla = snapshot.data!;
-          return ListView.separated(
+          return ListView.builder(
+            padding: const EdgeInsets.all(12),
             itemCount: plantilla.length,
-            separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (context, i) {
               final j = plantilla[i];
-              return ListTile(
-                title: Text(j.nombreFicticio),
-                subtitle: Text(
-                    '${etiquetaPosicion(j)} · ${t(context).edadJugador(j.edad)}'),
-                trailing: Text(t(context).mediaJugador(j.media),
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
-                onTap: () =>
-                    abrirFichaDeJugador(context, db, j.id, equipoUsuario),
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: FilaDeJugador(
+                  media: j.media,
+                  nombre: j.nombreFicticio,
+                  detalle:
+                      '${etiquetaPosicion(j)} · ${t(context).edadJugador(j.edad)}',
+                  onTap: () =>
+                      abrirFichaDeJugador(context, db, j.id, equipoUsuario),
+                ),
               );
             },
           );
@@ -166,6 +170,7 @@ class _FichaDeJugadorState extends State<_FichaDeJugador> {
     final j = widget.jugador;
     final stats = widget.stats;
     final esTuyo = j.equipo == widget.equipoUsuario;
+    final e = Estilo.de(context);
 
     return SafeArea(
       child: Padding(
@@ -176,25 +181,37 @@ class _FichaDeJugadorState extends State<_FichaDeJugador> {
           children: [
             Row(
               children: [
-                EquipoLogo(codigoEquipo: j.equipo, tamano: 36),
+                PlacaMedia(media: j.media, tamano: 44),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(j.nombreFicticio,
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
-                      Text('${etiquetaPosicion(j)} · '
-                          '${t(context).edadJugador(j.edad)} · '
-                          '${t(context).mediaJugador(j.media).toLowerCase()}'),
+                      Text(mayus(j.nombreFicticio), style: titular(e, tamano: 18)),
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          EquipoLogo(codigoEquipo: j.equipo, tamano: 18),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              '${etiquetaPosicion(j)} · '
+                              '${t(context).edadJugador(j.edad)}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style:
+                                  TextStyle(fontSize: 12, color: e.textoTenue),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
             if (stats != null && stats.partidosJugados > 0)
               _Fila(
                 etiqueta: t(context).estaTemporada,
@@ -243,19 +260,17 @@ class _Fila extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final e = Estilo.de(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
             width: 110,
-            child: Text(etiqueta,
-                style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).colorScheme.outline)),
+            child: Text(mayus(etiqueta), style: rotulo(e, tamano: 10)),
           ),
-          Expanded(child: Text(valor)),
+          Expanded(child: Text(valor, style: TextStyle(color: e.texto))),
         ],
       ),
     );

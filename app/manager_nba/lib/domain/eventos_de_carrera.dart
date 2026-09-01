@@ -119,8 +119,7 @@ const catalogoDeEventosDeCarrera = <EventoDeCarrera>[
   ),
   EventoDeCarrera(
     titulo: 'Trabajo con el preparador físico',
-    descripcion:
-        'Te ofrecen un programa específico de fuerza y explosividad.',
+    descripcion: 'Te ofrecen un programa específico de fuerza y explosividad.',
     opciones: [
       OpcionDeEventoDeCarrera(
         texto: 'Apuntarte',
@@ -148,6 +147,119 @@ const catalogoDeEventosDeCarrera = <EventoDeCarrera>[
         texto: 'Vivir el momento',
         efectoMedia: -1,
         mensaje: 'Lo pasas bien, pero se nota en la cancha.',
+      ),
+    ],
+  ),
+  EventoDeCarrera(
+    titulo: 'Se acaba la temporada: ¿y el verano?',
+    descripcion:
+        'Con la temporada cerrada, tienes por delante meses libres antes de la pretemporada.',
+    opciones: [
+      OpcionDeEventoDeCarrera(
+        texto: 'Desconectar del todo',
+        efectoMedia: -1,
+        mensaje:
+            'Vuelves con la cabeza descansada, pero se nota la falta de trabajo.',
+      ),
+      OpcionDeEventoDeCarrera(
+        texto: 'Vacaciones con algo de trabajo',
+        efectoMedia: 1,
+        mensaje:
+            'Encuentras el equilibrio justo entre descansar y no perder el ritmo.',
+      ),
+      OpcionDeEventoDeCarrera(
+        texto: 'Entrenar todo el verano',
+        efectoMedia: 2,
+        mensaje:
+            'Llegas a la pretemporada como un tren — aunque sin haber desconectado nada.',
+      ),
+    ],
+  ),
+  EventoDeCarrera(
+    titulo: 'Torneo de verano',
+    descripcion:
+        'Te invitan a jugar un torneo amistoso entre profesionales, fuera de la liga.',
+    opciones: [
+      OpcionDeEventoDeCarrera(
+        texto: 'Apuntarte',
+        efectoMedia: 1,
+        mensaje:
+            'Coges ritmo de competición antes de que empiece la liga de verdad.',
+      ),
+      OpcionDeEventoDeCarrera(
+        texto: 'Pasar del torneo',
+        efectoMedia: 0,
+        mensaje: 'Prefieres llegar fresco a la pretemporada.',
+      ),
+    ],
+  ),
+  EventoDeCarrera(
+    titulo: 'Cambio de dieta',
+    descripcion:
+        'Un nutricionista te propone cambiar por completo tu forma de alimentarte.',
+    opciones: [
+      OpcionDeEventoDeCarrera(
+        texto: 'Seguirlo a rajatabla',
+        efectoMedia: 1,
+        mensaje: 'El cuerpo responde mejor de lo que esperabas.',
+      ),
+      OpcionDeEventoDeCarrera(
+        texto: 'Hacer solo ajustes pequeños',
+        efectoMedia: 0,
+        mensaje: 'Cambios discretos, resultados discretos.',
+      ),
+    ],
+  ),
+  EventoDeCarrera(
+    titulo: 'Oferta publicitaria',
+    descripcion:
+        'Una marca te ofrece un contrato jugoso que te robaría buena parte del verano en sesiones de fotos y anuncios.',
+    opciones: [
+      OpcionDeEventoDeCarrera(
+        texto: 'Firmar el contrato',
+        efectoMedia: -1,
+        mensaje:
+            'El dinero está bien, pero el verano se te ha ido en otras cosas.',
+      ),
+      OpcionDeEventoDeCarrera(
+        texto: 'Rechazarlo: toca entrenar',
+        efectoMedia: 1,
+        mensaje: 'Te centras en lo tuyo y dejas el dinero fácil para otro año.',
+      ),
+    ],
+  ),
+  EventoDeCarrera(
+    titulo: 'Trabajo mental',
+    descripcion:
+        'El club te ofrece sesiones con un psicólogo deportivo antes de que arranque la temporada.',
+    opciones: [
+      OpcionDeEventoDeCarrera(
+        texto: 'Aprovecharlas',
+        efectoMedia: 1,
+        mensaje: 'Llegas más fuerte de cabeza a los momentos difíciles.',
+      ),
+      OpcionDeEventoDeCarrera(
+        texto: 'No las necesitas',
+        efectoMedia: 0,
+        mensaje: 'Sigues con tu rutina de siempre.',
+      ),
+    ],
+  ),
+  EventoDeCarrera(
+    titulo: 'Se lesiona un compañero de posición',
+    descripcion:
+        'En pretemporada, un compañero de tu misma posición se lesiona y el cuerpo técnico te pide dar un paso adelante.',
+    opciones: [
+      OpcionDeEventoDeCarrera(
+        texto: 'Dar un paso adelante',
+        efectoMedia: 2,
+        mensaje:
+            'La responsabilidad extra te hace crecer más rápido de lo normal.',
+      ),
+      OpcionDeEventoDeCarrera(
+        texto: 'Seguir a tu ritmo',
+        efectoMedia: 0,
+        mensaje: 'Prefieres no precipitarte y esperar tu momento.',
       ),
     ],
   ),

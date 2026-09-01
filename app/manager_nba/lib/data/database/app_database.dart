@@ -48,7 +48,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 30;
+  int get schemaVersion => 31;
 
   /// CUIDADO AL TOCAR ESTO: aquí se decide si una actualización del juego
   /// conserva las partidas guardadas o se las lleva por delante.
@@ -164,6 +164,13 @@ class AppDatabase extends _$AppDatabase {
           if (from < 30) {
             await m.createTable(partidaCarrera);
             await m.createTable(historialTemporadaJuvenil);
+          }
+
+          // 31: la cadencia de decisión de Modo Carrera (cada 1, 2 o 3
+          // años). Columna nueva con valor por defecto — una carrera en
+          // curso sigue preguntando cada año, como hacía hasta ahora.
+          if (from < 31) {
+            await m.addColumn(partidaCarrera, partidaCarrera.cadenciaAnios);
           }
         },
       );

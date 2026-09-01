@@ -26,14 +26,15 @@ ver abajo). Es la misma prioridad que ya estaba escrita en
   vive en `plan_modo_carrera.md`; aquí solo cuenta para el roadmap de
   lanzamiento porque comparte plataforma, tiendas y el mismo aviso legal
   de nombres/equipos parecidos a los reales (ver más abajo).
-- **708 tests**, todos verdes. `dart analyze` limpio (o `flutter analyze`
+- **716 tests**, todos verdes. `dart analyze` limpio (o `flutter analyze`
   si no está teniendo un problema de sesión propio del analizador, ajeno
   al código).
 - **7 idiomas** completos (interfaz y guion de eventos narrativos).
-- **Monetización**: la capa de permisos, los puertos de anuncios/compra y
-  los tres bloqueos de la versión gratuita ya están hechos y probados
-  (`plan_monetizacion.md`, pasos 1-3). Lo que falta es la pantalla de
-  comprar y las cuentas reales de Google — pasos 4-6, ver más abajo.
+- **Monetización**: la capa de permisos, los puertos de anuncios/compra,
+  los tres bloqueos de la versión gratuita, y ya también la pantalla de
+  comprar la versión completa están hechos y probados
+  (`plan_monetizacion.md`, pasos 1-4). Lo que falta son las cuentas reales
+  de Google — pasos 5-6, ver más abajo.
 - **El código ya compila para las tres plataformas de escritorio y las
   dos móviles** (carpetas `android/`, `ios/`, `windows/`, `linux/`,
   `macos/` ya existen y tienen bundle ID propio, no el de plantilla) —
@@ -49,9 +50,10 @@ ver abajo). Es la misma prioridad que ya estaba escrita en
 Ya se puede compilar desde este PC (`flutter build appbundle
 --dart-define=EDICION=gratis`). Lo que falta:
 
-- [ ] Pantalla de "comprar la versión completa" (paso 4 de
-      `plan_monetizacion.md` — no empezada, solo existe el puerto
-      `tienda.dart` sin ninguna pantalla que lo use).
+- [x] Pantalla de "comprar la versión completa" (paso 4 de
+      `plan_monetizacion.md` — hecho el 26 de agosto de 2026:
+      `lib/features/tienda/comprar_screen.dart` + el aviso reusable de
+      función bloqueada, enlazados desde la ranura de guardado bloqueada).
 - [ ] Cuentas y SDKs reales: AdMob y Play Billing (paso 5). Necesita que
       tengas las cuentas creadas — **esto es tuyo, no lo puedo crear yo**.
 - [ ] **Cuenta de desarrollador de Google Play**: 25 $, pago único. Tuyo.
@@ -145,11 +147,21 @@ cualquiera de las tres tiendas:
 Por si en algún momento no tienes nada concreto en mente, esto es lo
 próximo con más valor, de más a menos prioritario:
 
-1. La pantalla de "comprar la versión completa" (primer paso real hacia
-   Android — no depende de tener cuentas creadas, es UI y lógica pura).
-2. Seguir el patrón de hoy: buscar otras pantallas con listas o
-   desplegables que se hayan quedado con el estilo antiguo, sin la placa
-   de media ni la tipografía del rediseño.
+1. ~~La pantalla de "comprar la versión completa".~~ Hecho el 26 de
+   agosto de 2026, ver más arriba.
+2. Seguir modernizando pantallas con el estilo antiguo (sin `PanelCortado`,
+   `FilaDeJugador`/`SeparadorSeccion` ni los tokens de `Estilo.de(context)`).
+   El 26 de agosto de 2026 se hicieron 4: `clasificacion/equipo_detalle_screen.dart`,
+   `premios/premios_screen.dart`, `temporada/pretemporada_screen.dart` y
+   `torneo/torneo_screen.dart`. Quedan por revisar (candidatas, puede haber
+   falsos positivos — mirar cada una antes de tocarla):
+   `ajustes/ajustes_screen.dart`, `calendario/simulacion_ui.dart`,
+   `mercado/entrenador_screen.dart`, `mercado/ofertas_screen.dart`,
+   `mercado/traspasos_screen.dart`, `partido/alineacion_automatica.dart`,
+   `playoffs/playoffs_screen.dart`, `temporada/cambio_de_temporada.dart`,
+   `temporada/camisetas_nuevas_screen.dart`, `temporada/draft_screen.dart`,
+   `temporada/legado_screen.dart`, `temporada/resumen_temporada_screen.dart`,
+   `temporada/retirados_screen.dart`.
 3. Medir el equilibrio del mercado (jugarlo vs. no jugarlo) con más
    semillas todavía — hoy solo se ha reforzado un test de regresión, no
    se ha hecho la medición fina que pedía `plan.md`.

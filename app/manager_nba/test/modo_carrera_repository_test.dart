@@ -49,6 +49,42 @@ void main() {
     expect(estado.dorsal, 7);
     expect(estado.posicion, 'PG');
     expect(estado.jugadorId, isNull);
+    expect(estado.cadenciaAnios, 1,
+        reason: 'por defecto, una decisión cada temporada');
+  });
+
+  test('crearPartidaCarrera guarda la cadencia de decisión elegida',
+      () async {
+    await crearPartidaCarrera(
+      db,
+      const IdentidadCarrera(
+        apellido: 'Testigo',
+        dorsal: 7,
+        posicion: 'PG',
+        nacionalidad: 'ESP',
+        cadenciaAnios: 3,
+      ),
+      random: Random(1),
+    );
+
+    final estado = await leerPartidaCarrera(db);
+    expect(estado!.cadenciaAnios, 3);
+  });
+
+  test('crearPartidaCarrera rechaza una cadencia fuera de 1-3', () async {
+    expect(
+      () => crearPartidaCarrera(
+        db,
+        const IdentidadCarrera(
+          apellido: 'X',
+          dorsal: 1,
+          posicion: 'PG',
+          nacionalidad: 'ESP',
+          cadenciaAnios: 4,
+        ),
+      ),
+      throwsArgumentError,
+    );
   });
 
   test('crearPartidaCarrera rechaza una nacionalidad sin ruta juvenil',
@@ -116,6 +152,11 @@ void main() {
 
     final resultado = await entrarAlDraft(db, random: rng);
     expect(equiposInfo.containsKey(resultado.equipo), isTrue);
+    // El draft solo puede caer en una de las 30 franquicias reales —
+    // `equiposInfo` también tiene las selecciones del All-Star (Este,
+    // Oeste, Novatos, Sophomores), que no son equipos de verdad.
+    expect(esFranquicia(resultado.equipo), isTrue);
+    expect(equiposDeAllStar.contains(resultado.equipo), isFalse);
 
     final estado = await leerPartidaCarrera(db);
     expect(estado!.fase, FaseCarrera.nba);
@@ -251,6 +292,11 @@ void main() {
       expect(equiposOfrecidos, hasLength(3),
           reason: 'las 3 ofertas de la temporada deben ser de equipos '
               'distintos entre sí');
+      for (final equipo in equiposOfrecidos) {
+        expect(esFranquicia(equipo), isTrue,
+            reason: 'ninguna oferta puede caer en una selección del '
+                'All-Star (Este/Oeste/Novatos/Sophomores)');
+      }
 
       // Se alterna la elección para probar los dos caminos: quedarse y
       // pedir el traspaso.

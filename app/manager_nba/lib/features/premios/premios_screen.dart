@@ -8,6 +8,8 @@ import '../../domain/franquicia_repository.dart';
 import '../../domain/premios_repository.dart';
 import '../../domain/tipo_premio.dart';
 import '../../shared/equipo_logo.dart';
+import '../../shared/estilo.dart';
+import '../../shared/ficha_jugador.dart';
 import '../../shared/navegacion.dart';
 import '../calendario/calendario_screen.dart';
 
@@ -103,6 +105,8 @@ class _PremiosScreenState extends State<PremiosScreen> {
           }
           final datos = snapshot.data!;
           final jugadoresPorId = datos.jugadoresPorId;
+          final e = Estilo.de(context);
+          final acento = infoDe(widget.equipoUsuario).colorPrimario;
 
           // Los del fin de semana de las estrellas van al final: se
           // ganaron en febrero, pero son premios de esta temporada.
@@ -127,27 +131,32 @@ class _PremiosScreenState extends State<PremiosScreen> {
                     }
                     return [
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Text(_tituloPremio(context, tipo),
-                            style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold)),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: SeparadorSeccion(
+                            titulo: _tituloPremio(context, tipo),
+                            acento: acento),
                       ),
                       ...ganadores.map((g) {
                         final jugador = jugadoresPorId[g.jugadorId];
                         final stats = datos.statsPorJugador[g.jugadorId];
                         final equipo = jugador?.equipo;
-                        return ListTile(
-                          // El escudo del equipo al que le dio el premio:
-                          // saber de quién es cada estrella de un vistazo.
-                          leading: equipo == null
-                              ? const Icon(Icons.emoji_events,
-                                  color: Colors.amber)
-                              : EquipoLogo(codigoEquipo: equipo, tamano: 36),
-                          title: Text(jugador?.nombreFicticio ?? '—'),
-                          subtitle: Text(
-                              '${equipo == null ? '' : infoDe(equipo).nombreCompleto}'
-                              '${jugador != null ? ' · ${jugador.posicion}' : ''}'
-                              '${stats != null ? ' · ${_lineaStats(context, stats)}' : ''}'),
+                        final detalle = [
+                          if (equipo != null) infoDe(equipo).nombreCompleto,
+                          if (jugador != null) jugador.posicion,
+                          if (stats != null) _lineaStats(context, stats),
+                        ].where((s) => s.isNotEmpty).join(' · ');
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: FilaDeJugador(
+                            media: jugador?.media ?? 0,
+                            nombre: jugador?.nombreFicticio ?? '—',
+                            detalle: detalle,
+                            // El escudo del equipo al que le dio el premio:
+                            // saber de quién es cada estrella de un vistazo.
+                            accesorio: equipo == null
+                                ? Icon(Icons.emoji_events, color: e.marca)
+                                : EquipoLogo(codigoEquipo: equipo, tamano: 32),
+                          ),
                         );
                       }),
                     ];

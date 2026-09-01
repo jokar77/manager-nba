@@ -1213,6 +1213,16 @@ class TextosZh extends Textos {
   String get nacionalidadLabel => '国籍';
   @override
   String get confirmarIdentidadBtn => '确认身份';
+  @override
+  String get cadenciaLabel => '多久做一次决定？';
+  @override
+  String get cadenciaDescripcion => '职业生涯会按这个频率暂停，询问事件、球队报价等。中间的年份会自动处理。';
+  @override
+  String cadenciaOpcion(int n) => switch (n) {
+        1 => '每年',
+        2 => '每2年',
+        _ => '每3年',
+      };
 
   @override
   String get ofertaJuvenilTitulo => '青训报价';
@@ -1257,4 +1267,51 @@ class TextosZh extends Textos {
   String get decisionDeEquipoTitulo => '这赛季你要怎么做？';
   @override
   String quedarmeEnMiEquipoBtn(String equipo) => '留在$equipo';
+
+  @override
+  String get comprarCompletaTitulo => '完整版';
+  @override
+  String get comprarCompletaExplicacion =>
+      '一次性付款即可永久解锁本账号中的完整游戏：三条职业生涯并行、一键模拟整个赛季、赞助商始终开放，且没有任何广告。';
+  @override
+  String get comprarCompletaColumnaGratis => '免费版';
+  @override
+  String get comprarCompletaColumnaCompleta => '完整版';
+  @override
+  String get comprarCompletaFilaRanuras => '存档位';
+  @override
+  String get comprarCompletaFilaRanurasGratis => '1个';
+  @override
+  String get comprarCompletaFilaRanurasCompleta => '3个';
+  @override
+  String get comprarCompletaFilaSimular => '一键模拟整个赛季';
+  @override
+  String get comprarCompletaFilaSimularGratis => '否';
+  @override
+  String get comprarCompletaFilaSimularCompleta => '是';
+  @override
+  String get comprarCompletaFilaPatrocinadores => '赞助商';
+  @override
+  String get comprarCompletaFilaPatrocinadoresGratis => '每赛季一段视频';
+  @override
+  String get comprarCompletaFilaPatrocinadoresCompleta => '始终解锁';
+  @override
+  String get comprarCompletaFilaAnuncios => '广告';
+  @override
+  String get comprarCompletaFilaAnunciosGratis => '每次切换赛季时';
+  @override
+  String get comprarCompletaFilaAnunciosCompleta => '无';
+  @override
+  String get comprarBtn => '购买';
+  @override
+  String get restaurarCompraBtn => '恢复购买';
+  @override
+  String get restaurarSinCompraPreviaMensaje => '此账号未找到任何购买记录。';
+  @override
+  String get avisoVersionCompletaTitulo => '这是完整版内容';
+  @override
+  String get verVersionCompletaBtn => '查看完整版';
+  @override
+  String get avisoRanuraBloqueadaMensaje =>
+      '此存档位属于完整版：购买后即可同时进行三条职业生涯。';
 }

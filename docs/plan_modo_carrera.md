@@ -19,7 +19,9 @@ naranja de Franquicia).
 **El camino completo, tal y como está hoy:**
 1. Crear jugador — apellido y dorsal en vivo sobre una camiseta dibujada a
    mano, posición, nacionalidad (12, con bandera, hoja inferior a ancho
-   completo).
+   completo), y la cadencia de decisión (cada 1, 2 o 3 años —
+   `PartidaCarrera.cadenciaAnios`): las temporadas de en medio de una
+   tanda se resuelven solas, solo la última pregunta y enseña su resumen.
 2. Fase juvenil (16 → 19 años) — eliges organización de tu país
    (`rutas_juveniles.dart`), y cada temporada un evento de decisión
    (`eventos_de_carrera.dart`) te empuja la media un poco.
@@ -442,3 +444,122 @@ en verde (ningún test dependía del texto exacto que se tocó). No se
 pudo repetir la verificación visual en navegador por la misma limitación
 de entorno de la entrada anterior (sin panel visible, sin árbol de
 accesibilidad en CanvasKit).
+
+## Cuatro fallos y una función nueva, jugando de verdad (a 2026-08-26)
+
+El usuario lo reportó jugando una partida real. Cinco pedidos, resueltos
+todos en la misma sesión:
+
+**1. El sueldo, no el "valor" estimado, una vez en la NBA.** La ficha
+enseñaba `salarioEstimado(media, edad)` (una estimación de mercado)
+incluso ya con un contrato real firmado. `EstadoCarrera` gana
+`salario`/`aniosContrato` (de `Jugador`, `null` en fase juvenil); la
+ficha enseña el contrato real con el mismo formato que el resto del
+juego (`contratoAnioMillones`/`aniosDeContrato`/`formatearMillones`) en
+cuanto hay uno, y sigue con la estimación mientras no lo hay.
+
+**2. Estadísticas también antes de la NBA.** La fila PJ/PTS/AST de la
+ficha filtraba por `partidos > 0` — y las temporadas juveniles
+(`HistorialTemporadaJuvenil`) nunca tuvieron columna de partidos
+(no se sigue boxscore ahí, solo medias por partido), así que ese filtro
+las descartaba TODAS y la ficha enseñaba ceros durante toda la fase
+juvenil. Arreglo: se usa la temporada más reciente sin filtrar por
+partidos — la fase NBA ya traía sus PJ de verdad, la juvenil ahora
+enseña sus PTS/AST reales (con PJ en 0, porque de verdad no se cuentan
+ahí).
+
+**3. "Me han drafteado en zona Este" — bug de verdad, no una forma
+rara de hablar.** `equiposInfo` (`equipos_info.dart`) también contiene
+4 entradas que NO son de las 30 franquicias: `'Este'`, `'Oeste'`
+(las selecciones del All-Star) y `'Novatos'`/`'Sophomores'` (Rising
+Stars) — viven ahí para reusar el mismo widget de escudo/colores en las
+pantallas del All-Star. `_mejorEquipoPara` (el motor de draft y de
+ofertas de traspaso de Modo Carrera) iteraba `equiposInfo.keys` en
+crudo, así que estas 4 entradas podían "ficharte" como si fueran un
+equipo real. Arreglo en dos sitios: `equipos_especiales.dart` gana
+`equiposDeAllStar` y `esFranquicia` ahora también las excluye;
+`_mejorEquipoPara` filtra por `esFranquicia` antes de evaluar cada
+"equipo". Tests nuevos en `modo_carrera_repository_test.dart`
+comprobando que ni el draft ni las ofertas de traspaso caen nunca en
+una de las 4.
+
+**4. Botón para volver al menú principal.** El hub tenía
+`conVolver: false` a propósito en `BarraNeutraAppBar` — quitado. Se
+comprobó que todos los caminos de navegación hasta el hub (continuar
+una carrera, o crear una nueva con `pushAndRemoveUntil(...,
+(route) => route.isFirst)` de por medio) dejan el menú de inicio justo
+debajo en la pila, así que un `pop()` normal ya vuelve al sitio
+correcto sin más cambios.
+
+**5. Cadencia de decisión: cada 1, 2 o 3 años.** Pedido nuevo: "antes
+de empezar a jugar" poder elegir cada cuánto para la carrera a
+preguntar (evento de la temporada, resumen, oferta de equipo) en vez de
+cada temporada sin falta. Se eligió UNA VEZ al crear el jugador
+(`crear_jugador_screen.dart`, tres `ChoiceChip` junto al resto del
+formulario) y se guarda en la partida:
+- `PartidaCarrera.cadenciaAnios` (columna nueva, esquema 30→31,
+  aditiva con valor por defecto 1 — una carrera ya empezada sigue
+  preguntando cada año hasta que se cree una nueva).
+- `IdentidadCarrera.cadenciaAnios` (opcional, por defecto 1) y
+  `EstadoCarrera.cadenciaAnios` hacen de transporte hasta la UI.
+
+El motor (`avanzarTemporadaJuvenil`/`avanzarTemporadaNba`) NO cambió —
+sigue haciendo una temporada por llamada, con su contrato de siempre.
+Toda la "tanda" vive en `modo_carrera_hub_screen.dart`: `_avanzarJuvenil`
+y `_avanzarNba` ahora llaman al motor en un bucle de `cadenciaAnios`
+vueltas; en las que NO son la última de la tanda, el evento se resuelve
+con su primera opción y (en NBA) la decisión de equipo es "quedarme",
+sin enseñar ningún diálogo — solo la última pregunta de verdad y enseña
+su resumen, exactamente como con cadencia de 1. Dos salidas tempranas
+que cortan la tanda aunque no sea la última vuelta: pasar a fase
+predraft (fase juvenil) y el retiro (fase NBA) — ninguna de las dos se
+salta nunca, aunque caigan en medio de una tanda de 2 o 3 años.
+
+Un fallo de mi propio primer intento, cazado por el test antes de subir
+nada: había puesto el diálogo de "elegir equipo" ANTES del resumen de
+la temporada en vez de después, rompiendo el orden que ya esperaba
+`modo_carrera_hub_screen_test.dart` (evento → resumen → equipo). Quedó
+todo dentro del cuerpo del bucle, en el orden correcto, en vez de
+repartido antes/después del bucle.
+
+Verificado: `dart run build_runner build` (esquema 31), `dart analyze`
+limpio, `flutter test` completo. Tests nuevos: 2 en
+`modo_carrera_repository_test.dart` (cadencia se guarda y se lee;
+cadencia fuera de 1-3 rechazada) + 2 en `modo_carrera_repository_test.dart`
+para el bug de las selecciones del All-Star + 1 en
+`crear_jugador_screen_test.dart` (elegir "Cada 2 años" viaja hasta la
+partida) + 1 en `modo_carrera_hub_screen_test.dart` (con cadencia 2, un
+solo toque simula dos temporadas y solo pregunta una vez). 716 tests en
+total tras esta entrada.
+
+## Más variedad en los eventos de temporada (a 2026-08-26)
+
+Pedido corto: "más variedad de opciones al terminar la temporada... irte
+de vacaciones o entrenar todo el verano etc". El catálogo de
+`eventos_de_carrera.dart` tenía 6 eventos desde que se creó; pasa a 12,
+doblando la variedad con la que sale un evento al azar cada temporada.
+Nuevos, todos con el mismo patrón de siempre (`EventoDeCarrera` con 2-3
+`OpcionDeEventoDeCarrera`, cada una con su `efectoMedia`):
+
+- **"Se acaba la temporada: ¿y el verano?"** — el pedido explícito:
+  desconectar del todo, vacaciones con algo de trabajo, o entrenar todo
+  el verano (de -1 a +2 de media, el extremo más arriesgado da más).
+- Torneo de verano, cambio de dieta, oferta publicitaria (dinero fácil
+  a cambio de tiempo de entrenamiento), sesiones con un psicólogo
+  deportivo, y dar un paso adelante cuando se lesiona un compañero de
+  posición en pretemporada.
+
+Nota para la próxima vez que se toque este fichero: sigue siendo
+Spanish-only, sin pasar por `Textos`/los 7 idiomas — es una
+simplificación que ya venía de cuando se creó el catálogo (a diferencia
+de `eventos_narrativos.dart` del modo Franquicia, que sí tiene su propio
+`TextosDeEventos` traducido). No se ha cambiado eso aquí, solo se ha
+seguido el mismo patrón que ya había.
+
+Verificado: `dart analyze` limpio, `dart format` sobre el fichero (las
+líneas nuevas se pasaban de largo — ojo, el proyecto entero tiene
+desviaciones de formato preexistentes en unos 200 ficheros más, nada que
+ver con esta entrada, así que no se corrió `dart format` sobre nada más
+que este fichero). Tests de Modo Carrera en verde; no hace falta test
+dedicado para el catálogo (nada depende de su longitud ni de qué evento
+concreto sale, `eventoDeCarreraAleatorio` solo se usa desde la UI).

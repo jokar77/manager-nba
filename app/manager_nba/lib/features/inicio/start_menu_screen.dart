@@ -20,6 +20,7 @@ import '../modo_carrera/oferta_juvenil_screen.dart';
 import '../roster/roster_config_screen.dart';
 import '../roster/team_selector_screen.dart';
 import '../temporada/patrocinadores_screen.dart';
+import '../tienda/aviso_version_completa.dart';
 import '../../i18n/textos.dart';
 import '../../shared/contraste.dart';
 import '../../shared/estilo.dart';
@@ -901,29 +902,36 @@ class _FichaDeSlot extends StatelessWidget {
       fondo: e.panelApagado,
       corte: 14,
       borde: Border.all(color: e.linea),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-        child: Row(
-          children: [
-            Icon(Icons.lock_outline, color: e.textoRotulo),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(mayus(textos.partidaNumero(resumen.numero)),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: rotulo(e, tamano: 9)),
-                  const SizedBox(height: 2),
-                  Text(textos.ranuraDeVersionCompleta,
-                      maxLines: 2,
-                      style: TextStyle(fontSize: 14, color: e.textoTenue)),
-                ],
+      child: InkWell(
+        onTap: () => mostrarAvisoVersionCompleta(
+          context,
+          mensaje: textos.avisoRanuraBloqueadaMensaje,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          child: Row(
+            children: [
+              Icon(Icons.lock_outline, color: e.textoRotulo),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(mayus(textos.partidaNumero(resumen.numero)),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: rotulo(e, tamano: 9)),
+                    const SizedBox(height: 2),
+                    Text(textos.ranuraDeVersionCompleta,
+                        maxLines: 2,
+                        style: TextStyle(fontSize: 14, color: e.textoTenue)),
+                  ],
+                ),
               ),
-            ),
-          ],
+              Icon(Icons.chevron_right, color: e.textoRotulo),
+            ],
+          ),
         ),
       ),
     );

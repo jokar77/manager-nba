@@ -16,8 +16,15 @@ const equipoRetirados = 'RET';
 /// nadie, pero ya existen como jugadores para poder enseñarlos y elegirlos.
 const equipoProspectos = 'DRAFT';
 
+/// Las dos selecciones del All-Star y las dos del Rising Stars. Viven en
+/// `equiposInfo` (`equipos_info.dart`) para reusar sus mismos widgets de
+/// logo/colores, pero no son una de las 30 franquicias — nadie puede
+/// "jugar" para ellas fuera del propio fin de semana de las estrellas.
+const equiposDeAllStar = {'Este', 'Oeste', 'Novatos', 'Sophomores'};
+
 /// ¿Es [equipo] una de las 30 franquicias de verdad?
 bool esFranquicia(String equipo) =>
     equipo != equipoAgenciaLibre &&
     equipo != equipoRetirados &&
-    equipo != equipoProspectos;
+    equipo != equipoProspectos &&
+    !equiposDeAllStar.contains(equipo);

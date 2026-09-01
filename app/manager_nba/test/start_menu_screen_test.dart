@@ -3,8 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:manager_nba/data/importer/jugadores_importer.dart';
 import 'package:manager_nba/domain/franquicia_repository.dart';
+import 'package:manager_nba/domain/permisos.dart';
 import 'package:manager_nba/domain/slots_repository.dart';
 import 'package:manager_nba/features/inicio/start_menu_screen.dart';
+import 'package:manager_nba/features/tienda/comprar_screen.dart';
 import 'package:manager_nba/main.dart' show routeObserver;
 
 void main() {
@@ -23,6 +25,7 @@ void main() {
   tearDown(() async {
     await almacen.cerrarTodo();
     almacenDeSlots = AlmacenDeSlotsEnDisco();
+    permisos = Permisos();
   });
 
   /// Deja la ranura [slot] con una partida de [equipo] ya empezada. Es E/S
@@ -154,5 +157,30 @@ void main() {
 
     // El menú principal rotula sus destinos en mayúsculas.
     expect(find.text('CALENDARIO'), findsOneWidget);
+  });
+
+  testWidgets(
+      'tocar una ranura bloqueada abre el aviso y de ahí se llega a comprar',
+      (WidgetTester tester) async {
+    permisos = Permisos(edicion: Edicion.gratis);
+    await pump(tester);
+
+    // Igual que en "sin ninguna partida...": hay que pedir empezar una
+    // nueva para que se vean las tres ranuras. Con `Edicion.gratis` la 2 y
+    // la 3 salen bloqueadas (ver `ranurasDisponibles` en
+    // slots_repository.dart).
+    await tester.tap(find.widgetWithText(FilledButton, 'MODO FRANQUICIA'));
+    await tester.pump();
+    expect(find.byIcon(Icons.lock_outline), findsNWidgets(2));
+
+    await tester.tap(find.byIcon(Icons.lock_outline).first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Esto es de la versión completa'), findsOneWidget);
+
+    await tester.tap(find.text('VER LA VERSIÓN COMPLETA'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ComprarScreen), findsOneWidget);
   });
 }
