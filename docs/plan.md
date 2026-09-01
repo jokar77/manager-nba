@@ -5662,3 +5662,47 @@ la rama de trabajo normal (no en los worktrees, donde además el propio
 `flutter test` iba mucho más lento de lo normal): `dart analyze` limpio y
 **713 tests** en verde (708 + 4 de `comprar_screen_test.dart` + 1 de
 `start_menu_screen_test.dart`).
+
+## Segundo pase de modernización: 5 pantallas más, y un bug real cazado
+## en la verificación (a 2026-08-26)
+
+Segunda ronda del punto 2 del backlog, esta vez con el agente "diseno" ya
+disponible como tipo nativo (la vez anterior no se había recargado la
+sesión). Se le pasó la lección de la ronda anterior por delante: nada de
+`flutter test` en segundo plano dentro del propio agente — solo
+`dart analyze`, y la verificación completa la hace quien lo invoca. Esta
+vez SÍ entregó su resumen final sin quedarse colgado.
+
+Modernizó 5: `mercado/ofertas_screen.dart`, `mercado/entrenador_screen.dart`,
+`temporada/resumen_temporada_screen.dart`, `playoffs/playoffs_screen.dart`
+y `temporada/draft_screen.dart` — mismo patrón de siempre (`PanelCortado`,
+`FilaDeJugador`/`SeparadorSeccion`, tokens de `Estilo.de(context)` en vez
+de `Theme.of(context).colorScheme`). Dejó documentadas para otro pase:
+`mercado/traspasos_screen.dart` (la más desfasada, pero con más riesgo de
+romper su interacción de 3 columnas/buscador/hoja modal para lo que
+compensaba en este pase) y un pulido menor en `camisetas_nuevas_screen.dart`/
+`retirados_screen.dart`. El resto de la lista de 13 candidatas resultaron
+ser falsos positivos (pantallas sin listas de jugadores/equipos con
+media) — quedan fuera del backlog.
+
+**El bug real**: `playoffs_screen.dart` tenía DOS etiquetas de conferencia
+con texto distinto a propósito — `tituloConferenciaOeste` ("CONFERENCIA
+OESTE", ya en mayúsculas, la cabecera del propio cuadro) y
+`conferenciaOesteTitulo` ("Conferencia Oeste", con mayúscula solo al
+principio, la cabecera del panel de Play-In). El agente envolvió la
+segunda en `mayus()` siguiendo el patrón de rótulo de sección que ya usa
+el resto del rediseño — sin saber que eso la hacía IDÉNTICA a la primera,
+así que la pantalla pasó a tener dos widgets con el mismo texto exacto
+"CONFERENCIA OESTE" en sitios distintos. `dart analyze` no lo puede ver
+(es un problema de contenido en tiempo de ejecución, no de tipos), pero
+`flutter test` sí: 4 tests lo cazaron con "Found 2 widgets" y "Found 0
+widgets" (los otros dos por el mismo motivo, con "Play-In"/"Bracket"
+pasando a "PLAY-IN"/"BRACKET" en otro rótulo de sección). Arreglo: se
+quitó el `mayus()` de la etiqueta del Play-In (vuelve a su "Conferencia
+Oeste" de siempre, con la nueva tipografía de todos modos) y se
+actualizaron las 4 aserciones de texto en mayúscula a los otros dos
+rótulos, que sí eran un cambio de aspecto intencionado, no un accidente.
+
+Verificado: `dart analyze` limpio, `flutter test` completo — 716 tests en
+verde (mismo número que antes: no se añadió ningún test nuevo, se
+corrigieron 4 existentes para el cambio de mayúsculas intencionado).

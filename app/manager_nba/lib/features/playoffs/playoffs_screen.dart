@@ -256,9 +256,8 @@ class _PlayoffsScreenState extends State<PlayoffsScreen> {
                         ),
                         const SizedBox(height: 16),
                       ],
-                      Text(t(context).bracketTitulo,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text(mayus(t(context).bracketTitulo),
+                          style: rotulo(Estilo.de(context), tamano: 12)),
                       if (playInSinResolver)
                         Padding(
                           padding: const EdgeInsets.only(top: 4, bottom: 4),
@@ -266,17 +265,14 @@ class _PlayoffsScreenState extends State<PlayoffsScreen> {
                             children: [
                               Icon(Icons.lock_clock,
                                   size: 15,
-                                  color:
-                                      Theme.of(context).colorScheme.outline),
+                                  color: Estilo.de(context).textoRotulo),
                               const SizedBox(width: 6),
                               Expanded(
                                 child: Text(
                                   t(context).primeraRondaEsperaPlayIn,
                                   style: TextStyle(
                                       fontSize: 12,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .outline),
+                                      color: Estilo.de(context).textoTenue),
                                 ),
                               ),
                             ],
@@ -334,17 +330,17 @@ class _PanelPlayIn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final e = Estilo.de(context);
     final resuelto = series.every((s) => s.ganador != null);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Text(t(context).fronteraPlayIn,
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(mayus(t(context).fronteraPlayIn),
+                style: rotulo(e, tamano: 12)),
             const SizedBox(width: 8),
-            if (resuelto)
-              const Icon(Icons.check_circle, size: 16, color: Colors.green),
+            if (resuelto) Icon(Icons.check_circle, size: 16, color: e.bien),
           ],
         ),
         const SizedBox(height: 6),
@@ -416,10 +412,12 @@ class _ColumnaPlayIn extends StatelessWidget {
         ...series.where((s) => s.etapa == etapa),
     ];
     final info = infoDe(conferencia);
+    final e = Estilo.de(context);
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      margin: EdgeInsets.zero,
+    return PanelCortado(
+      fondo: e.panel,
+      corte: 12,
+      borde: Border.all(color: e.linea),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -431,15 +429,14 @@ class _ColumnaPlayIn extends StatelessWidget {
                 conferencia == 'Oeste'
                     ? t(context).conferenciaOesteTitulo
                     : t(context).conferenciaEsteTitulo,
-                style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: textoSobre(info.colorPrimario))),
+                style: titular(e,
+                    tamano: 12, color: textoSobre(info.colorPrimario))),
           ),
           if (ordenadas.isEmpty)
             Padding(
               padding: const EdgeInsets.all(10),
-              child: Text(t(context).sinPlayIn, style: const TextStyle(fontSize: 12)),
+              child: Text(t(context).sinPlayIn,
+                  style: TextStyle(fontSize: 12, color: e.textoTenue)),
             )
           else
             for (final serie in ordenadas)
@@ -478,10 +475,10 @@ class _FilaPlayIn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final e = Estilo.de(context);
     final esTuSerie =
         serie.equipoA == equipoUsuario || serie.equipoB == equipoUsuario;
     final jugado = serie.ganador != null;
-    final outline = Theme.of(context).colorScheme.outline;
 
     return InkWell(
       onTap: jugado
@@ -493,8 +490,7 @@ class _FilaPlayIn extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(queSeJuega,
-                style: TextStyle(fontSize: 10, color: outline)),
+            Text(mayus(queSeJuega), style: rotulo(e, tamano: 9)),
             const SizedBox(height: 4),
             Row(
               children: [
@@ -518,10 +514,9 @@ class _FilaPlayIn extends StatelessWidget {
                     child: Text(t(context).jugarBtn),
                   )
                 else if (jugado)
-                  const Icon(Icons.check_circle, size: 18, color: Colors.green)
+                  Icon(Icons.check_circle, size: 18, color: e.bien)
                 else
-                  Text(t(context).porJugar,
-                      style: TextStyle(fontSize: 10, color: outline)),
+                  Text(mayus(t(context).porJugar), style: rotulo(e, tamano: 9)),
               ],
             ),
           ],
@@ -670,7 +665,7 @@ class _BracketVisual extends StatelessWidget {
     final finalEste = _buscar('Este', 'finalConferencia');
     final finalNba = _buscar('Final', 'finalNBA');
 
-    final lineColor = Theme.of(context).colorScheme.outlineVariant;
+    final lineColor = Estilo.de(context).lineaFuerte;
 
     Widget caja(Serie? serie, double centroEnX, double centroEnY,
         {required String etiquetaVacia}) {
@@ -872,16 +867,12 @@ class _Ronda extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final e = Estilo.de(context);
     return Text(
-      texto,
+      mayus(texto),
       textAlign: TextAlign.center,
-      style: TextStyle(
-        fontSize: 10,
-        fontWeight: destacado ? FontWeight.bold : FontWeight.normal,
-        color: destacado
-            ? const Color(0xFFD4A017)
-            : Theme.of(context).colorScheme.outline,
-      ),
+      style: rotulo(e,
+          tamano: 10, color: destacado ? const Color(0xFFD4A017) : null),
     );
   }
 }
@@ -977,7 +968,8 @@ class _CajaSerie extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = Theme.of(context).colorScheme.outlineVariant;
+    final e = Estilo.de(context);
+    final borderColor = e.lineaFuerte;
     final serie = this.serie;
     if (serie == null) {
       return Container(
@@ -988,7 +980,7 @@ class _CajaSerie extends StatelessWidget {
         alignment: Alignment.center,
         child: Text(etiquetaVacia,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 11, color: borderColor)),
+            style: TextStyle(fontSize: 11, color: e.textoTenue)),
       );
     }
 
@@ -1009,11 +1001,7 @@ class _CajaSerie extends StatelessWidget {
         decoration: BoxDecoration(
           color: esCampeon ? dorado.withValues(alpha: 0.14) : null,
           border: Border.all(
-              color: esCampeon
-                  ? dorado
-                  : (esTuSerie
-                      ? Theme.of(context).colorScheme.primary
-                      : borderColor),
+              color: esCampeon ? dorado : (esTuSerie ? e.marca : borderColor),
               width: esCampeon || esTuSerie ? 2 : 1),
           borderRadius: BorderRadius.circular(6),
         ),
@@ -1068,23 +1056,23 @@ class _CajaSerie extends StatelessWidget {
 
   Widget _filaEquipo(
       BuildContext context, String equipo, int seed, int victorias, bool gana) {
+    final e = Estilo.de(context);
     // El rival que sale del play-in todavía no existe: su hueco se enseña
     // como tal, en vez de como un equipo sin nombre ni escudo.
     if (equipo == equipoPorDefinir) {
-      final gris = Theme.of(context).colorScheme.outline;
       return Row(
         children: [
           if (seed > 0)
             Text('$seed ',
-                style: const TextStyle(fontSize: 10, color: Colors.grey)),
-          Icon(Icons.help_outline, size: 16, color: gris),
+                style: TextStyle(fontSize: 10, color: e.textoRotulo)),
+          Icon(Icons.help_outline, size: 16, color: e.textoRotulo),
           const SizedBox(width: 4),
           Expanded(
             child: Text(t(context).porDefinir,
                 style: TextStyle(
                     fontSize: 11,
                     fontStyle: FontStyle.italic,
-                    color: gris),
+                    color: e.textoRotulo),
                 overflow: TextOverflow.ellipsis),
           ),
         ],
@@ -1094,18 +1082,17 @@ class _CajaSerie extends StatelessWidget {
     return Row(
       children: [
         if (seed > 0)
-          Text('$seed ', style: const TextStyle(fontSize: 10, color: Colors.grey)),
+          Text('$seed ', style: TextStyle(fontSize: 10, color: e.textoRotulo)),
         EquipoLogo(codigoEquipo: equipo, tamano: 16),
         const SizedBox(width: 4),
         Expanded(
           child: Text(
-            infoDe(equipo).apodo,
-            style: TextStyle(
-                fontSize: 11, fontWeight: gana ? FontWeight.bold : FontWeight.normal),
+            mayus(infoDe(equipo).apodo),
+            style: titular(e, tamano: 11, color: gana ? e.texto : e.textoTenue),
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        Text('$victorias', style: const TextStyle(fontSize: 11)),
+        Text('$victorias', style: titular(e, tamano: 11)),
       ],
     );
   }

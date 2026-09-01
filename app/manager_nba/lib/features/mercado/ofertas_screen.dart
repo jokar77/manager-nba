@@ -9,6 +9,7 @@ import '../../domain/ofertas_repository.dart';
 import '../../domain/picks_repository.dart';
 import '../../domain/posiciones.dart';
 import '../../shared/equipo_logo.dart';
+import '../../shared/ficha_jugador.dart';
 import '../../shared/hoja_de_propuestas.dart' show contratoEnUnaLinea;
 import 'traspasos_screen.dart';
 
@@ -197,6 +198,7 @@ class _Navegador extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (total <= 1) return const SizedBox.shrink();
+    final e = Estilo.de(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
       child: Row(
@@ -208,7 +210,7 @@ class _Navegador extends StatelessWidget {
             tooltip: t(context).ofertaAnterior,
           ),
           Text(t(context).ofertaNDeM(indice + 1, total),
-              style: const TextStyle(fontWeight: FontWeight.bold)),
+              style: titular(e, tamano: 16)),
           IconButton.filledTonal(
             onPressed: indice < total - 1 ? onSiguiente : null,
             icon: const Icon(Icons.chevron_right),
@@ -219,18 +221,6 @@ class _Navegador extends StatelessWidget {
     );
   }
 }
-
-/// Un jugador de la oferta con lo que hace falta para juzgarla: quién es,
-/// dónde juega, su nivel y LO QUE COBRA. Sin el contrato, aceptar era
-/// aceptar un sueldo a ciegas — un traspaso te ata a esa nómina varios
-/// años y puede dejarte sin espacio salarial para el resto del mercado.
-///
-/// Sin las estadísticas de la temporada a propósito: lo que se juzga aquí
-/// es el jugador en sí (nivel y contrato), no un rendimiento que puede
-/// venir condicionado por un equipo que está a punto de dejar.
-String _lineaJugador(BuildContext context, Jugador j) =>
-    t(context).lineaJugadorOferta(j.nombreFicticio, etiquetaPosicion(j),
-        j.media, contratoEnUnaLinea(context, j));
 
 class _TarjetaOferta extends StatelessWidget {
   final OfertaEntrante oferta;
@@ -247,39 +237,43 @@ class _TarjetaOferta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+    final e = Estilo.de(context);
+    return PanelCortado(
+      fondo: e.panel,
+      corte: 14,
+      borde: Border.all(color: e.linea),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 EquipoLogo(codigoEquipo: oferta.equipoOfertante),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    infoDe(oferta.equipoOfertante).nombreCompleto,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    mayus(infoDe(oferta.equipoOfertante).nombreCompleto),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: titular(e, tamano: 17),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 14),
             _Bloque(
               titulo: t(context).tePiden,
               icono: Icons.arrow_upward,
-              lineas: [for (final j in oferta.tePiden) _lineaJugador(context, j)],
+              jugadores: oferta.tePiden,
+              picks: const [],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 14),
             _Bloque(
               titulo: t(context).teOfrecen,
               icono: Icons.arrow_downward,
-              lineas: [
-                for (final j in oferta.teOfrecen) _lineaJugador(context, j),
-                for (final p in oferta.teOfrecenPicks) etiquetaDePick(p),
-              ],
+              jugadores: oferta.teOfrecen,
+              picks: oferta.teOfrecenPicks,
             ),
             const SizedBox(height: 12),
             SizedBox(
@@ -314,36 +308,58 @@ class _TarjetaOferta extends StatelessWidget {
   }
 }
 
+/// Un lado de la oferta: quién te piden o quién te ofrecen, con la ficha
+/// completa de cada jugador (media, posición y contrato) — sin ella,
+/// aceptar era aceptar un sueldo a ciegas, y un traspaso ata esa nómina
+/// varios años.
 class _Bloque extends StatelessWidget {
   final String titulo;
   final IconData icono;
-  final List<String> lineas;
+  final List<Jugador> jugadores;
+  final List<PickDraft> picks;
 
   const _Bloque({
     required this.titulo,
     required this.icono,
-    required this.lineas,
+    required this.jugadores,
+    required this.picks,
   });
 
   @override
   Widget build(BuildContext context) {
+    final e = Estilo.de(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Icon(icono, size: 16),
-            const SizedBox(width: 4),
-            Text(titulo,
-                style: const TextStyle(
-                    fontSize: 12, fontWeight: FontWeight.bold)),
+            Icon(icono, size: 14, color: e.marca),
+            const SizedBox(width: 8),
+            Expanded(child: SeparadorSeccion(titulo: titulo, acento: e.marca)),
           ],
         ),
-        for (final linea in lineas)
-          Padding(
-            padding: const EdgeInsets.only(left: 20, top: 2),
-            child: Text(linea, style: const TextStyle(fontSize: 13)),
+        const SizedBox(height: 8),
+        for (final j in jugadores) ...[
+          FilaDeJugador(
+            media: j.media,
+            nombre: j.nombreFicticio,
+            detalle: '${etiquetaPosicion(j)} · '
+                '${contratoEnUnaLinea(context, j)}',
           ),
+          const SizedBox(height: 6),
+        ],
+        for (final p in picks) ...[
+          PanelCortado(
+            fondo: e.panelSuave,
+            corte: 10,
+            borde: Border.all(color: e.linea),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+              child: Text(etiquetaDePick(p), style: titular(e, tamano: 14)),
+            ),
+          ),
+          const SizedBox(height: 6),
+        ],
       ],
     );
   }

@@ -80,8 +80,8 @@ void main() {
     await pump(tester);
 
     expect(tester.takeException(), isNull);
-    expect(find.text('Play-In'), findsOneWidget);
-    expect(find.text('Bracket'), findsOneWidget);
+    expect(find.text('PLAY-IN'), findsOneWidget);
+    expect(find.text('BRACKET'), findsOneWidget);
     // Las cajas todavía sin resolver muestran el nombre de su ronda en vez
     // de una etiqueta genérica.
     expect(find.textContaining('Semifinal de conferencia'), findsWidgets);
@@ -108,7 +108,7 @@ void main() {
       (WidgetTester tester) async {
     await sembrarPlayoffs(db);
     await pump(tester);
-    expect(find.text('Play-In'), findsOneWidget);
+    expect(find.text('PLAY-IN'), findsOneWidget);
 
     // Por el camino real (el botón), no tocando la base de datos por
     // detrás: así se comprueba también que la pantalla se refresca sola.
@@ -117,8 +117,8 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text('Play-In'), findsNothing);
-    expect(find.text('Bracket'), findsOneWidget);
+    expect(find.text('PLAY-IN'), findsNothing);
+    expect(find.text('BRACKET'), findsOneWidget);
 
     // Y lo que decidía el play-in ya está en el cuadro: la primera ronda
     // tiene rivales de verdad en vez de huecos "por definir".

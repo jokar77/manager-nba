@@ -6,6 +6,7 @@ import '../../data/database/app_database.dart';
 import '../../domain/equipos_info.dart';
 import '../../domain/resumen_temporada_repository.dart';
 import '../../shared/equipo_logo.dart';
+import '../../shared/estilo.dart';
 import '../../shared/navegacion.dart';
 import '../../shared/pantalla.dart';
 
@@ -115,7 +116,7 @@ class _Balance extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tema = Theme.of(context);
+    final e = Estilo.de(context);
     final columnas = switch (tamanoDe(context)) {
       Tamano.compacto => 2,
       Tamano.medio => 3,
@@ -172,7 +173,10 @@ class _Balance extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(12),
       children: [
-        Card(
+        PanelCortado(
+          fondo: e.panel,
+          corte: 14,
+          borde: Border.all(color: e.linea),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Row(
@@ -182,13 +186,13 @@ class _Balance extends StatelessWidget {
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(infoDe(equipoUsuario).nombreCompleto,
-                          style: tema.textTheme.titleMedium),
+                      Text(mayus(infoDe(equipoUsuario).nombreCompleto),
+                          style: titular(e, tamano: 15)),
                       const SizedBox(height: 4),
                       Text('${resumen.victorias}-${resumen.derrotas}',
-                          style: tema.textTheme.displaySmall
-                              ?.copyWith(fontWeight: FontWeight.bold)),
+                          style: cifra(e, tamano: 34)),
                       Text(
                         t(context).partidosJugadosVictoriasPct(
                             resumen.partidosJugados,
@@ -198,7 +202,7 @@ class _Balance extends StatelessWidget {
                                         resumen.partidosJugados *
                                         100)
                                 .round()),
-                        style: TextStyle(color: tema.colorScheme.outline),
+                        style: TextStyle(fontSize: 12, color: e.textoTenue),
                       ),
                     ],
                   ),
@@ -217,34 +221,32 @@ class _Balance extends StatelessWidget {
           crossAxisSpacing: 8,
           children: [
             for (final f in fichas)
-              Card(
-                margin: EdgeInsets.zero,
+              PanelCortado(
+                fondo: e.panelSuave,
+                corte: 10,
+                borde: Border.all(color: e.linea),
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(f.titulo,
+                      Text(mayus(f.titulo),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                              fontSize: 12, color: tema.colorScheme.outline)),
+                          style: rotulo(e, tamano: 10)),
                       const SizedBox(height: 6),
                       FittedBox(
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
-                        child: Text(f.valor,
-                            style: const TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold)),
+                        child: Text(f.valor, style: cifra(e, tamano: 20)),
                       ),
                       if (f.nota != null)
                         Text(f.nota!,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                fontSize: 11,
-                                color: tema.colorScheme.outline)),
+                            style:
+                                TextStyle(fontSize: 11, color: e.textoTenue)),
                     ],
                   ),
                 ),
@@ -322,24 +324,22 @@ class _TablaDeConferencia extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tema = Theme.of(context);
-    return Card(
-      margin: EdgeInsets.zero,
-      clipBehavior: Clip.antiAlias,
+    final e = Estilo.de(context);
+    return PanelCortado(
+      fondo: e.panel,
+      corte: 12,
+      borde: Border.all(color: e.linea),
       child: Column(
         children: [
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            color: tema.colorScheme.surfaceContainerHighest,
+            color: e.panelSuave,
             child: Text(
-                conferencia == 'Oeste'
+                mayus(conferencia == 'Oeste'
                     ? t(context).tituloConferenciaOeste
-                    : t(context).tituloConferenciaEste,
-                style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1)),
+                    : t(context).tituloConferenciaEste),
+                style: rotulo(e, tamano: 11)),
           ),
           for (var i = 0; i < equipos.length; i++)
             _FilaClasificacion(
@@ -366,7 +366,7 @@ class _FilaClasificacion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tema = Theme.of(context);
+    final e = Estilo.de(context);
     // Las ocho primeras plazas son las de playoffs directo; de la 9 a la 10,
     // play-in. Se marca con una línea, que es como se lee una clasificación
     // de la NBA de un vistazo.
@@ -374,14 +374,10 @@ class _FilaClasificacion extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: esTuyo
-            ? tema.colorScheme.primary.withValues(alpha: 0.14)
-            : null,
+        color: esTuyo ? e.marca.withValues(alpha: 0.14) : null,
         border: Border(
           bottom: BorderSide(
-            color: bordeDePlayoffs
-                ? tema.colorScheme.outline
-                : tema.dividerColor,
+            color: bordeDePlayoffs ? e.lineaFuerte : e.linea,
             width: bordeDePlayoffs ? 1.5 : 0.5,
           ),
         ),
@@ -392,25 +388,21 @@ class _FilaClasificacion extends StatelessWidget {
           SizedBox(
             width: 22,
             child: Text('$puesto',
-                style: TextStyle(fontSize: 12, color: tema.colorScheme.outline)),
+                style: TextStyle(fontSize: 12, color: e.textoTenue)),
           ),
           EquipoLogo(codigoEquipo: fila.equipo, tamano: 22),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              infoDe(fila.equipo).apodo,
+              mayus(infoDe(fila.equipo).apodo),
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: esTuyo ? FontWeight.bold : FontWeight.normal),
+              style: titular(e, tamano: 13),
             ),
           ),
           SizedBox(
             width: 54,
             child: Text('${fila.victorias}-${fila.derrotas}',
-                textAlign: TextAlign.right,
-                style: const TextStyle(
-                    fontSize: 13, fontWeight: FontWeight.bold)),
+                textAlign: TextAlign.right, style: titular(e, tamano: 13)),
           ),
           SizedBox(
             width: 44,
@@ -422,7 +414,7 @@ class _FilaClasificacion extends StatelessWidget {
                   ? '1.000'
                   : fila.porcentaje.toStringAsFixed(3).substring(1),
               textAlign: TextAlign.right,
-              style: TextStyle(fontSize: 12, color: tema.colorScheme.outline),
+              style: TextStyle(fontSize: 12, color: e.textoTenue),
             ),
           ),
         ],
@@ -441,54 +433,68 @@ class _TablaDeJugadores extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final outline = Theme.of(context).colorScheme.outline;
+    final e = Estilo.de(context);
     final jugados = resumen.jugadores.where((j) => j.partidosJugados > 0);
     if (jugados.isEmpty) {
       return Center(child: Text(t(context).todaviaNoHayEstadisticas));
     }
 
-    Widget fila(String nombre, String subtitulo, List<String> valores,
-        {required bool esCabecera}) {
-      final estilo = TextStyle(
-        fontSize: 13,
-        fontWeight: esCabecera ? FontWeight.bold : FontWeight.normal,
-        color: esCabecera ? outline : null,
-      );
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(nombre, overflow: TextOverflow.ellipsis, style: estilo),
-                  if (subtitulo.isNotEmpty)
-                    Text(subtitulo,
+    Widget cabecera(String nombre, List<String> valores) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          child: Row(
+            children: [
+              Expanded(
+                  child: Text(mayus(nombre), style: rotulo(e, tamano: 10))),
+              for (final v in valores)
+                SizedBox(
+                  width: _anchoNumero,
+                  child: Text(mayus(v),
+                      textAlign: TextAlign.right, style: rotulo(e, tamano: 10)),
+                ),
+            ],
+          ),
+        );
+
+    Widget fila(String nombre, String subtitulo, List<String> valores) =>
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(nombre,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 11, color: outline)),
-                ],
+                        style: titular(e, tamano: 14)),
+                    if (subtitulo.isNotEmpty)
+                      Text(subtitulo,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              TextStyle(fontSize: 11, color: e.textoTenue)),
+                  ],
+                ),
               ),
-            ),
-            for (final v in valores)
-              SizedBox(
-                width: _anchoNumero,
-                child: Text(v, textAlign: TextAlign.right, style: estilo),
-              ),
-          ],
-        ),
-      );
-    }
+              for (final v in valores)
+                SizedBox(
+                  width: _anchoNumero,
+                  child: Text(v,
+                      textAlign: TextAlign.right, style: titular(e, tamano: 13)),
+                ),
+            ],
+          ),
+        );
 
     return ListView(
       children: [
-        fila(
-            t(context).columnaJugador,
-            '',
-            [t(context).columnaPJ, t(context).columnaPts,
-                t(context).columnaAst, t(context).columnaReb],
-            esCabecera: true),
-        const Divider(height: 1),
+        cabecera(t(context).columnaJugador, [
+          t(context).columnaPJ,
+          t(context).columnaPts,
+          t(context).columnaAst,
+          t(context).columnaReb,
+        ]),
+        Divider(height: 1, color: e.lineaFuerte),
         for (final j in jugados)
           fila(
             j.nombre,
@@ -499,7 +505,6 @@ class _TablaDeJugadores extends StatelessWidget {
               j.asistencias.toStringAsFixed(1),
               j.rebotes.toStringAsFixed(1),
             ],
-            esCabecera: false,
           ),
       ],
     );

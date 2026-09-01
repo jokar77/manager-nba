@@ -207,10 +207,11 @@ class _Cabecera extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (terminado) {
+      final e = Estilo.de(context);
       return Padding(
         padding: const EdgeInsets.all(16),
-        child: Text(t(context).draftCompletado,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        child: Text(mayus(t(context).draftCompletado),
+            style: titular(e, tamano: 19)),
       );
     }
 
@@ -227,14 +228,20 @@ class _Cabecera extends StatelessWidget {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(t(context).eleccionNumero(numeroDeEleccion),
-                    style: TextStyle(color: textoSecundarioSobre(fondo))),
+                Text(mayus(t(context).eleccionNumero(numeroDeEleccion)),
+                    style: TextStyle(
+                        fontSize: 11,
+                        letterSpacing: 1,
+                        color: textoSecundarioSobre(fondo))),
                 Text(
-                  esMiTurno ? t(context).teTocaElegir : info.nombreCompleto,
+                  mayus(
+                      esMiTurno ? t(context).teTocaElegir : info.nombreCompleto),
                   style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontFamily: familiaTitular,
+                      fontSize: 19,
+                      fontWeight: FontWeight.w800,
                       color: textoSobre(fondo)),
                 ),
               ],
@@ -324,44 +331,35 @@ class _ListaElegidos extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final e = Estilo.de(context);
     final ordenados = [...elegidos]
       ..sort((a, b) => a.numeroDeEleccion.compareTo(b.numeroDeEleccion));
 
     return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
       itemCount: ordenados.length,
       itemBuilder: (context, i) {
         final r = ordenados[i];
         final esTuyo = r.equipo == equipoUsuario;
-        return ListTile(
-          dense: true,
-          leading: SizedBox(
-            width: 36,
-            child: Text('#${r.numeroDeEleccion}',
-                style: const TextStyle(fontWeight: FontWeight.bold)),
-          ),
-          title: Text(r.nombre,
-              style: TextStyle(
-                  fontWeight: esTuyo ? FontWeight.bold : FontWeight.normal)),
-          subtitle: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(t(context).posicionMediaSeparador(r.posicion, r.media)),
-              PotencialEstrellas(potencial: r.potencial, tamano: 12),
-            ],
-          ),
-          // Con quién se ha ido cada uno, por nombre y no solo por escudo:
-          // el logo de dos colores no basta para reconocer 30 franquicias.
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(infoDe(r.equipo).apodo,
-                  style: TextStyle(
-                      fontSize: 12,
-                      fontWeight:
-                          esTuyo ? FontWeight.bold : FontWeight.normal)),
-              const SizedBox(width: 6),
-              EquipoLogo(codigoEquipo: r.equipo, tamano: 24),
-            ],
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: FilaDeJugador(
+            media: r.media,
+            nombre: r.nombre,
+            detalle: '#${r.numeroDeEleccion} · ${r.posicion}',
+            bajoElNombre: PotencialEstrellas(potencial: r.potencial, tamano: 12),
+            // Con quién se ha ido cada uno, por nombre y no solo por escudo:
+            // el logo de dos colores no basta para reconocer 30 franquicias.
+            accesorio: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(mayus(infoDe(r.equipo).apodo),
+                    style: titular(e,
+                        tamano: 13, color: esTuyo ? e.marca : e.texto)),
+                const SizedBox(width: 6),
+                EquipoLogo(codigoEquipo: r.equipo, tamano: 24),
+              ],
+            ),
           ),
         );
       },

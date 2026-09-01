@@ -11,6 +11,10 @@ import '../../shared/barra_de_club.dart';
 import '../../shared/entrenador_ui.dart';
 import '../../shared/pantalla.dart';
 
+const _colorAtaque = Color(0xFFE08A1E);
+const _colorDefensa = Color(0xFF3D7BFF);
+const _colorDesarrollo = Color(0xFF2E9E5B);
+
 /// Tu banquillo: quién lo ocupa, qué contrato tiene, cuánto te queda de
 /// presupuesto y el mercado de entrenadores libres.
 class EntrenadorScreen extends StatefulWidget {
@@ -181,6 +185,7 @@ class _EntrenadorScreenState extends State<EntrenadorScreen> {
   @override
   Widget build(BuildContext context) {
     final obligatorio = widget.onContinuar != null;
+    final e = Estilo.de(context);
     return Scaffold(
       // La flecha de volver no hace nada en modo trámite: la barra usa
       // `maybePop`, y con la ruta marcada como no descartable se queda
@@ -199,13 +204,16 @@ class _EntrenadorScreenState extends State<EntrenadorScreen> {
               estado.libres.where((c) => c.dirigeA != null).toList();
 
           Widget lista(List<_Candidato> cs) => Column(
-                children: cs
-                    .map((c) => _FilaCandidato(
-                          candidato: c,
-                          cabeEnElPresupuesto: c.pide <= tope,
-                          onNegociar: () => _negociar(c, tope),
-                        ))
-                    .toList(),
+                children: [
+                  for (final c in cs) ...[
+                    _FilaCandidato(
+                      candidato: c,
+                      cabeEnElPresupuesto: c.pide <= tope,
+                      onNegociar: () => _negociar(c, tope),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ],
               );
 
           return ListView(
@@ -227,14 +235,15 @@ class _EntrenadorScreenState extends State<EntrenadorScreen> {
               const SizedBox(height: 12),
               _Presupuesto(presupuesto: estado.presupuesto),
               const SizedBox(height: 20),
-              Text('${t(context).agenciaLibre} · ${t(context).entrenador}',
-                  style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 4),
+              SeparadorSeccion(
+                  titulo: '${t(context).agenciaLibre} · ${t(context).entrenador}',
+                  acento: e.marca),
+              const SizedBox(height: 6),
               Text(
                 t(context).mediaDeTuEquipoEs(estado.mediaDelEquipo),
-                style: Theme.of(context).textTheme.bodySmall,
+                style: TextStyle(fontSize: 12, color: e.textoTenue),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               if (libres.isEmpty)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -244,15 +253,15 @@ class _EntrenadorScreenState extends State<EntrenadorScreen> {
               else
                 lista(libres),
               if (conEquipo.isNotEmpty) ...[
-                const SizedBox(height: 24),
-                Text(t(context).dirigiendoAOtroEquipo,
-                    style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 4),
+                const SizedBox(height: 20),
+                SeparadorSeccion(
+                    titulo: t(context).dirigiendoAOtroEquipo, acento: e.marca),
+                const SizedBox(height: 6),
                 Text(
                   t(context).sePuedeOfertarPeroTrabajo,
-                  style: Theme.of(context).textTheme.bodySmall,
+                  style: TextStyle(fontSize: 12, color: e.textoTenue),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 lista(conEquipo),
               ],
             ],
@@ -302,20 +311,21 @@ class _AvisoObligatorio extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Theme.of(context).colorScheme.errorContainer,
+    final e = Estilo.de(context);
+    return PanelCortado(
+      fondo: e.mal.withValues(alpha: 0.14),
+      corte: 12,
+      borde: Border.all(color: e.mal),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Row(
           children: [
-            Icon(Icons.warning_amber,
-                color: Theme.of(context).colorScheme.onErrorContainer),
+            Icon(Icons.warning_amber, color: e.mal),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 t(context).avisoObligatorioTexto,
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.onErrorContainer),
+                style: TextStyle(color: e.texto),
               ),
             ),
           ],
@@ -497,17 +507,18 @@ class _Veredicto extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final e = Estilo.de(context);
     if (sinPresupuesto) {
       return _Aviso(
         icono: Icons.money_off,
-        color: Theme.of(context).colorScheme.error,
+        color: e.mal,
         texto: t(context).noLlegaMasaSalarial(formatearMillones(topeDisponible)),
       );
     }
     if (respuesta.acepta) {
       return _Aviso(
         icono: Icons.check_circle,
-        color: const Color(0xFF2E9E5B),
+        color: e.bien,
         texto: t(context).aceptariaLaOferta,
       );
     }
@@ -516,7 +527,7 @@ class _Veredicto extends StatelessWidget {
     final aTiro = respuesta.loQueFalta <= maxPuntosQueCompraElDinero;
     return _Aviso(
       icono: aTiro ? Icons.trending_up : Icons.block,
-      color: Theme.of(context).colorScheme.error,
+      color: e.mal,
       texto: aTiro
           ? t(context).todaviaNo
           : t(context).noVaAAceptar,
@@ -540,11 +551,7 @@ class _Aviso extends StatelessWidget {
         Icon(icono, color: color, size: 18),
         const SizedBox(width: 8),
         Expanded(
-          child: Text(texto,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: color)),
+          child: Text(texto, style: TextStyle(fontSize: 12, color: color)),
         ),
       ],
     );
@@ -559,7 +566,11 @@ class _Presupuesto extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    final e = Estilo.de(context);
+    return PanelCortado(
+      fondo: e.panel,
+      corte: 12,
+      borde: Border.all(color: e.linea),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
@@ -567,29 +578,26 @@ class _Presupuesto extends StatelessWidget {
           children: [
             // Todo flexible: en un iPhone estrecho el título y la cifra se
             // dan de bruces si van a lo ancho sin ceder.
-            // Todo flexible: en un iPhone estrecho el título y la cifra se
-            // dan de bruces si van a lo ancho sin ceder.
             Row(
               children: [
-                const Icon(Icons.account_balance_wallet, size: 18),
+                Icon(Icons.account_balance_wallet, size: 16, color: e.marca),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(t(context).loQuePuedesOfrecer,
-                      style: Theme.of(context).textTheme.titleSmall),
+                  child: Text(mayus(t(context).loQuePuedesOfrecer),
+                      style: rotulo(e, tamano: 11)),
                 ),
                 const SizedBox(width: 8),
                 Text(
                   formatearMillones(presupuesto.libre),
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: presupuesto.espacioEnElTope <= 0
-                            ? Theme.of(context).colorScheme.error
-                            : null,
-                      ),
+                  style: titular(e,
+                      tamano: 17,
+                      color: presupuesto.espacioEnElTope <= 0
+                          ? e.mal
+                          : e.texto),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             _LineaDeGasto(
                 etiqueta: t(context).tuEntrenadorLabel,
                 importe: presupuesto.sueldoDelActual),
@@ -604,12 +612,12 @@ class _Presupuesto extends StatelessWidget {
                 importe: presupuesto.masaSalarialTotal),
             _LineaDeGasto(
                 etiqueta: t(context).topeDeLaFranquicia, importe: topeSalarial),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             Text(
               presupuesto.espacioEnElTope <= 0
                   ? t(context).porEncimaDelTopeSoloMinimo
                   : t(context).sueldoEntrenadorCuentaEnMasa,
-              style: Theme.of(context).textTheme.bodySmall,
+              style: TextStyle(fontSize: 11.5, color: e.textoTenue),
             ),
           ],
         ),
@@ -631,15 +639,18 @@ class _LineaDeGasto extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final estilo = Theme.of(context).textTheme.bodySmall?.copyWith(
-        color: enRojo ? Theme.of(context).colorScheme.error : null);
+    final e = Estilo.de(context);
+    final color = enRojo ? e.mal : e.textoTenue;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 1),
       child: Row(
         children: [
-          Expanded(child: Text(etiqueta, style: estilo)),
+          Expanded(
+              child:
+                  Text(etiqueta, style: TextStyle(fontSize: 12, color: color))),
           const SizedBox(width: 8),
-          Text(formatearMillones(importe), style: estilo),
+          Text(formatearMillones(importe),
+              style: TextStyle(fontSize: 12, color: color)),
         ],
       ),
     );
@@ -662,23 +673,44 @@ class _BanquilloActual extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final estilo = Estilo.de(context);
     final e = entrenador;
     if (e == null) {
-      return Card(
-        color: Theme.of(context).colorScheme.errorContainer,
+      return PanelCortado(
+        fondo: estilo.mal.withValues(alpha: 0.14),
+        corte: 12,
+        borde: Border.all(color: estilo.mal),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: ListTile(
-            leading: const Icon(Icons.person_off),
-            title: Text(t(context).sinEntrenador),
-            subtitle: Text(t(context).sinEntrenadorDetalle),
+          child: Row(
+            children: [
+              Icon(Icons.person_off, color: estilo.mal),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(mayus(t(context).sinEntrenador),
+                        style: titular(estilo, tamano: 16)),
+                    const SizedBox(height: 2),
+                    Text(t(context).sinEntrenadorDetalle,
+                        style: TextStyle(
+                            fontSize: 12, color: estilo.textoTenue)),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       );
     }
 
     final compacto = tamanoDe(context).esCompacto;
-    return Card(
+    return PanelCortado(
+      fondo: estilo.panel,
+      corte: 14,
+      borde: Border.all(color: estilo.linea),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -686,19 +718,22 @@ class _BanquilloActual extends StatelessWidget {
           children: [
             Row(
               children: [
-                _Media(valor: mediaDe(e), grande: true),
+                PlacaMedia(media: mediaDe(e), tamano: 56),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(e.nombreFicticio,
-                          style: Theme.of(context).textTheme.titleLarge),
+                      Text(mayus(e.nombreFicticio),
+                          style: titular(estilo, tamano: 19)),
+                      const SizedBox(height: 2),
                       Text(
                         '${infoDe(equipo).apodo} · '
                         '${t(context).edadJugador(e.edad)} · '
                         '${etiquetaDeEstilo(t(context), estiloDeEntrenador(ataque: e.atrAtaque, defensa: e.atrDefensa, desarrollo: e.atrDesarrollo))}',
-                        style: Theme.of(context).textTheme.bodySmall,
+                        style: TextStyle(
+                            fontSize: 12, color: estilo.textoTenue),
                       ),
                     ],
                   ),
@@ -712,15 +747,12 @@ class _BanquilloActual extends StatelessWidget {
               t(context).contratoResumen(
                   t(context).alAnio(formatearMillones(e.salario)),
                   t(context).anios(e.aniosContrato)),
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: titular(estilo, tamano: 14),
             ),
             const SizedBox(height: 2),
             Text(
               _trayectoria(t(context), e, record),
-              style: Theme.of(context).textTheme.bodySmall,
+              style: TextStyle(fontSize: 12, color: estilo.textoTenue),
             ),
             const SizedBox(height: 8),
             Align(
@@ -729,8 +761,7 @@ class _BanquilloActual extends StatelessWidget {
                 onPressed: onDespedir,
                 icon: const Icon(Icons.logout),
                 label: Text(t(context).despedir),
-                style: TextButton.styleFrom(
-                    foregroundColor: Theme.of(context).colorScheme.error),
+                style: TextButton.styleFrom(foregroundColor: estilo.mal),
               ),
             ),
           ],
@@ -765,6 +796,7 @@ class _FilaCandidato extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final estilo = Estilo.de(context);
     final e = candidato.entrenador;
     final compacto = tamanoDe(context).esCompacto;
 
@@ -780,35 +812,38 @@ class _FilaCandidato extends StatelessWidget {
 
     final identidad = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Text(e.nombreFicticio,
-            style: Theme.of(context).textTheme.titleSmall),
+        Text(mayus(e.nombreFicticio),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: titular(estilo, tamano: 16)),
         if (candidato.dirigeA != null)
           Text(
             t(context).dirigeAEquipo(infoDe(candidato.dirigeA!).apodo),
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            style: TextStyle(
+                fontSize: 11.5,
                 fontStyle: FontStyle.italic,
-                color: Theme.of(context).colorScheme.primary),
+                color: estilo.marca),
           ),
         Text(
           '${t(context).edadJugador(e.edad)} · '
           '${etiquetaDeEstilo(t(context), estiloDeEntrenador(ataque: e.atrAtaque, defensa: e.atrDefensa, desarrollo: e.atrDesarrollo))}'
           '${e.anillos > 0 ? ' · ${t(context).anillos(e.anillos)}' : ''}',
-          style: Theme.of(context).textTheme.bodySmall,
+          style: TextStyle(fontSize: 11.5, color: estilo.textoTenue),
         ),
         Text(
           t(context).pideImportePorAnios(
               formatearMillones(candidato.pide), candidato.aniosQuePide),
-          style: Theme.of(context)
-              .textTheme
-              .bodySmall
-              ?.copyWith(fontWeight: FontWeight.bold),
+          style: titular(estilo, tamano: 13),
         ),
       ],
     );
 
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4),
+    return PanelCortado(
+      fondo: estilo.panelSuave,
+      corte: 10,
+      borde: Border.all(color: estilo.linea),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
         child: Column(
@@ -820,7 +855,7 @@ class _FilaCandidato extends StatelessWidget {
             // queda más grande.
             Row(
               children: [
-                _Media(valor: mediaDe(e), grande: false),
+                PlacaMedia(media: mediaDe(e), tamano: 42),
                 const SizedBox(width: 12),
                 Expanded(child: identidad),
                 if (!compacto) boton,
@@ -840,8 +875,7 @@ class _FilaCandidato extends StatelessWidget {
                       : candidato.imposible
                           ? t(context).proyectoLeQuedaLejos
                           : t(context).asuPrecioNo,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.error),
+                  style: TextStyle(fontSize: 11.5, color: estilo.mal),
                 ),
               ),
             const SizedBox(height: 8),
@@ -863,9 +897,9 @@ class _Facetas extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final barras = [
-      (t(context).ataque, entrenador.atrAtaque, const Color(0xFFE08A1E)),
-      (t(context).defensa, entrenador.atrDefensa, const Color(0xFF3D7BFF)),
-      (t(context).desarrollo, entrenador.atrDesarrollo, const Color(0xFF2E9E5B)),
+      (t(context).ataque, entrenador.atrAtaque, _colorAtaque),
+      (t(context).defensa, entrenador.atrDefensa, _colorDefensa),
+      (t(context).desarrollo, entrenador.atrDesarrollo, _colorDesarrollo),
     ];
     final widgets = barras
         .map((b) => _Barra(etiqueta: b.$1, valor: b.$2, color: b.$3))
@@ -904,18 +938,15 @@ class _Barra extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final e = Estilo.de(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(etiqueta, style: Theme.of(context).textTheme.labelSmall),
-            Text('$valor',
-                style: Theme.of(context)
-                    .textTheme
-                    .labelSmall
-                    ?.copyWith(fontWeight: FontWeight.bold)),
+            Text(mayus(etiqueta), style: rotulo(e, tamano: 9)),
+            Text('$valor', style: titular(e, tamano: 12)),
           ],
         ),
         const SizedBox(height: 2),
@@ -929,35 +960,6 @@ class _Barra extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _Media extends StatelessWidget {
-  final int valor;
-  final bool grande;
-
-  const _Media({required this.valor, required this.grande});
-
-  @override
-  Widget build(BuildContext context) {
-    final lado = grande ? 56.0 : 42.0;
-    return Container(
-      width: lado,
-      height: lado,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Text('$valor',
-          style: (grande
-                  ? Theme.of(context).textTheme.headlineSmall
-                  : Theme.of(context).textTheme.titleMedium)
-              ?.copyWith(
-        fontWeight: FontWeight.bold,
-        color: Theme.of(context).colorScheme.onPrimaryContainer,
-      )),
     );
   }
 }

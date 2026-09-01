@@ -151,17 +151,21 @@ próximo con más valor, de más a menos prioritario:
    agosto de 2026, ver más arriba.
 2. Seguir modernizando pantallas con el estilo antiguo (sin `PanelCortado`,
    `FilaDeJugador`/`SeparadorSeccion` ni los tokens de `Estilo.de(context)`).
-   El 26 de agosto de 2026 se hicieron 4: `clasificacion/equipo_detalle_screen.dart`,
-   `premios/premios_screen.dart`, `temporada/pretemporada_screen.dart` y
-   `torneo/torneo_screen.dart`. Quedan por revisar (candidatas, puede haber
-   falsos positivos — mirar cada una antes de tocarla):
-   `ajustes/ajustes_screen.dart`, `calendario/simulacion_ui.dart`,
-   `mercado/entrenador_screen.dart`, `mercado/ofertas_screen.dart`,
-   `mercado/traspasos_screen.dart`, `partido/alineacion_automatica.dart`,
-   `playoffs/playoffs_screen.dart`, `temporada/cambio_de_temporada.dart`,
-   `temporada/camisetas_nuevas_screen.dart`, `temporada/draft_screen.dart`,
-   `temporada/legado_screen.dart`, `temporada/resumen_temporada_screen.dart`,
-   `temporada/retirados_screen.dart`.
+   El 26 de agosto de 2026 se hicieron 9 en dos pases:
+   `clasificacion/equipo_detalle_screen.dart`, `premios/premios_screen.dart`,
+   `temporada/pretemporada_screen.dart`, `torneo/torneo_screen.dart`,
+   `mercado/ofertas_screen.dart`, `mercado/entrenador_screen.dart`,
+   `temporada/resumen_temporada_screen.dart`, `playoffs/playoffs_screen.dart`
+   y `temporada/draft_screen.dart`. El resto de la lista original resultaron
+   ser falsos positivos (sin listas de jugadores/equipos con media) salvo
+   estas, que quedan pendientes de un tercer pase:
+   - `mercado/traspasos_screen.dart` — la más desfasada (`ListTile`,
+     `CheckboxListTile`, `DropdownButton`), pero es la mesa de 3 columnas
+     con buscador automático y hoja modal; más riesgo de romper
+     interacción del que compensaba en el segundo pase.
+   - `temporada/camisetas_nuevas_screen.dart` y
+     `temporada/retirados_screen.dart` — desfase menor, solo un pulido de
+     `Card`→`PanelCortado` o similar.
 3. Medir el equilibrio del mercado (jugarlo vs. no jugarlo) con más
    semillas todavía — hoy solo se ha reforzado un test de regresión, no
    se ha hecho la medición fina que pedía `plan.md`.
