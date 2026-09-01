@@ -18,7 +18,7 @@ naranja de Franquicia).
 
 **El camino completo, tal y como está hoy:**
 1. Crear jugador — apellido y dorsal en vivo sobre una camiseta dibujada a
-   mano, posición, nacionalidad (12, con bandera, hoja inferior a ancho
+   mano, posición, nacionalidad (20, con bandera, hoja inferior a ancho
    completo), y la cadencia de decisión (cada 1, 2 o 3 años —
    `PartidaCarrera.cadenciaAnios`): las temporadas de en medio de una
    tanda se resuelven solas, solo la última pregunta y enseña su resumen.
@@ -563,3 +563,52 @@ ver con esta entrada, así que no se corrió `dart format` sobre nada más
 que este fichero). Tests de Modo Carrera en verde; no hace falta test
 dedicado para el catálogo (nada depende de su longitud ni de qué evento
 concreto sale, `eventoDeCarreraAleatorio` solo se usa desde la UI).
+
+## Comparado con Copero de verdad, y 8 nacionalidades más (a 2026-08-26)
+
+El usuario pidió explícitamente seguir mejorando Modo Carrera fijándome
+en Copero, así que esta vez se abrió el simulador de verdad
+(`copero.com.ar/juegos/simulador-carrera`) y se jugó una partida entera
+para comparar pantalla a pantalla en vez de trabajar de memoria.
+
+**Confirmado que ya tenemos paridad real** en varias cosas que se
+construyeron sin haber visto Copero en detalle todavía:
+- La cadencia Intensa/Normal/Exprés de Copero es literalmente
+  "decisión cada 1/2/3 temporadas" — el mismo concepto que se añadió
+  hoy mismo antes de mirar la web.
+- Su "Mercado de pases" (quedarte o fichar por una de dos ofertas al
+  cerrar cada tramo) es el mismo mecanismo que
+  `avanzarTemporadaNba`/`elegirEquipoTemporada` ya hacen.
+- La "vitrina vacía" cuando no has ganado nada tiene el mismo nombre
+  (🏆 VITRINA VACÍA) que ya usábamos.
+- El aviso legal de nombres de clubes ficticios es del mismo tipo que
+  el que ya lleva este juego para equipos/jugadores NBA.
+
+**La diferencia real y accionable**: Copero ofrece 24 nacionalidades en
+su selector inicial, con un botón "VER MÁS" que da a entender que hay
+todavía más — nosotros teníamos 12. Se amplió a 20, doblando casi la
+lista, con el mismo criterio ya establecido (organización real del
+país, nombre alterado 1-2 letras): Italia, Turquía, Eslovenia, Israel,
+República Dominicana, Puerto Rico, China y México — todos con tradición
+real de baloncesto (Eslovenia por Dončić, Turquía/Israel por la
+Euroliga, República Dominicana/Puerto Rico por el baloncesto
+caribeño, China por la CBA). Solo toca `rutas_juveniles.dart`, ningún
+otro fichero — el resto del sistema (selector de nacionalidad, ofertas
+juveniles) ya estaba escrito para leer del mapa sin asumir un número
+fijo de entradas.
+
+**Cosas de Copero que NO se han portado, a propósito:**
+- Logros/"Ver logros": requiere cuenta de usuario propia (login) para
+  sincronizar entre dispositivos — sigue fuera de alcance, ya estaba
+  anotado así desde la sesión de creación.
+- "Pierna hábil" (dominante): específico de fútbol, sin equivalente
+  claro y valioso en baloncesto.
+- Los tramos de carrera en Copero muestran también la categoría/liga
+  del club en cada oferta (p. ej. "Primera Nacional", "Liga
+  Profesional") — nuestras organizaciones no llevan ese dato. Se podría
+  añadir un campo de categoría a `RutaJuvenil` más adelante si se
+  decide que aporta.
+
+Verificado: `dart analyze` limpio, `flutter test` completo — sin tests
+nuevos (nada depende del número de nacionalidades, y no hay ningún test
+que asuma que son 12).

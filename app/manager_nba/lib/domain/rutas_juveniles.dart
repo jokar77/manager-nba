@@ -1,8 +1,10 @@
 /// De dónde sale un jugador antes de llegar a la NBA: a los 16 años, según
 /// su nacionalidad, entra a una organización juvenil de un tipo distinto
 /// (cantera de club, universidad, academia deportiva) — el mismo sistema
-/// real que sigue cada país. Primera versión con 12 nacionalidades; se
-/// puede ampliar más adelante sin tocar nada de lo que ya existe.
+/// real que sigue cada país. Empezó con 12 nacionalidades; el 26 de
+/// agosto de 2026 se amplió a 20, comparando con las 24+ (con "ver más")
+/// que ofrece Copero en su simulador de carrera de fútbol. Se puede
+/// seguir ampliando sin tocar nada de lo que ya existe.
 ///
 /// Los nombres de las organizaciones están cambiados a propósito (mismo
 /// criterio que ya se usa en el resto del juego para jugadores y equipos
@@ -102,6 +104,54 @@ const rutasJuveniles = <String, RutaJuvenil>{
     bandera: '🇧🇷',
     tipo: TipoOrganizacionJuvenil.clubDeCantera,
     organizaciones: ['Flamengu', 'Franka Basquete', 'Pinheiros'],
+  ),
+  'ITA': RutaJuvenil(
+    nombrePais: 'Italia',
+    bandera: '🇮🇹',
+    tipo: TipoOrganizacionJuvenil.clubDeCantera,
+    organizaciones: ['Olimpya Milano', 'Virtuss Bolonia', 'Fortitudoo Bolonia'],
+  ),
+  'TUR': RutaJuvenil(
+    nombrePais: 'Turquía',
+    bandera: '🇹🇷',
+    tipo: TipoOrganizacionJuvenil.clubDeCantera,
+    organizaciones: ['Anadolu Efess', 'Fenerbache', 'Galatasarai'],
+  ),
+  'SVN': RutaJuvenil(
+    nombrePais: 'Eslovenia',
+    bandera: '🇸🇮',
+    tipo: TipoOrganizacionJuvenil.clubDeCantera,
+    organizaciones: ['Cedevita Olimpia', 'Krkka', 'Helios Sunz'],
+  ),
+  'ISR': RutaJuvenil(
+    nombrePais: 'Israel',
+    bandera: '🇮🇱',
+    tipo: TipoOrganizacionJuvenil.clubDeCantera,
+    organizaciones: ['Macabi Tel Aviv', 'Hapoel Jerusalen', 'Macabi Rishon'],
+  ),
+  'DOM': RutaJuvenil(
+    nombrePais: 'República Dominicana',
+    bandera: '🇩🇴',
+    tipo: TipoOrganizacionJuvenil.clubDeCantera,
+    organizaciones: ['Cañeross del Este', 'Metros de Santiagoo', 'Indioz de San Francisco'],
+  ),
+  'PRI': RutaJuvenil(
+    nombrePais: 'Puerto Rico',
+    bandera: '🇵🇷',
+    tipo: TipoOrganizacionJuvenil.clubDeCantera,
+    organizaciones: ['Cangrejeross de Santurce', 'Vakeros de Bayamón', 'Leonez de Ponce'],
+  ),
+  'CHN': RutaJuvenil(
+    nombrePais: 'China',
+    bandera: '🇨🇳',
+    tipo: TipoOrganizacionJuvenil.clubDeCantera,
+    organizaciones: ['Liaonning Leopardoss', 'Guangdung Tigers', 'Beijing Duckz'],
+  ),
+  'MEX': RutaJuvenil(
+    nombrePais: 'México',
+    bandera: '🇲🇽',
+    tipo: TipoOrganizacionJuvenil.clubDeCantera,
+    organizaciones: ['Fuersa Regia', 'Soles de Mexicalli', 'Halconez de Xalapa'],
   ),
 };
 
