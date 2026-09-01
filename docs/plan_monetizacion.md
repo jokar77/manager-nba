@@ -236,6 +236,26 @@ Esto suele pillar a la gente por sorpresa:
    una ranura bloqueada abre el aviso y de ahí se llega a la pantalla de
    compra.
 5. **AdMob y Play Billing de verdad**, cuando existan las cuentas.
+
+   **Ojo al conectarlo (encontrado en una revisión de seguridad del 26 de
+   agosto de 2026):** `Permisos.registrarCompra()` solo pone una bandera
+   en memoria (`_comprada`) — no se guarda en ningún sitio persistente.
+   El propio comentario de `tienda.dart` ya avisa de que
+   `restaurarCompra()` "se llama al arrancar, sin que el usuario pida
+   nada", pero eso todavía no está conectado en `main.dart` (ni puede
+   estarlo del todo hasta que exista la implementación real de Play
+   Billing, que es justo la que faltaba conectar ahí). Cuando se conecte
+   de verdad: llamar a `tienda.restaurarCompra()` al arrancar SIEMPRE
+   (no solo cuando el jugador toca "Restaurar"), y decidir qué pasa sin
+   conexión — el juego se puede jugar offline, así que depender de la
+   red en cada arranque para saber si ya se pagó puede dejar a alguien
+   que pagó de verdad viendo la versión gratis en un vuelo. No hace
+   falta servidor propio de validación (no hay servidor en este
+   proyecto, y para un juego de un solo jugador sin ranking ni
+   multijugador, fiarse de lo que diga Play Billing/Play Integrity es
+   razonable) — pero si conviene cachear localmente el resultado de la
+   última comprobación con éxito, para que no dependa de tener cobertura
+   en cada arranque.
 6. **Publicar** con lo de la lista de arriba resuelto.
 
 Los pasos 1-4 son la mitad del trabajo y no dependen de nadie.
