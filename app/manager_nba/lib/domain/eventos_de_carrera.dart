@@ -263,6 +263,50 @@ const catalogoDeEventosDeCarrera = <EventoDeCarrera>[
       ),
     ],
   ),
+  EventoDeCarrera(
+    titulo: 'Te ofrecen la G League',
+    descripcion:
+        'No estás entrando en las rotaciones del primer equipo. El club te '
+        'propone bajar al filial de la G League para sumar minutos de '
+        'verdad, aunque sea un peldaño por debajo.',
+    opciones: [
+      OpcionDeEventoDeCarrera(
+        texto: 'Aceptar la asignación',
+        efectoMedia: 2,
+        mensaje:
+            'Los minutos de verdad se notan: creces más rápido '
+            'jugando que sentado en el banquillo de la NBA.',
+      ),
+      OpcionDeEventoDeCarrera(
+        texto: 'Quedarte con el primer equipo',
+        efectoMedia: 0,
+        mensaje:
+            'Sigues entrenando con la plantilla NBA, pero sin '
+            'minutos de partido de verdad.',
+      ),
+    ],
+  ),
+  EventoDeCarrera(
+    titulo: 'Trabajo extra con el cuerpo técnico',
+    descripcion:
+        'El preparador de tiro del equipo se ofrece a trabajar contigo '
+        'fuera de las sesiones normales, a cambio de llegar antes y '
+        'salir después que el resto de la plantilla.',
+    opciones: [
+      OpcionDeEventoDeCarrera(
+        texto: 'Aceptar y sumar horas',
+        efectoMedia: 2,
+        mensaje:
+            'El trabajo extra deja huella, aunque el día se te '
+            'hace larguísimo.',
+      ),
+      OpcionDeEventoDeCarrera(
+        texto: 'Con las sesiones normales alcanza',
+        efectoMedia: 0,
+        mensaje: 'Prefieres guardar energía para los partidos.',
+      ),
+    ],
+  ),
 ];
 
 /// Un evento al azar del catálogo, para la temporada que empieza.

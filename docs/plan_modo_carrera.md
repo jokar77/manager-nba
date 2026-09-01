@@ -612,3 +612,44 @@ fijo de entradas.
 Verificado: `dart analyze` limpio, `flutter test` completo — sin tests
 nuevos (nada depende del número de nacionalidades, y no hay ningún test
 que asuma que son 12).
+
+## La G League, traducida de "salida a préstamo" de Copero (a 2026-08-26)
+
+Seguí jugando la partida de Copero (esta vez con "Exprés" y de delantero,
+para ver otro puesto y otra cadencia) y apareció un mecanismo que no
+tenemos: **salida a préstamo**. Cuando el jugador es joven y su club
+grande no le da minutos, el club lo manda a préstamo a un equipo menor
+(vi tres ofertas: dos de la misma división y una de una liga más floja
+en otro país) — y al volver, si sigue sin entrar en los planes, puede
+volver a salir a préstamo o fichar en firme por el club donde SÍ jugó.
+Es una historia real y muy de fútbol: el canterano que no cuaja en el
+grande y explota en un equipo pequeño.
+
+El equivalente real y auténtico en baloncesto no es un préstamo entre
+clubes — es la **asignación a la G League**: un novato NBA que no entra
+en la rotación baja al filial para sumar minutos de desarrollo de
+verdad. En vez de montar un sistema paralelo de equipos filiales y
+seguimiento de estadísticas aparte (lo que sí exige el préstamo de
+Copero, con "tu club" y "el club de préstamo" como dos entidades
+distintas — bastante más complejo que lo que hay hoy), se tradujo al
+mecanismo que YA existe: dos eventos nuevos en el catálogo de
+`eventos_de_carrera.dart` (que ya tenía 12 desde la ampliación de esta
+misma tarde, ahora 14) — "Te ofrecen la G League" (aceptar la baja al
+filial da +2 de media por los minutos de verdad; quedarte en el
+banquillo NBA no cambia nada) y "Trabajo extra con el cuerpo técnico"
+(sesiones extra de tiro fuera de horario, +2 si aceptas). Mismo patrón
+que todos los demás eventos, cero arquitectura nueva.
+
+**Por qué no se portó el préstamo entero:** el catálogo de eventos ya es
+"sin condiciones de contexto" a propósito (cualquier evento puede salir
+cualquier temporada, sin mirar edad ni minutos) — un préstamo de verdad
+necesitaría saber que el jugador es joven y tiene pocos minutos para
+tener sentido narrativo, y además una entidad "equipo filial" separada
+del equipo NBA real que apareciera en la línea de tiempo. Es una
+funcionalidad más grande, no un evento más — queda anotada aquí por si
+se decide construirla como su propia cosa más adelante, en vez de
+forzarla dentro del catálogo de eventos actual.
+
+Verificado: `dart analyze` limpio, `dart format` sobre el fichero
+tocado. `flutter test` completo — sin tests nuevos (mismo motivo que la
+entrada anterior: nada depende de cuántos eventos hay en el catálogo).
