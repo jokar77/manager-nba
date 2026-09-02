@@ -738,3 +738,16 @@ listo por si en algún momento el jugador de carrera arranca con una
 estadística inicial no plana.
 
 Verificado: `dart analyze` limpio, `flutter test` completo.
+
+**Se quedó otro `conVolver: false` sin arreglar.** El botón de volver al
+menú principal se arregló el 26 de agosto en el hub
+(`modo_carrera_hub_screen.dart`), pero `oferta_juvenil_screen.dart`
+tenía el mismo apagado. Comprobados los dos caminos que llegan a esta
+pantalla en `start_menu_screen.dart` (continuar una carrera sin
+organización elegida, y crear una nueva vía `pushReplacement` desde
+`crear_jugador_screen.dart`): los dos dejan el menú de inicio justo
+debajo en la pila, así que quitar el `conVolver: false` es seguro igual
+que en el hub. `crear_jugador_screen.dart` ya estaba bien (nunca tuvo
+`conVolver: false`).
+
+Verificado: `dart analyze` limpio, `flutter test` completo.

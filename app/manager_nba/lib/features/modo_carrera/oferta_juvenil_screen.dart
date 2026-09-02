@@ -48,7 +48,6 @@ class _OfertaJuvenilScreenState extends State<OfertaJuvenilScreen> {
       backgroundColor: e.fondo,
       appBar: BarraNeutraAppBar(
         titulo: textos.ofertaJuvenilTitulo,
-        conVolver: false,
       ),
       body: SafeArea(
         child: Center(
