@@ -59,8 +59,10 @@ Ya se puede compilar desde este PC (`flutter build appbundle
 - [ ] **Cuenta de desarrollador de Google Play**: 25 $, pago único. Tuyo.
 - [ ] Formulario de consentimiento UE (UMP) — obligatorio con tráfico
       europeo, antes del primer anuncio.
-- [ ] Política de privacidad publicada (puede vivir en el mismo GitHub
-      Pages).
+- [x] Política de privacidad publicada — hecho el 27 de agosto de 2026,
+      [jokar77.github.io/manager-nba/privacidad.html](https://jokar77.github.io/manager-nba/privacidad.html)
+      (borrador: falta el email de contacto y la revisión legal, ver
+      backlog más abajo).
 - [ ] Formulario de seguridad de datos y clasificación de contenido en
       Play Console.
 - [ ] Firma de release (keystore) y probarlo en un Android de verdad.
@@ -169,8 +171,12 @@ próximo con más valor, de más a menos prioritario:
 3. Medir el equilibrio del mercado (jugarlo vs. no jugarlo) con más
    semillas todavía — hoy solo se ha reforzado un test de regresión, no
    se ha hecho la medición fina que pedía `plan.md`.
-4. Política de privacidad: un borrador inicial ya se puede escribir sin
-   esperar a las cuentas de Google/Apple.
+4. ~~Política de privacidad: un borrador inicial.~~ Hecho el 27 de
+   agosto de 2026: `app/manager_nba/web/privacidad.html`, publicada en
+   [jokar77.github.io/manager-nba/privacidad.html](https://jokar77.github.io/manager-nba/privacidad.html).
+   Falta rellenar el email de contacto (queda un `[TU EMAIL DE
+   CONTACTO]` a propósito, ver `plan.md`) y la revisión legal de la que
+   ya se habla más arriba.
 
 ---
 

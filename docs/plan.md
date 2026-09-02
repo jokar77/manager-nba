@@ -5706,3 +5706,42 @@ rótulos, que sí eran un cambio de aspecto intencionado, no un accidente.
 Verificado: `dart analyze` limpio, `flutter test` completo — 716 tests en
 verde (mismo número que antes: no se añadió ningún test nuevo, se
 corrigieron 4 existentes para el cambio de mayúsculas intencionado).
+
+## Política de privacidad: borrador inicial (a 2026-08-27)
+
+Punto 4 del backlog de `roadmap.md`, el único que decía explícitamente
+"ya se puede escribir sin esperar a las cuentas de Google/Apple". Nueva
+página estática, `app/manager_nba/web/privacidad.html` — mismo patrón
+que `estado.html` (ya existente en ese mismo directorio): un fichero
+suelto en `web/`, que `flutter build web` copia tal cual al build y
+GitHub Pages sirve directamente, sin pasar por Dart ni por los tests.
+Queda publicada en
+[jokar77.github.io/manager-nba/privacidad.html](https://jokar77.github.io/manager-nba/privacidad.html).
+
+Cubre, con honestidad sobre lo que el código hace hoy (nada se manda a
+ningún servidor propio; todo — partidas, ajustes — vive en el
+dispositivo) y lo que hará una vez se conecten las cuentas reales
+(paso 5, todavía sin hacer): AdMob para los anuncios de la edición
+gratuita de Android, Google Play Billing para la compra de la versión
+completa. Ninguna de las dos edición Steam/escritorio ni la web/PWA
+tocan ningún dato, porque ninguna de las dos tiene anuncios ni compras
+dentro de la app.
+
+**Dos cosas que se dejaron a propósito sin decidir por mi cuenta:**
+- El email de contacto queda como `[TU EMAIL DE CONTACTO]` literal en
+  la página — es una decisión del usuario (qué canal público quiere dar
+  la cara), no algo que yo deba rellenar sin que lo pida.
+- Es un borrador, marcado como tal en la propia página: la nota que ya
+  hay en `roadmap.md` sobre necesitar una revisión legal seria antes de
+  publicar en tienda sigue aplicando igual a esta página que al resto
+  del aviso de nombres/equipos parecidos a los reales.
+
+No hay verificación de `dart analyze`/`flutter test` que aplique aquí
+—es HTML estático fuera del árbol de Dart— pero se comprobó a mano que
+las etiquetas cierran bien (recuento de `<html>`/`<body>`/`<table>`/
+`<tr>`/`<style>` contra sus cierres). No se pudo verificar visualmente
+en el navegador de este entorno: el visor de este agente solo renderiza
+como "instantánea estática" los ficheros fuera de la carpeta de
+proyecto que reconoce, así que no se pudo interactuar con la página
+para comprobarla del todo — cabe una revisión visual humana antes de
+darla por definitiva.
