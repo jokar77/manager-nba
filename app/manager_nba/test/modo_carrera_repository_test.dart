@@ -269,9 +269,8 @@ void main() {
     expect(estado!.temporadaNba, 1);
   });
 
-  test('las estadísticas por partido (ptsPg/astPg/trbPg) se recalculan con '
-      'la media nueva cada temporada, no se quedan congeladas en la del '
-      'draft', () async {
+  test('las estadísticas y los atributos se recalculan con la media nueva '
+      'cada temporada, no se quedan congelados en los del draft', () async {
     final rng = Random(3);
     final jugadorId = await llevarHastaLaNba(rng);
 
@@ -283,6 +282,11 @@ void main() {
     // primera temporada, así que hace falta jugar varias para que la media
     // se mueva de verdad.
     expect(antesDeJugar.ptsPg, puntosTipicos(antesDeJugar.media));
+    // Proporción atributo/media al draftear, para comprobar que se
+    // mantiene (dentro del redondeo) según la media va cambiando —
+    // `_escalarAtributo` reescala proporcionalmente, no fija un valor.
+    final proporcionAtaqueInicial =
+        antesDeJugar.atrAtaque / antesDeJugar.media;
 
     for (var i = 0; i < 8; i++) {
       final resumen = await avanzarTemporadaNba(db, random: rng);
@@ -299,6 +303,12 @@ void main() {
       expect(
           jugador.astPg, asistenciasTipicas(jugador.media, jugador.posicion));
       expect(jugador.trbPg, rebotesTipicos(jugador.media, jugador.posicion));
+      // Mismo bug, en los otros tres atributos que también lee el motor
+      // de simulación: no pueden quedarse congelados en los del draft.
+      expect((jugador.atrAtaque / jugador.media - proporcionAtaqueInicial)
+              .abs(),
+          lessThan(0.05),
+          reason: 'atrAtaque no está escalando con la media');
     }
   });
 

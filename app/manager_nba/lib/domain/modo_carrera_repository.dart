@@ -759,6 +759,10 @@ Future<ResumenTemporadaNba> avanzarTemporadaNba(
           ) +
           efectoMedia)
       .clamp(1, 99);
+  // Cuánto cambia la media este año, para escalar atrAtaque/atrDefensa/
+  // atrTiro3 proporcionalmente más abajo — igual que ya hace la fase
+  // juvenil con `_escalarAtributo`.
+  final factor = jugador.media == 0 ? 1.0 : nuevaMedia / jugador.media;
 
   // 2.5) Premios de la temporada. Sin una liga completa que simular no hay
   // con qué comparar a los otros 450 candidatos de verdad (ver la nota de
@@ -815,6 +819,9 @@ Future<ResumenTemporadaNba> avanzarTemporadaNba(
       ptsPg: Value(puntosTipicos(nuevaMedia)),
       astPg: Value(asistenciasTipicas(nuevaMedia, jugador.posicion)),
       trbPg: Value(rebotesTipicos(nuevaMedia, jugador.posicion)),
+      atrAtaque: Value(_escalarAtributo(jugador.atrAtaque, factor)),
+      atrDefensa: Value(_escalarAtributo(jugador.atrDefensa, factor)),
+      atrTiro3: Value(_escalarAtributo(jugador.atrTiro3, factor)),
     ));
     await (db.update(db.partidaCarrera)..where((t) => t.id.equals(0))).write(
       PartidaCarreraCompanion(
@@ -852,11 +859,12 @@ Future<ResumenTemporadaNba> avanzarTemporadaNba(
   // que la pantalla llame a [elegirEquipoTemporada] con la oferta que haya
   // tomado el jugador.
   //
-  // ptsPg/astPg/trbPg también se recalculan aquí con la media nueva: son
-  // el "cuánto se espera que anote" que lee el motor de simulación
-  // (`_miEquipo`, vía `toSimJugador()`) — sin este recálculo se quedaban
-  // congeladas en lo que tocaba al draftear, así que un veterano de media
-  // 95 seguía metiendo los mismos partidos que de novato de media 60.
+  // ptsPg/astPg/trbPg y atrAtaque/atrDefensa/atrTiro3 también se
+  // recalculan aquí: son lo que lee el motor de simulación
+  // (`_miEquipo`, vía `toSimJugador()`) para decidir tus números en cada
+  // partido — sin este recálculo se quedaban congelados en lo que tocaba
+  // al draftear, así que un veterano de media 95 seguía metiendo los
+  // mismos partidos que de novato de media 60.
   await (db.update(db.jugadores)..where((t) => t.id.equals(jugador.id))).write(
     JugadoresCompanion(
       edad: Value(nuevaEdad),
@@ -865,6 +873,9 @@ Future<ResumenTemporadaNba> avanzarTemporadaNba(
       ptsPg: Value(puntosTipicos(nuevaMedia)),
       astPg: Value(asistenciasTipicas(nuevaMedia, jugador.posicion)),
       trbPg: Value(rebotesTipicos(nuevaMedia, jugador.posicion)),
+      atrAtaque: Value(_escalarAtributo(jugador.atrAtaque, factor)),
+      atrDefensa: Value(_escalarAtributo(jugador.atrDefensa, factor)),
+      atrTiro3: Value(_escalarAtributo(jugador.atrTiro3, factor)),
     ),
   );
   await (db.update(db.partidaCarrera)..where((t) => t.id.equals(0))).write(

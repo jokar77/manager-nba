@@ -684,3 +684,29 @@ avisara (no hay ningún otro test que compare esos tres campos contra la
 media actual).
 
 Verificado: `dart analyze` limpio, `flutter test` completo.
+
+**Mismo bug encontrado también en atrAtaque/atrDefensa/atrTiro3, en la
+misma revisión.** `toSimJugador()` (`jugador_mapping.dart`) pasa estos
+tres atributos al motor de simulación tal cual, igual que ptsPg/astPg/
+trbPg — y `avanzarTemporadaNba` tampoco los recalculaba nunca, solo
+`avanzarTemporadaJuvenil` lo hacía (con `_escalarAtributo`, ya existente
+para la fase juvenil). Consecuencia añadida, más allá de que el motor
+de simulación recibiera un perfil de jugador incoherente (media alta,
+atributos de novato): el premio a Mejor Defensor
+(`jugador.atrDefensa >= 88`) era casi imposible de ganar para cualquiera
+que no hubiera entrado ya con buena defensa al draft, por mucho que
+creciera después.
+
+Mismo arreglo, reusando `_escalarAtributo` que ya existía: se calcula
+`factor = nuevaMedia / mediaAnterior` una vez, y los dos
+`JugadoresCompanion` que escriben la progresión de la temporada (normal
+y retiro) reescalan `atrAtaque`/`atrDefensa`/`atrTiro3` con ese factor,
+igual que ya hace la fase juvenil.
+
+El test de la entrada anterior se amplió (no se duplicó) para comprobar
+también que la proporción atributo/media se mantiene dentro del
+redondeo a lo largo de 8 temporadas — si el atributo se quedara
+congelado, esa proporción se iría alejando de la inicial según la media
+creciera, y el test lo cazaría.
+
+Verificado: `dart analyze` limpio, `flutter test` completo.
