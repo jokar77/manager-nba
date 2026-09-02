@@ -812,6 +812,9 @@ Future<ResumenTemporadaNba> avanzarTemporadaNba(
       media: Value(nuevaMedia),
       retirado: const Value(true),
       equipo: const Value(equipoRetirados),
+      ptsPg: Value(puntosTipicos(nuevaMedia)),
+      astPg: Value(asistenciasTipicas(nuevaMedia, jugador.posicion)),
+      trbPg: Value(rebotesTipicos(nuevaMedia, jugador.posicion)),
     ));
     await (db.update(db.partidaCarrera)..where((t) => t.id.equals(0))).write(
       PartidaCarreraCompanion(
@@ -848,11 +851,20 @@ Future<ResumenTemporadaNba> avanzarTemporadaNba(
   // elija. El equipo/salario/años de contrato se quedan como están hasta
   // que la pantalla llame a [elegirEquipoTemporada] con la oferta que haya
   // tomado el jugador.
+  //
+  // ptsPg/astPg/trbPg también se recalculan aquí con la media nueva: son
+  // el "cuánto se espera que anote" que lee el motor de simulación
+  // (`_miEquipo`, vía `toSimJugador()`) — sin este recálculo se quedaban
+  // congeladas en lo que tocaba al draftear, así que un veterano de media
+  // 95 seguía metiendo los mismos partidos que de novato de media 60.
   await (db.update(db.jugadores)..where((t) => t.id.equals(jugador.id))).write(
     JugadoresCompanion(
       edad: Value(nuevaEdad),
       media: Value(nuevaMedia),
       potencial: Value(max(jugador.potencial, nuevaMedia)),
+      ptsPg: Value(puntosTipicos(nuevaMedia)),
+      astPg: Value(asistenciasTipicas(nuevaMedia, jugador.posicion)),
+      trbPg: Value(rebotesTipicos(nuevaMedia, jugador.posicion)),
     ),
   );
   await (db.update(db.partidaCarrera)..where((t) => t.id.equals(0))).write(

@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:manager_nba/data/database/app_database.dart';
 import 'package:manager_nba/data/importer/jugadores_importer.dart';
+import 'package:manager_nba/domain/curva_estadisticas.dart';
 import 'package:manager_nba/domain/equipos_especiales.dart';
 import 'package:manager_nba/domain/equipos_info.dart';
 import 'package:manager_nba/domain/modo_carrera_repository.dart';
@@ -266,6 +267,39 @@ void main() {
 
     final estado = await leerPartidaCarrera(db);
     expect(estado!.temporadaNba, 1);
+  });
+
+  test('las estadísticas por partido (ptsPg/astPg/trbPg) se recalculan con '
+      'la media nueva cada temporada, no se quedan congeladas en la del '
+      'draft', () async {
+    final rng = Random(3);
+    final jugadorId = await llevarHastaLaNba(rng);
+
+    final antesDeJugar = await (db.select(db.jugadores)
+          ..where((t) => t.id.equals(jugadorId)))
+        .getSingle();
+    // El valor de referencia al draftear: si el fallo (congelarse) volviera,
+    // esta comprobación de abajo seguiría cumpliéndose por casualidad en la
+    // primera temporada, así que hace falta jugar varias para que la media
+    // se mueva de verdad.
+    expect(antesDeJugar.ptsPg, puntosTipicos(antesDeJugar.media));
+
+    for (var i = 0; i < 8; i++) {
+      final resumen = await avanzarTemporadaNba(db, random: rng);
+      if (resumen.seRetira) break;
+      await elegirEquipoTemporada(db, resumen.ofertaQuedarse);
+
+      final jugador = await (db.select(db.jugadores)
+            ..where((t) => t.id.equals(jugadorId)))
+          .getSingle();
+      // La comprobación central del bug: ptsPg/astPg/trbPg tienen que
+      // corresponder a la media de ESTA temporada, no a la del draft.
+      expect(jugador.ptsPg, puntosTipicos(jugador.media),
+          reason: 'ptsPg se quedó congelado en vez de seguir a la media');
+      expect(
+          jugador.astPg, asistenciasTipicas(jugador.media, jugador.posicion));
+      expect(jugador.trbPg, rebotesTipicos(jugador.media, jugador.posicion));
+    }
   });
 
   test('avanzarTemporadaNba falla si todavía no hay draft', () async {

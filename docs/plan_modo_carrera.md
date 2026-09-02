@@ -653,3 +653,34 @@ forzarla dentro del catálogo de eventos actual.
 Verificado: `dart analyze` limpio, `dart format` sobre el fichero
 tocado. `flutter test` completo — sin tests nuevos (mismo motivo que la
 entrada anterior: nada depende de cuántos eventos hay en el catálogo).
+
+## Bug real: las estadísticas se quedaban congeladas en las del draft (a 2026-08-26)
+
+El usuario lo notó jugando: "las estadísticas no van acorde con la
+media". Tenía razón, y era un bug de verdad, no una cuestión de gusto.
+
+`Jugadores.ptsPg/astPg/trbPg` son el "cuánto se espera que anote" que
+lee el motor de simulación (`_miEquipo`, vía `toSimJugador()`) para
+decidir qué números saca tu jugador en cada partido simulado. Se ponían
+bien al draftear (`entrarAlDraft`, con la media de ese momento) pero el
+paso 4 de `avanzarTemporadaNba` —el que escribe `edad`/`media`/
+`potencial` en `Jugadores` cada temporada— nunca los tocaba. Resultado:
+un jugador que entraba al draft con media 60 seguía anotando como uno
+de media 60 en su temporada 10 con media 95, porque el motor de
+simulación nunca se enteraba de que había mejorado — solo lo sabía la
+ficha (que lee `media` directamente), no el partido simulado.
+
+Arreglo de una línea por sitio: los dos `JugadoresCompanion` que escriben
+`media` cada temporada (el normal y el de retirarse) ahora también
+recalculan `ptsPg`/`astPg`/`trbPg` con `puntosTipicos`/
+`asistenciasTipicas`/`rebotesTipicos` sobre la media nueva — las mismas
+funciones que ya usa `entrarAlDraft`, no una fórmula distinta.
+
+Test nuevo en `modo_carrera_repository_test.dart`: juega 8 temporadas
+y comprueba en cada una que `Jugadores.ptsPg/astPg/trbPg` coincide con
+lo que tocaría por la media de esa temporada — no con la del draft. Sin
+este test, el bug habría podido colarse otra vez sin que nada lo
+avisara (no hay ningún otro test que compare esos tres campos contra la
+media actual).
+
+Verificado: `dart analyze` limpio, `flutter test` completo.
