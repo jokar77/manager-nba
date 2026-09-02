@@ -764,6 +764,26 @@ Future<ResumenTemporadaNba> avanzarTemporadaNba(
   // juvenil con `_escalarAtributo`.
   final factor = jugador.media == 0 ? 1.0 : nuevaMedia / jugador.media;
 
+  // Las estadísticas se mueven POR LA CURVA de la media nueva conservando
+  // el "estilo": mismo cálculo que ya usa `envejecerLiga` en
+  // `progresion_repository.dart` para el resto de la liga —
+  // `puntosTipicos(nuevaMedia)` a secas borraría la personalidad (un
+  // anotador nato dejaría de destacar sobre lo típico de su nivel en
+  // cuanto subiera de media).
+  double porLaCurva(double valor, double antes, double despues) =>
+      despues * estiloRespectoASuNivel(valor, antes);
+  final nuevoPtsPg = porLaCurva(jugador.ptsPg, puntosTipicos(jugador.media),
+          puntosTipicos(nuevaMedia))
+      .clamp(0.0, maxPuntosPorPartido);
+  final nuevoAstPg = porLaCurva(
+      jugador.astPg,
+      asistenciasTipicas(jugador.media, jugador.posicion),
+      asistenciasTipicas(nuevaMedia, jugador.posicion));
+  final nuevoTrbPg = porLaCurva(
+      jugador.trbPg,
+      rebotesTipicos(jugador.media, jugador.posicion),
+      rebotesTipicos(nuevaMedia, jugador.posicion));
+
   // 2.5) Premios de la temporada. Sin una liga completa que simular no hay
   // con qué comparar a los otros 450 candidatos de verdad (ver la nota de
   // alcance al principio del fichero) — así que en vez del cálculo real de
@@ -816,9 +836,9 @@ Future<ResumenTemporadaNba> avanzarTemporadaNba(
       media: Value(nuevaMedia),
       retirado: const Value(true),
       equipo: const Value(equipoRetirados),
-      ptsPg: Value(puntosTipicos(nuevaMedia)),
-      astPg: Value(asistenciasTipicas(nuevaMedia, jugador.posicion)),
-      trbPg: Value(rebotesTipicos(nuevaMedia, jugador.posicion)),
+      ptsPg: Value(nuevoPtsPg),
+      astPg: Value(nuevoAstPg),
+      trbPg: Value(nuevoTrbPg),
       atrAtaque: Value(_escalarAtributo(jugador.atrAtaque, factor)),
       atrDefensa: Value(_escalarAtributo(jugador.atrDefensa, factor)),
       atrTiro3: Value(_escalarAtributo(jugador.atrTiro3, factor)),
@@ -864,15 +884,16 @@ Future<ResumenTemporadaNba> avanzarTemporadaNba(
   // (`_miEquipo`, vía `toSimJugador()`) para decidir tus números en cada
   // partido — sin este recálculo se quedaban congelados en lo que tocaba
   // al draftear, así que un veterano de media 95 seguía metiendo los
-  // mismos partidos que de novato de media 60.
+  // mismos partidos que de novato de media 60 (ver `porLaCurva` arriba
+  // para el cálculo, idéntico al de `envejecerLiga`).
   await (db.update(db.jugadores)..where((t) => t.id.equals(jugador.id))).write(
     JugadoresCompanion(
       edad: Value(nuevaEdad),
       media: Value(nuevaMedia),
       potencial: Value(max(jugador.potencial, nuevaMedia)),
-      ptsPg: Value(puntosTipicos(nuevaMedia)),
-      astPg: Value(asistenciasTipicas(nuevaMedia, jugador.posicion)),
-      trbPg: Value(rebotesTipicos(nuevaMedia, jugador.posicion)),
+      ptsPg: Value(nuevoPtsPg),
+      astPg: Value(nuevoAstPg),
+      trbPg: Value(nuevoTrbPg),
       atrAtaque: Value(_escalarAtributo(jugador.atrAtaque, factor)),
       atrDefensa: Value(_escalarAtributo(jugador.atrDefensa, factor)),
       atrTiro3: Value(_escalarAtributo(jugador.atrTiro3, factor)),

@@ -710,3 +710,31 @@ congelado, esa proporción se iría alejando de la inicial según la media
 creciera, y el test lo cazaría.
 
 Verificado: `dart analyze` limpio, `flutter test` completo.
+
+**Repaso del arreglo: faltaba el "estilo".** Antes de dar el bug por
+cerrado del todo, se comparó con `envejecerLiga` en
+`progresion_repository.dart` — la función que hace exactamente esto
+mismo para el resto de la liga en modo Franquicia — y no coincidía del
+todo: mi arreglo ponía `ptsPg: puntosTipicos(nuevaMedia)` a secas, pero
+`envejecerLiga` usa `estiloRespectoASuNivel` para conservar la
+"personalidad" del jugador (un anotador nato sigue anotando por encima
+de lo típico de su nivel al subir, no se resetea a la media exacta de
+la curva — es la misma función que evita que subir de nivel borre lo
+que hace especial a cada jugador, documentada en
+`curva_estadisticas.dart`). Se alineó `avanzarTemporadaNba` con el
+mismo cálculo (`porLaCurva`, idéntico al de `envejecerLiga`, con el
+mismo tope `maxPuntosPorPartido`).
+
+**No cambia ningún número hoy** — comprobado con el mismo test de
+antes, sigue en verde tal cual: el jugador de carrera siempre entra al
+draft con `ptsPg` calculado con la curva plana
+(`puntosTipicos(fila.media)`), así que su "estilo" arranca exactamente
+en 1,0 (sin desviación) y `porLaCurva` da el mismo resultado que la
+curva plana en cada temporada — a diferencia de un jugador real
+importado del dataset, que sí puede empezar con una desviación de
+verdad. El cambio es de arquitectura y consistencia con el resto del
+juego, no de comportamiento observable ahora mismo; deja el código
+listo por si en algún momento el jugador de carrera arranca con una
+estadística inicial no plana.
+
+Verificado: `dart analyze` limpio, `flutter test` completo.
