@@ -75,6 +75,49 @@ puramente visual, sin lógica nueva que cubrir). `docs/roadmap.md`
 actualizado: el backlog punto 2 ya solo deja pendiente
 `mercado/traspasos_screen.dart`.
 
+## Modernización visual, backlog punto 2 CERRADO: traspasos_screen.dart, con alcance recortado a propósito
+
+Sesión del 2 de septiembre de 2026, continuación directa de la anterior de
+hoy mismo (camisetas retiradas / jugadores retirados).
+
+`mercado/traspasos_screen.dart` era la última pantalla del backlog de
+modernización, y la que el segundo pase había dejado fuera adrede por ser
+la más arriesgada: la mesa de traspasos a 3 columnas con buscador
+automático y hoja modal, construida sobre `ListTile`, `CheckboxListTile`
+y `DropdownButton`.
+
+**Decisión de alcance:** modernizar la tipografía y el color, no los
+tipos de widget de interacción. Cambiar `ListTile`/`CheckboxListTile` por
+algo del sistema de diseño habría significado reescribir cómo se marca,
+selecciona y cambia de destino cada pieza de la mesa — justo el motivo
+por el que se aparcó en el segundo pase. Lo que sí se hizo, sin tocar
+ningún tipo de widget:
+
+- Los tres avisos de banner (fecha límite pasada, veredicto de la
+  propuesta, aviso de plantilla rota) pasan de `Container` con
+  `Colors.red`/`Colors.green`/`Colors.amber` sueltos a un widget nuevo,
+  `_Aviso`, sobre `PanelCortado` con `e.bien`/`e.mal` — mismo patrón que
+  `_AvisoObligatorio` en `entrenador_screen.dart` (no hay un token de
+  "amber" propio en `Estilo`; el aviso neutro reusa `mal`, igual que ese
+  otro caso).
+- Cabecera de columna, masa salarial, título del selector de equipo, y
+  las filas de jugador/pick de la mesa y de la hoja modal: todo el
+  `TextStyle` a mano y `Theme.of(context).colorScheme.outline` pasan a
+  `titular(e, ...)`/`rotulo(e, ...)` y `e.textoTenue`/`e.texto`/`e.marca`.
+  La flecha de "a qué equipo va" (antes negrita suelta) ahora usa
+  `e.marca`, el mismo acento que el resto de la UI.
+
+No se tocó: ningún `ListTile`, `CheckboxListTile` ni `DropdownButton`, ni
+la lógica de negociación/selección — solo estilo.
+
+Verificación: `dart analyze` limpio, `flutter test` completo — **717
+tests, todos verdes**, incluidos los dos tests de widget que renderizan
+`TraspasosScreen` (`tema_claro_y_oscuro_test.dart`,
+`adaptacion_movil_test.dart`) y la batería completa de
+`traspasos_avanzados_test.dart` (30 tests de lógica de mercado, sin
+tocar). Con esto el backlog punto 2 de `docs/roadmap.md` queda cerrado
+del todo — las 12 pantallas señaladas están modernizadas.
+
 ## Lista 15, punto 1 CERRADO con datos reales; punto 2 hecho; verificando
 
 Sesión del 24 de agosto de 2026, continuación directa de la de ayer.

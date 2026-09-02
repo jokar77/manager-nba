@@ -151,21 +151,25 @@ próximo con más valor, de más a menos prioritario:
 
 1. ~~La pantalla de "comprar la versión completa".~~ Hecho el 26 de
    agosto de 2026, ver más arriba.
-2. Seguir modernizando pantallas con el estilo antiguo (sin `PanelCortado`,
-   `FilaDeJugador`/`SeparadorSeccion` ni los tokens de `Estilo.de(context)`).
-   El 26 de agosto de 2026 se hicieron 9 en dos pases:
+2. ~~Seguir modernizando pantallas con el estilo antiguo~~ (sin
+   `PanelCortado`, `FilaDeJugador`/`SeparadorSeccion` ni los tokens de
+   `Estilo.de(context)`). **Cerrado el 2 de septiembre de 2026.** El 26 de
+   agosto de 2026 se hicieron 9 en dos pases:
    `clasificacion/equipo_detalle_screen.dart`, `premios/premios_screen.dart`,
    `temporada/pretemporada_screen.dart`, `torneo/torneo_screen.dart`,
    `mercado/ofertas_screen.dart`, `mercado/entrenador_screen.dart`,
    `temporada/resumen_temporada_screen.dart`, `playoffs/playoffs_screen.dart`
    y `temporada/draft_screen.dart`. El resto de la lista original resultaron
    ser falsos positivos (sin listas de jugadores/equipos con media) salvo
-   estas, que quedan pendientes de un tercer pase:
-   - `mercado/traspasos_screen.dart` — la más desfasada (`ListTile`,
-     `CheckboxListTile`, `DropdownButton`), pero es la mesa de 3 columnas
-     con buscador automático y hoja modal; más riesgo de romper
-     interacción del que compensaba en el segundo pase. Es la única que
-     queda.
+   estas dos, cerradas el 2 de septiembre:
+   - `mercado/traspasos_screen.dart` — hecho el 2 de septiembre de 2026,
+     pero con alcance reducido a propósito: se modernizó toda la
+     tipografía y el color (a `titular`/`rotulo`/`Estilo.de(context)`, y
+     los tres avisos de banner a `PanelCortado` con un `_Aviso` reusable)
+     dejando intactos `ListTile`/`CheckboxListTile`/`DropdownButton` — son
+     la mesa de 3 columnas con buscador automático y hoja modal, y
+     cambiarles el tipo de widget seguía siendo más riesgo de romper
+     interacción del que compensaba. Backlog punto 2 ya cerrado del todo.
    - ~~`temporada/camisetas_nuevas_screen.dart` y
      `temporada/retirados_screen.dart`~~ — hecho el 2 de septiembre de
      2026 (`Card`→`PanelCortado`, tipografía a `titular`/`rotulo`/`cifra`,

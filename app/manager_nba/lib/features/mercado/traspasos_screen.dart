@@ -505,13 +505,11 @@ class _TraspasosScreenState extends State<TraspasosScreen> {
       body: Column(
         children: [
           if (_cerrada)
-            Container(
-              width: double.infinity,
-              color: Colors.red.withValues(alpha: 0.15),
-              padding: const EdgeInsets.all(12),
-              child: Text(
-                t(context).fechaLimiteTraspasosBanner,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+              child: _Aviso(
+                icono: Icons.event_busy,
+                texto: t(context).fechaLimiteTraspasosBanner,
               ),
             ),
           Expanded(child: _columnas(mesa)),
@@ -536,39 +534,20 @@ class _TraspasosScreenState extends State<TraspasosScreen> {
               ),
             ),
           if (respuesta != null)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              color: (respuesta.aceptado ? Colors.green : Colors.red)
-                  .withValues(alpha: 0.15),
-              child: Text(
-                respuesta.mensaje,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurface),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+              child: _Aviso(
+                icono: respuesta.aceptado ? Icons.check_circle : Icons.cancel,
+                texto: respuesta.mensaje,
+                bien: respuesta.aceptado,
               ),
             ),
           if (respuesta?.aviso != null)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              color: Colors.amber.withValues(alpha: 0.20),
-              child: Row(
-                children: [
-                  Icon(Icons.warning_amber,
-                      size: 20,
-                      color: Theme.of(context).colorScheme.onSurface),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      respuesta!.aviso!,
-                      style: TextStyle(
-                          fontSize: 13,
-                          color: Theme.of(context).colorScheme.onSurface),
-                    ),
-                  ),
-                ],
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+              child: _Aviso(
+                icono: Icons.warning_amber,
+                texto: respuesta!.aviso!,
               ),
             ),
           Padding(
@@ -689,20 +668,20 @@ class _TraspasosScreenState extends State<TraspasosScreen> {
   }
 
   Widget _anadirTercero() {
+    final e = Estilo.de(context);
     final libres =
-        _equipos.where((e) => e != _rival && e != _tercero).toList();
+        _equipos.where((eq) => eq != _rival && eq != _tercero).toList();
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.group_add,
-                size: 40, color: Theme.of(context).colorScheme.outline),
+            Icon(Icons.group_add, size: 40, color: e.textoTenue),
             const SizedBox(height: 12),
             Text(t(context).noCuadraMeteATerceroLarga,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Theme.of(context).colorScheme.outline)),
+                style: rotulo(e, tamano: 12, color: e.textoTenue)),
             const SizedBox(height: 12),
             OutlinedButton(
               onPressed:
@@ -733,6 +712,7 @@ class _SelectorEquipo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final e = Estilo.de(context);
     return Row(
       children: [
         Expanded(
@@ -741,21 +721,21 @@ class _SelectorEquipo extends StatelessWidget {
             underline: const SizedBox.shrink(),
             value: seleccionado,
             items: equipos
-                .map((e) => DropdownMenuItem(
-                      value: e,
+                .map((eq) => DropdownMenuItem(
+                      value: eq,
                       child: Row(
                         children: [
-                          EquipoLogo(codigoEquipo: e, tamano: 18),
+                          EquipoLogo(codigoEquipo: eq, tamano: 18),
                           const SizedBox(width: 6),
                           Flexible(
-                              child: Text(infoDe(e).nombreCompleto,
-                                  style: const TextStyle(fontSize: 13),
+                              child: Text(infoDe(eq).nombreCompleto,
+                                  style: rotulo(e, tamano: 12, color: e.texto),
                                   overflow: TextOverflow.ellipsis)),
                         ],
                       ),
                     ))
                 .toList(),
-            onChanged: (e) => e == null ? null : onCambiar(e),
+            onChanged: (eq) => eq == null ? null : onCambiar(eq),
           ),
         ),
         if (onQuitar != null)
@@ -817,6 +797,7 @@ class _ColumnaEquipo extends StatelessWidget {
         initialChildSize: 0.7,
         maxChildSize: 0.9,
         builder: (context, scrollController) {
+          final e = Estilo.de(context);
           final libres = lado.plantilla
               .where((j) => !movimientos.containsKey('j${j.id}'))
               .toList();
@@ -835,15 +816,14 @@ class _ColumnaEquipo extends StatelessWidget {
                     Expanded(
                       child: Text(
                         t(context).anadirDe(infoDe(lado.equipo).nombreCompleto),
-                        style: const TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.bold),
+                        style: titular(e, tamano: 15),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Divider(height: 1),
+              Divider(height: 1, color: e.linea),
               Expanded(
                 child: ListView(
                   controller: scrollController,
@@ -852,12 +832,12 @@ class _ColumnaEquipo extends StatelessWidget {
                       ListTile(
                         dense: true,
                         title: Text(j.nombreFicticio,
-                            style: const TextStyle(fontSize: 13)),
+                            style: rotulo(e, tamano: 12, color: e.texto)),
                         subtitle: Text(
                             '${etiquetaPosicion(j)} · ${j.media} · '
                             '${formatearSalario(j.salario)} · '
                             '${_aniosDeContrato(context, j)}',
-                            style: const TextStyle(fontSize: 11)),
+                            style: rotulo(e, tamano: 10, color: e.textoTenue)),
                         trailing: IconButton(
                           icon: const Icon(Icons.search, size: 18),
                           tooltip: tooltipBuscador,
@@ -875,14 +855,13 @@ class _ColumnaEquipo extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                         child: Text(t(context).eleccionesDeDraft,
-                            style: const TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.bold)),
+                            style: rotulo(e, tamano: 11)),
                       ),
                       for (final p in picksLibres)
                         ListTile(
                           dense: true,
                           title: Text(etiquetaDePick(p),
-                              style: const TextStyle(fontSize: 13)),
+                              style: rotulo(e, tamano: 12, color: e.texto)),
                           onTap: () {
                             onAlternarPick(p);
                             Navigator.of(context).pop();
@@ -895,6 +874,7 @@ class _ColumnaEquipo extends StatelessWidget {
                         child: Text(
                           t(context).yaHasPuestoTodo,
                           textAlign: TextAlign.center,
+                          style: rotulo(e, tamano: 12, color: e.textoTenue),
                         ),
                       ),
                   ],
@@ -909,6 +889,7 @@ class _ColumnaEquipo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final e = Estilo.de(context);
     final cambia = masaResultante != lado.masa;
     final jugadores = _jugadoresPuestos;
     final picks = _picksPuestos;
@@ -921,12 +902,7 @@ class _ColumnaEquipo extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(titulo.toUpperCase(),
-                  style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
-                      color: Theme.of(context).colorScheme.outline)),
+              Text(mayus(titulo), style: rotulo(e, tamano: 10)),
               // Misma altura que el desplegable de las otras columnas (la de
               // un control tocable, 48). Tu columna, que no lleva selector,
               // medía menos y eso bajaba la masa salarial y la línea
@@ -940,8 +916,7 @@ class _ColumnaEquipo extends StatelessWidget {
                         const SizedBox(width: 6),
                         Flexible(
                             child: Text(infoDe(lado.equipo).nombreCompleto,
-                                style: const TextStyle(
-                                    fontSize: 13, fontWeight: FontWeight.bold),
+                                style: titular(e, tamano: 13),
                                 overflow: TextOverflow.ellipsis)),
                       ],
                     ),
@@ -1011,7 +986,7 @@ class _HuecoParaAnadir extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final outline = Theme.of(context).colorScheme.outline;
+    final e = Estilo.de(context);
     return InkWell(
       onTap: onTocar,
       borderRadius: BorderRadius.circular(8),
@@ -1021,23 +996,63 @@ class _HuecoParaAnadir extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-              color: outline.withValues(alpha: 0.5),
+              color: e.textoTenue.withValues(alpha: 0.5),
               style: BorderStyle.solid,
               width: 1),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.add_circle_outline, size: vacio ? 26 : 18, color: outline),
+            Icon(Icons.add_circle_outline,
+                size: vacio ? 26 : 18, color: e.textoTenue),
             if (vacio) ...[
               const SizedBox(height: 6),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: Text(t(context).tocaParaElegirJugadoresOPicks,
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 11, color: outline)),
+                    style: rotulo(e, tamano: 10, color: e.textoTenue)),
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Un aviso de fondo de la mesa: fecha límite pasada, veredicto de la
+/// propuesta, o el riesgo de dejar un puesto sin cubrir. Mismo patrón que
+/// `_AvisoObligatorio` en `entrenador_screen.dart` — sin token propio de
+/// "amber" en `Estilo`, el aviso neutro/de advertencia reusa `mal` (rojo),
+/// igual que ese otro caso.
+class _Aviso extends StatelessWidget {
+  final IconData icono;
+  final String texto;
+
+  /// Null: aviso neutro (fecha límite, advertencia). true/false: veredicto
+  /// de una propuesta, verde o rojo según toque.
+  final bool? bien;
+
+  const _Aviso({required this.icono, required this.texto, this.bien});
+
+  @override
+  Widget build(BuildContext context) {
+    final e = Estilo.de(context);
+    final color = bien == null ? e.mal : (bien! ? e.bien : e.mal);
+    return PanelCortado(
+      fondo: color.withValues(alpha: 0.14),
+      corte: 12,
+      borde: Border.all(color: color),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Icon(icono, size: 20, color: color),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(texto, style: rotulo(e, tamano: 12, color: e.texto)),
+            ),
           ],
         ),
       ),
@@ -1058,29 +1073,22 @@ class _Masa extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final e = Estilo.de(context);
     final pasado = ahora > topeSalarial;
+    final color = pasado ? e.mal : e.textoTenue;
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         children: [
-          Icon(Icons.payments,
-              size: 13,
-              color: pasado
-                  ? Colors.orange
-                  : Theme.of(context).colorScheme.outline),
+          Icon(Icons.payments, size: 13, color: color),
           const SizedBox(width: 4),
           Flexible(
             child: Text(
               cambia
                   ? '${formatearSalario(previa)} → ${formatearSalario(ahora)}'
                   : formatearSalario(previa),
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: cambia ? FontWeight.bold : FontWeight.normal,
-                color: pasado
-                    ? Colors.orange
-                    : Theme.of(context).colorScheme.outline,
-              ),
+              style: rotulo(e, tamano: 10, color: color)
+                  .copyWith(fontWeight: cambia ? FontWeight.w800 : null),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -1116,6 +1124,7 @@ class _Fila extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final e = Estilo.de(context);
     final movimiento = movimientos[clave];
     final destino = movimiento?.destino;
 
@@ -1125,7 +1134,7 @@ class _Fila extends StatelessWidget {
       value: movimiento != null,
       onChanged: (_) => onAlternar(),
       title: Text(titulo,
-          style: const TextStyle(fontSize: 13),
+          style: rotulo(e, tamano: 12, color: e.texto),
           overflow: TextOverflow.ellipsis),
       subtitle: subtitulo == null && destino == null
           ? null
@@ -1134,7 +1143,7 @@ class _Fila extends StatelessWidget {
                 if (subtitulo != null)
                   Flexible(
                       child: Text(subtitulo!,
-                          style: const TextStyle(fontSize: 11),
+                          style: rotulo(e, tamano: 10, color: e.textoTenue),
                           overflow: TextOverflow.ellipsis)),
                 if (destino != null && variosDestinos) ...[
                   if (subtitulo != null) const SizedBox(width: 6),
@@ -1147,11 +1156,9 @@ class _Fila extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.arrow_forward, size: 12),
+                          Icon(Icons.arrow_forward, size: 12, color: e.marca),
                           const SizedBox(width: 2),
-                          Text(destino,
-                              style: const TextStyle(
-                                  fontSize: 11, fontWeight: FontWeight.bold)),
+                          Text(destino, style: rotulo(e, tamano: 10, color: e.marca)),
                         ],
                       ),
                     ),
