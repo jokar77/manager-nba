@@ -26,7 +26,7 @@ ver abajo). Es la misma prioridad que ya estaba escrita en
   vive en `plan_modo_carrera.md`; aquí solo cuenta para el roadmap de
   lanzamiento porque comparte plataforma, tiendas y el mismo aviso legal
   de nombres/equipos parecidos a los reales (ver más abajo).
-- **716 tests**, todos verdes. `dart analyze` limpio (o `flutter analyze`
+- **717 tests**, todos verdes. `dart analyze` limpio (o `flutter analyze`
   si no está teniendo un problema de sesión propio del analizador, ajeno
   al código).
 - **7 idiomas** completos (interfaz y guion de eventos narrativos).
@@ -164,10 +164,12 @@ próximo con más valor, de más a menos prioritario:
    - `mercado/traspasos_screen.dart` — la más desfasada (`ListTile`,
      `CheckboxListTile`, `DropdownButton`), pero es la mesa de 3 columnas
      con buscador automático y hoja modal; más riesgo de romper
-     interacción del que compensaba en el segundo pase.
-   - `temporada/camisetas_nuevas_screen.dart` y
-     `temporada/retirados_screen.dart` — desfase menor, solo un pulido de
-     `Card`→`PanelCortado` o similar.
+     interacción del que compensaba en el segundo pase. Es la única que
+     queda.
+   - ~~`temporada/camisetas_nuevas_screen.dart` y
+     `temporada/retirados_screen.dart`~~ — hecho el 2 de septiembre de
+     2026 (`Card`→`PanelCortado`, tipografía a `titular`/`rotulo`/`cifra`,
+     título de sección a `SeparadorSeccion`).
 3. Medir el equilibrio del mercado (jugarlo vs. no jugarlo) con más
    semillas todavía — hoy solo se ha reforzado un test de regresión, no
    se ha hecho la medición fina que pedía `plan.md`.

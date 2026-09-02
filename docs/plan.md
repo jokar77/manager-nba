@@ -35,6 +35,46 @@ repo (controlar a un jugador en vez de a una franquicia). Su diario de
 sesiones vive en **`docs/plan_modo_carrera.md`**, no aquí — este fichero
 sigue siendo solo el del modo Franquicia.
 
+## Modernización visual, tercer pulido: camisetas retiradas y jugadores retirados
+
+Sesión del 2 de septiembre de 2026, continuación de la del 26 de agosto
+(backlog punto 2 de `docs/roadmap.md`).
+
+Las dos pantallas que quedaban marcadas como "desfase menor" ya están al
+mismo nivel visual que el resto:
+
+- `lib/features/temporada/camisetas_nuevas_screen.dart`: la tarjeta por
+  jugador pasa de `Card` a `PanelCortado` (mismo `fondo`/`corte`/`borde`
+  que usan `resumen_temporada_screen.dart` y compañía); el título de
+  "dorsales que no volverán" y el nombre del jugador pasan de
+  `tema.textTheme.titleMedium` a `titular(e, ...)`; el nombre del equipo a
+  `rotulo(e, tamano: 12)`; y el número de dorsal, que antes era un
+  `TextStyle(fontSize: 20, fontWeight: FontWeight.bold)` a mano, ahora usa
+  `cifra(e, tamano: 20)` — el mismo helper que ya se usa para cifras
+  destacadas en otras pantallas.
+- `lib/features/temporada/retirados_screen.dart`: el único hueco que
+  quedaba era el widget privado `_Titulo` (un `Text` con `TextStyle`
+  manual para "Tu equipo"/"Resto de la liga"). Ahora delega en
+  `SeparadorSeccion(titulo: texto, acento: Estilo.de(context).marca)`, el
+  mismo widget compartido (`lib/shared/estilo.dart:413`) que ya usan
+  `premios_screen.dart`, `entrenador_screen.dart`, `home_hub_screen.dart`,
+  etc. El resto de la pantalla ya estaba modernizado de antes
+  (`FilaDeJugador`, `EquipoLogo`, tokens de `Estilo`).
+
+**`conVolver: false` en ambas pantallas, confirmado NO es un bug.** Antes
+de tocar nada comprobé que las dos son pasos forzados de la secuencia de
+fin de temporada (invocadas desde `cambio_de_temporada.dart` con un
+`onContinuar` obligatorio, nunca como navegación normal), siguiendo
+exactamente el mismo patrón condicional que ya usa
+`hall_fama_screen.dart` (`conVolver: onContinuar == null`). Se dejó
+intacto en ambas.
+
+Verificación: `dart analyze` limpio en los dos ficheros, `flutter test`
+completo — **717 tests, todos verdes** (sin tests nuevos: es un cambio
+puramente visual, sin lógica nueva que cubrir). `docs/roadmap.md`
+actualizado: el backlog punto 2 ya solo deja pendiente
+`mercado/traspasos_screen.dart`.
+
 ## Lista 15, punto 1 CERRADO con datos reales; punto 2 hecho; verificando
 
 Sesión del 24 de agosto de 2026, continuación directa de la de ayer.

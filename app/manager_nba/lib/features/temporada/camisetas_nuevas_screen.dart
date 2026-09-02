@@ -28,7 +28,7 @@ class CamisetasNuevasScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tema = Theme.of(context);
+    final e = Estilo.de(context);
     final unaSola = nuevas.length == 1;
 
     // Agrupadas por jugador: quien cuelga en tres sitios sale una vez con sus
@@ -59,40 +59,42 @@ class CamisetasNuevasScreen extends StatelessWidget {
                       ? t(context).unDorsalQueNoVolvera
                       : t(context).dorsalesQueNoVolveran,
                   textAlign: TextAlign.center,
-                  style: tema.textTheme.titleMedium,
+                  style: titular(e, tamano: 16),
                 ),
               ],
             ),
           ),
           for (final entrada in porJugador.entries)
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(entrada.key,
-                        style: tema.textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 10),
-                    for (final c in entrada.value)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 5),
-                        child: Row(
-                          children: [
-                            EquipoLogo(codigoEquipo: c.equipo, tamano: 32),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(nombreDeEquipoEnFicha(c.equipo)),
-                            ),
-                            Text('#${c.dorsal}',
-                                style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold)),
-                          ],
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: PanelCortado(
+                fondo: e.panel,
+                corte: 12,
+                borde: Border.all(color: e.linea),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(entrada.key, style: titular(e, tamano: 16)),
+                      const SizedBox(height: 10),
+                      for (final c in entrada.value)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 5),
+                          child: Row(
+                            children: [
+                              EquipoLogo(codigoEquipo: c.equipo, tamano: 32),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(nombreDeEquipoEnFicha(c.equipo),
+                                    style: rotulo(e, tamano: 12)),
+                              ),
+                              Text('#${c.dorsal}', style: cifra(e, tamano: 20)),
+                            ],
+                          ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

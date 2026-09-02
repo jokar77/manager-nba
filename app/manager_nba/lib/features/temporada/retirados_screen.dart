@@ -191,9 +191,7 @@ class _Titulo extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Text(texto,
-            style:
-                const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        child: SeparadorSeccion(titulo: texto, acento: Estilo.de(context).marca),
       );
 }
 
