@@ -89,11 +89,12 @@ void main() {
     await db.close();
   });
 
-  // SAC es uno de los cuatro equipos del suelo de la liga (media de sus
-  // cinco mejores: 82, contra los 90 de PHI). Se usa tal cual, sin retocar
+  // BRK es el equipo del suelo de la liga (media de sus cinco mejores:
+  // 81,6, contra los 90 de PHI; con las plantillas 2026-27 SAC dejó de
+  // serlo y ya no cabe en su presupuesto). Se usa tal cual, sin retocar
   // la plantilla, porque lo que interesa probar es que el mercado funciona
   // con los equipos que EXISTEN, no con un caso inventado.
-  const equipoDelSuelo = 'SAC';
+  const equipoDelSuelo = 'BRK';
 
   test('un entrenador de primera rechaza al peor equipo, y uno modesto no',
       () async {

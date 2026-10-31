@@ -104,7 +104,14 @@ void main() {
     // encuentra hacia arriba es el `PageView` del `TabBarView`.
     await tester.tap(find.byKey(clave));
     await tester.pumpAndSettle();
-    await tester.tap(find.text(const TextosEs().ningunaOpcion).last);
+    // El menú es una lista perezosa: con plantillas de 18 o más (DEN, con
+    // las 2026-27) "Ninguna", la primera opción, queda fuera de pantalla y
+    // ni siquiera se construye. Se llega a ella desplazando, como haría un
+    // usuario.
+    final ninguna = find.text(const TextosEs().ningunaOpcion);
+    await tester.scrollUntilVisible(ninguna, -100,
+        scrollable: find.byType(Scrollable).last);
+    await tester.tap(ninguna.last);
     await tester.pumpAndSettle();
 
     await tester.tap(find.byIcon(Icons.expand_more));

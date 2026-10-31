@@ -187,9 +187,24 @@ void main() {
       // draft", no como reparto automático.
       final anioAlEmpezar = (await leerTemporada(db)).anioInicio;
 
+      // La media de cada llegado EN EL MOMENTO de llegar. El tope de la
+      // oficina (82) se aplica al firmar, pero una promesa de potencial 95
+      // con 80 de media (Kel'el Ware) puede firmar legalmente y estar en 89
+      // dos años después: eso es progresión, no una estrella regalada. Medir
+      // la media final castigaba ese crecimiento según cómo cayera el
+      // dataset.
+      final mediaAlLlegar = <int, int>{};
       for (var t = 1; t <= 3; t++) {
         await _cerrarTemporadaDeGolpe(db, rng);
         await empezarNuevaTemporada(db, random: rng);
+        final ahora = await (db.select(db.jugadores)
+              ..where((x) => x.equipo.equals('DEN')))
+            .get();
+        for (final j in ahora) {
+          if (!idsAlEmpezar.contains(j.id)) {
+            mediaAlLlegar.putIfAbsent(j.id, () => j.media);
+          }
+        }
       }
 
       // De todo lo que ha llegado solo por el reparto automático (el
@@ -210,7 +225,9 @@ void main() {
           .where((j) => j.draftYear == null || j.draftYear! <= anioAlEmpezar)
           .toList();
 
-      final estrellas = llegados.where((j) => j.media >= 85).toList();
+      final estrellas = llegados
+          .where((j) => (mediaAlLlegar[j.id] ?? j.media) >= 85)
+          .toList();
       expect(estrellas, isEmpty,
           reason: 'semilla $semilla: tu oficina te ha fichado sola a '
               '${estrellas.map((j) => '${j.nombreFicticio} (${j.media})').join(', ')}');
