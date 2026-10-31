@@ -2,6 +2,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:manager_nba/data/calendario/generador_calendario.dart';
 import 'package:manager_nba/data/database/app_database.dart';
 import 'package:manager_nba/data/importer/jugadores_importer.dart';
 import 'package:manager_nba/domain/carrera_repository.dart';
@@ -99,8 +100,14 @@ void main() {
       matching: find.byType(ListTile),
     ));
     expect((filaMvp.trailing as Text).data, 'x6');
+    // El año de la partida sale del reloj (próximo inicio de temporada), así
+    // que no se puede fijar: con "2026-27" el test dejó de pasar en cuanto
+    // empezó la liga de 2026 y el próximo inicio pasó a ser 2027.
+    final anioPartida = proximoInicioDeTemporada().year;
+    final etiquetaPartida =
+        '$anioPartida-${((anioPartida + 1) % 100).toString().padLeft(2, '0')}';
     expect(
-      find.text('1987-88, 1990-91, 1991-92, 1995-96, 1997-98, 2026-27'),
+      find.text('1987-88, 1990-91, 1991-92, 1995-96, 1997-98, $etiquetaPartida'),
       findsOneWidget,
       reason: 'los años reales de MVP más el de la partida, todos juntos',
     );
