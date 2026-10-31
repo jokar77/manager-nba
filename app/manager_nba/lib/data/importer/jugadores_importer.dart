@@ -21,7 +21,7 @@ const _rutaAssetDatosReales = 'assets/data/datos_reales.json';
 /// [anadirJugadoresQueFaltenDelDataset]). Si se queda desfasado no se rompe
 /// nada, simplemente el relleno deja de dispararse — por eso hay un test
 /// que lo compara con el asset de verdad y falla si no cuadran.
-const jugadoresUtilizablesDelDataset = 646;
+const jugadoresUtilizablesDelDataset = 676;
 
 /// Campos que deben venir informados para poder simular con un jugador.
 ///

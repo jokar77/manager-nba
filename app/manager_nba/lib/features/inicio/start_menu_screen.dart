@@ -249,7 +249,7 @@ class _StartMenuScreenState extends State<StartMenuScreen> with RouteAware {
     setState(() => _procesando = true);
 
     final db = abrirSlot(slot);
-    // El Modo Carrera necesita los 646 jugadores reales de la liga: son
+    // El Modo Carrera necesita los 676 jugadores reales de la liga: son
     // los rivales para el draft (qué equipo te ficha) y, más adelante,
     // contrato y traspasos. Forzado igual que al estrenar una franquicia:
     // una ranura reutilizada tiene que arrancar con el dataset original.
